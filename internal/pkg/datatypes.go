@@ -5,6 +5,7 @@ type SignupInfo struct {
 	PasswordHash string `json:"password_hash"`
 }
 
+// Объединить в AuthInfo? Рега работает с таким же структом
 type LoginInfo struct {
 	Email        string `json:"email"`
 	PasswordHash string `json:"password_hash"`
