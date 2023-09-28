@@ -56,6 +56,7 @@ func TestApi() *Api {
 			},
 		},
 		jwt_secret: jwt_secret,
+		mu:         &sync.Mutex{},
 	}
 }
 
@@ -76,10 +77,48 @@ func (api *Api) GetSessions() map[string]uint64 {
 	return api.sessions
 }
 
+func (api *Api) getHighestID() uint64 {
+	if len(api.users) == 0 {
+		return 0
+	}
+	var highest uint64 = 0
+	for _, user := range api.users {
+		if user.ID > highest {
+			highest = user.ID
+		}
+	}
+	return highest
+}
+
 func (api *Api) HandleSignupUser(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
-	// decoder := json.NewDecoder(r.Body)
+	var signup datatypes.SignupInfo
+	err := json.NewDecoder(r.Body).Decode(&signup)
+	if err != nil {
+		http.Error(w, `Signup error`, http.StatusBadRequest)
+		return
+	}
+
+	api.mu.Lock()
+	_, ok := api.users[signup.Email]
+	api.mu.Unlock()
+	if ok {
+		http.Error(w, `User already exists`, http.StatusConflict)
+		return
+	}
+
+	api.mu.Lock()
+	var newID uint64 = api.getHighestID() + 1
+	api.users[signup.Email] = &datatypes.User{
+		ID:           newID,
+		Email:        signup.Email,
+		PasswordHash: signup.PasswordHash,
+		FullName:     "",
+	}
+	api.mu.Unlock()
+
+	w.Write([]byte(`{"body": {}}`))
 }
 
 func (api *Api) HandleLoginUser(w http.ResponseWriter, r *http.Request) {
