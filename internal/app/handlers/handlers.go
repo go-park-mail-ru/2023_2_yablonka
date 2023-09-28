@@ -57,9 +57,10 @@ func TestApi() *Api {
 	}
 }
 
-func (api *Api) GenerateJWT(login datatypes.LoginInfo) (string, error) {
+func (api *Api) GenerateJWT(user *datatypes.User) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"email": login.Email,
+		"email": user.Email,
+		"ID":    user.ID,
 	})
 
 	str, err := token.SignedString(api.jwt_secret)
@@ -100,7 +101,7 @@ func (api *Api) HandleLoginUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	token, err := api.GenerateJWT(login)
+	token, err := api.GenerateJWT(user)
 	if err != nil {
 		http.Error(w, `Session error`, http.StatusInternalServerError)
 	}

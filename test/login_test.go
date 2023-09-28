@@ -18,11 +18,13 @@ func TestSuccess(t *testing.T) {
 
 	tests := []struct {
 		name         string
+		userID       uint64
 		email        string
 		passwordHash string
 	}{
 		{
 			name:         "Existing entry",
+			userID:       1,
 			email:        "test@email.com",
 			passwordHash: "123456",
 		},
@@ -42,11 +44,12 @@ func TestSuccess(t *testing.T) {
 
 			testApi.HandleLoginUser(w, r)
 
-			login := datatypes.LoginInfo{
+			user := datatypes.User{
+				ID:           test.userID,
 				Email:        test.email,
 				PasswordHash: test.passwordHash,
 			}
-			expectedToken, err := testApi.GenerateJWT(login)
+			expectedToken, err := testApi.GenerateJWT(&user)
 
 			if w.Code != http.StatusOK {
 				t.Error("Status is not ok")
