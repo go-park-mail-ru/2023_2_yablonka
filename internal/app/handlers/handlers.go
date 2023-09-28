@@ -28,13 +28,15 @@ func TestApi() *Api {
 				ID:           1,
 				Email:        "test@email.com",
 				PasswordHash: "123456",
-				FullName:     "Никита Архаров",
+				Name:         "Никита",
+				Surname:      "Архаров",
 			},
 			"email@example.com": {
 				ID:           2,
 				Email:        "email@example.com",
 				PasswordHash: "135790",
-				FullName:     "Даниил Капитанов",
+				Name:         "Даниил",
+				Surname:      "Капитанов",
 			},
 		},
 		sessions: make(map[string]uint64, 10),
@@ -118,12 +120,13 @@ func (api *Api) HandleSignupUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	api.mu.Lock()
-	var newID uint64 = api.getHighestID() + 1
+	var newID uint64 = api.GetHighestID() + 1
 	api.users[signup.Email] = &datatypes.User{
 		ID:           newID,
 		Email:        signup.Email,
 		PasswordHash: signup.PasswordHash,
-		FullName:     "",
+		Name:         "",
+		Surname:      "",
 	}
 	api.mu.Unlock()
 

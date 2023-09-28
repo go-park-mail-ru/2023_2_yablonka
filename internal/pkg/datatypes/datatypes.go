@@ -12,7 +12,7 @@ type LoginInfo struct {
 
 type User struct {
 	ID           uint64 `json:"user_id"`
-	Email        string `json:"name"`
+	Email        string `json:"email"`
 	PasswordHash string `json:"-"`
 	Name         string `json:"name"`
 	Surname      string `json:"surname"`
