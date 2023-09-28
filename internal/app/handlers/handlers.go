@@ -86,7 +86,7 @@ func (api *Api) GetUserByEmail(email string) (*datatypes.User, bool) {
 	return user, ok
 }
 
-func (api *Api) getHighestID() uint64 {
+func (api *Api) GetHighestID() uint64 {
 	if len(api.users) == 0 {
 		return 0
 	}
