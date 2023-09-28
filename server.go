@@ -3,62 +3,62 @@ package main
 import (
 	"log"
 	"net/http"
-	"sync"
 
-	handlers "server/internal/app"
-	datatypes "server/internal/pkg"
+	handlers "server/internal/app/handlers"
+
+	"github.com/joho/godotenv"
 )
 
 func main() {
-	handlers := handlers.Handlers{
-		Users:  make([]datatypes.User, 0),
-		Boards: make([]datatypes.Board, 0),
-		Mu:     &sync.Mutex{},
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
 	}
 
-	http.HandleFunc("/api/login/", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
+	api := handlers.TestApi()
 
+	http.HandleFunc("/api/v1/login/", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
 		log.Println(r.URL.Path)
 
 		if r.Method == http.MethodPost {
-			handlers.HandleLoginUser(w, r)
+			api.HandleLoginUser(w, r)
 			return
 		}
 	})
 
-	http.HandleFunc("/api/getboards/", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
+	// http.HandleFunc("/api/v1/getboards/", func(w http.ResponseWriter, r *http.Request) {
+	// 	w.Header().Set("Content-Type", "application/json")
 
-		log.Println(r.URL.Path)
+	// 	log.Println(r.URL.Path)
 
-		if r.Method == http.MethodGet {
-			handlers.HandleGetBoards(w, r)
-			return
-		}
-	})
+	// 	if r.Method == http.MethodGet {
+	// 		api.HandleGetUserBoards(w, r)
+	// 		return
+	// 	}
+	// })
 
-	http.HandleFunc("/api/verifyauth/", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
+	// http.HandleFunc("/api/v1/verifyauth/", func(w http.ResponseWriter, r *http.Request) {
+	// 	w.Header().Set("Content-Type", "application/json")
 
-		log.Println(r.URL.Path)
+	// 	log.Println(r.URL.Path)
 
-		if r.Method == http.MethodGet {
-			handlers.HandleVerifyAuth(w, r)
-			return
-		}
-	})
+	// 	if r.Method == http.MethodGet {
+	// 		api.HandleVerifyAuth(w, r)
+	// 		return
+	// 	}
+	// })
 
-	http.HandleFunc("/api/signup/", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
+	// http.HandleFunc("/api/v1/signup/", func(w http.ResponseWriter, r *http.Request) {
+	// 	w.Header().Set("Content-Type", "application/json")
 
-		log.Println(r.URL.Path)
+	// 	log.Println(r.URL.Path)
 
-		if r.Method == http.MethodPost {
-			handlers.HandleSignupUser(w, r)
-			return
-		}
-	})
+	// 	if r.Method == http.MethodPost {
+	// 		api.HandleSignupUser(w, r)
+	// 		return
+	// 	}
+	// })
 
 	http.ListenAndServe(":8080", nil)
 }
