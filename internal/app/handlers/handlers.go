@@ -77,6 +77,15 @@ func (api *Api) GetSessions() map[string]uint64 {
 	return api.sessions
 }
 
+func (api *Api) GetUsers() map[string]*datatypes.User {
+	return api.users
+}
+
+func (api *Api) GetUserByEmail(email string) (*datatypes.User, bool) {
+	user, ok := api.users[email]
+	return user, ok
+}
+
 func (api *Api) getHighestID() uint64 {
 	if len(api.users) == 0 {
 		return 0

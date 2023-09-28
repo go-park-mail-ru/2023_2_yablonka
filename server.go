@@ -19,6 +19,7 @@ func main() {
 
 	http.HandleFunc("/api/v1/login/", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
+
 		log.Println(r.URL.Path)
 
 		if r.Method == http.MethodPost {
@@ -49,16 +50,16 @@ func main() {
 	// 	}
 	// })
 
-	// http.HandleFunc("/api/v1/signup/", func(w http.ResponseWriter, r *http.Request) {
-	// 	w.Header().Set("Content-Type", "application/json")
+	http.HandleFunc("/api/v1/signup/", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
 
-	// 	log.Println(r.URL.Path)
+		log.Println(r.URL.Path)
 
-	// 	if r.Method == http.MethodPost {
-	// 		api.HandleSignupUser(w, r)
-	// 		return
-	// 	}
-	// })
+		if r.Method == http.MethodPost {
+			api.HandleSignupUser(w, r)
+			return
+		}
+	})
 
 	http.ListenAndServe(":8080", nil)
 }
