@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"os"
+	"sync"
 
 	jwt "github.com/dgrijalva/jwt-go"
 
@@ -15,6 +16,7 @@ type Api struct {
 	sessions   map[string]uint64
 	boards     map[uint64]*datatypes.Board
 	jwt_secret []byte
+	mu         *sync.Mutex
 }
 
 func TestApi() *Api {
@@ -90,7 +92,9 @@ func (api *Api) HandleLoginUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	api.mu.Lock()
 	user, ok := api.users[login.Email]
+	api.mu.Unlock()
 	if !ok {
 		http.Error(w, `User not found`, http.StatusNotFound)
 		return
@@ -115,7 +119,9 @@ func (api *Api) HandleLoginUser(w http.ResponseWriter, r *http.Request) {
 
 	http.SetCookie(w, cookie)
 
+	api.mu.Lock()
 	api.sessions[token] = user.ID
+	api.mu.Unlock()
 
 	w.Write([]byte(`{"body": {}}`))
 }
