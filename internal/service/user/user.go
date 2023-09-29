@@ -14,12 +14,15 @@ type IAuthUserService interface {
 
 type IUserService interface {
 	UpdateUser()
-	GetBoardUsers()
+	GetUserBoards()
 	IAuthUserService
 }
 
 type AuthUserService struct {
 	storage storage.IUserStorage
+}
+
+type UserService struct {
 }
 
 func NewAuthUserService(storage storage.IUserStorage) AuthUserService {
@@ -37,6 +40,7 @@ func (us AuthUserService) GetUser(ctx context.Context, info datatypes.LoginInfo)
 	if user.PasswordHash != info.PasswordHash {
 		return nil, apperrors.ErrWrongPassword
 	}
+
 	return user, nil
 }
 
@@ -46,4 +50,13 @@ func (us AuthUserService) CreateUser(ctx context.Context, info datatypes.SignupI
 		return nil, err
 	}
 	return user, nil
+}
+
+func (us UserService) UpdateUser(ctx context.Context, user *datatypes.User) {
+	// TODO Изменение значений у юзера
+}
+
+func (us UserService) GetUserBoards(ctx context.Context, user *datatypes.User) []*datatypes.Board {
+	// TODO Запрос всех досок пользователя
+	return nil
 }

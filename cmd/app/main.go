@@ -20,46 +20,7 @@ func main() {
 
 	mux := http.NewServeMux()
 
-	// TestApi в internal/storage/in_memory
-	// api := handlers.TestApi()
-
-	// Тесты в internal/app/
-
-	// Отдельный пакет в internal
-	// http.HandleFunc("/api/v1/login/", func(w http.ResponseWriter, r *http.Request) {
-	// 	w.Header().Set("Content-Type", "application/json")
-
-	// 	log.Println(r.URL.Path)
-
-	// 	if r.Method == http.MethodPost {
-	// 		api.HandleLoginUser(w, r)
-	// 		return
-	// 	}
-	// })
-
-	// http.HandleFunc("/api/v1/getboards/", func(w http.ResponseWriter, r *http.Request) {
-	// 	w.Header().Set("Content-Type", "application/json")
-
-	// 	log.Println(r.URL.Path)
-
-	// 	if r.Method == http.MethodGet {
-	// 		api.HandleGetUserBoards(w, r)
-	// 		return
-	// 	}
-	// })
-
-	// http.HandleFunc("/api/v1/verifyauth/", func(w http.ResponseWriter, r *http.Request) {
-	// 	w.Header().Set("Content-Type", "application/json")
-
-	// 	log.Println(r.URL.Path)
-
-	// 	if r.Method == http.MethodGet {
-	// 		api.HandleVerifyAuth(w, r)
-	// 		return
-	// 	}
-	// })
-
-	// Вынести
+	// TODO Вынести в отдельный файл
 	userStorage := storage.NewLocalUserStorage()
 
 	authService := authservice.NewAuthJWTService()
@@ -67,8 +28,6 @@ func main() {
 	// userService := userservice.NewUserService(userStorage)
 	authHandler := handlers.NewAuthHandler(authService, userAuthService)
 
-	// Проверять метод внутри mux.HandleFunc()
-	// default: method not allowed (405)
 	mux.HandleFunc("/api/v1/login/", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 
@@ -82,21 +41,25 @@ func main() {
 		}
 	})
 
-	// Вместо проверки
-	// http.HandleFunc("/api/v1/signup/", func(w http.ResponseWriter, r *http.Request) {
-	// 	w.Header().Set("Content-Type", "application/json")
+	mux.HandleFunc("/api/v1/signup/", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
 
-	// 	log.Println(r.URL.Path)
+		log.Println(r.URL.Path)
 
-	// 	if r.Method == http.MethodPost {
-	// 		api.HandleSignupUser(w, r)
-	// 		return
-	// 	}
-	// })
+		switch r.Method {
+		case http.MethodPost:
+			authHandler.SignUp(w, r)
+		default:
+			http.Error(w, `Method not allowed`, http.StatusMethodNotAllowed)
+		}
+	})
+
+	// TODO getboards (/api/v1/getuserboards/, GET)
+	// TODO verifyauth (/api/v1/verifyauth/, POST)
 
 	http.ListenAndServe(":8080", mux)
 	if err != nil {
 		log.Fatal("Failed to start server")
 	}
-	// graceful shutdown
+	// TODO graceful shutdown
 }
