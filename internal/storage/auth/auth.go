@@ -4,20 +4,15 @@ import (
 	"server/internal/storage/in_memory"
 )
 
-type AuthStorage struct {
-	storage interface{}
+type IAuthStorage interface {
+	VerifyLogin() error
 }
 
-func NewLocalAuthStorage() *AuthStorage {
-	return &AuthStorage{
-		storage: in_memory.NewTestStorage(),
-	}
+func NewLocalAuthStorage() IAuthStorage {
+	storage := in_memory.NewLocalTestStorage()
+	return storage
 }
 
-func NewPostgresAuthStorage() *AuthStorage {
-	return &AuthStorage{}
-}
-
-func (a *AuthStorage) GetSession() error {
-	return nil
-}
+// func NewPostgresAuthStorage() *AuthStorage {
+// 	return &AuthStorage{}
+// }

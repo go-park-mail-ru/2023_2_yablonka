@@ -6,13 +6,13 @@ import (
 )
 
 type LocalAuthStorage struct {
-	AuthData map[string]datatypes.LoginInfo
-	Mu       *sync.Mutex
+	authData map[string]datatypes.LoginInfo
+	mu       *sync.Mutex
 }
 
-func NewTestStorage() *LocalAuthStorage {
+func NewLocalTestStorage() *LocalAuthStorage {
 	return &LocalAuthStorage{
-		AuthData: map[string]datatypes.LoginInfo{
+		authData: map[string]datatypes.LoginInfo{
 			"test@email.com": {
 				Email:        "test@email.com",
 				PasswordHash: "$2a$08$YkQXrizJ.TDF.dYo58hNFuHwATMIdZHbWwgfI.vuSQEEurB6zpgvy",
@@ -22,6 +22,10 @@ func NewTestStorage() *LocalAuthStorage {
 				PasswordHash: "$2a$08$5vGskE/R50Ju92.4AbbZyeQiBT26Hiiq.4RqoRf5yGOrExfKDCW52",
 			},
 		},
-		Mu: &sync.Mutex{},
+		mu: &sync.Mutex{},
 	}
+}
+
+func (a *LocalAuthStorage) VerifyLogin() error {
+	return nil
 }

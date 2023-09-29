@@ -6,11 +6,12 @@ import (
 	authstorage "server/internal/storage/auth"
 )
 
+// Remake as interface
 type AuthService struct {
-	storage *authstorage.AuthStorage
+	storage authstorage.IAuthStorage
 }
 
-func NewAuthService(storage *authstorage.AuthStorage) *AuthService {
+func NewAuthService(storage authstorage.IAuthStorage) *AuthService {
 	return &AuthService{
 		storage: storage,
 	}
@@ -22,6 +23,6 @@ func (a AuthService) SignUp(ctx context.Context, auth datatypes.LoginInfo) (*dat
 }
 
 func (a AuthService) LogIn(ctx context.Context, auth datatypes.LoginInfo) (*datatypes.User, error) {
-	// TODO implement
+	// TODO implementa
 	return nil, nil
 }
