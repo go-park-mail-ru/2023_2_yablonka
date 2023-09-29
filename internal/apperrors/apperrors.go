@@ -5,6 +5,7 @@ import (
 	"net/http"
 )
 
+// TODO User, Board related errors
 var (
 	ErrUserNotFound  = errors.New("no user that matches the provided credentials")
 	ErrWrongPassword = errors.New("wrong password")

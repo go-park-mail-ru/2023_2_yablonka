@@ -14,7 +14,12 @@ import (
 
 type IAuthHandler interface {
 	LogIn(w http.ResponseWriter, r *http.Request)
+	SignUp(w http.ResponseWriter, r *http.Request)
+	// TODO VerifyAuth
+	// TODO LogOut
 }
+
+// TODO IUserHandler
 
 type AuthHandler struct {
 	as authservice.IAuthService
