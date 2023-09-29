@@ -5,6 +5,11 @@ type SignupInfo struct {
 	PasswordHash string `json:"-" valid:"type(string)"`
 }
 
+type AuthInfo struct {
+	Email    string
+	Password string
+}
+
 type LoginInfo struct {
 	Email        string `json:"email" valid:"type(string),email"`
 	PasswordHash string `json:"-" valid:"type(string)"`

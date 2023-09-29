@@ -1,13 +1,17 @@
 package utils
 
 import (
-	"golang.org/x/crypto/bcrypt"
+	"fmt"
+	"server/internal/pkg/datatypes"
+
+	"crypto/sha256"
 )
 
-func HashPassword(email string, password string) (string, error) {
-	bhash, err := bcrypt.GenerateFromPassword([]byte(email+password), 8)
-	if err != nil {
-		return "", err
-	}
-	return string(bhash), nil
+func HashFromAuthInfo(info datatypes.AuthInfo) string {
+	hasher := sha256.New()
+	hasher.Write([]byte(info.Email + info.Password))
+	fmt.Println(hasher.Sum(nil))
+	fmt.Printf("Hash as %%x %x\n", hasher.Sum(nil))
+	fmt.Printf("Hash as %%s %s\n", string(hasher.Sum(nil)))
+	return string(hasher.Sum(nil))
 }

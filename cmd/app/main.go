@@ -5,8 +5,9 @@ import (
 	"net/http"
 
 	handlers "server/internal/app/handlers"
-	service "server/internal/service/auth"
-	storage "server/internal/storage/auth"
+	authservice "server/internal/service/auth"
+	userservice "server/internal/service/user"
+	storage "server/internal/storage"
 
 	"github.com/joho/godotenv"
 )
@@ -20,21 +21,21 @@ func main() {
 	mux := http.NewServeMux()
 
 	// TestApi в internal/storage/in_memory
-	api := handlers.TestApi()
+	// api := handlers.TestApi()
 
 	// Тесты в internal/app/
 
 	// Отдельный пакет в internal
-	http.HandleFunc("/api/v1/login/", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
+	// http.HandleFunc("/api/v1/login/", func(w http.ResponseWriter, r *http.Request) {
+	// 	w.Header().Set("Content-Type", "application/json")
 
-		log.Println(r.URL.Path)
+	// 	log.Println(r.URL.Path)
 
-		if r.Method == http.MethodPost {
-			api.HandleLoginUser(w, r)
-			return
-		}
-	})
+	// 	if r.Method == http.MethodPost {
+	// 		api.HandleLoginUser(w, r)
+	// 		return
+	// 	}
+	// })
 
 	// http.HandleFunc("/api/v1/getboards/", func(w http.ResponseWriter, r *http.Request) {
 	// 	w.Header().Set("Content-Type", "application/json")
@@ -59,9 +60,12 @@ func main() {
 	// })
 
 	// Вынести
-	authStorage := storage.NewLocalAuthStorage()
-	authService := service.NewAuthService(authStorage)
-	authHandler := handlers.NewAuthHandler(authService)
+	userStorage := storage.NewLocalUserStorage()
+
+	authService := authservice.NewAuthJWTService()
+	userAuthService := userservice.NewAuthUserService(userStorage)
+	// userService := userservice.NewUserService(userStorage)
+	authHandler := handlers.NewAuthHandler(authService, userAuthService)
 
 	// Проверять метод внутри mux.HandleFunc()
 	// default: method not allowed (405)
@@ -79,16 +83,16 @@ func main() {
 	})
 
 	// Вместо проверки
-	http.HandleFunc("/api/v1/signup/", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
+	// http.HandleFunc("/api/v1/signup/", func(w http.ResponseWriter, r *http.Request) {
+	// 	w.Header().Set("Content-Type", "application/json")
 
-		log.Println(r.URL.Path)
+	// 	log.Println(r.URL.Path)
 
-		if r.Method == http.MethodPost {
-			api.HandleSignupUser(w, r)
-			return
-		}
-	})
+	// 	if r.Method == http.MethodPost {
+	// 		api.HandleSignupUser(w, r)
+	// 		return
+	// 	}
+	// })
 
 	http.ListenAndServe(":8080", mux)
 	if err != nil {
