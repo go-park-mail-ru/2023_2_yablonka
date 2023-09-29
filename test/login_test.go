@@ -59,6 +59,7 @@ func Test_Login(t *testing.T) {
 
 			r := httptest.NewRequest("POST", "/api/v1/login/", body)
 			w := httptest.NewRecorder()
+			// w.Result().Cookies()
 
 			testApi.HandleLoginUser(w, r)
 

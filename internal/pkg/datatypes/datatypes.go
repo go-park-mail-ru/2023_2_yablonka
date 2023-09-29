@@ -1,13 +1,13 @@
 package datatypes
 
 type SignupInfo struct {
-	Email        string `json:"email"`
-	PasswordHash string `json:"password_hash"`
+	Email        string `json:"email" valid:"type(string),email"`
+	PasswordHash string `json:"-" valid:"type(string)"`
 }
 
 type LoginInfo struct {
-	Email        string `json:"email"`
-	PasswordHash string `json:"password_hash"`
+	Email        string `json:"email" valid:"type(string),email"`
+	PasswordHash string `json:"-" valid:"type(string)"`
 }
 
 type User struct {
