@@ -1,4 +1,4 @@
-package main
+package handlers
 
 import (
 	"bytes"
@@ -8,12 +8,11 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	handlers "server/internal/app/handlers"
 	"server/internal/app/utils"
 	datatypes "server/internal/pkg/datatypes"
 	authservice "server/internal/service/auth"
 	userservice "server/internal/service/user"
-	"server/internal/storage"
+	"server/internal/storage/in_memory"
 
 	"github.com/stretchr/testify/require"
 )
@@ -56,11 +55,11 @@ func Test_Login(t *testing.T) {
 		test := test
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
-			userStorage := storage.NewLocalUserStorage()
+			userStorage := in_memory.NewUserStorage()
 
 			authService := authservice.NewAuthJWTService()
 			userAuthService := userservice.NewAuthUserService(userStorage)
-			authHandler := handlers.NewAuthHandler(authService, userAuthService)
+			authHandler := NewAuthHandler(authService, userAuthService)
 
 			body := bytes.NewReader([]byte(
 				fmt.Sprintf(`{"email":"%s", "password":"%s"}`, test.email, test.password),
@@ -130,11 +129,11 @@ func Test_Signup(t *testing.T) {
 		test := test
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
-			userStorage := storage.NewLocalUserStorage()
+			userStorage := in_memory.NewUserStorage()
 
 			authService := authservice.NewAuthJWTService()
 			userAuthService := userservice.NewAuthUserService(userStorage)
-			authHandler := handlers.NewAuthHandler(authService, userAuthService)
+			authHandler := NewAuthHandler(authService, userAuthService)
 
 			body := bytes.NewReader([]byte(
 				fmt.Sprintf(`{"email":"%s", "password":"%s"}`, test.email, test.password),
