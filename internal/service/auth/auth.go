@@ -24,12 +24,6 @@ func generateJWT(user *datatypes.User, secret []byte) (string, error) {
 	return str, nil
 }
 
-// Интерфейс для аутентификации (создание и проверка токена)
-type IAuthService interface {
-	AuthUser(context.Context, *datatypes.User) (string, error)
-	VerifyAuth(context.Context, string) (string, error)
-}
-
 // TODO Разделить по имплементации
 // Структура сервиса аутентификации с помощью JWT
 type AuthJWTService struct {
