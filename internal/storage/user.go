@@ -9,6 +9,7 @@ import (
 type IUserStorage interface {
 	GetUser(login datatypes.LoginInfo) (*datatypes.User, error)
 	CreateUser(signup datatypes.SignupInfo) (*datatypes.User, error)
+	UpdateUser(updatedInfo datatypes.UpdatedUserInfo) (*datatypes.User, error)
 }
 
 type LocalUserStorage struct {
@@ -68,4 +69,28 @@ func (s *LocalUserStorage) CreateUser(signup datatypes.SignupInfo) (*datatypes.U
 	s.Storage.Mu.Unlock()
 
 	return &newUser, nil
+}
+
+func (s *LocalUserStorage) UpdateUser(updatedInfo datatypes.UpdatedUserInfo) (*datatypes.User, error) {
+	s.Storage.Mu.Lock()
+	oldUser, ok := s.Storage.UserData[updatedInfo.Email]
+	s.Storage.Mu.Unlock()
+
+	if ok {
+		return nil, apperrors.ErrUserExists
+	}
+
+	s.Storage.Mu.Lock()
+	updatedUser := datatypes.User{
+		ID:           oldUser.ID,
+		Email:        updatedInfo.Email,
+		PasswordHash: oldUser.PasswordHash,
+		Name:         updatedInfo.Name,
+		Surname:      updatedInfo.Surname,
+	}
+
+	s.Storage.UserData[updatedInfo.Email] = updatedUser
+	s.Storage.Mu.Unlock()
+
+	return &updatedUser, nil
 }

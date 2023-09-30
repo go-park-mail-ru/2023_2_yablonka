@@ -2,6 +2,7 @@ package storage
 
 import (
 	// apperrors "server/internal/apperrors"
+	apperrors "server/internal/apperrors"
 	"server/internal/pkg/datatypes"
 	"server/internal/storage/in_memory"
 )
@@ -9,6 +10,7 @@ import (
 type IBoardStorage interface {
 	GetBoard(login datatypes.LoginInfo) (*datatypes.Board, error)
 	CreateBoard(signup datatypes.SignupInfo) (*datatypes.Board, error)
+	GetUserBoards(user datatypes.LoginInfo) (*[]datatypes.Board, error)
 }
 
 type LocalBoardStorage struct {
@@ -23,16 +25,32 @@ func NewLocalBoardStorage() IBoardStorage {
 }
 
 func (s *LocalBoardStorage) GetHighestID() uint64 {
-	if len(s.Storage.BoardData) == 0 {
+	if len(s.Storage.BoardDataByUser) == 0 {
 		return 0
 	}
 	var highest uint64 = 0
-	for _, Board := range s.Storage.BoardData {
-		if Board.ID > highest {
-			highest = Board.ID
+	userEmails := make([]string, 0, len(s.Storage.BoardDataByUser))
+	for _, k := range userEmails {
+		for _, Board := range s.Storage.BoardDataByUser[k] {
+			if Board.ID > highest {
+				highest = Board.ID
+			}
 		}
 	}
+
 	return highest
+}
+
+func (s *LocalBoardStorage) GetUserBoards(user datatypes.LoginInfo) (*[]datatypes.Board, error) {
+	s.Storage.Mu.Lock()
+	boards, ok := s.Storage.BoardDataByUser[user.Email]
+	s.Storage.Mu.Unlock()
+
+	if !ok {
+		return nil, apperrors.ErrUserNotFound
+	}
+
+	return &boards, nil
 }
 
 func (s *LocalBoardStorage) GetBoard(login datatypes.LoginInfo) (*datatypes.Board, error) {

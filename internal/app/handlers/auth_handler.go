@@ -23,10 +23,10 @@ type IAuthHandler interface {
 
 type AuthHandler struct {
 	as authservice.IAuthService
-	us userservice.IAuthUserService
+	us userservice.IUserAuthService
 }
 
-func NewAuthHandler(as authservice.IAuthService, us userservice.IAuthUserService) AuthHandler {
+func NewAuthHandler(as authservice.IAuthService, us userservice.IUserAuthService) AuthHandler {
 	return AuthHandler{
 		as: as,
 		us: us,
