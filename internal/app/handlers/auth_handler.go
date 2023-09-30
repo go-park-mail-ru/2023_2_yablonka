@@ -8,8 +8,7 @@ import (
 	"server/internal/app/utils"
 	"server/internal/apperrors"
 	datatypes "server/internal/pkg/datatypes"
-	authservice "server/internal/service/auth"
-	userservice "server/internal/service/user"
+	"server/internal/service"
 )
 
 type IAuthHandler interface {
@@ -22,11 +21,11 @@ type IAuthHandler interface {
 // TODO IUserHandler
 
 type AuthHandler struct {
-	as authservice.IAuthService
-	us userservice.IUserAuthService
+	as service.IAuthService
+	us service.IUserAuthService
 }
 
-func NewAuthHandler(as authservice.IAuthService, us userservice.IUserAuthService) *AuthHandler {
+func NewAuthHandler(as service.IAuthService, us service.IUserAuthService) *AuthHandler {
 	return &AuthHandler{
 		as: as,
 		us: us,

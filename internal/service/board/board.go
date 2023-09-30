@@ -6,13 +6,6 @@ import (
 	"server/internal/storage"
 )
 
-type IBoardService interface {
-	GetBoard()
-	CreateBoard()
-	UpdateBoard()
-	GetBoardUsers()
-}
-
 type BoardService struct {
 	storage storage.IBoardStorage
 }

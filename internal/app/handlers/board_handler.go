@@ -3,7 +3,7 @@ package handlers
 import (
 	"net/http"
 
-	boardservice "server/internal/service/board"
+	"server/internal/service"
 )
 
 type IBoardHandler interface {
@@ -15,10 +15,10 @@ type IBoardHandler interface {
 // TODO IUserHandler
 
 type BoardHandler struct {
-	bs boardservice.IBoardService
+	bs service.IBoardService
 }
 
-func NewBoardHandler(bs boardservice.IBoardService) *BoardHandler {
+func NewBoardHandler(bs service.IBoardService) *BoardHandler {
 	return &BoardHandler{
 		bs: bs,
 	}
