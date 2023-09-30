@@ -17,8 +17,8 @@ type BoardService struct {
 	storage storage.IBoardStorage
 }
 
-func NewBoardService(storage storage.IBoardStorage) BoardService {
-	return BoardService{
+func NewBoardService(storage storage.IBoardStorage) *BoardService {
+	return &BoardService{
 		storage: storage,
 	}
 }

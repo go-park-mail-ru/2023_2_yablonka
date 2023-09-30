@@ -8,8 +8,9 @@ import (
 	"github.com/dgrijalva/jwt-go"
 )
 
-// Приватная функция: не нужна за пределами service/auth
-// Генерирует токен из datatypes.User с помощью секрета в []byte
+// generateJWT
+// генерирует токен из datatypes.User с помощью секрета в []byte
+// TODO стандартные поля
 func generateJWT(user *datatypes.User, secret []byte) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"email": user.Email,
@@ -29,6 +30,7 @@ type IAuthService interface {
 	VerifyAuth(context.Context, string) (string, error)
 }
 
+// TODO Разделить по имплементации
 // Структура сервиса аутентификации с помощью JWT
 type AuthJWTService struct {
 	jwtSecret []byte
@@ -53,5 +55,9 @@ func (a *AuthJWTService) AuthUser(ctx context.Context, user *datatypes.User) (st
 
 func (a *AuthJWTService) VerifyAuth(ctx context.Context, token string) (string, error) {
 	// TODO implement
+	// Выделить header
+	// Выделить payload
+	// Сгенерировать signature
+	// Сравнить с signature токена
 	return "", nil
 }

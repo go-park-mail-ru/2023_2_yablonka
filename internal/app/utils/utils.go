@@ -7,6 +7,7 @@ import (
 	"crypto/sha256"
 )
 
+// TODO salt
 func HashFromAuthInfo(info datatypes.AuthInfo) string {
 	hasher := sha256.New()
 	hasher.Write([]byte(info.Email + info.Password))

@@ -1,5 +1,7 @@
 package datatypes
 
+// TODO Split into DTO and Entity
+
 type SignupInfo struct {
 	Email        string `json:"email" valid:"type(string),email"`
 	PasswordHash string `json:"-" valid:"type(string)"`

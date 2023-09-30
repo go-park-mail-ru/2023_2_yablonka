@@ -7,7 +7,7 @@ import (
 	handlers "server/internal/app/handlers"
 	authservice "server/internal/service/auth"
 	userservice "server/internal/service/user"
-	storage "server/internal/storage"
+	"server/internal/storage/in_memory"
 
 	"github.com/joho/godotenv"
 )
@@ -21,7 +21,7 @@ func main() {
 	mux := http.NewServeMux()
 
 	// TODO Вынести в отдельный файл
-	userStorage := storage.NewLocalUserStorage()
+	userStorage := in_memory.NewUserStorage()
 
 	authService := authservice.NewAuthJWTService()
 	userAuthService := userservice.NewAuthUserService(userStorage)

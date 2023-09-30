@@ -26,8 +26,8 @@ type AuthHandler struct {
 	us userservice.IUserAuthService
 }
 
-func NewAuthHandler(as authservice.IAuthService, us userservice.IUserAuthService) AuthHandler {
-	return AuthHandler{
+func NewAuthHandler(as authservice.IAuthService, us userservice.IUserAuthService) *AuthHandler {
+	return &AuthHandler{
 		as: as,
 		us: us,
 	}

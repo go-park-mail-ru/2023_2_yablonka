@@ -25,14 +25,14 @@ type UserService struct {
 	storage storage.IUserStorage
 }
 
-func NewAuthUserService(storage storage.IUserStorage) AuthUserService {
-	return AuthUserService{
+func NewAuthUserService(storage storage.IUserStorage) *AuthUserService {
+	return &AuthUserService{
 		storage: storage,
 	}
 }
 
-func NewUserService(storage storage.IUserStorage) UserService {
-	return UserService{
+func NewUserService(storage storage.IUserStorage) *UserService {
+	return &UserService{
 		storage: storage,
 	}
 }
