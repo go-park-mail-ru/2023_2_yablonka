@@ -10,23 +10,6 @@ import (
 	"github.com/dgrijalva/jwt-go"
 )
 
-// generateJWT
-// генерирует токен из entities.User с помощью секрета в []byte, который будет действителен tokenLifetime
-func generateJWT(user *entities.User, secret []byte, tokenLifetime time.Duration) (string, time.Time, error) {
-	expiresAt := time.Now().Add(tokenLifetime)
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"userID": user.ID,
-		"iss":    "Tabula",
-		"exp":    expiresAt,
-	})
-
-	str, err := token.SignedString(secret)
-	if err != nil {
-		return "", time.Time{}, err
-	}
-	return str, expiresAt, nil
-}
-
 // AuthJWTService
 // структура сервиса аутентификации с помощью JWT
 // содержит секрет для подписи и время действия токена
@@ -36,13 +19,20 @@ type AuthJWTService struct {
 }
 
 // AuthUser
-// возвращает JWT и дату+время его истечения для полученного пользователя
+// возвращает токен JWT, сгенерированный с помощью секрета в []byte и дату+время его истечения для полученного пользователя
 func (a *AuthJWTService) AuthUser(ctx context.Context, user *entities.User) (string, time.Time, error) {
-	token, expiresAt, err := generateJWT(user, a.jwtSecret, a.tokenLifetime)
+	expiresAt := time.Now().Add(a.tokenLifetime)
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"userID": user.ID,
+		"iss":    "Tabula",
+		"exp":    expiresAt,
+	})
+
+	str, err := token.SignedString(a.jwtSecret)
 	if err != nil {
 		return "", time.Time{}, err
 	}
-	return token, expiresAt, nil
+	return str, expiresAt, nil
 }
 
 // VerifyAuth
@@ -61,11 +51,11 @@ func (a *AuthJWTService) VerifyAuth(ctx context.Context, incomingToken string) (
 	}
 
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-		uidFloat, ok := claims["userID"].(float64)
+		uIDFloat, ok := claims["userID"].(float64)
 		if !ok {
 			return nil, apperrors.ErrJWTMissingClaim
 		}
-		userID = uint64(uidFloat)
+		userID = uint64(uIDFloat)
 	} else {
 		return nil, apperrors.ErrJWTInvalidToken
 	}

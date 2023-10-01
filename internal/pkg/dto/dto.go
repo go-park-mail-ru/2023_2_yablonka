@@ -19,6 +19,17 @@ type LoginInfo struct {
 	PasswordHash string `json:"-" valid:"type(string)"`
 }
 
+type IndividualBoardInfo struct {
+	ID         uint64 `json:"board_id"`
+	OwnerEmail string `json:"owner_email"`
+}
+
+type NewBoardInfo struct {
+	Name       string `json:"name"`
+	OwnerID    uint64 `json:"owner_id"`
+	OwnerEmail string `json:"owner_email"`
+}
+
 type UserBoardInfo struct {
 	ID           uint64 `json:"board_id"`
 	BoardName    string `json:"board_name"`

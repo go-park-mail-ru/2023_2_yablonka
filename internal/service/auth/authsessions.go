@@ -8,6 +8,9 @@ import (
 	"time"
 )
 
+// AuthSessionService
+// структура сервиса аутентификации с помощью создания сессий
+// содержит интерфейс для работы с БД и длительность сессии
 type AuthSessionService struct {
 	sessionDuration time.Duration
 	storage         storage.IAuthStorage
@@ -25,15 +28,18 @@ func (a *AuthSessionService) GetSessionDuration() time.Duration {
 }
 
 // AuthUser
-// возвращает ID сессии и срок её годности для полученного пользователя
+// Возвращает ID сессии её длительность
 func (a *AuthSessionService) AuthUser(ctx context.Context, user *entities.User) (string, time.Time, error) {
-	session := generateSession(user, a.sessionDuration)
+	session := &entities.Session{
+		UserID:     user.ID,
+		ExpiryDate: time.Now().Add(a.sessionDuration),
+	}
 	expiresAt := session.ExpiryDate
-	sid, err := a.storage.CreateSession(session)
+	sessionId, err := a.storage.CreateSession(session)
 	if err != nil {
 		return "", time.Time{}, err
 	}
-	return sid, expiresAt, nil
+	return sessionId, expiresAt, nil
 }
 
 // VerifyAuth
@@ -46,4 +52,10 @@ func (a *AuthSessionService) VerifyAuth(ctx context.Context, sessionString strin
 	return &dto.VerifiedAuthInfo{
 		UserID: sessionObj.UserID,
 	}, nil
+}
+
+// GetLifetime
+// возвращает длительность сессии
+func (a *AuthSessionService) GetLifetime() time.Duration {
+	return a.sessionDuration
 }

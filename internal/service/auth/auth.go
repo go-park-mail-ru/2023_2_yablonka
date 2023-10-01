@@ -7,7 +7,8 @@ import (
 	"server/internal/storage"
 )
 
-// Возвращает AuthJWTService с рабочим JWT-секретом
+// NewAuthJWTService
+// возвращает AuthJWTService с инициализированным JWT-секретом и датой истечения рефреш-токенов
 func NewAuthJWTService() (*AuthJWTService, error) {
 	tokenLifetime, err := utils.BuildSessionDuration()
 	if err != nil {
@@ -23,7 +24,8 @@ func NewAuthJWTService() (*AuthJWTService, error) {
 	}, nil
 }
 
-// Возвращает AuthSessionService с инициализированным хранилищем и параметром продолжительности сессии
+// NewAuthSessionService
+// возвращает AuthSessionService с инициализированной датой истечения сессии и хранилищем сессий
 func NewAuthSessionService(storage storage.IAuthStorage) (*AuthSessionService, error) {
 	sessionDuration, err := utils.BuildSessionDuration()
 	if err != nil {

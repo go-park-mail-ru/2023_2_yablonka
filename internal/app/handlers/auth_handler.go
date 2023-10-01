@@ -16,6 +16,13 @@ type AuthHandler struct {
 	us service.IUserAuthService
 }
 
+func NewAuthHandler(as service.IAuthService, us service.IUserAuthService) *AuthHandler {
+	return &AuthHandler{
+		as: as,
+		us: us,
+	}
+}
+
 func (ah AuthHandler) LogIn(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 

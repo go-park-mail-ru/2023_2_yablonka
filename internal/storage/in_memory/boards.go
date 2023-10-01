@@ -4,7 +4,6 @@ import (
 	"server/internal/apperrors"
 	"server/internal/pkg/dto"
 	"server/internal/pkg/entities"
-	"server/internal/storage"
 	"sync"
 )
 
@@ -15,8 +14,6 @@ type LocalBoardStorage struct {
 	mu        *sync.RWMutex
 }
 
-// NewLocalBoardStorage
-// Возвращает локальное хранилище данных с тестовыми данными
 func NewBoardStorage() *LocalBoardStorage {
 	return &LocalBoardStorage{
 		boardData: map[uint64]entities.Board{
@@ -43,19 +40,14 @@ func NewBoardStorage() *LocalBoardStorage {
 	}
 }
 
-func NewLocalBoardStorage() storage.IBoardStorage {
-	storage := NewBoardStorage()
-	return storage
-}
-
 func (s *LocalBoardStorage) GetHighestID() uint64 {
-	if len(s.boardDataByUser) == 0 {
+	if len(s.boardData) == 0 {
 		return 0
 	}
 	var highest uint64 = 0
-	userEmails := make([]string, 0, len(s.boardDataByUser))
+	userEmails := make([]string, 0, len(s.boardData))
 	for _, k := range userEmails {
-		for _, Board := range s.boardDataByUser[k] {
+		for _, Board := range s.boardData[k] {
 			if Board.ID > highest {
 				highest = Board.ID
 			}
@@ -65,55 +57,74 @@ func (s *LocalBoardStorage) GetHighestID() uint64 {
 	return highest
 }
 
-func (s *LocalBoardStorage) GetUserBoards(user entities.User) (*[]entities.Board, error) {
+func (s *LocalBoardStorage) GetUserBoards(user entities.User) (*[]*entities.Board, error) {
 	s.mu.RLock()
-	boards, ok := s.boardDataByUser[user.Email]
+	boards, ok := s.boardData[user.Email]
 	s.mu.Unlock()
 
 	if !ok {
-		return nil, apperrors.ErrUserNotFound
+		return nil, apperrors.ErrBoardNotFound
 	}
 
 	return &boards, nil
 }
 
-func (s *LocalBoardStorage) GetBoard(login dto.LoginInfo) (*entities.Board, error) {
-	// TODO Получение борды
+func (s *LocalBoardStorage) GetBoard(board dto.IndividualBoardInfo) (*entities.Board, error) {
+	s.mu.RLock()
+	userBoards, ok := s.boardData[board.OwnerEmail]
+	s.mu.RUnlock()
 
-	// s.Storage.Mu.Lock()
-	// Board, ok := s.Storage.BoardData[login.Email]
-	// s.Storage.Mu.Unlock()
+	if !ok {
+		return nil, apperrors.ErrUserNotFound
+	}
 
-	// if !ok {
-	// 	return nil, apperrors.ErrBoardNotFound
-	// }
-
-	// return &Board, nilr
-	return nil, nil
+	for i, b := range userBoards {
+		if b.ID == board.ID {
+			return userBoards[i], nil
+		}
+	}
+	return nil, apperrors.ErrBoardNotFound
 }
 
-func (s *LocalBoardStorage) CreateBoard(signup dto.SignupInfo) (*entities.Board, error) {
-	// TODO Создание борды
+func (s *LocalBoardStorage) CreateBoard(board dto.NewBoardInfo) (*entities.Board, error) {
+	// TODO Нужна проверка по количеству доступных пользователю досок, это наверное поле в User
 
-	// s.Storage.Mu.Lock()
-	// _, ok := s.Storage.BoardData[signup.Email]
-	// s.Storage.Mu.Unlock()
+	s.mu.Lock()
+	newBoard := entities.Board{
+		ID:           s.GetHighestID() + 1,
+		Name:         board.Name,
+		OwnerID:      board.OwnerID,
+		ThumbnailURL: "",
+	}
 
-	// if ok {
-	// 	return nil, apperrors.ErrBoardExists
-	// }
+	s.boardData[board.OwnerEmail] = append(s.boardData[board.OwnerEmail], &newBoard)
+	s.mu.Unlock()
 
-	// s.Storage.Mu.Lock()
-	// newID := s.GetHighestID() + 1
-	// newBoard := entities.Board{
-	// 	ID:           newID,
-	// 	Email:        signup.Email,
-	// 	PasswordHash: signup.PasswordHash,
-	// }
+	return &newBoard, nil
+}
 
-	// s.Storage.BoardData[signup.Email] = newBoard
-	// s.Storage.Mu.Unlock()
+func (s *LocalBoardStorage) DeleteBoard(board dto.IndividualBoardInfo) error {
+	s.mu.RLock()
+	userBoards, ok := s.boardData[board.OwnerEmail]
+	if !ok {
+		return apperrors.ErrUserNotFound
+	}
+	s.mu.RUnlock()
 
-	// return &newBoard, nil
-	return nil, nil
+	boardIndex := -1
+	for i, b := range userBoards {
+		if b.ID == board.ID {
+			boardIndex = i
+			break
+		}
+	}
+	if boardIndex == -1 {
+		return apperrors.ErrBoardNotFound
+	}
+	userBoards[boardIndex] = nil
+
+	s.mu.Lock()
+	s.boardData[board.OwnerEmail] = userBoards
+	s.mu.Unlock()
+	return nil
 }

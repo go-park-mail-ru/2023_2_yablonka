@@ -61,6 +61,6 @@ func (as LocalAuthStorage) GetSession(sid string) (*entities.Session, error) {
 }
 
 func (as LocalAuthStorage) DeleteSession(user *entities.User) error {
-
+	as.authData[user.Email] = nil
 	return nil
 }
