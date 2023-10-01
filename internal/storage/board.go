@@ -3,11 +3,12 @@ package storage
 import (
 	// apperrors "server/internal/apperrors"
 
-	"server/internal/pkg/datatypes"
+	"server/internal/pkg/dto"
+	"server/internal/pkg/entities"
 )
 
 type IBoardStorage interface {
-	GetBoard(login datatypes.LoginInfo) (*datatypes.Board, error)
-	CreateBoard(signup datatypes.SignupInfo) (*datatypes.Board, error)
-	GetUserBoards(user datatypes.User) (*[]datatypes.Board, error)
+	GetBoard(login dto.LoginInfo) (*entities.Board, error)
+	CreateBoard(signup dto.SignupInfo) (*entities.Board, error)
+	GetUserBoards(user entities.User) (*[]entities.Board, error)
 }

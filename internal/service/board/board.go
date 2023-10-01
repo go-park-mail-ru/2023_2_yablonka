@@ -2,7 +2,7 @@ package service
 
 import (
 	"context"
-	"server/internal/pkg/datatypes"
+	"server/internal/pkg/entities"
 	"server/internal/storage"
 )
 
@@ -27,7 +27,7 @@ func (us BoardService) CreateBoard() {
 }
 
 // TODO
-func (us BoardService) UpdateBoard(ctx context.Context, Board *datatypes.Board) {
+func (us BoardService) UpdateBoard(ctx context.Context, Board *entities.Board) {
 
 }
 

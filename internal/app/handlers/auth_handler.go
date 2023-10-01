@@ -7,35 +7,19 @@ import (
 
 	"server/internal/app/utils"
 	"server/internal/apperrors"
-	datatypes "server/internal/pkg/datatypes"
+	"server/internal/pkg/dto"
 	"server/internal/service"
 )
-
-type IAuthHandler interface {
-	LogIn(w http.ResponseWriter, r *http.Request)
-	SignUp(w http.ResponseWriter, r *http.Request)
-	// TODO VerifyAuth
-	// TODO LogOut
-}
-
-// TODO IUserHandler
 
 type AuthHandler struct {
 	as service.IAuthService
 	us service.IUserAuthService
 }
 
-func NewAuthHandler(as service.IAuthService, us service.IUserAuthService) *AuthHandler {
-	return &AuthHandler{
-		as: as,
-		us: us,
-	}
-}
-
 func (ah AuthHandler) LogIn(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
-	var login datatypes.AuthInfo
+	var login dto.AuthInfo
 	err := json.NewDecoder(r.Body).Decode(&login)
 	if err != nil {
 		http.Error(w, `Login error`, http.StatusBadRequest)
@@ -43,7 +27,7 @@ func (ah AuthHandler) LogIn(w http.ResponseWriter, r *http.Request) {
 	}
 
 	passwordHash := utils.HashFromAuthInfo(login)
-	incomingAuth := datatypes.LoginInfo{
+	incomingAuth := dto.LoginInfo{
 		Email:        login.Email,
 		PasswordHash: passwordHash,
 	}
@@ -56,7 +40,7 @@ func (ah AuthHandler) LogIn(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	token, err := ah.as.AuthUser(ctx, user)
+	token, expiresAt, err := ah.as.AuthUser(ctx, user)
 	if err != nil {
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
@@ -67,6 +51,7 @@ func (ah AuthHandler) LogIn(w http.ResponseWriter, r *http.Request) {
 		Value:    token,
 		HttpOnly: true,
 		SameSite: http.SameSiteDefaultMode,
+		Expires:  expiresAt,
 	}
 
 	http.SetCookie(w, cookie)
@@ -77,7 +62,7 @@ func (ah AuthHandler) LogIn(w http.ResponseWriter, r *http.Request) {
 func (ah AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
-	var signup datatypes.AuthInfo
+	var signup dto.AuthInfo
 	err := json.NewDecoder(r.Body).Decode(&signup)
 	if err != nil {
 		http.Error(w, `Signup error`, http.StatusBadRequest)
@@ -85,7 +70,7 @@ func (ah AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 	}
 
 	passwordHash := utils.HashFromAuthInfo(signup)
-	incomingAuth := datatypes.SignupInfo{
+	incomingAuth := dto.SignupInfo{
 		Email:        signup.Email,
 		PasswordHash: passwordHash,
 	}
@@ -98,17 +83,18 @@ func (ah AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	token, err := ah.as.AuthUser(ctx, user)
+	token, expiresAt, err := ah.as.AuthUser(ctx, user)
 	if err != nil {
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
 
 	cookie := &http.Cookie{
-		Name:     "user_jwt",
+		Name:     "tabula_user",
 		Value:    token,
 		HttpOnly: true,
 		SameSite: http.SameSiteDefaultMode,
+		Expires:  expiresAt,
 	}
 
 	http.SetCookie(w, cookie)

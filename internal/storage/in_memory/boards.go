@@ -2,7 +2,8 @@ package in_memory
 
 import (
 	"server/internal/apperrors"
-	"server/internal/pkg/datatypes"
+	"server/internal/pkg/dto"
+	"server/internal/pkg/entities"
 	"server/internal/storage"
 	"sync"
 )
@@ -10,7 +11,7 @@ import (
 // LocalUserStorage
 // Локальное хранение данных
 type LocalBoardStorage struct {
-	boardDataByUser map[string][]datatypes.Board
+	boardDataByUser map[string][]entities.Board
 	mu              *sync.RWMutex
 }
 
@@ -18,21 +19,21 @@ type LocalBoardStorage struct {
 // Возвращает локальное хранилище данных с тестовыми данными
 func NewBoardStorage() *LocalBoardStorage {
 	return &LocalBoardStorage{
-		boardDataByUser: map[string][]datatypes.Board{
+		boardDataByUser: map[string][]entities.Board{
 			"test@email.com": {
-				datatypes.Board{
+				entities.Board{
 					ID:           1,
 					Name:         "Проект 1",
 					OwnerID:      1,
 					ThumbnailURL: "https://media.moddb.com/images/downloads/1/203/202069/missing_textures.png",
 				},
-				datatypes.Board{
+				entities.Board{
 					ID:           2,
 					Name:         "Разработка Ведра 2",
 					OwnerID:      1,
 					ThumbnailURL: "https://nicollelamerichs.files.wordpress.com/2022/05/2022043021483800-9e19570e6059798a45aec175873b4ac1.jpg?w=640",
 				},
-				datatypes.Board{
+				entities.Board{
 					ID:           3,
 					Name:         "лучшая вещь",
 					OwnerID:      1,
@@ -67,7 +68,7 @@ func (s *LocalBoardStorage) GetHighestID() uint64 {
 	return highest
 }
 
-func (s *LocalBoardStorage) GetUserBoards(user datatypes.User) (*[]datatypes.Board, error) {
+func (s *LocalBoardStorage) GetUserBoards(user entities.User) (*[]entities.Board, error) {
 	s.mu.RLock()
 	boards, ok := s.boardDataByUser[user.Email]
 	s.mu.Unlock()
@@ -79,7 +80,7 @@ func (s *LocalBoardStorage) GetUserBoards(user datatypes.User) (*[]datatypes.Boa
 	return &boards, nil
 }
 
-func (s *LocalBoardStorage) GetBoard(login datatypes.LoginInfo) (*datatypes.Board, error) {
+func (s *LocalBoardStorage) GetBoard(login dto.LoginInfo) (*entities.Board, error) {
 	// TODO Получение борды
 
 	// s.Storage.Mu.Lock()
@@ -94,7 +95,7 @@ func (s *LocalBoardStorage) GetBoard(login datatypes.LoginInfo) (*datatypes.Boar
 	return nil, nil
 }
 
-func (s *LocalBoardStorage) CreateBoard(signup datatypes.SignupInfo) (*datatypes.Board, error) {
+func (s *LocalBoardStorage) CreateBoard(signup dto.SignupInfo) (*entities.Board, error) {
 	// TODO Создание борды
 
 	// s.Storage.Mu.Lock()
@@ -107,7 +108,7 @@ func (s *LocalBoardStorage) CreateBoard(signup datatypes.SignupInfo) (*datatypes
 
 	// s.Storage.Mu.Lock()
 	// newID := s.GetHighestID() + 1
-	// newBoard := datatypes.Board{
+	// newBoard := entities.Board{
 	// 	ID:           newID,
 	// 	Email:        signup.Email,
 	// 	PasswordHash: signup.PasswordHash,

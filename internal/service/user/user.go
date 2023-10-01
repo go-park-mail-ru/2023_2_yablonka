@@ -3,7 +3,8 @@ package service
 import (
 	"context"
 	"server/internal/apperrors"
-	"server/internal/pkg/datatypes"
+	"server/internal/pkg/dto"
+	"server/internal/pkg/entities"
 	"server/internal/storage"
 )
 
@@ -27,7 +28,7 @@ func NewUserService(storage storage.IUserStorage) *UserService {
 	}
 }
 
-func (us AuthUserService) GetUser(ctx context.Context, info datatypes.LoginInfo) (*datatypes.User, error) {
+func (us AuthUserService) GetUser(ctx context.Context, info dto.LoginInfo) (*entities.User, error) {
 	user, err := us.storage.GetUser(info)
 	if err != nil {
 		return nil, err
@@ -40,7 +41,7 @@ func (us AuthUserService) GetUser(ctx context.Context, info datatypes.LoginInfo)
 	return user, nil
 }
 
-func (us AuthUserService) CreateUser(ctx context.Context, info datatypes.SignupInfo) (*datatypes.User, error) {
+func (us AuthUserService) CreateUser(ctx context.Context, info dto.SignupInfo) (*entities.User, error) {
 	user, err := us.storage.CreateUser(info)
 	if err != nil {
 		return nil, err
@@ -48,7 +49,7 @@ func (us AuthUserService) CreateUser(ctx context.Context, info datatypes.SignupI
 	return user, nil
 }
 
-func (us UserService) UpdateUser(ctx context.Context, info datatypes.UpdatedUserInfo) (*datatypes.User, error) {
+func (us UserService) UpdateUser(ctx context.Context, info dto.UpdatedUserInfo) (*entities.User, error) {
 	// TODO Временно можно обновлять и мэйл, надо сделать какую-то проверку для этого
 	user, err := us.storage.UpdateUser(info)
 	if err != nil {

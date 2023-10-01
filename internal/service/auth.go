@@ -2,11 +2,12 @@ package service
 
 import (
 	"context"
-	"server/internal/pkg/datatypes"
+	"server/internal/pkg/entities"
+	"time"
 )
 
-// Интерфейс для аутентификации (создание и проверка токена)
+// Интерфейс для аутентификации
 type IAuthService interface {
-	AuthUser(context.Context, *datatypes.User) (string, error)
-	VerifyAuth(context.Context, string) (string, error)
+	AuthUser(context.Context, *entities.User) (string, time.Time, error)
+	VerifyAuth(context.Context, string) (uint64, error)
 }

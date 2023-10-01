@@ -2,16 +2,16 @@ package in_memory
 
 import (
 	"server/internal/apperrors"
-	"server/internal/pkg/datatypes"
+	"server/internal/pkg/dto"
+	"server/internal/pkg/entities"
 	"server/internal/storage"
 	"sync"
 )
 
-// UserStore
+// LocalUserStorage
 // Локальное хранилище данных
-
 type LocalUserStorage struct {
-	userData map[string]datatypes.User
+	userData map[string]entities.User
 	mu       *sync.RWMutex
 }
 
@@ -19,7 +19,7 @@ type LocalUserStorage struct {
 // Возвращает локальное хранилище данных с тестовыми данными
 func NewUserStorage() *LocalUserStorage {
 	return &LocalUserStorage{
-		userData: map[string]datatypes.User{
+		userData: map[string]entities.User{
 			"test@email.com": {
 				ID:           1,
 				Email:        "test@email.com",
@@ -39,9 +39,6 @@ func NewUserStorage() *LocalUserStorage {
 	}
 }
 
-// Убрать в in_memory vvvv
-// Заприватить
-
 func NewLocalUserStorage() storage.IUserStorage {
 	storage := NewUserStorage()
 	return storage
@@ -60,7 +57,7 @@ func (s *LocalUserStorage) GetHighestID() uint64 {
 	return highest
 }
 
-func (s *LocalUserStorage) GetUser(login datatypes.LoginInfo) (*datatypes.User, error) {
+func (s *LocalUserStorage) GetUser(login dto.LoginInfo) (*entities.User, error) {
 	s.mu.RLock()
 	user, ok := s.userData[login.Email]
 	s.mu.RUnlock()
@@ -72,7 +69,7 @@ func (s *LocalUserStorage) GetUser(login datatypes.LoginInfo) (*datatypes.User, 
 	return &user, nil
 }
 
-func (s *LocalUserStorage) CreateUser(signup datatypes.SignupInfo) (*datatypes.User, error) {
+func (s *LocalUserStorage) CreateUser(signup dto.SignupInfo) (*entities.User, error) {
 	s.mu.Lock()
 	_, ok := s.userData[signup.Email]
 	s.mu.Unlock()
@@ -83,7 +80,7 @@ func (s *LocalUserStorage) CreateUser(signup datatypes.SignupInfo) (*datatypes.U
 
 	s.mu.Lock()
 	newID := s.GetHighestID() + 1
-	newUser := datatypes.User{
+	newUser := entities.User{
 		ID:           newID,
 		Email:        signup.Email,
 		PasswordHash: signup.PasswordHash,
@@ -95,7 +92,7 @@ func (s *LocalUserStorage) CreateUser(signup datatypes.SignupInfo) (*datatypes.U
 	return &newUser, nil
 }
 
-func (s *LocalUserStorage) UpdateUser(updatedInfo datatypes.UpdatedUserInfo) (*datatypes.User, error) {
+func (s *LocalUserStorage) UpdateUser(updatedInfo dto.UpdatedUserInfo) (*entities.User, error) {
 	s.mu.Lock()
 	oldUser, ok := s.userData[updatedInfo.Email]
 	s.mu.Unlock()
@@ -105,7 +102,7 @@ func (s *LocalUserStorage) UpdateUser(updatedInfo datatypes.UpdatedUserInfo) (*d
 	}
 
 	s.mu.Lock()
-	updatedUser := datatypes.User{
+	updatedUser := entities.User{
 		ID:           oldUser.ID,
 		Email:        updatedInfo.Email,
 		PasswordHash: oldUser.PasswordHash,

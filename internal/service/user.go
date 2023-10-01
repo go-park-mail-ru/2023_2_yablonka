@@ -2,12 +2,13 @@ package service
 
 import (
 	"context"
-	"server/internal/pkg/datatypes"
+	"server/internal/pkg/dto"
+	"server/internal/pkg/entities"
 )
 
 type IUserAuthService interface {
-	GetUser(ctx context.Context, info datatypes.LoginInfo) (*datatypes.User, error)
-	CreateUser(ctx context.Context, info datatypes.SignupInfo) (*datatypes.User, error)
+	GetUser(context.Context, dto.LoginInfo) (*entities.User, error)
+	CreateUser(context.Context, dto.SignupInfo) (*entities.User, error)
 }
 
 type IUserService interface {

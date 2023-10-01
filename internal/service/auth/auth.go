@@ -1,57 +1,36 @@
 package service
 
 import (
-	"context"
 	"os"
-	"server/internal/pkg/datatypes"
-
-	"github.com/dgrijalva/jwt-go"
+	"server/internal/app/utils"
+	"server/internal/apperrors"
+	"server/internal/storage"
 )
 
-// generateJWT
-// генерирует токен из datatypes.User с помощью секрета в []byte
-// TODO стандартные поля
-func generateJWT(user *datatypes.User, secret []byte) (string, error) {
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"email": user.Email,
-		"ID":    user.ID,
-	})
-
-	str, err := token.SignedString(secret)
-	if err != nil {
-		return "", err
-	}
-	return str, nil
-}
-
-// TODO Разделить по имплементации
-// Структура сервиса аутентификации с помощью JWT
-type AuthJWTService struct {
-	jwtSecret []byte
-}
-
 // Возвращает AuthJWTService с рабочим JWT-секретом
-func NewAuthJWTService() *AuthJWTService {
-	secret := os.Getenv("JWT_SECRET")
-	return &AuthJWTService{
-		jwtSecret: []byte(secret),
-	}
-}
-
-// Возвращает JWT для полученного пользователя
-func (a *AuthJWTService) AuthUser(ctx context.Context, user *datatypes.User) (string, error) {
-	token, err := generateJWT(user, a.jwtSecret)
+func NewAuthJWTService() (*AuthJWTService, error) {
+	tokenLifetime, err := utils.BuildSessionDuration()
 	if err != nil {
-		return "", err
+		return nil, err
 	}
-	return token, nil
+	secret, ok := os.LookupEnv("JWT_SECRET")
+	if !ok {
+		return nil, apperrors.ErrJWTSecretMissing
+	}
+	return &AuthJWTService{
+		jwtSecret:     []byte(secret),
+		tokenLifetime: tokenLifetime,
+	}, nil
 }
 
-func (a *AuthJWTService) VerifyAuth(ctx context.Context, token string) (string, error) {
-	// TODO implement
-	// Выделить header
-	// Выделить payload
-	// Сгенерировать signature
-	// Сравнить с signature токена
-	return "", nil
+// Возвращает AuthSessionService с инициализированным хранилищем и параметром продолжительности сессии
+func NewAuthSessionService(storage storage.IAuthStorage) (*AuthSessionService, error) {
+	sessionDuration, err := utils.BuildSessionDuration()
+	if err != nil {
+		return nil, err
+	}
+	return &AuthSessionService{
+		sessionDuration: sessionDuration,
+		storage:         storage,
+	}, nil
 }
