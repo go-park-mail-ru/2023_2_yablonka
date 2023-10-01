@@ -29,11 +29,39 @@ func NewBoardService(storage storage.IBoardStorage) *BoardService {
 // }
 
 func (us BoardService) GetUserOwnedBoards(ctx context.Context, userInfo dto.VerifiedAuthInfo) ([]dto.UserOwnedBoardInfo, error) {
-	// boards, err := us.storage.GetUserOwnedBoards(userInfo)
-	return nil, nil
+	boards, err := us.storage.GetUserOwnedBoards(userInfo)
+	if err != nil {
+		return nil, err
+	}
+
+	var boardInfo []dto.UserOwnedBoardInfo
+	for _, board := range *boards {
+		boardInfo = append(boardInfo, dto.UserOwnedBoardInfo{
+			ID:           board.ID,
+			BoardName:    board.Name,
+			ThumbnailURL: board.ThumbnailURL,
+		})
+	}
+	return boardInfo, nil
 }
 
 func (us BoardService) GetUserGuestBoards(ctx context.Context, userInfo dto.VerifiedAuthInfo) ([]dto.UserGuestBoardInfo, error) {
-	// boards, err := us.storage.GetUserGuestBoards(userInfo)
-	return nil, nil
+	boards, err := us.storage.GetUserGuestBoards(userInfo)
+	if err != nil {
+		return nil, err
+	}
+
+	var boardInfo []dto.UserGuestBoardInfo
+	for _, board := range *boards {
+		boardInfo = append(boardInfo, dto.UserGuestBoardInfo{
+			UserOwnedBoardInfo: dto.UserOwnedBoardInfo{
+				ID:           board.ID,
+				BoardName:    board.Name,
+				ThumbnailURL: board.ThumbnailURL,
+			},
+			OwnerID:    board.Owner.ID,
+			OwnerEmail: board.Owner.Email,
+		})
+	}
+	return boardInfo, nil
 }

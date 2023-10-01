@@ -9,14 +9,14 @@ import (
 // LocalUserStorage
 // Локальное хранение данных
 type LocalBoardStorage struct {
-	boardData map[uint64]entities.Board
+	boardData []entities.Board
 	mu        *sync.RWMutex
 }
 
 func NewBoardStorage() *LocalBoardStorage {
 	return &LocalBoardStorage{
-		boardData: map[uint64]entities.Board{
-			1: {
+		boardData: []entities.Board{
+			{
 				ID:   1,
 				Name: "Проект 1",
 				Owner: dto.UserInfo{
@@ -31,7 +31,7 @@ func NewBoardStorage() *LocalBoardStorage {
 					},
 				},
 			},
-			2: {
+			{
 				ID:   2,
 				Name: "Разработка Ведра 2",
 				Owner: dto.UserInfo{
@@ -40,7 +40,7 @@ func NewBoardStorage() *LocalBoardStorage {
 				},
 				ThumbnailURL: "https://nicollelamerichs.files.wordpress.com/2022/05/2022043021483800-9e19570e6059798a45aec175873b4ac1.jpg?w=640",
 			},
-			3: {
+			{
 				ID:   3,
 				Name: "лучшая вещь",
 				Owner: dto.UserInfo{
@@ -76,13 +76,28 @@ func (s *LocalBoardStorage) GetHighestID() uint64 {
 
 func (s *LocalBoardStorage) GetUserOwnedBoards(userInfo dto.VerifiedAuthInfo) (*[]*entities.Board, error) {
 	var boards []*entities.Board
-	// s.mu.RLock()
-	// boards, ok := s.boardData[user.Email]
-	// s.mu.Unlock()
+	s.mu.RLock()
+	for _, board := range s.boardData {
+		if board.Owner.ID == userInfo.UserID {
+			boards = append(boards, &board)
+		}
+	}
+	s.mu.RUnlock()
 
-	// if !ok {
-	// 	return nil, apperrors.ErrBoardNotFound
-	// }
+	return &boards, nil
+}
+
+func (s *LocalBoardStorage) GetUserGuestBoards(userInfo dto.VerifiedAuthInfo) (*[]*entities.Board, error) {
+	var boards []*entities.Board
+	s.mu.RLock()
+	for _, board := range s.boardData {
+		for _, guest := range board.Guests {
+			if guest.ID == userInfo.UserID {
+				boards = append(boards, &board)
+			}
+		}
+	}
+	s.mu.RUnlock()
 
 	return &boards, nil
 }
