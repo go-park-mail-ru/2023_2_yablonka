@@ -30,10 +30,16 @@ type NewBoardInfo struct {
 	OwnerEmail string `json:"owner_email"`
 }
 
-type UserBoardInfo struct {
+type UserOwnedBoardInfo struct {
 	ID           uint64 `json:"board_id"`
 	BoardName    string `json:"board_name"`
 	ThumbnailURL string `json:"thumbnail_url"`
+}
+
+type UserGuestBoardInfo struct {
+	OwnerID    uint64 `json:"owner_id"`
+	OwnerEmail string `json:"owner_email"`
+	UserOwnedBoardInfo
 }
 
 type UserInfo struct {
