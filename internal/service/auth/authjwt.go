@@ -37,7 +37,7 @@ func (a *AuthJWTService) AuthUser(ctx context.Context, user *entities.User) (str
 
 // VerifyAuth
 // валидирует токен, возвращает ID пользователя, которому принадлежит токен
-func (a *AuthJWTService) VerifyAuth(ctx context.Context, incomingToken string) (*dto.UserInfo, error) {
+func (a *AuthJWTService) VerifyAuth(ctx context.Context, incomingToken string) (*dto.VerifiedAuthInfo, error) {
 	token, err := jwt.Parse(incomingToken, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, apperrors.ErrJWTWrongMethod
@@ -54,8 +54,8 @@ func (a *AuthJWTService) VerifyAuth(ctx context.Context, incomingToken string) (
 		if !ok {
 			return nil, apperrors.ErrJWTMissingClaim
 		}
-		return &dto.UserInfo{
-			ID: uint64(userIDFloat),
+		return &dto.VerifiedAuthInfo{
+			UserID: uint64(userIDFloat),
 		}, nil
 	}
 	return nil, apperrors.ErrJWTInvalidToken

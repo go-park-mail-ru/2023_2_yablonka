@@ -28,12 +28,12 @@ func NewBoardService(storage storage.IBoardStorage) *BoardService {
 // 	return us.storage.UpdateBoard(board)
 // }
 
-func (us BoardService) GetUserOwnedBoards(ctx context.Context, userInfo dto.VerifiedAuthInfo) (*[]dto.UserOwnedBoardInfo, error) {
+func (us BoardService) GetUserOwnedBoards(ctx context.Context, userInfo dto.VerifiedAuthInfo) ([]dto.UserOwnedBoardInfo, error) {
 	// boards, err := us.storage.GetUserOwnedBoards(userInfo)
 	return nil, nil
 }
 
-func (us BoardService) GetUserGuestBoards(ctx context.Context, userInfo dto.VerifiedAuthInfo) (*[]dto.UserGuestBoardInfo, error) {
+func (us BoardService) GetUserGuestBoards(ctx context.Context, userInfo dto.VerifiedAuthInfo) ([]dto.UserGuestBoardInfo, error) {
 	// boards, err := us.storage.GetUserGuestBoards(userInfo)
 	return nil, nil
 }

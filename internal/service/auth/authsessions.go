@@ -33,13 +33,13 @@ func (a *AuthSessionService) AuthUser(ctx context.Context, user *entities.User) 
 
 // VerifyAuth
 // возвращает ID пользователя, которому принадлежит сессия
-func (a *AuthSessionService) VerifyAuth(ctx context.Context, sessionString string) (*dto.UserInfo, error) {
+func (a *AuthSessionService) VerifyAuth(ctx context.Context, sessionString string) (*dto.VerifiedAuthInfo, error) {
 	sessionObj, err := a.storage.GetSession(sessionString)
 	if err != nil {
 		return nil, err
 	}
-	return &dto.UserInfo{
-		ID: sessionObj.UserID,
+	return &dto.VerifiedAuthInfo{
+		UserID: sessionObj.UserID,
 	}, nil
 }
 
