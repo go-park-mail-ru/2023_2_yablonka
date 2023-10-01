@@ -10,5 +10,5 @@ type IBoardService interface {
 	GetBoard(context.Context, dto.IndividualBoardInfo) (*entities.Board, error)
 	CreateBoard(context.Context, dto.NewBoardInfo) (*entities.Board, error)
 	UpdateBoard(context.Context, dto.IndividualBoardInfo) (*entities.Board, error)
-	GetUserBoards(context.Context, entities.User) (*[]entities.Board, error)
+	GetUserBoards(context.Context, dto.UserInfo) (*[]entities.Board, error)
 }
