@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"server/internal/apperrors"
+	"server/internal/pkg/dto"
 	"server/internal/pkg/entities"
 	"time"
 
@@ -36,7 +37,7 @@ func (a *AuthJWTService) AuthUser(ctx context.Context, user *entities.User) (str
 
 // VerifyAuth
 // валидирует токен, возвращает ID пользователя, которому принадлежит токен
-func (a *AuthJWTService) VerifyAuth(ctx context.Context, incomingToken string) (uint64, error) {
+func (a *AuthJWTService) VerifyAuth(ctx context.Context, incomingToken string) (*dto.UserInfo, error) {
 	token, err := jwt.Parse(incomingToken, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, apperrors.ErrJWTWrongMethod
@@ -45,17 +46,19 @@ func (a *AuthJWTService) VerifyAuth(ctx context.Context, incomingToken string) (
 	})
 
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
 
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-		userId, ok := claims["userID"].(float64)
+		userIDFloat, ok := claims["userID"].(float64)
 		if !ok {
-			return 0, apperrors.ErrJWTMissingClaim
+			return nil, apperrors.ErrJWTMissingClaim
 		}
-		return uint64(userId), nil
+		return &dto.UserInfo{
+			ID: uint64(userIDFloat),
+		}, nil
 	}
-	return 0, apperrors.ErrJWTInvalidToken
+	return nil, apperrors.ErrJWTInvalidToken
 }
 
 // GetLifetime
