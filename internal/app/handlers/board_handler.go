@@ -5,10 +5,11 @@ import (
 )
 
 type BoardHandler struct {
+	as service.IAuthService
 	bs service.IBoardService
 }
 
-func NewBoardHandler(bs service.IBoardService) *BoardHandler {
+func NewBoardHandler(as service.IAuthService, bs service.IBoardService) *BoardHandler {
 	return &BoardHandler{
 		bs: bs,
 	}
