@@ -1,9 +1,12 @@
 package storage
 
-import "server/internal/pkg/entities"
+import (
+	"context"
+	"server/internal/pkg/entities"
+)
 
 type IAuthStorage interface {
-	CreateSession(*entities.Session) (string, error)
-	GetSession(string) (*entities.Session, error)
-	DeleteSession(*entities.User) error
+	CreateSession(context.Context, *entities.Session) (string, error)
+	GetSession(context.Context, string) (*entities.Session, error)
+	DeleteSession(context.Context, *entities.User) error
 }

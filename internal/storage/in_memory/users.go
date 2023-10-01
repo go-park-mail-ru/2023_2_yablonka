@@ -1,6 +1,7 @@
 package in_memory
 
 import (
+	"context"
 	"server/internal/apperrors"
 	"server/internal/pkg/dto"
 	"server/internal/pkg/entities"
@@ -49,7 +50,7 @@ func (s *LocalUserStorage) GetHighestID() uint64 {
 	return highest
 }
 
-func (s *LocalUserStorage) GetUser(login dto.LoginInfo) (*entities.User, error) {
+func (s *LocalUserStorage) GetUser(ctx context.Context, login dto.LoginInfo) (*entities.User, error) {
 	s.mu.RLock()
 	user, ok := s.userData[login.Email]
 	s.mu.RUnlock()
@@ -61,7 +62,7 @@ func (s *LocalUserStorage) GetUser(login dto.LoginInfo) (*entities.User, error) 
 	return &user, nil
 }
 
-func (s *LocalUserStorage) CreateUser(signup dto.SignupInfo) (*entities.User, error) {
+func (s *LocalUserStorage) CreateUser(ctx context.Context, signup dto.SignupInfo) (*entities.User, error) {
 	s.mu.RLock()
 	_, ok := s.userData[signup.Email]
 	s.mu.RUnlock()
@@ -84,7 +85,7 @@ func (s *LocalUserStorage) CreateUser(signup dto.SignupInfo) (*entities.User, er
 	return &newUser, nil
 }
 
-func (s *LocalUserStorage) UpdateUser(updatedInfo dto.UpdatedUserInfo) (*entities.User, error) {
+func (s *LocalUserStorage) UpdateUser(ctx context.Context, updatedInfo dto.UpdatedUserInfo) (*entities.User, error) {
 	s.mu.RLock()
 	oldUser, ok := s.userData[updatedInfo.Email]
 	s.mu.RUnlock()

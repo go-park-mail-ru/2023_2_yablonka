@@ -29,7 +29,7 @@ func NewUserService(storage storage.IUserStorage) *UserService {
 }
 
 func (us AuthUserService) GetUser(ctx context.Context, info dto.LoginInfo) (*entities.User, error) {
-	user, err := us.storage.GetUser(info)
+	user, err := us.storage.GetUser(ctx, info)
 	if err != nil {
 		return nil, err
 	}
@@ -42,9 +42,9 @@ func (us AuthUserService) GetUser(ctx context.Context, info dto.LoginInfo) (*ent
 }
 
 func (us AuthUserService) CreateUser(ctx context.Context, info dto.SignupInfo) (*entities.User, error) {
-	return us.storage.CreateUser(info)
+	return us.storage.CreateUser(ctx, info)
 }
 
 func (us UserService) UpdateUser(ctx context.Context, info dto.UpdatedUserInfo) (*entities.User, error) {
-	return us.storage.UpdateUser(info)
+	return us.storage.UpdateUser(ctx, info)
 }

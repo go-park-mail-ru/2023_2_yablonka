@@ -24,7 +24,7 @@ func (a *AuthSessionService) AuthUser(ctx context.Context, user *entities.User) 
 		ExpiryDate: time.Now().Add(a.sessionDuration),
 	}
 	expiresAt := session.ExpiryDate
-	sessionId, err := a.storage.CreateSession(session)
+	sessionId, err := a.storage.CreateSession(ctx, session)
 	if err != nil {
 		return "", time.Time{}, err
 	}
@@ -34,7 +34,7 @@ func (a *AuthSessionService) AuthUser(ctx context.Context, user *entities.User) 
 // VerifyAuth
 // возвращает ID пользователя, которому принадлежит сессия
 func (a *AuthSessionService) VerifyAuth(ctx context.Context, sessionString string) (*dto.VerifiedAuthInfo, error) {
-	sessionObj, err := a.storage.GetSession(sessionString)
+	sessionObj, err := a.storage.GetSession(ctx, sessionString)
 	if err != nil {
 		return nil, err
 	}

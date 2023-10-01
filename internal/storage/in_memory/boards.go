@@ -1,6 +1,7 @@
 package in_memory
 
 import (
+	"context"
 	"server/internal/pkg/dto"
 	"server/internal/pkg/entities"
 	"sync"
@@ -74,7 +75,7 @@ func (s *LocalBoardStorage) GetHighestID() uint64 {
 	return highest
 }
 
-func (s *LocalBoardStorage) GetUserOwnedBoards(userInfo dto.VerifiedAuthInfo) (*[]*entities.Board, error) {
+func (s *LocalBoardStorage) GetUserOwnedBoards(ctx context.Context, userInfo dto.VerifiedAuthInfo) (*[]*entities.Board, error) {
 	var boards []*entities.Board
 	s.mu.RLock()
 	for _, board := range s.boardData {
@@ -87,7 +88,7 @@ func (s *LocalBoardStorage) GetUserOwnedBoards(userInfo dto.VerifiedAuthInfo) (*
 	return &boards, nil
 }
 
-func (s *LocalBoardStorage) GetUserGuestBoards(userInfo dto.VerifiedAuthInfo) (*[]*entities.Board, error) {
+func (s *LocalBoardStorage) GetUserGuestBoards(ctx context.Context, userInfo dto.VerifiedAuthInfo) (*[]*entities.Board, error) {
 	var boards []*entities.Board
 	s.mu.RLock()
 	for _, board := range s.boardData {
@@ -102,7 +103,7 @@ func (s *LocalBoardStorage) GetUserGuestBoards(userInfo dto.VerifiedAuthInfo) (*
 	return &boards, nil
 }
 
-func (s *LocalBoardStorage) GetBoard(board dto.IndividualBoardInfo) (*entities.Board, error) {
+func (s *LocalBoardStorage) GetBoard(ctx context.Context, board dto.IndividualBoardInfo) (*entities.Board, error) {
 	// TODO Implement error
 	// s.mu.RLock()
 	// userBoards, ok := s.boardData[board.OwnerEmail]
@@ -120,7 +121,7 @@ func (s *LocalBoardStorage) GetBoard(board dto.IndividualBoardInfo) (*entities.B
 	return nil, nil
 }
 
-func (s *LocalBoardStorage) CreateBoard(board dto.NewBoardInfo) (*entities.Board, error) {
+func (s *LocalBoardStorage) CreateBoard(ctx context.Context, board dto.NewBoardInfo) (*entities.Board, error) {
 	// TODO Нужна проверка по количеству доступных пользователю досок, это наверное поле в User
 
 	// s.mu.Lock()
@@ -138,7 +139,7 @@ func (s *LocalBoardStorage) CreateBoard(board dto.NewBoardInfo) (*entities.Board
 	return nil, nil
 }
 
-func (s *LocalBoardStorage) DeleteBoard(board dto.IndividualBoardInfo) error {
+func (s *LocalBoardStorage) DeleteBoard(ctx context.Context, board dto.IndividualBoardInfo) error {
 	// TODO Implement later
 	// s.mu.RLock()
 	// userBoards, ok := s.boardData[board.OwnerEmail]

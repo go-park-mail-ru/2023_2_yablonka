@@ -29,7 +29,7 @@ func NewBoardService(storage storage.IBoardStorage) *BoardService {
 // }
 
 func (us BoardService) GetUserOwnedBoards(ctx context.Context, userInfo dto.VerifiedAuthInfo) ([]dto.UserOwnedBoardInfo, error) {
-	boards, err := us.storage.GetUserOwnedBoards(userInfo)
+	boards, err := us.storage.GetUserOwnedBoards(ctx, userInfo)
 	if err != nil {
 		return nil, err
 	}
@@ -46,7 +46,7 @@ func (us BoardService) GetUserOwnedBoards(ctx context.Context, userInfo dto.Veri
 }
 
 func (us BoardService) GetUserGuestBoards(ctx context.Context, userInfo dto.VerifiedAuthInfo) ([]dto.UserGuestBoardInfo, error) {
-	boards, err := us.storage.GetUserGuestBoards(userInfo)
+	boards, err := us.storage.GetUserGuestBoards(ctx, userInfo)
 	if err != nil {
 		return nil, err
 	}

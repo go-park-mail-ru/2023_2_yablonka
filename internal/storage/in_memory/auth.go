@@ -1,6 +1,7 @@
 package in_memory
 
 import (
+	"context"
 	"os"
 	"server/internal/app/utils"
 	"server/internal/apperrors"
@@ -43,7 +44,7 @@ func NewAuthStorage() (*LocalAuthStorage, error) {
 	}, nil
 }
 
-func (as LocalAuthStorage) CreateSession(session *entities.Session) (string, error) {
+func (as LocalAuthStorage) CreateSession(ctx context.Context, session *entities.Session) (string, error) {
 	sessionID, err := utils.GenerateSessionID(as.sidLength)
 	if err != nil {
 		return "", err
@@ -52,7 +53,7 @@ func (as LocalAuthStorage) CreateSession(session *entities.Session) (string, err
 	return sessionID, nil
 }
 
-func (as LocalAuthStorage) GetSession(sid string) (*entities.Session, error) {
+func (as LocalAuthStorage) GetSession(ctx context.Context, sid string) (*entities.Session, error) {
 	session, ok := as.authData[sid]
 	if !ok {
 		return nil, apperrors.ErrSessionNotFound
@@ -60,7 +61,7 @@ func (as LocalAuthStorage) GetSession(sid string) (*entities.Session, error) {
 	return session, nil
 }
 
-func (as LocalAuthStorage) DeleteSession(user *entities.User) error {
+func (as LocalAuthStorage) DeleteSession(ctx context.Context, user *entities.User) error {
 	as.authData[user.Email] = nil
 	return nil
 }
