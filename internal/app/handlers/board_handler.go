@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"net/http"
 	"server/internal/service"
 )
 
@@ -9,8 +10,6 @@ type BoardHandler struct {
 	bs service.IBoardService
 }
 
-func NewBoardHandler(as service.IAuthService, bs service.IBoardService) *BoardHandler {
-	return &BoardHandler{
-		bs: bs,
-	}
+func (bh BoardHandler) GetUserBoards(w http.ResponseWriter, r *http.Request) {
+
 }
