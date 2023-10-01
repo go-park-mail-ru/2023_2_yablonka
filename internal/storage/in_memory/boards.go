@@ -18,22 +18,38 @@ func NewBoardStorage() *LocalBoardStorage {
 	return &LocalBoardStorage{
 		boardData: map[uint64]entities.Board{
 			1: entities.Board{
-				ID:           1,
-				Name:         "Проект 1",
-				OwnerID:      1,
+				ID:   1,
+				Name: "Проект 1",
+				Owner: dto.UserInfo{
+					ID: 1,
+				},
 				ThumbnailURL: "https://media.moddb.com/images/downloads/1/203/202069/missing_textures.png",
+				Guests: []dto.UserInfo{
+					dto.UserInfo{
+						ID: 2,
+					},
+				},
 			},
 			2: entities.Board{
-				ID:           2,
-				Name:         "Разработка Ведра 2",
-				OwnerID:      1,
+				ID:   2,
+				Name: "Разработка Ведра 2",
+				Owner: dto.UserInfo{
+					ID: 1,
+				},
 				ThumbnailURL: "https://nicollelamerichs.files.wordpress.com/2022/05/2022043021483800-9e19570e6059798a45aec175873b4ac1.jpg?w=640",
 			},
 			3: entities.Board{
-				ID:           3,
-				Name:         "лучшая вещь",
-				OwnerID:      1,
+				ID:   3,
+				Name: "лучшая вещь",
+				Owner: dto.UserInfo{
+					ID: 2,
+				},
 				ThumbnailURL: "https://media.istockphoto.com/id/868643608/photo/thumbs-up-emoji-isolated-on-white-background-emoticon-giving-likes-3d-rendering.jpg?s=612x612&w=0&k=20&c=ulAeL-xm8S-g5VU_28CUlOqzqT-ooGTKuXYe097XEL8=",
+				Guests: []dto.UserInfo{
+					dto.UserInfo{
+						ID: 1,
+					},
+				},
 			},
 		},
 		mu: &sync.RWMutex{},
@@ -45,19 +61,16 @@ func (s *LocalBoardStorage) GetHighestID() uint64 {
 		return 0
 	}
 	var highest uint64 = 0
-	userEmails := make([]string, 0, len(s.boardData))
-	for _, k := range userEmails {
-		for _, Board := range s.boardData[k] {
-			if Board.ID > highest {
-				highest = Board.ID
-			}
+	for _, board := range s.boardData {
+		if board.ID > highest {
+			highest = board.ID
 		}
 	}
 
 	return highest
 }
 
-func (s *LocalBoardStorage) GetUserBoards(user entities.User) (*[]*entities.Board, error) {
+func (s *LocalBoardStorage) GetUserOwnedBoards(user entities.User) (boards *[]*entities.Board, error) {
 	s.mu.RLock()
 	boards, ok := s.boardData[user.Email]
 	s.mu.Unlock()
