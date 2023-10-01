@@ -36,9 +36,11 @@ func (a *AuthSessionService) AuthUser(ctx context.Context, user *entities.User) 
 func (a *AuthSessionService) VerifyAuth(ctx context.Context, sessionString string) (*dto.UserInfo, error) {
 	sessionObj, err := a.storage.GetSession(sessionString)
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
-	return sessionObj.UserID, nil
+	return &dto.UserInfo{
+		ID: sessionObj.UserID,
+	}, nil
 }
 
 // GetLifetime
