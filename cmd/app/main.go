@@ -22,8 +22,13 @@ func main() {
 
 	// TODO Вынести в отдельный файл
 	userStorage := in_memory.NewUserStorage()
+	authStorage, err := in_memory.NewAuthStorage()
+	if err != nil {
+		log.Fatalf("Failed to initialize auth storage, reason: %s", err.Error())
+		return
+	}
 
-	authService, err := authservice.NewAuthJWTService()
+	authService, err := authservice.NewAuthSessionService(authStorage)
 	if err != nil {
 		log.Fatalf("Failed to initialize server, reason: %s", err.Error())
 		return
