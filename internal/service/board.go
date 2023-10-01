@@ -3,12 +3,13 @@ package service
 import (
 	"context"
 	"server/internal/pkg/dto"
-	"server/internal/pkg/entities"
 )
 
 type IBoardService interface {
-	GetBoard(context.Context, dto.IndividualBoardInfo) (*entities.Board, error)
-	CreateBoard(context.Context, dto.NewBoardInfo) (*entities.Board, error)
-	UpdateBoard(context.Context, dto.IndividualBoardInfo) (*entities.Board, error)
-	GetUserBoards(context.Context, entities.User) (*[]entities.Board, error)
+	// TODO implement later
+	// GetBoard(context.Context, dto.IndividualBoardInfo) (*entities.Board, error)
+	// CreateBoard(context.Context, dto.NewBoardInfo) (*entities.Board, error)
+	// UpdateBoard(context.Context, dto.IndividualBoardInfo) (*entities.Board, error)
+	GetUserOwnedBoards(context.Context, dto.VerifiedAuthInfo) (*[]dto.UserOwnedBoardInfo, error)
+	GetUserGuestBoards(context.Context, dto.VerifiedAuthInfo) (*[]dto.UserGuestBoardInfo, error)
 }

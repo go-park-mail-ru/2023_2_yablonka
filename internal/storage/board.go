@@ -11,6 +11,8 @@ type IBoardStorage interface {
 	GetBoard(dto.IndividualBoardInfo) (*entities.Board, error)
 	UpdateBoard(dto.IndividualBoardInfo) (*entities.Board, error)
 	CreateBoard(dto.NewBoardInfo) (*entities.Board, error)
-	GetUserBoards(entities.User) (*[]entities.Board, error)
+	GetUserBoards(dto.VerifiedAuthInfo) (*[]entities.Board, error)
+	GetUserOwnedBoards(dto.VerifiedAuthInfo) (*[]entities.Board, error)
+	GetUserGuestBoards(dto.VerifiedAuthInfo) (*[]entities.Board, error)
 	DeleteBoard(dto.IndividualBoardInfo) error
 }

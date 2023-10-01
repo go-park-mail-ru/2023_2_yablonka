@@ -48,7 +48,8 @@ type UserTotalBoardInfo struct {
 }
 
 type UserInfo struct {
-	ID uint64
+	ID    uint64
+	Email string
 }
 
 type UpdatedUserInfo struct {
