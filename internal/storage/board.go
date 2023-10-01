@@ -8,7 +8,8 @@ import (
 )
 
 type IBoardStorage interface {
-	GetBoard(dto.LoginInfo) (*entities.Board, error)
-	CreateBoard(dto.SignupInfo) (*entities.Board, error)
+	GetBoard(dto.IndividualBoardInfo) (*entities.Board, error)
+	CreateBoard(dto.NewBoardInfo) (*entities.Board, error)
 	GetUserBoards(entities.User) (*[]entities.Board, error)
+	DeleteBoard(dto.IndividualBoardInfo) error
 }

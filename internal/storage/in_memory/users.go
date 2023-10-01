@@ -4,7 +4,6 @@ import (
 	"server/internal/apperrors"
 	"server/internal/pkg/dto"
 	"server/internal/pkg/entities"
-	"server/internal/storage"
 	"sync"
 )
 
@@ -15,8 +14,6 @@ type LocalUserStorage struct {
 	mu       *sync.RWMutex
 }
 
-// NewLocalUserStorage
-// Возвращает локальное хранилище данных с тестовыми данными
 func NewUserStorage() *LocalUserStorage {
 	return &LocalUserStorage{
 		userData: map[string]entities.User{
@@ -37,11 +34,6 @@ func NewUserStorage() *LocalUserStorage {
 		},
 		mu: &sync.RWMutex{},
 	}
-}
-
-func NewLocalUserStorage() storage.IUserStorage {
-	storage := NewUserStorage()
-	return storage
 }
 
 func (s *LocalUserStorage) GetHighestID() uint64 {
@@ -70,12 +62,12 @@ func (s *LocalUserStorage) GetUser(login dto.LoginInfo) (*entities.User, error) 
 }
 
 func (s *LocalUserStorage) CreateUser(signup dto.SignupInfo) (*entities.User, error) {
-	s.mu.Lock()
+	s.mu.RLock()
 	_, ok := s.userData[signup.Email]
-	s.mu.Unlock()
+	s.mu.RUnlock()
 
 	if ok {
-		return nil, apperrors.ErrUserExists
+		return nil, apperrors.ErrUserAlreadyExists
 	}
 
 	s.mu.Lock()
@@ -93,12 +85,12 @@ func (s *LocalUserStorage) CreateUser(signup dto.SignupInfo) (*entities.User, er
 }
 
 func (s *LocalUserStorage) UpdateUser(updatedInfo dto.UpdatedUserInfo) (*entities.User, error) {
-	s.mu.Lock()
+	s.mu.RLock()
 	oldUser, ok := s.userData[updatedInfo.Email]
-	s.mu.Unlock()
+	s.mu.RUnlock()
 
 	if ok {
-		return nil, apperrors.ErrUserExists
+		return nil, apperrors.ErrUserAlreadyExists
 	}
 
 	s.mu.Lock()

@@ -9,7 +9,7 @@ import (
 var (
 	ErrUserNotFound           = errors.New("no user that matches the provided credentials")
 	ErrWrongPassword          = errors.New("wrong password")
-	ErrUserExists             = errors.New("user with this email already exists")
+	ErrUserAlreadyExists      = errors.New("user with this email already exists")
 	ErrJWTSecretMissing       = errors.New("no JWT secret was found in the environment")
 	ErrSessionDurationMissing = errors.New("no session duration settings were found in the environment")
 	ErrSessionNullDuration    = errors.New("provided session duration is zero seconds")
@@ -20,6 +20,7 @@ var (
 	ErrJWTMissingClaim        = errors.New("provided token is missing a required claim")
 	ErrJWTOldToken            = errors.New("provided token has expired")
 	ErrSessionNotFound        = errors.New("no session found for provided session ID")
+	ErrBoardNotFound          = errors.New("no board found for provided user email") // TODO Заменить мэйл на id
 )
 
 type ErrorResponse struct {
@@ -46,7 +47,7 @@ var ErrorMap = map[error]ErrorResponse{
 		Code:    http.StatusUnauthorized,
 		Message: "Указан неправильный пароль",
 	},
-	ErrUserExists: {
+	ErrUserAlreadyExists: {
 		Code:    http.StatusConflict,
 		Message: "Пользователь с таким адресом почты уже существует",
 	},

@@ -2,36 +2,46 @@ package service
 
 import (
 	"context"
+	"server/internal/app/utils"
 	"server/internal/pkg/entities"
 	"server/internal/storage"
 	"time"
 )
 
+// AuthJWTService
+// структура сервиса аутентификации с помощью создания сессий
+// содержит интерфейс для работы с БД и длительность сессии
 type AuthSessionService struct {
 	sessionDuration time.Duration
 	storage         storage.IAuthStorage
 }
 
-func generateSession(user *entities.User, duration time.Duration) *entities.Session {
-	return &entities.Session{
-		UserID:     user.ID,
-		ExpiryDate: time.Now().Add(duration),
+// NewAuthSessionService
+// Возвращает AuthSessionService с инициализированным хранилищем и параметром продолжительности сессии
+func NewAuthSessionService(storage storage.IAuthStorage) (*AuthSessionService, error) {
+	sessionDuration, err := utils.BuildSessionDuration()
+	if err != nil {
+		return nil, err
 	}
+	return &AuthSessionService{
+		sessionDuration: sessionDuration,
+		storage:         storage,
+	}, nil
 }
 
-func (a *AuthSessionService) GetSessionDuration() time.Duration {
-	return a.sessionDuration
-}
-
-// Возвращает ID сессии для полученного пользователя
+// AuthUser
+// Возвращает ID сессии её длительность
 func (a *AuthSessionService) AuthUser(ctx context.Context, user *entities.User) (string, time.Time, error) {
-	session := generateSession(user, a.sessionDuration)
+	session := &entities.Session{
+		UserID:     user.ID,
+		ExpiryDate: time.Now().Add(a.sessionDuration),
+	}
 	expiresAt := session.ExpiryDate
-	sid, err := a.storage.CreateSession(session)
+	sessionId, err := a.storage.CreateSession(session)
 	if err != nil {
 		return "", time.Time{}, err
 	}
-	return sid, expiresAt, nil
+	return sessionId, expiresAt, nil
 }
 
 // VerifyAuth
@@ -42,4 +52,10 @@ func (a *AuthSessionService) VerifyAuth(ctx context.Context, sessionString strin
 		return 0, err
 	}
 	return sessionObj.UserID, nil
+}
+
+// GetLifetime
+// возвращает длительность сессии
+func (a *AuthSessionService) GetLifetime() time.Duration {
+	return a.sessionDuration
 }
