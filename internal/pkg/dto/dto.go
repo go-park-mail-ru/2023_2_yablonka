@@ -42,6 +42,11 @@ type UserGuestBoardInfo struct {
 	UserOwnedBoardInfo
 }
 
+type UserTotalBoardInfo struct {
+	OwnedBoards []UserOwnedBoardInfo `json:"user_owned_boards"`
+	GuestBoards []UserGuestBoardInfo `json:"user_guest_boards"`
+}
+
 type UserInfo struct {
 	ID uint64
 }
