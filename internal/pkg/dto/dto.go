@@ -10,6 +10,10 @@ type AuthInfo struct {
 	Password string
 }
 
+type VerifiedAuthInfo struct {
+	UserID uint64
+}
+
 type LoginInfo struct {
 	Email        string `json:"email" valid:"type(string),email"`
 	PasswordHash string `json:"-" valid:"type(string)"`
@@ -19,6 +23,10 @@ type UserBoardInfo struct {
 	ID           uint64 `json:"board_id"`
 	BoardName    string `json:"board_name"`
 	ThumbnailURL string `json:"thumbnail_url"`
+}
+
+type UserInfo struct {
+	ID uint64
 }
 
 type UpdatedUserInfo struct {

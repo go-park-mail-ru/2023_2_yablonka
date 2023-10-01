@@ -11,36 +11,33 @@ import (
 // LocalUserStorage
 // Локальное хранение данных
 type LocalBoardStorage struct {
-	boardDataByUser map[string][]entities.Board
-	mu              *sync.RWMutex
+	boardData map[uint64]entities.Board
+	mu        *sync.RWMutex
 }
 
 // NewLocalBoardStorage
 // Возвращает локальное хранилище данных с тестовыми данными
 func NewBoardStorage() *LocalBoardStorage {
 	return &LocalBoardStorage{
-		boardDataByUser: map[string][]entities.Board{
-			"test@email.com": {
-				entities.Board{
-					ID:           1,
-					Name:         "Проект 1",
-					OwnerID:      1,
-					ThumbnailURL: "https://media.moddb.com/images/downloads/1/203/202069/missing_textures.png",
-				},
-				entities.Board{
-					ID:           2,
-					Name:         "Разработка Ведра 2",
-					OwnerID:      1,
-					ThumbnailURL: "https://nicollelamerichs.files.wordpress.com/2022/05/2022043021483800-9e19570e6059798a45aec175873b4ac1.jpg?w=640",
-				},
-				entities.Board{
-					ID:           3,
-					Name:         "лучшая вещь",
-					OwnerID:      1,
-					ThumbnailURL: "https://media.istockphoto.com/id/868643608/photo/thumbs-up-emoji-isolated-on-white-background-emoticon-giving-likes-3d-rendering.jpg?s=612x612&w=0&k=20&c=ulAeL-xm8S-g5VU_28CUlOqzqT-ooGTKuXYe097XEL8=",
-				},
+		boardData: map[uint64]entities.Board{
+			1: entities.Board{
+				ID:           1,
+				Name:         "Проект 1",
+				OwnerID:      1,
+				ThumbnailURL: "https://media.moddb.com/images/downloads/1/203/202069/missing_textures.png",
 			},
-			"email@example.com": {},
+			2: entities.Board{
+				ID:           2,
+				Name:         "Разработка Ведра 2",
+				OwnerID:      1,
+				ThumbnailURL: "https://nicollelamerichs.files.wordpress.com/2022/05/2022043021483800-9e19570e6059798a45aec175873b4ac1.jpg?w=640",
+			},
+			3: entities.Board{
+				ID:           3,
+				Name:         "лучшая вещь",
+				OwnerID:      1,
+				ThumbnailURL: "https://media.istockphoto.com/id/868643608/photo/thumbs-up-emoji-isolated-on-white-background-emoticon-giving-likes-3d-rendering.jpg?s=612x612&w=0&k=20&c=ulAeL-xm8S-g5VU_28CUlOqzqT-ooGTKuXYe097XEL8=",
+			},
 		},
 		mu: &sync.RWMutex{},
 	}

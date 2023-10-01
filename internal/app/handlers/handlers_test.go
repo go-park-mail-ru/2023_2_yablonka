@@ -122,10 +122,10 @@ func Test_Login(t *testing.T) {
 				generatedCookie := w.Result().Cookies()[0].Value
 
 				ctx := context.Background()
-				uid, err := authService.VerifyAuth(ctx, generatedCookie)
+				verifiedAuth, err := authService.VerifyAuth(ctx, generatedCookie)
 
 				require.NoError(t, err)
-				require.Equal(t, test.userID, uid, "Expected cookie wasn't found")
+				require.Equal(t, test.userID, verifiedAuth.UserID, "Expected cookie wasn't found")
 			} else {
 				require.Empty(t, w.Result().Cookies(), "Cookie was set despite unsuccessful authentication")
 			}
@@ -221,13 +221,13 @@ func Test_Signup(t *testing.T) {
 				generatedCookie := w.Result().Cookies()[0].Value
 
 				ctx := context.Background()
-				newID, err := authService.VerifyAuth(ctx, generatedCookie)
+				verifiedAuth, err := authService.VerifyAuth(ctx, generatedCookie)
 
 				require.NoError(t, err)
 
 				expectedID := userStorage.GetHighestID()
 
-				require.Equal(t, expectedID, newID, "User wasn't saved correctly")
+				require.Equal(t, expectedID, verifiedAuth.UserID, "User wasn't saved correctly")
 			} else {
 				require.Empty(t, w.Result().Cookies(), "Cookie was set despite unsuccessful registration")
 			}

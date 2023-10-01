@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"server/internal/pkg/dto"
 	"server/internal/pkg/entities"
 	"server/internal/storage"
 	"time"
@@ -23,7 +24,8 @@ func (a *AuthSessionService) GetSessionDuration() time.Duration {
 	return a.sessionDuration
 }
 
-// Возвращает ID сессии для полученного пользователя
+// AuthUser
+// возвращает ID сессии и срок её годности для полученного пользователя
 func (a *AuthSessionService) AuthUser(ctx context.Context, user *entities.User) (string, time.Time, error) {
 	session := generateSession(user, a.sessionDuration)
 	expiresAt := session.ExpiryDate
@@ -36,10 +38,12 @@ func (a *AuthSessionService) AuthUser(ctx context.Context, user *entities.User) 
 
 // VerifyAuth
 // возвращает ID пользователя, которому принадлежит сессия
-func (a *AuthSessionService) VerifyAuth(ctx context.Context, sessionString string) (uint64, error) {
+func (a *AuthSessionService) VerifyAuth(ctx context.Context, sessionString string) (*dto.VerifiedAuthInfo, error) {
 	sessionObj, err := a.storage.GetSession(sessionString)
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
-	return sessionObj.UserID, nil
+	return &dto.VerifiedAuthInfo{
+		UserID: sessionObj.UserID,
+	}, nil
 }

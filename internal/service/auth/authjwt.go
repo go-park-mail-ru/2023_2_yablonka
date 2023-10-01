@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"server/internal/apperrors"
+	"server/internal/pkg/dto"
 	"server/internal/pkg/entities"
 	"time"
 
@@ -46,7 +47,7 @@ func (a *AuthJWTService) AuthUser(ctx context.Context, user *entities.User) (str
 
 // VerifyAuth
 // валидирует токен, возвращает ID пользователя, которому принадлежит токен
-func (a *AuthJWTService) VerifyAuth(ctx context.Context, incomingToken string) (uint64, error) {
+func (a *AuthJWTService) VerifyAuth(ctx context.Context, incomingToken string) (*dto.VerifiedAuthInfo, error) {
 	var userID uint64
 	token, err := jwt.Parse(incomingToken, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
@@ -56,17 +57,19 @@ func (a *AuthJWTService) VerifyAuth(ctx context.Context, incomingToken string) (
 	})
 
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
 
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
 		uidFloat, ok := claims["userID"].(float64)
 		if !ok {
-			return 0, apperrors.ErrJWTMissingClaim
+			return nil, apperrors.ErrJWTMissingClaim
 		}
 		userID = uint64(uidFloat)
 	} else {
-		return 0, apperrors.ErrJWTInvalidToken
+		return nil, apperrors.ErrJWTInvalidToken
 	}
-	return userID, nil
+	return &dto.VerifiedAuthInfo{
+		UserID: userID,
+	}, nil
 }

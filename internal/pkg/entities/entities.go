@@ -1,6 +1,8 @@
 package entities
 
-import "time"
+import (
+	"time"
+)
 
 // TODO Split into DTO and Entity
 
@@ -18,8 +20,9 @@ type User struct {
 }
 
 type Board struct {
-	ID           uint64 `json:"board_id"`
-	Name         string `json:"name"`
-	OwnerID      uint64 `json:"owner_id"`
-	ThumbnailURL string `json:"thumbnail_url"`
+	ID           uint64       `json:"board_id"`
+	Name         string       `json:"name"`
+	Owner        dto.UserInfo // `json:"owner_id"`?
+	ThumbnailURL string       `json:"thumbnail_url"`
+	Guests       []User
 }
