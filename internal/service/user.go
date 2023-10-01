@@ -12,6 +12,6 @@ type IUserAuthService interface {
 }
 
 type IUserService interface {
-	UpdateUser()
+	UpdateUser(context.Context, dto.UpdatedUserInfo) (*entities.User, error)
 	IUserAuthService
 }

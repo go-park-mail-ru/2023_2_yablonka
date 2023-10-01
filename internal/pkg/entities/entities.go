@@ -1,6 +1,7 @@
 package entities
 
 import (
+	"server/internal/pkg/dto"
 	"time"
 )
 
