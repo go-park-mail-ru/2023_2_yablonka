@@ -3,7 +3,6 @@ package service
 import (
 	"context"
 	"server/internal/apperrors"
-	"server/internal/pkg/dto"
 	"server/internal/pkg/entities"
 	"time"
 
@@ -37,8 +36,7 @@ func (a *AuthJWTService) AuthUser(ctx context.Context, user *entities.User) (str
 
 // VerifyAuth
 // валидирует токен, возвращает ID пользователя, которому принадлежит токен
-func (a *AuthJWTService) VerifyAuth(ctx context.Context, incomingToken string) (*dto.VerifiedAuthInfo, error) {
-	var userID uint64
+func (a *AuthJWTService) VerifyAuth(ctx context.Context, incomingToken string) (uint64, error) {
 	token, err := jwt.Parse(incomingToken, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, apperrors.ErrJWTWrongMethod
@@ -47,19 +45,21 @@ func (a *AuthJWTService) VerifyAuth(ctx context.Context, incomingToken string) (
 	})
 
 	if err != nil {
-		return nil, err
+		return 0, err
 	}
 
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-		uIDFloat, ok := claims["userID"].(float64)
+		userId, ok := claims["userID"].(float64)
 		if !ok {
-			return nil, apperrors.ErrJWTMissingClaim
+			return 0, apperrors.ErrJWTMissingClaim
 		}
-		userID = uint64(uIDFloat)
-	} else {
-		return nil, apperrors.ErrJWTInvalidToken
+		return uint64(userId), nil
 	}
-	return &dto.VerifiedAuthInfo{
-		UserID: userID,
-	}, nil
+	return 0, apperrors.ErrJWTInvalidToken
+}
+
+// GetLifetime
+// возвращает длительность жизни токена
+func (a *AuthJWTService) GetLifetime() time.Duration {
+	return a.tokenLifetime
 }

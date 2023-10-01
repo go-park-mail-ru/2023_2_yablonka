@@ -42,18 +42,9 @@ func (us AuthUserService) GetUser(ctx context.Context, info dto.LoginInfo) (*ent
 }
 
 func (us AuthUserService) CreateUser(ctx context.Context, info dto.SignupInfo) (*entities.User, error) {
-	user, err := us.storage.CreateUser(info)
-	if err != nil {
-		return nil, err
-	}
-	return user, nil
+	return us.storage.CreateUser(info)
 }
 
 func (us UserService) UpdateUser(ctx context.Context, info dto.UpdatedUserInfo) (*entities.User, error) {
-	// TODO Временно можно обновлять и мэйл, надо сделать какую-то проверку для этого
-	user, err := us.storage.UpdateUser(info)
-	if err != nil {
-		return nil, err
-	}
-	return user, nil
+	return us.storage.UpdateUser(info)
 }

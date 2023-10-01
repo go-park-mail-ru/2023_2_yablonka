@@ -2,29 +2,17 @@ package service
 
 import (
 	"context"
-	"server/internal/pkg/dto"
 	"server/internal/pkg/entities"
 	"server/internal/storage"
 	"time"
 )
 
-// AuthSessionService
+// AuthJWTService
 // структура сервиса аутентификации с помощью создания сессий
 // содержит интерфейс для работы с БД и длительность сессии
 type AuthSessionService struct {
 	sessionDuration time.Duration
 	storage         storage.IAuthStorage
-}
-
-func generateSession(user *entities.User, duration time.Duration) *entities.Session {
-	return &entities.Session{
-		UserID:     user.ID,
-		ExpiryDate: time.Now().Add(duration),
-	}
-}
-
-func (a *AuthSessionService) GetSessionDuration() time.Duration {
-	return a.sessionDuration
 }
 
 // AuthUser
@@ -44,14 +32,12 @@ func (a *AuthSessionService) AuthUser(ctx context.Context, user *entities.User) 
 
 // VerifyAuth
 // возвращает ID пользователя, которому принадлежит сессия
-func (a *AuthSessionService) VerifyAuth(ctx context.Context, sessionString string) (*dto.VerifiedAuthInfo, error) {
+func (a *AuthSessionService) VerifyAuth(ctx context.Context, sessionString string) (uint64, error) {
 	sessionObj, err := a.storage.GetSession(sessionString)
 	if err != nil {
-		return nil, err
+		return 0, err
 	}
-	return &dto.VerifiedAuthInfo{
-		UserID: sessionObj.UserID,
-	}, nil
+	return sessionObj.UserID, nil
 }
 
 // GetLifetime

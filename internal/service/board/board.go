@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"server/internal/pkg/dto"
 	"server/internal/pkg/entities"
 	"server/internal/storage"
 )
@@ -16,22 +17,18 @@ func NewBoardService(storage storage.IBoardStorage) *BoardService {
 	}
 }
 
-// TODO
-func (us BoardService) GetBoard() {
-
+func (us BoardService) GetBoard(ctx context.Context, board dto.IndividualBoardInfo) (*entities.Board, error) {
+	return us.storage.GetBoard(board)
 }
 
-// TODO
-func (us BoardService) CreateBoard() {
-
+func (us BoardService) CreateBoard(ctx context.Context, board dto.NewBoardInfo) (*entities.Board, error) {
+	return us.storage.CreateBoard(board)
 }
 
-// TODO
-func (us BoardService) UpdateBoard(ctx context.Context, Board *entities.Board) {
-
+func (us BoardService) UpdateBoard(ctx context.Context, board dto.IndividualBoardInfo) (*entities.Board, error) {
+	return us.storage.UpdateBoard(board)
 }
 
-// TODO
-func (us BoardService) GetBoardUsers() {
-
+func (us BoardService) GetUserBoards(ctx context.Context, user entities.User) (*[]entities.Board, error) {
+	return us.storage.GetUserBoards(user)
 }
