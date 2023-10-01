@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"server/internal/app/utils"
 	"server/internal/pkg/entities"
 	"server/internal/storage"
 	"time"
@@ -14,19 +13,6 @@ import (
 type AuthSessionService struct {
 	sessionDuration time.Duration
 	storage         storage.IAuthStorage
-}
-
-// NewAuthSessionService
-// Возвращает AuthSessionService с инициализированным хранилищем и параметром продолжительности сессии
-func NewAuthSessionService(storage storage.IAuthStorage) (*AuthSessionService, error) {
-	sessionDuration, err := utils.BuildSessionDuration()
-	if err != nil {
-		return nil, err
-	}
-	return &AuthSessionService{
-		sessionDuration: sessionDuration,
-		storage:         storage,
-	}, nil
 }
 
 // AuthUser
