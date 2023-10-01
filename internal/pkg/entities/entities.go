@@ -1,6 +1,7 @@
 package entities
 
 import (
+	"server/internal/pkg/dto"
 	"time"
 )
 
@@ -20,9 +21,9 @@ type User struct {
 }
 
 type Board struct {
-	ID           uint64       `json:"board_id"`
-	Name         string       `json:"name"`
-	Owner        dto.UserInfo // `json:"owner_id"`?
-	ThumbnailURL string       `json:"thumbnail_url"`
-	Guests       []User
+	ID           uint64         `json:"board_id"`
+	Name         string         `json:"name"`
+	Owner        dto.UserInfo   `json:"owner"`
+	ThumbnailURL string         `json:"thumbnail_url"`
+	Guests       []dto.UserInfo `json:"guests"`
 }
