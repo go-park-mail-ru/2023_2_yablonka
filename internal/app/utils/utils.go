@@ -12,6 +12,12 @@ import (
 	"time"
 )
 
+type ServerConfig struct {
+	SessionDuration time.Duration
+	SessionIDLength uint
+	JWTSecret       string
+}
+
 // TODO salt
 func HashFromAuthInfo(info dto.AuthInfo) string {
 	hasher := sha256.New()
