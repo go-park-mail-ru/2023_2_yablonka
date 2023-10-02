@@ -27,6 +27,8 @@ type BoardHandler struct {
 func (bh BoardHandler) GetUserBoards(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
+	// remake with r.Context
+	// add timeout
 	cookie, err := r.Cookie("tabula_user")
 
 	if err != nil {
