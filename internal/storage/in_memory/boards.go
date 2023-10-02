@@ -27,8 +27,8 @@ func NewBoardStorage() *LocalBoardStorage {
 				ThumbnailURL: "https://media.moddb.com/images/downloads/1/203/202069/missing_textures.png",
 				Guests: []dto.UserInfo{
 					{
-						ID:    2,
-						Email: "example@email.com",
+						ID:    3,
+						Email: "newchallenger@example.com",
 					},
 				},
 			},
@@ -53,6 +53,10 @@ func NewBoardStorage() *LocalBoardStorage {
 					{
 						ID:    1,
 						Email: "test@example.com",
+					},
+					{
+						ID:    3,
+						Email: "newchallenger@example.com",
 					},
 				},
 			},
