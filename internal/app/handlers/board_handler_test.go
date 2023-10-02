@@ -9,7 +9,7 @@ import (
 	"server/internal/pkg/dto"
 	"server/internal/pkg/entities"
 	authservice "server/internal/service/auth"
-	service "server/internal/service/board"
+	boardservice "server/internal/service/board"
 	"server/internal/storage/in_memory"
 	"testing"
 	"time"
@@ -83,14 +83,14 @@ func Test_GetUserBoards(t *testing.T) {
 				JWTSecret:       "TESTJWTSECRET123",
 			}
 			boardStorage := in_memory.NewBoardStorage()
-			boardService := service.NewBoardService(boardStorage)
+			boardService := boardservice.NewBoardService(boardStorage)
 			authStorage := in_memory.NewAuthStorage()
 			authService := authservice.NewAuthSessionService(serverConfig, authStorage)
 			boardHandler := NewBoardHandler(authService, boardService)
 
 			body := bytes.NewReader([]byte(""))
 
-			r := httptest.NewRequest("GET", "/api/v1/login/", body)
+			r := httptest.NewRequest("GET", "/api/v1/auth/login/", body)
 			w := httptest.NewRecorder()
 
 			if test.authorized {
