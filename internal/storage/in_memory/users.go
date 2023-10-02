@@ -24,6 +24,7 @@ func NewUserStorage() *LocalUserStorage {
 				PasswordHash: "8a65f9232aec42190593cebe45067d14ade16eaf9aaefe0c2e9ec425b5b8ca73",
 				Name:         "Никита",
 				Surname:      "Архаров",
+				ThumbnailURL: "https://sun1-27.userapi.com/s/v1/ig1/cAIfmwiDayww2WxVGPnIr5sHTSgXaf_567nuovSw_X4Cy9XAKrSVsAT2yAmJcJXDPkVOsXPW.jpg?size=50x50&quality=96&crop=351,248,540,540&ava=1",
 			},
 			"email@example.com": {
 				ID:           2,
@@ -31,6 +32,7 @@ func NewUserStorage() *LocalUserStorage {
 				PasswordHash: "177e4fd1a8b22992e78145c3ba9c8781124e5c166d03b9c302cf8e100d77ad22",
 				Name:         "Даниил",
 				Surname:      "Капитанов",
+				ThumbnailURL: "https://sun1-47.userapi.com/s/v1/ig2/aby-Y8KQ-yfQPLdvO-gq-ZenU63Iiw3ULbNlimdfaqLauSOj1cJ2jLxfBDtBMLpBW5T0UhaLFpyLVxAoYuVZiPB8.jpg?size=50x50&quality=95&crop=0,0,400,400&ava=1",
 			},
 			"newchallenger@email.com": {
 				ID:           3,
@@ -38,6 +40,7 @@ func NewUserStorage() *LocalUserStorage {
 				PasswordHash: "4aeb64424005ea74206c1a8e2c054ae1f34fec181bca5c8899152d8791c5c27f",
 				Name:         "Major",
 				Surname:      "Guile",
+				ThumbnailURL: "https://sun1-56.userapi.com/s/v1/ig2/tZBD5-zfhGO0BMktMHmj82YYqRowSPJbj7ZZE2lQ33DO1WzXB7z3fISjgAWaccX0marlKBf6tV_x0ScnO7CdM_ay.jpg?size=50x0&quality=96&crop=192,40,539,539&ava=1",
 			},
 			"ghostinthem@chi.ne": {
 				ID:           4,
@@ -45,6 +48,7 @@ func NewUserStorage() *LocalUserStorage {
 				PasswordHash: "cae8f1b32ad474ef1d27bbe387be25e6e6ee848a1726208cc970ef8a08ed3b08",
 				Name:         "Lain",
 				Surname:      "Iwakura",
+				ThumbnailURL: "https://sun1-57.userapi.com/s/v1/ig2/YWU6FC5ElvSSShdkrSEqWC6InGJfDQv2yuWQREEFBpHt9Nsvs_o9qc3rR2yAyVdTGy7MLMaaGbOj1DhY33JWS-b7.jpg?size=50x50&quality=95&crop=439,244,605,605&ava=1",
 			},
 		},
 		mu: &sync.RWMutex{},
@@ -52,15 +56,18 @@ func NewUserStorage() *LocalUserStorage {
 }
 
 func (s *LocalUserStorage) GetHighestID() uint64 {
-	if len(s.userData) == 0 {
-		return 0
-	}
 	var highest uint64 = 0
-	for _, user := range s.userData {
-		if user.ID > highest {
-			highest = user.ID
+
+	s.mu.RLock()
+	if len(s.userData) != 0 {
+		for _, user := range s.userData {
+			if user.ID > highest {
+				highest = user.ID
+			}
 		}
 	}
+	s.mu.RUnlock()
+
 	return highest
 }
 
@@ -76,6 +83,19 @@ func (s *LocalUserStorage) GetUser(ctx context.Context, login dto.LoginInfo) (*e
 	return &user, nil
 }
 
+func (s *LocalUserStorage) GetUserByID(ctx context.Context, uid uint64) (*entities.User, error) {
+	defer s.mu.RUnlock()
+
+	s.mu.RLock()
+	for _, user := range s.userData {
+		if user.ID == uid {
+			return &user, nil
+		}
+	}
+
+	return nil, apperrors.ErrUserNotFound
+}
+
 func (s *LocalUserStorage) CreateUser(ctx context.Context, signup dto.SignupInfo) (*entities.User, error) {
 	s.mu.RLock()
 	_, ok := s.userData[signup.Email]
@@ -85,7 +105,6 @@ func (s *LocalUserStorage) CreateUser(ctx context.Context, signup dto.SignupInfo
 		return nil, apperrors.ErrUserAlreadyExists
 	}
 
-	s.mu.Lock()
 	newID := s.GetHighestID() + 1
 	newUser := entities.User{
 		ID:           newID,
@@ -93,6 +112,7 @@ func (s *LocalUserStorage) CreateUser(ctx context.Context, signup dto.SignupInfo
 		PasswordHash: signup.PasswordHash,
 	}
 
+	s.mu.Lock()
 	s.userData[signup.Email] = newUser
 	s.mu.Unlock()
 
@@ -108,7 +128,6 @@ func (s *LocalUserStorage) UpdateUser(ctx context.Context, updatedInfo dto.Updat
 		return nil, apperrors.ErrUserAlreadyExists
 	}
 
-	s.mu.Lock()
 	updatedUser := entities.User{
 		ID:           oldUser.ID,
 		Email:        updatedInfo.Email,
@@ -117,6 +136,7 @@ func (s *LocalUserStorage) UpdateUser(ctx context.Context, updatedInfo dto.Updat
 		Surname:      updatedInfo.Surname,
 	}
 
+	s.mu.Lock()
 	s.userData[updatedInfo.Email] = updatedUser
 	s.mu.Unlock()
 
