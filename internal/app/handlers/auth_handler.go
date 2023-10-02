@@ -16,7 +16,15 @@ type AuthHandler struct {
 	us service.IUserAuthService
 }
 
-// TODO Swagger
+// TODO change the default data
+// @Summary Log user into the system
+// @Description Create new session or continue old one
+// @ID login
+// @Accept  json
+// @Produce  json
+// @Param id path int true "User ID"
+// @Success 200 {object} nil
+// @Router /api/v1/users/{id} [get]
 func (ah AuthHandler) LogIn(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
@@ -60,7 +68,15 @@ func (ah AuthHandler) LogIn(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(`{"body": {}}`))
 }
 
-// TODO Swagger
+// TODO change the default data
+// @Summary Log user into the system
+// @Description Create new session or continue old one
+// @ID login
+// @Accept  json
+// @Produce  json
+// @Param id path int true "User ID"
+// @Success 200 {object} nil
+// @Router /api/v1/users/{id} [get]
 func (ah AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 

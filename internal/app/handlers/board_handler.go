@@ -15,7 +15,15 @@ type BoardHandler struct {
 	bs service.IBoardService
 }
 
-// TODO Swagger
+// TODO change the default data
+// @Summary Log user into the system
+// @Description Create new session or continue old one
+// @ID login
+// @Accept  json
+// @Produce  json
+// @Param id path int true "User ID"
+// @Success 200 {object} nil
+// @Router /api/v1/users/{id} [get]
 func (bh BoardHandler) GetUserBoards(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
