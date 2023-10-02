@@ -2,150 +2,77 @@ package config
 
 import (
 	"log"
-	"net/http"
 	"os"
-	"server/internal/app/handlers"
-	"server/internal/app/utils"
 	"server/internal/apperrors"
-	"server/internal/pkg/entities"
-	authservice "server/internal/service/auth"
-	boardservice "server/internal/service/board"
-	userservice "server/internal/service/user"
-	"server/internal/storage/in_memory"
 	"strconv"
 	"time"
 
 	"github.com/joho/godotenv"
 )
 
-// NewEnvConfig
+// ServerConfig
+// структура для хранения параметров сервера
+type BaseServerConfig struct {
+	SessionDuration time.Duration
+}
+
+// ServerConfig
+// структура для хранения параметров сервера
+type ServerConfig interface {
+	Validate() (bool, error)
+}
+
+// Validate
+// проверяет параметры конфига на валидность
+func (config *BaseServerConfig) Validate() (bool, error) {
+	if config.SessionDuration < time.Duration(1*time.Second) {
+		return false, apperrors.ErrSessionNullDuration
+	}
+	return true, nil
+}
+
+// NewJWTEnvConfig
 // создаёт конфиг из .env файла, находящегося по полученному пути
-func NewEnvConfig(filepath string) (*entities.ServerConfig, error) {
+func NewBaseEnvConfig(filepath string) (*BaseServerConfig, error) {
 	var err error
 	if filepath == "" {
 		err = godotenv.Load()
 	} else {
 		err = godotenv.Load(filepath)
 	}
+
 	if err != nil {
 		return nil, apperrors.ErrEnvNotFound
 	}
 
-	var sidLength uint
-	sidLengthString, ok := os.LookupEnv("SESSION_ID_LENGTH")
-	if !ok {
-		sidLength = uint(32)
-		log.Println("WARNING: session ID length is not set, defaulting to 32")
-	} else {
-		sidLength64, err := strconv.ParseUint(sidLengthString, 10, 32)
-		sidLength = uint(sidLength64)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	sessionDuration, err := utils.BuildSessionDurationEnv()
+	sessionDuration, err := buildSessionDurationEnv()
 	if err != nil {
 		return nil, err
 	}
 
-	jwtSecret, ok := os.LookupEnv("JWT_SECRET")
-	if !ok || jwtSecret == "" {
-		log.Fatal("JWT secret is missing from config or empty")
-		return nil, apperrors.ErrJWTSecretMissing
-	}
-
-	return &entities.ServerConfig{
-		SessionIDLength: sidLength,
+	return &BaseServerConfig{
 		SessionDuration: sessionDuration,
-		JWTSecret:       jwtSecret,
 	}, nil
 }
 
-// ValidateConfig
-// проверяет параметры конфига на валидность
-func ValidateConfig(config *entities.ServerConfig) (bool, error) {
-	if config.SessionDuration < time.Duration(1*time.Second) {
-		return false, apperrors.ErrSessionNullDuration
+// buildSessionDurationEnv
+// возвращает время жизни сессии на основе параметров в .env (по умолчанию 14 дней)
+func buildSessionDurationEnv() (time.Duration, error) {
+	durationDays, dDok := os.LookupEnv("SESSION_DURATION_DAYS")
+	days, _ := strconv.Atoi(durationDays)
+	durationHours, dHok := os.LookupEnv("SESSION_DURATION_HOURS")
+	hours, _ := strconv.Atoi(durationHours)
+	durationMinutes, dMok := os.LookupEnv("SESSION_DURATION_MINUTES")
+	minutes, _ := strconv.Atoi(durationMinutes)
+	durationSeconds, dSok := os.LookupEnv("SESSION_DURATION_SECONDS")
+	seconds, _ := strconv.Atoi(durationSeconds)
+	if !(dDok || dHok || dMok || dSok) {
+		log.Println("WARNING: session duration is not set, defaulting to 14 days")
+		return time.Duration(14 * 24 * time.Hour), nil
 	}
-	if config.SessionIDLength < 1 {
-		return false, apperrors.ErrSessionNullIDLength
+	totalDuration := time.Duration(24*days+hours)*time.Hour + time.Duration(minutes)*time.Minute + time.Duration(seconds)*time.Second
+	if totalDuration < time.Second {
+		return 0, apperrors.ErrSessionNullDuration
 	}
-	if config.JWTSecret == "" {
-		return false, apperrors.ErrJWTSecretMissing
-	}
-	return true, nil
-}
-
-// ConfigMux
-// обвешивает mux приложения хендлерами
-func ConfigMux(config *entities.ServerConfig, mux *http.ServeMux) error {
-	ok, err := ValidateConfig(config)
-	if !ok {
-		return err
-	}
-
-	userStorage := in_memory.NewUserStorage()
-	authStorage := in_memory.NewAuthStorage()
-	boardStorage := in_memory.NewBoardStorage()
-
-	authService := authservice.NewAuthSessionService(config, authStorage)
-	userAuthService := userservice.NewAuthUserService(userStorage)
-	boardService := boardservice.NewBoardService(boardStorage)
-	// userService := userservice.NewUserService(userStorage)
-	authHandler := handlers.NewAuthHandler(authService, userAuthService)
-	boardHandler := handlers.NewBoardHandler(authService, boardService)
-
-	mux.HandleFunc("/api/v1/auth/login/", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-
-		log.Println(r.URL.Path)
-
-		switch r.Method {
-		case http.MethodPost:
-			authHandler.LogIn(w, r)
-		default:
-			http.Error(w, `Method not allowed`, http.StatusMethodNotAllowed)
-		}
-	})
-
-	mux.HandleFunc("/api/v1/auth/signup/", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-
-		log.Println(r.URL.Path)
-
-		switch r.Method {
-		case http.MethodPost:
-			authHandler.SignUp(w, r)
-		default:
-			http.Error(w, `Method not allowed`, http.StatusMethodNotAllowed)
-		}
-	})
-
-	mux.HandleFunc("/api/v1/user/boards/", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-
-		log.Println(r.URL.Path)
-
-		switch r.Method {
-		case http.MethodGet:
-			boardHandler.GetUserBoards(w, r)
-		default:
-			http.Error(w, `Method not allowed`, http.StatusMethodNotAllowed)
-		}
-	})
-
-	mux.HandleFunc("/api/v1/auth/verify/", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-
-		log.Println(r.URL.Path)
-
-		switch r.Method {
-		case http.MethodGet:
-			authHandler.VerifyAuth(w, r)
-		default:
-			http.Error(w, `Method not allowed`, http.StatusMethodNotAllowed)
-		}
-	})
-	return nil
+	return totalDuration, nil
 }

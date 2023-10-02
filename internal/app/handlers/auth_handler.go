@@ -2,11 +2,11 @@ package handlers
 
 import (
 	"context"
+	"crypto/sha256"
 	"encoding/json"
 	"fmt"
 	"net/http"
 
-	"server/internal/app/utils"
 	"server/internal/apperrors"
 	"server/internal/pkg/dto"
 	"server/internal/service"
@@ -36,7 +36,7 @@ func (ah AuthHandler) LogIn(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	passwordHash := utils.HashFromAuthInfo(login)
+	passwordHash := hashFromAuthInfo(login)
 	incomingAuth := dto.LoginInfo{
 		Email:        login.Email,
 		PasswordHash: passwordHash,
@@ -90,7 +90,7 @@ func (ah AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	passwordHash := utils.HashFromAuthInfo(signup)
+	passwordHash := hashFromAuthInfo(signup)
 	incomingAuth := dto.SignupInfo{
 		Email:        signup.Email,
 		PasswordHash: passwordHash,
@@ -154,4 +154,11 @@ func (ah AuthHandler) VerifyAuth(w http.ResponseWriter, r *http.Request) {
 	response := fmt.Sprintf(`{"body": %s}`, string(json))
 
 	w.Write([]byte(response))
+}
+
+// TODO salt
+func hashFromAuthInfo(info dto.AuthInfo) string {
+	hasher := sha256.New()
+	hasher.Write([]byte(info.Email + info.Password))
+	return fmt.Sprintf("%x", hasher.Sum(nil))
 }
