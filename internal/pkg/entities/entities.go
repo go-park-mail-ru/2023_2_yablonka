@@ -5,7 +5,11 @@ import (
 	"time"
 )
 
-// TODO Split into DTO and Entity
+type ServerConfig struct {
+	SessionDuration time.Duration
+	SessionIDLength uint
+	JWTSecret       string
+}
 
 type Session struct {
 	UserID     uint64
