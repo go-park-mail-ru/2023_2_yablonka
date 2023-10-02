@@ -18,6 +18,8 @@ import (
 	"github.com/joho/godotenv"
 )
 
+// NewEnvConfig
+// создаёт конфиг из .env файла, находящегося по полученному пути
 func NewEnvConfig(filepath string) (*entities.ServerConfig, error) {
 	var err error
 	if filepath == "" {
@@ -42,7 +44,7 @@ func NewEnvConfig(filepath string) (*entities.ServerConfig, error) {
 		}
 	}
 
-	sessionDuration, err := utils.BuildSessionDuration()
+	sessionDuration, err := utils.BuildSessionDurationEnv()
 	if err != nil {
 		return nil, err
 	}
@@ -60,6 +62,8 @@ func NewEnvConfig(filepath string) (*entities.ServerConfig, error) {
 	}, nil
 }
 
+// ValidateConfig
+// проверяет параметры конфига на валидность
 func ValidateConfig(config *entities.ServerConfig) (bool, error) {
 	if config.SessionDuration < time.Duration(1*time.Second) {
 		return false, apperrors.ErrSessionNullDuration
@@ -73,6 +77,8 @@ func ValidateConfig(config *entities.ServerConfig) (bool, error) {
 	return true, nil
 }
 
+// ConfigMux
+// обвешивает mux приложения хендлерами
 func ConfigMux(config *entities.ServerConfig, mux *http.ServeMux) error {
 	ok, err := ValidateConfig(config)
 	if !ok {

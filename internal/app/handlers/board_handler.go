@@ -15,6 +15,7 @@ type BoardHandler struct {
 	bs service.IBoardService
 }
 
+// TODO Swagger
 func (bh BoardHandler) GetUserBoards(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 

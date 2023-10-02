@@ -20,6 +20,8 @@ func HashFromAuthInfo(info dto.AuthInfo) string {
 	return fmt.Sprintf("%x", hasher.Sum(nil))
 }
 
+// GenerateSessionID
+// возвращает alphanumeric строку, собранную криптографически безопасным PRNG
 func GenerateSessionID(n uint) (string, error) {
 	letterRunes := []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
 	buf := make([]rune, n)
@@ -33,7 +35,9 @@ func GenerateSessionID(n uint) (string, error) {
 	return string(buf), nil
 }
 
-func BuildSessionDuration() (time.Duration, error) {
+// BuildSessionDurationEnv
+// возвращает время жизни сессии на основе параметров в .env (по умолчанию 14 дней)
+func BuildSessionDurationEnv() (time.Duration, error) {
 	durationDays, dDok := os.LookupEnv("SESSION_DURATION_DAYS")
 	days, _ := strconv.Atoi(durationDays)
 	durationHours, dHok := os.LookupEnv("SESSION_DURATION_HOURS")

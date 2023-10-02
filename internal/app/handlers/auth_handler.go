@@ -16,6 +16,7 @@ type AuthHandler struct {
 	us service.IUserAuthService
 }
 
+// TODO Swagger
 func (ah AuthHandler) LogIn(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
@@ -59,6 +60,7 @@ func (ah AuthHandler) LogIn(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(`{"body": {}}`))
 }
 
+// TODO Swagger
 func (ah AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
