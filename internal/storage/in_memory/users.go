@@ -32,6 +32,20 @@ func NewUserStorage() *LocalUserStorage {
 				Name:         "Даниил",
 				Surname:      "Капитанов",
 			},
+			"newchallenger@email.com": {
+				ID:           3,
+				Email:        "newchallenger@email.com",
+				PasswordHash: "4aeb64424005ea74206c1a8e2c054ae1f34fec181bca5c8899152d8791c5c27f",
+				Name:         "Major",
+				Surname:      "Guile",
+			},
+			"ghostinthem@chi.ne": {
+				ID:           4,
+				Email:        "ghostinthem@chi.ne",
+				PasswordHash: "cae8f1b32ad474ef1d27bbe387be25e6e6ee848a1726208cc970ef8a08ed3b08",
+				Name:         "Lain",
+				Surname:      "Iwakura",
+			},
 		},
 		mu: &sync.RWMutex{},
 	}
