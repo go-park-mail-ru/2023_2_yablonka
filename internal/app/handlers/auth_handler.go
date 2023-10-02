@@ -50,6 +50,7 @@ func (ah AuthHandler) LogIn(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Return as JSON
 	token, expiresAt, err := ah.as.AuthUser(ctx, user)
 	if err != nil {
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
@@ -66,6 +67,7 @@ func (ah AuthHandler) LogIn(w http.ResponseWriter, r *http.Request) {
 
 	http.SetCookie(w, cookie)
 
+	// Return user info
 	w.Write([]byte(`{"body": {}}`))
 }
 
@@ -140,7 +142,10 @@ func (ah AuthHandler) VerifyAuth(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	userObj, err := ah.us.GetUserByID(ctx, userInfo.UserID)
-	if err != nil {
+	if err == apperrors.ErrUserNotFound {
+		http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
+		return
+	} else if err != nil {
 		http.Error(w, apperrors.ErrorMap[err].Message, apperrors.ErrorMap[err].Code)
 		return
 	}

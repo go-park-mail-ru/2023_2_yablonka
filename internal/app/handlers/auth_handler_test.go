@@ -357,10 +357,8 @@ func Test_VerifyAuth(t *testing.T) {
 			status := w.Result().StatusCode
 			responseBody := w.Body.Bytes()
 
-			if !test.authorized {
+			if !test.authorized || (test.authorized && !test.successful) {
 				require.Equal(t, http.StatusUnauthorized, status)
-			} else if test.authorized && !test.successful {
-				require.Equal(t, http.StatusNotFound, status)
 			} else {
 				require.Equal(t, http.StatusOK, status)
 				var jsonBody map[string]entities.User
