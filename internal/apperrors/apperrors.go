@@ -7,6 +7,7 @@ import (
 
 // TODO User, Board related errors
 var (
+	ErrEnvNotFound            = errors.New("invalid .env location was provided to the server setup")
 	ErrUserNotFound           = errors.New("no user that matches the provided credentials")
 	ErrWrongPassword          = errors.New("wrong password")
 	ErrUserAlreadyExists      = errors.New("user with this email already exists")
@@ -15,12 +16,13 @@ var (
 	ErrSessionNullDuration    = errors.New("provided session duration is zero seconds")
 	ErrSessionIDLengthMissing = errors.New("session ID length is missing")
 	ErrSessionNullIDLength    = errors.New("session ID length is zero")
+	ErrSessionExpired         = errors.New("user session has expired")
 	ErrJWTWrongMethod         = errors.New("provided token has the wrong signing method")
 	ErrJWTInvalidToken        = errors.New("provided token is invalid")
 	ErrJWTMissingClaim        = errors.New("provided token is missing a required claim")
 	ErrJWTOldToken            = errors.New("provided token has expired")
 	ErrSessionNotFound        = errors.New("no session found for provided session ID")
-	ErrBoardNotFound          = errors.New("no board found for provided user email") // TODO Заменить мэйл на id
+	ErrBoardNotFound          = errors.New("no board found for provided user ID")
 )
 
 type ErrorResponse struct {
@@ -60,5 +62,6 @@ var ErrorMap = map[error]ErrorResponse{
 	ErrSessionNullDuration:    InternalServerErrorResponse,
 	ErrSessionIDLengthMissing: InternalServerErrorResponse,
 	ErrSessionNullIDLength:    InternalServerErrorResponse,
+	ErrSessionExpired:         GenericUnauthorizedResponse,
 	ErrSessionNotFound:        GenericUnauthorizedResponse,
 }
