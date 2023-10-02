@@ -4,6 +4,7 @@ import (
 	"crypto/rand"
 	"crypto/sha256"
 	"fmt"
+	"log"
 	"math/big"
 	"os"
 	"server/internal/apperrors"
@@ -11,12 +12,6 @@ import (
 	"strconv"
 	"time"
 )
-
-type ServerConfig struct {
-	SessionDuration time.Duration
-	SessionIDLength uint
-	JWTSecret       string
-}
 
 // TODO salt
 func HashFromAuthInfo(info dto.AuthInfo) string {
@@ -48,7 +43,8 @@ func BuildSessionDuration() (time.Duration, error) {
 	durationSeconds, dSok := os.LookupEnv("SESSION_DURATION_SECONDS")
 	seconds, _ := strconv.Atoi(durationSeconds)
 	if !(dDok || dHok || dMok || dSok) {
-		return 0, apperrors.ErrSessionDurationMissing
+		log.Println("WARNING: session duration is not set, defaulting to 14 days")
+		return time.Duration(14 * 24 * time.Hour), nil
 	}
 	totalDuration := time.Duration(24*days+hours)*time.Hour + time.Duration(minutes)*time.Minute + time.Duration(seconds)*time.Second
 	if totalDuration < time.Second {

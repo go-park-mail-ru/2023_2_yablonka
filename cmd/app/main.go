@@ -4,19 +4,17 @@ import (
 	"log"
 	"net/http"
 	"server/internal/app/config"
-
-	"github.com/joho/godotenv"
 )
 
 func main() {
-	err := godotenv.Load()
+	serverConfig, err := config.NewEnvConfig("")
 	if err != nil {
-		log.Fatal("Error loading .env file")
+		log.Fatal(err.Error())
 	}
 
 	mux := http.NewServeMux()
 
-	config.ConfigMux(mux)
+	err = config.ConfigMux(serverConfig, mux)
 
 	http.ListenAndServe(":8080", mux)
 	if err != nil {
