@@ -48,6 +48,16 @@ func (us AuthUserService) GetUser(ctx context.Context, info dto.LoginInfo) (*ent
 	return user, nil
 }
 
+// GetUserByID
+// возвращает объект пользователя по полученным авторизационным данным
+func (us AuthUserService) GetUserByID(ctx context.Context, uid uint64) (*entities.User, error) {
+	user, err := us.storage.GetUserByID(ctx, uid)
+	if err != nil {
+		return nil, err
+	}
+	return user, nil
+}
+
 // CreateUser
 // возвращает объект пользователя по полученным регистрационным данным с записью в хранилище
 func (us AuthUserService) CreateUser(ctx context.Context, info dto.SignupInfo) (*entities.User, error) {
