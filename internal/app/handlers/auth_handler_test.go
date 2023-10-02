@@ -7,19 +7,18 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
+	"server/internal/pkg/entities"
 	"server/internal/service"
 	authservice "server/internal/service/auth"
 	userservice "server/internal/service/user"
 	"server/internal/storage/in_memory"
 
-	"github.com/joho/godotenv"
 	"github.com/stretchr/testify/require"
 )
 
 func Test_Login(t *testing.T) {
-	err := godotenv.Load("../../../cmd/app/.env")
-	require.NoError(t, err)
 	t.Parallel()
 
 	tests := []struct {
@@ -82,28 +81,29 @@ func Test_Login(t *testing.T) {
 			expectedStatus: http.StatusUnauthorized,
 		},
 	}
+	serverConfig := entities.ServerConfig{
+		SessionDuration: time.Duration(14 * 24 * time.Hour),
+		SessionIDLength: 32,
+		JWTSecret:       "TESTJWTSECRET123",
+	}
 	for _, test := range tests {
 		test := test
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
+
 			userStorage := in_memory.NewUserStorage()
 			var authService service.IAuthService
-			var initerr error
+			userAuthService := userservice.NewAuthUserService(userStorage)
 
 			switch test.serviceType {
 			case "JWT":
-				authService, initerr = authservice.NewAuthJWTService()
-				require.NoError(t, initerr)
+				authService = authservice.NewAuthJWTService(&serverConfig)
 			case "Session":
-				authStorage, initerr := in_memory.NewAuthStorage()
-				require.NoError(t, initerr)
-				authService, initerr = authservice.NewAuthSessionService(authStorage)
-				require.NoError(t, initerr)
+				authStorage := in_memory.NewAuthStorage()
+				authService = authservice.NewAuthSessionService(&serverConfig, authStorage)
 			}
 
-			userAuthService := userservice.NewAuthUserService(userStorage)
 			authHandler := NewAuthHandler(authService, userAuthService)
-
 			body := bytes.NewReader([]byte(
 				fmt.Sprintf(`{"email":"%s", "password":"%s"}`, test.email, test.password),
 			))
@@ -134,8 +134,6 @@ func Test_Login(t *testing.T) {
 }
 
 func Test_Signup(t *testing.T) {
-	err := godotenv.Load("../../../cmd/app/.env")
-	require.NoError(t, err)
 	t.Parallel()
 
 	tests := []struct {
@@ -183,23 +181,24 @@ func Test_Signup(t *testing.T) {
 		test := test
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
-			userStorage := in_memory.NewUserStorage()
+			serverConfig := entities.ServerConfig{
+				SessionDuration: time.Duration(14 * 24 * time.Hour),
+				SessionIDLength: 32,
+				JWTSecret:       "TESTJWTSECRET123",
+			}
 
+			userStorage := in_memory.NewUserStorage()
 			var authService service.IAuthService
-			var initerr error
+			userAuthService := userservice.NewAuthUserService(userStorage)
 
 			switch test.serviceType {
 			case "JWT":
-				authService, initerr = authservice.NewAuthJWTService()
-				require.NoError(t, initerr)
+				authService = authservice.NewAuthJWTService(&serverConfig)
 			case "Session":
-				authStorage, initerr := in_memory.NewAuthStorage()
-				require.NoError(t, initerr)
-				authService, initerr = authservice.NewAuthSessionService(authStorage)
-				require.NoError(t, initerr)
+				authStorage := in_memory.NewAuthStorage()
+				authService = authservice.NewAuthSessionService(&serverConfig, authStorage)
 			}
 
-			userAuthService := userservice.NewAuthUserService(userStorage)
 			authHandler := NewAuthHandler(authService, userAuthService)
 
 			body := bytes.NewReader([]byte(
