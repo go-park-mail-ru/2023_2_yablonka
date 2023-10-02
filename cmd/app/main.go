@@ -3,7 +3,8 @@ package main
 import (
 	"log"
 	"net/http"
-	"server/internal/app/config"
+	config "server/internal/app/config/session"
+	mux_stuff "server/internal/app/mux"
 )
 
 // @title LA TABULA API
@@ -21,14 +22,14 @@ import (
 // @BasePath /
 // @query.collection.format multi
 func main() {
-	serverConfig, err := config.NewEnvConfig("")
+	serverConfig, err := config.NewSessionEnvConfig("")
 	if err != nil {
 		log.Fatal(err.Error())
 	}
 	log.Println("server configured")
 
 	mux := http.NewServeMux()
-	err = config.ConfigMux(serverConfig, mux)
+	err = mux_stuff.SessionConfigMux(*serverConfig, mux)
 	log.Println("mux configured")
 
 	http.ListenAndServe(":8080", mux)

@@ -5,14 +5,6 @@ import (
 	"time"
 )
 
-// ServerConfig
-// структура для хранения параметров сервера
-type ServerConfig struct {
-	SessionDuration time.Duration
-	SessionIDLength uint
-	JWTSecret       string
-}
-
 // Session
 // структура для хранения сессии
 type Session struct {

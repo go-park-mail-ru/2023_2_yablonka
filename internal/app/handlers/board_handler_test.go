@@ -6,6 +6,8 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"server/internal/app/config"
+	session "server/internal/app/config/session"
 	"server/internal/pkg/dto"
 	"server/internal/pkg/entities"
 	authservice "server/internal/service/auth"
@@ -77,15 +79,16 @@ func Test_GetUserBoards(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
 
-			serverConfig := &entities.ServerConfig{
-				SessionDuration: time.Duration(14 * 24 * time.Hour),
+			serverConfig := &session.SessionServerConfig{
+				Base: config.BaseServerConfig{
+					SessionDuration: time.Duration(14 * 24 * time.Hour),
+				},
 				SessionIDLength: 32,
-				JWTSecret:       "TESTJWTSECRET123",
 			}
 			boardStorage := in_memory.NewBoardStorage()
 			boardService := boardservice.NewBoardService(boardStorage)
 			authStorage := in_memory.NewAuthStorage()
-			authService := authservice.NewAuthSessionService(serverConfig, authStorage)
+			authService := authservice.NewAuthSessionService(serverConfig.SessionIDLength, serverConfig.Base.SessionDuration, authStorage)
 			boardHandler := NewBoardHandler(authService, boardService)
 
 			body := bytes.NewReader([]byte(""))

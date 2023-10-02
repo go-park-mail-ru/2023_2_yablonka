@@ -2,7 +2,8 @@ package in_memory
 
 import (
 	"context"
-	"server/internal/app/utils"
+	"crypto/rand"
+	"math/big"
 	"server/internal/apperrors"
 	"server/internal/pkg/entities"
 	"sync"
@@ -45,7 +46,7 @@ func (as LocalAuthStorage) CreateSession(ctx context.Context, session *entities.
 	// 	}
 	// }
 	sessionIDLength := ctx.Value("sessionIDLength").(uint)
-	sessionID, err := utils.GenerateSessionID(sessionIDLength)
+	sessionID, err := generateSessionID(sessionIDLength)
 	if err != nil {
 		return "", err
 	}
@@ -80,4 +81,19 @@ func (as LocalAuthStorage) DeleteSession(ctx context.Context, sid string) error 
 	as.authData[sid] = nil
 	as.mu.Unlock()
 	return nil
+}
+
+// GenerateSessionID
+// возвращает alphanumeric строку, собранную криптографически безопасным PRNG
+func generateSessionID(n uint) (string, error) {
+	letterRunes := []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
+	buf := make([]rune, n)
+	for i := range buf {
+		j, err := rand.Int(rand.Reader, big.NewInt(int64(len(letterRunes))))
+		if err != nil {
+			return "", err
+		}
+		buf[i] = letterRunes[j.Int64()]
+	}
+	return string(buf), nil
 }

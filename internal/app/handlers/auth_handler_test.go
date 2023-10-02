@@ -10,6 +10,9 @@ import (
 	"testing"
 	"time"
 
+	config "server/internal/app/config"
+	jwt "server/internal/app/config/jwt"
+	session "server/internal/app/config/session"
 	"server/internal/pkg/entities"
 	"server/internal/service"
 	authservice "server/internal/service/auth"
@@ -82,11 +85,6 @@ func Test_Login(t *testing.T) {
 			expectedStatus: http.StatusUnauthorized,
 		},
 	}
-	serverConfig := entities.ServerConfig{
-		SessionDuration: time.Duration(14 * 24 * time.Hour),
-		SessionIDLength: 32,
-		JWTSecret:       "TESTJWTSECRET123",
-	}
 	for _, test := range tests {
 		test := test
 		t.Run(test.name, func(t *testing.T) {
@@ -98,10 +96,22 @@ func Test_Login(t *testing.T) {
 
 			switch test.serviceType {
 			case "JWT":
-				authService = authservice.NewAuthJWTService(&serverConfig)
+				config := jwt.JWTServerConfig{
+					Base: config.BaseServerConfig{
+						SessionDuration: time.Duration(14 * 24 * time.Hour),
+					},
+					JWTSecret: "TESTJWTSECRET123",
+				}
+				authService = authservice.NewAuthJWTService(config.JWTSecret, config.Base.SessionDuration)
 			case "Session":
+				config := session.SessionServerConfig{
+					Base: config.BaseServerConfig{
+						SessionDuration: time.Duration(14 * 24 * time.Hour),
+					},
+					SessionIDLength: 32,
+				}
 				authStorage := in_memory.NewAuthStorage()
-				authService = authservice.NewAuthSessionService(&serverConfig, authStorage)
+				authService = authservice.NewAuthSessionService(config.SessionIDLength, config.Base.SessionDuration, authStorage)
 			}
 
 			authHandler := NewAuthHandler(authService, userAuthService)
@@ -182,11 +192,6 @@ func Test_Signup(t *testing.T) {
 		test := test
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
-			serverConfig := entities.ServerConfig{
-				SessionDuration: time.Duration(14 * 24 * time.Hour),
-				SessionIDLength: 32,
-				JWTSecret:       "TESTJWTSECRET123",
-			}
 
 			userStorage := in_memory.NewUserStorage()
 			var authService service.IAuthService
@@ -194,10 +199,22 @@ func Test_Signup(t *testing.T) {
 
 			switch test.serviceType {
 			case "JWT":
-				authService = authservice.NewAuthJWTService(&serverConfig)
+				config := jwt.JWTServerConfig{
+					Base: config.BaseServerConfig{
+						SessionDuration: time.Duration(14 * 24 * time.Hour),
+					},
+					JWTSecret: "TESTJWTSECRET123",
+				}
+				authService = authservice.NewAuthJWTService(config.JWTSecret, config.Base.SessionDuration)
 			case "Session":
+				config := session.SessionServerConfig{
+					Base: config.BaseServerConfig{
+						SessionDuration: time.Duration(14 * 24 * time.Hour),
+					},
+					SessionIDLength: 32,
+				}
 				authStorage := in_memory.NewAuthStorage()
-				authService = authservice.NewAuthSessionService(&serverConfig, authStorage)
+				authService = authservice.NewAuthSessionService(config.SessionIDLength, config.Base.SessionDuration, authStorage)
 			}
 
 			authHandler := NewAuthHandler(authService, userAuthService)
@@ -319,17 +336,30 @@ func Test_VerifyAuth(t *testing.T) {
 		test := test
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
-			serverConfig := entities.ServerConfig{
-				SessionDuration: time.Duration(14 * 24 * time.Hour),
-				SessionIDLength: 32,
-				JWTSecret:       "TESTJWTSECRET123",
-			}
 
 			userStorage := in_memory.NewUserStorage()
 			var authService service.IAuthService
 			userAuthService := userservice.NewAuthUserService(userStorage)
-			authStorage := in_memory.NewAuthStorage()
-			authService = authservice.NewAuthSessionService(&serverConfig, authStorage)
+
+			switch test.serviceType {
+			case "JWT":
+				config := jwt.JWTServerConfig{
+					Base: config.BaseServerConfig{
+						SessionDuration: time.Duration(14 * 24 * time.Hour),
+					},
+					JWTSecret: "TESTJWTSECRET123",
+				}
+				authService = authservice.NewAuthJWTService(config.JWTSecret, config.Base.SessionDuration)
+			case "Session":
+				config := session.SessionServerConfig{
+					Base: config.BaseServerConfig{
+						SessionDuration: time.Duration(14 * 24 * time.Hour),
+					},
+					SessionIDLength: 32,
+				}
+				authStorage := in_memory.NewAuthStorage()
+				authService = authservice.NewAuthSessionService(config.SessionIDLength, config.Base.SessionDuration, authStorage)
+			}
 
 			authHandler := NewAuthHandler(authService, userAuthService)
 
