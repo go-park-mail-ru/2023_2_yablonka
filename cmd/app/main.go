@@ -6,9 +6,9 @@ import (
 	"server/internal/app/config"
 )
 
-// @title Go + Gin Todo API
+// @title LA TABULA API
 // @version 1.0
-// @description This is a sample server todo server. You can visit the GitHub repository at https://github.com/LordGhostX/swag-gin-demo
+// @description haha
 
 // @contact.name API Support
 // @contact.url http://www.swagger.io/support
