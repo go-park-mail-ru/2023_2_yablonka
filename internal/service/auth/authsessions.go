@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"server/internal/apperrors"
 	"server/internal/pkg/dto"
 	"server/internal/pkg/entities"
 	"server/internal/storage"
@@ -13,18 +14,20 @@ import (
 // содержит интерфейс для работы с БД и длительность сессии
 type AuthSessionService struct {
 	sessionDuration time.Duration
+	sessionIDLength uint
 	storage         storage.IAuthStorage
 }
 
 // AuthUser
-// Возвращает ID сессии её длительность
+// возвращает ID сессии её длительность
 func (a *AuthSessionService) AuthUser(ctx context.Context, user *entities.User) (string, time.Time, error) {
 	session := &entities.Session{
 		UserID:     user.ID,
 		ExpiryDate: time.Now().Add(a.sessionDuration),
 	}
+	authCtx := context.WithValue(ctx, "sessionIDLength", a.sessionIDLength)
 	expiresAt := session.ExpiryDate
-	sessionId, err := a.storage.CreateSession(ctx, session)
+	sessionId, err := a.storage.CreateSession(authCtx, session)
 	if err != nil {
 		return "", time.Time{}, err
 	}
@@ -38,9 +41,22 @@ func (a *AuthSessionService) VerifyAuth(ctx context.Context, sessionString strin
 	if err != nil {
 		return nil, err
 	}
+	if sessionObj.ExpiryDate.Before(time.Now()) {
+		return nil, apperrors.ErrSessionExpired
+	}
 	return &dto.VerifiedAuthInfo{
 		UserID: sessionObj.UserID,
 	}, nil
+}
+
+// LogOut
+// удаляет сессию пользователя из хранилища, если она существует
+func (a *AuthSessionService) LogOut(ctx context.Context, sessionString string) error {
+	_, err := a.storage.GetSession(ctx, sessionString)
+	if err != nil {
+		return err
+	}
+	return a.storage.DeleteSession(ctx, sessionString)
 }
 
 // GetLifetime
