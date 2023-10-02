@@ -3,6 +3,7 @@ package handlers
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -108,7 +109,7 @@ func Test_Login(t *testing.T) {
 				fmt.Sprintf(`{"email":"%s", "password":"%s"}`, test.email, test.password),
 			))
 
-			r := httptest.NewRequest("POST", "/api/v1/login/", body)
+			r := httptest.NewRequest("POST", "/api/v1/auth/login/", body)
 			w := httptest.NewRecorder()
 
 			authHandler.LogIn(w, r)
@@ -205,7 +206,7 @@ func Test_Signup(t *testing.T) {
 				fmt.Sprintf(`{"email":"%s", "password":"%s"}`, test.email, test.password),
 			))
 
-			r := httptest.NewRequest("POST", "/api/v1/signup/", body)
+			r := httptest.NewRequest("POST", "/api/v1/auth/signup/", body)
 			w := httptest.NewRecorder()
 
 			authHandler.SignUp(w, r)
@@ -229,6 +230,149 @@ func Test_Signup(t *testing.T) {
 				require.Equal(t, expectedID, verifiedAuth.UserID, "User wasn't saved correctly")
 			} else {
 				require.Empty(t, w.Result().Cookies(), "Cookie was set despite unsuccessful registration")
+			}
+		})
+	}
+}
+
+func Test_VerifyAuth(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name           string
+		email          string
+		password       string
+		serviceType    string
+		user           *entities.User
+		authorized     bool
+		successful     bool
+		expectedStatus int
+	}{
+		{
+			name:        "[JWT] Valid authentification",
+			serviceType: "JWT",
+			user: &entities.User{
+				ID:           1,
+				Email:        "test@email.com",
+				PasswordHash: "8a65f9232aec42190593cebe45067d14ade16eaf9aaefe0c2e9ec425b5b8ca73",
+				Name:         "Никита",
+				Surname:      "Архаров",
+				ThumbnailURL: "https://sun1-27.userapi.com/s/v1/ig1/cAIfmwiDayww2WxVGPnIr5sHTSgXaf_567nuovSw_X4Cy9XAKrSVsAT2yAmJcJXDPkVOsXPW.jpg?size=50x50&quality=96&crop=351,248,540,540&ava=1",
+			},
+			authorized:     true,
+			successful:     true,
+			expectedStatus: http.StatusOK,
+		},
+		{
+			name:           "[JWT] No auth",
+			serviceType:    "JWT",
+			authorized:     false,
+			expectedStatus: http.StatusUnauthorized,
+		},
+		{
+			name:        "[JWT] Auth as nonexistent user",
+			serviceType: "JWT",
+			user: &entities.User{
+				ID:           5,
+				Email:        "fakeuser@email.com",
+				PasswordHash: "8a65f9232aec42190593cebe45067d14ade16eaf9aaefe0c2e9ec425b5b8ca73",
+			},
+			authorized:     true,
+			successful:     false,
+			expectedStatus: http.StatusUnauthorized,
+		},
+		{
+			name:        "[Session] Valid authentification",
+			serviceType: "Session",
+			user: &entities.User{
+				ID:           2,
+				Email:        "email@example.com",
+				PasswordHash: "177e4fd1a8b22992e78145c3ba9c8781124e5c166d03b9c302cf8e100d77ad22",
+				Name:         "Даниил",
+				Surname:      "Капитанов",
+				ThumbnailURL: "https://sun1-47.userapi.com/s/v1/ig2/aby-Y8KQ-yfQPLdvO-gq-ZenU63Iiw3ULbNlimdfaqLauSOj1cJ2jLxfBDtBMLpBW5T0UhaLFpyLVxAoYuVZiPB8.jpg?size=50x50&quality=95&crop=0,0,400,400&ava=1",
+			},
+			authorized:     true,
+			successful:     true,
+			expectedStatus: http.StatusOK,
+		},
+		{
+			name:           "[Session] No auth",
+			serviceType:    "Session",
+			authorized:     false,
+			expectedStatus: http.StatusUnauthorized,
+		},
+		{
+			name:        "[Session] Auth as nonexistent user",
+			serviceType: "Session",
+			user: &entities.User{
+				ID:           5,
+				Email:        "fakeuser@email.com",
+				PasswordHash: "8a65f9232aec42190593cebe45067d14ade16eaf9aaefe0c2e9ec425b5b8ca73",
+			},
+			authorized:     true,
+			successful:     false,
+			expectedStatus: http.StatusUnauthorized,
+		},
+	}
+	for _, test := range tests {
+		test := test
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+			serverConfig := entities.ServerConfig{
+				SessionDuration: time.Duration(14 * 24 * time.Hour),
+				SessionIDLength: 32,
+				JWTSecret:       "TESTJWTSECRET123",
+			}
+
+			userStorage := in_memory.NewUserStorage()
+			var authService service.IAuthService
+			userAuthService := userservice.NewAuthUserService(userStorage)
+			authStorage := in_memory.NewAuthStorage()
+			authService = authservice.NewAuthSessionService(&serverConfig, authStorage)
+
+			authHandler := NewAuthHandler(authService, userAuthService)
+
+			body := bytes.NewReader([]byte(""))
+
+			r := httptest.NewRequest("GET", "/api/v1/auth/verifyauth/", body)
+			w := httptest.NewRecorder()
+
+			if test.authorized {
+				ctx := context.Background()
+				token, expiresAt, err := authService.AuthUser(ctx, test.user)
+				require.NoError(t, err)
+				cookie := &http.Cookie{
+					Name:     "tabula_user",
+					Value:    token,
+					HttpOnly: true,
+					SameSite: http.SameSiteDefaultMode,
+					Expires:  expiresAt,
+				}
+				r.AddCookie(cookie)
+			}
+
+			w.Header().Set("Content-Type", "application/json")
+			authHandler.VerifyAuth(w, r)
+			status := w.Result().StatusCode
+			responseBody := w.Body.Bytes()
+
+			if !test.authorized {
+				require.Equal(t, http.StatusUnauthorized, status)
+			} else if test.authorized && !test.successful {
+				require.Equal(t, http.StatusNotFound, status)
+			} else {
+				require.Equal(t, http.StatusOK, status)
+				var jsonBody map[string]entities.User
+				err := json.Unmarshal(responseBody, &jsonBody)
+				require.NoError(t, err)
+				authedUser := jsonBody["body"]
+				require.Equal(t, test.user.ID, authedUser.ID)
+				require.Equal(t, test.user.Email, authedUser.Email)
+				require.Empty(t, authedUser.PasswordHash)
+				require.Equal(t, test.user.Name, authedUser.Name)
+				require.Equal(t, test.user.Surname, authedUser.Surname)
+				require.Equal(t, test.user.ThumbnailURL, authedUser.ThumbnailURL)
 			}
 		})
 	}
