@@ -96,7 +96,7 @@ func ConfigMux(config *entities.ServerConfig, mux *http.ServeMux) error {
 	authHandler := handlers.NewAuthHandler(authService, userAuthService)
 	boardHandler := handlers.NewBoardHandler(authService, boardService)
 
-	mux.HandleFunc("/api/v1/login/", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/api/v1/auth/login/", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 
 		log.Println(r.URL.Path)
@@ -109,7 +109,7 @@ func ConfigMux(config *entities.ServerConfig, mux *http.ServeMux) error {
 		}
 	})
 
-	mux.HandleFunc("/api/v1/signup/", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/api/v1/auth/signup/", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 
 		log.Println(r.URL.Path)
@@ -122,7 +122,7 @@ func ConfigMux(config *entities.ServerConfig, mux *http.ServeMux) error {
 		}
 	})
 
-	mux.HandleFunc("/api/v1/getuserboards/", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/api/v1/user/boards/", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 
 		log.Println(r.URL.Path)
@@ -130,6 +130,19 @@ func ConfigMux(config *entities.ServerConfig, mux *http.ServeMux) error {
 		switch r.Method {
 		case http.MethodGet:
 			boardHandler.GetUserBoards(w, r)
+		default:
+			http.Error(w, `Method not allowed`, http.StatusMethodNotAllowed)
+		}
+	})
+
+	mux.HandleFunc("/api/v1/auth/verify/", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+
+		log.Println(r.URL.Path)
+
+		switch r.Method {
+		case http.MethodGet:
+			authHandler.VerifyAuth(w, r)
 		default:
 			http.Error(w, `Method not allowed`, http.StatusMethodNotAllowed)
 		}
