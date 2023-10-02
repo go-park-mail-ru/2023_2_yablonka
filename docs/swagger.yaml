@@ -1,0 +1,33 @@
+basePath: /
+host: localhost:8080
+info:
+  contact:
+    email: support@swagger.io
+    name: API Support
+    url: http://www.swagger.io/support
+  description: haha
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+  title: LA TABULA API
+  version: "1.0"
+paths:
+  /api/v1/users/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Create new session or continue old one
+      operationId: login
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+      summary: Log user into the system
+swagger: "2.0"

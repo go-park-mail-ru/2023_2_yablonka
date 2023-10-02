@@ -1,0 +1,5 @@
+*.env
+coverage*
+*.txt
+*.out
+/.idea
