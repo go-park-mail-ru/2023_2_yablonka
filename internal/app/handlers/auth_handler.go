@@ -47,7 +47,7 @@ func (ah AuthHandler) LogIn(w http.ResponseWriter, r *http.Request) {
 	}
 
 	cookie := &http.Cookie{
-		Name:     "user_jwt",
+		Name:     "tabula_user",
 		Value:    token,
 		HttpOnly: true,
 		SameSite: http.SameSiteDefaultMode,
