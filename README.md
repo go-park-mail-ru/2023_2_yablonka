@@ -3,7 +3,7 @@
 
 - [Репозиторий фронтенда](https://github.com/frontend-park-mail-ru/2023_2_yablonka)
 
-- [Деплой]()
+- [Деплой]( )
 
 - [Swagger](https://app.swaggerhub.com/apis/IBlonka/IBLAPI/1.0.0)
 
