@@ -9,9 +9,9 @@ func NewAuthHandler(as service.IAuthService, us service.IUserAuthService) *AuthH
 	}
 }
 
-func NewBoardHandler(bs service.IBoardService, as service.IAuthService) *BoardHandler {
+func NewBoardHandler(as service.IAuthService, bs service.IBoardService) *BoardHandler {
 	return &BoardHandler{
-		authService:  as,
-		boardService: bs,
+		as: as,
+		bs: bs,
 	}
 }

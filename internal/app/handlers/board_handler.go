@@ -11,8 +11,8 @@ import (
 )
 
 type BoardHandler struct {
-	authService  service.IAuthService
-	boardService service.IBoardService
+	as service.IAuthService
+	bs service.IBoardService
 }
 
 func (bh BoardHandler) GetUserBoards(w http.ResponseWriter, r *http.Request) {
@@ -28,23 +28,24 @@ func (bh BoardHandler) GetUserBoards(w http.ResponseWriter, r *http.Request) {
 	ctx := context.Background()
 	token := cookie.Value
 
-	user, err := bh.authService.VerifyAuth(ctx, token)
+	user, err := bh.as.VerifyAuth(ctx, token)
 
 	if err != nil {
 		http.Error(w, apperrors.ErrorMap[err].Message, apperrors.ErrorMap[err].Code)
 		return
 	}
 
-	ownedBoards, err := bh.boardService.GetUserOwnedBoards(ctx, *user)
+	ownedBoards, err := bh.bs.GetUserOwnedBoards(ctx, *user)
 	if err != nil {
 		http.Error(w, apperrors.ErrorMap[err].Message, apperrors.ErrorMap[err].Code)
 		return
 	}
-	guestBoards, err := bh.boardService.GetUserGuestBoards(ctx, *user)
+	guestBoards, err := bh.bs.GetUserGuestBoards(ctx, *user)
 	if err != nil {
 		http.Error(w, apperrors.ErrorMap[err].Message, apperrors.ErrorMap[err].Code)
 		return
 	}
+
 	userBoards := dto.UserTotalBoardInfo{
 		OwnedBoards: ownedBoards,
 		GuestBoards: guestBoards,
