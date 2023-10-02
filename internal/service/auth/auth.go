@@ -1,38 +1,25 @@
 package service
 
 import (
-	"os"
-	"server/internal/app/utils"
-	"server/internal/apperrors"
+	"server/internal/pkg/entities"
 	"server/internal/storage"
 )
 
 // NewAuthJWTService
 // возвращает AuthJWTService с инициализированным JWT-секретом и датой истечения рефреш-токенов
-func NewAuthJWTService() (*AuthJWTService, error) {
-	tokenLifetime, err := utils.BuildSessionDuration()
-	if err != nil {
-		return nil, err
-	}
-	secret, ok := os.LookupEnv("JWT_SECRET")
-	if !ok {
-		return nil, apperrors.ErrJWTSecretMissing
-	}
+func NewAuthJWTService(config *entities.ServerConfig) *AuthJWTService {
 	return &AuthJWTService{
-		jwtSecret:     []byte(secret),
-		tokenLifetime: tokenLifetime,
-	}, nil
+		jwtSecret:     []byte(config.JWTSecret),
+		tokenLifetime: config.SessionDuration,
+	}
 }
 
 // NewAuthSessionService
 // возвращает AuthSessionService с инициализированной датой истечения сессии и хранилищем сессий
-func NewAuthSessionService(storage storage.IAuthStorage) (*AuthSessionService, error) {
-	sessionDuration, err := utils.BuildSessionDuration()
-	if err != nil {
-		return nil, err
-	}
+func NewAuthSessionService(config *entities.ServerConfig, storage storage.IAuthStorage) *AuthSessionService {
 	return &AuthSessionService{
-		sessionDuration: sessionDuration,
+		sessionDuration: config.SessionDuration,
+		sessionIDLength: config.SessionIDLength,
 		storage:         storage,
-	}, nil
+	}
 }
