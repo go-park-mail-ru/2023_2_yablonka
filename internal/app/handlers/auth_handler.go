@@ -3,6 +3,7 @@ package handlers
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"server/internal/app/utils"
@@ -118,4 +119,34 @@ func (ah AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 	http.SetCookie(w, cookie)
 
 	w.Write([]byte(`{"body": {}}`))
+}
+
+func (ah AuthHandler) VerifyAuth(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+
+	cookie, err := r.Cookie("tabula_user")
+
+	if err != nil {
+		http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
+		return
+	}
+
+	ctx := context.Background()
+	token := cookie.Value
+
+	userInfo, err := ah.as.VerifyAuth(ctx, token)
+	if err != nil {
+		http.Error(w, apperrors.ErrorMap[err].Message, apperrors.ErrorMap[err].Code)
+		return
+	}
+	userObj, err := ah.us.GetUserByID(ctx, userInfo.UserID)
+	if err != nil {
+		http.Error(w, apperrors.ErrorMap[err].Message, apperrors.ErrorMap[err].Code)
+		return
+	}
+
+	json, _ := json.Marshal(userObj)
+	response := fmt.Sprintf(`{"body": %s}`, string(json))
+
+	w.Write([]byte(response))
 }
