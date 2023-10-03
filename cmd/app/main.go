@@ -82,5 +82,4 @@ func main() {
 	}
 
 	<-idleConnsClosed
-	// TODO graceful shutdown
 }
