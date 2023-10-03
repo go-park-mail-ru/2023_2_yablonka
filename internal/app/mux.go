@@ -4,50 +4,33 @@ import (
 	"log"
 	"net/http"
 	"server/internal/app/handlers"
-	session "server/internal/config/session"
-	auth "server/internal/service/auth"
-	board "server/internal/service/board"
-	user "server/internal/service/user"
-	"server/internal/storage/in_memory"
 
 	"github.com/go-chi/chi"
 )
 
-// SessionConfigMux
-// обвешивает mux приложения хендлерами
-func SessionConfigMux(config session.SessionServerConfig) (http.Handler, error) {
-	err := config.Validate()
-	if err != nil {
-		return nil, err
-	}
+// type Mux interface {
+// 	GetMux(handlers.HandlerManager) (http.Handler, error)
+// }
 
-	userStorage := in_memory.NewUserStorage()
-	authStorage := in_memory.NewAuthStorage()
-	boardStorage := in_memory.NewBoardStorage()
+// GetChiMux
+// возвращает mux, реализованный с помощью модуля chi
+func GetChiMux(manager handlers.HandlerManager) (http.Handler, error) {
+	mux := chi.NewRouter()
 
-	authService := auth.NewAuthSessionService(config, authStorage)
-	userAuthService := user.NewAuthUserService(userStorage)
-	//userUserService := user.NewUserService(userStorage)
-	boardService := board.NewBoardService(boardStorage)
-	authHandler := handlers.NewAuthHandler(authService, userAuthService)
-	boardHandler := handlers.NewBoardHandler(authService, boardService)
+	mux.Use(logger)
+	mux.Use(jsonHeader)
 
-	router := chi.NewRouter()
-
-	router.Use(logger)
-	router.Use(jsonHeader)
-
-	router.Route("/api/v1/auth", func(r chi.Router) {
-		router.Post("/login", authHandler.LogIn)
-		router.Post("/signup", authHandler.SignUp)
-		router.Get("/verify", authHandler.VerifyAuth)
+	mux.Route("/api/v1/auth", func(r chi.Router) {
+		mux.Post("/login", manager.AuthHandler.LogIn)
+		mux.Post("/signup", manager.AuthHandler.SignUp)
+		mux.Get("/verify", manager.AuthHandler.VerifyAuth)
 	})
 
-	router.Route("/api/v1/user", func(r chi.Router) {
-		router.Get("/boards", boardHandler.GetUserBoards)
+	mux.Route("/api/v1/user", func(r chi.Router) {
+		mux.Get("/boards", manager.BoardHandler.GetUserBoards)
 	})
 
-	return router, nil
+	return mux, nil
 }
 
 func logger(next http.Handler) http.Handler {
