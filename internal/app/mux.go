@@ -1,9 +1,9 @@
 package app
 
 import (
-	"log"
 	"net/http"
 	"server/internal/app/handlers"
+	"server/internal/app/middleware"
 
 	"github.com/go-chi/chi"
 )
@@ -16,9 +16,8 @@ import (
 // возвращает mux, реализованный с помощью модуля chi
 func GetChiMux(manager handlers.HandlerManager) (http.Handler, error) {
 	mux := chi.NewRouter()
-
-	mux.Use(logger)
-	mux.Use(jsonHeader)
+	mux.Use(middleware.Logger)
+	mux.Use(middleware.JsonHeader)
 
 	mux.Route("/api/v1/auth", func(r chi.Router) {
 		mux.Post("/login", manager.AuthHandler.LogIn)
@@ -31,16 +30,4 @@ func GetChiMux(manager handlers.HandlerManager) (http.Handler, error) {
 	})
 
 	return mux, nil
-}
-
-func logger(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		log.Println(r.URL.Path)
-	})
-}
-
-func jsonHeader(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-	})
 }

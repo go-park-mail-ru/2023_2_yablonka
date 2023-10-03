@@ -12,8 +12,8 @@ import (
 // HandlerManager
 // объект со всеми хэндлерами приложения
 type HandlerManager struct {
-	AuthHandler  AuthHandler
-	BoardHandler BoardHandler
+	AuthHandler
+	BoardHandler
 }
 
 // NewAuthHandler
