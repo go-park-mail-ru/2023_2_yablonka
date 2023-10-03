@@ -1,11 +1,13 @@
 package middleware
 
 import (
+	"log"
 	"net/http"
 )
 
-func JsonHeader(next http.Handler) http.Handler {
+func Logger(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
+		log.Println(r.URL.Path)
+		next.ServeHTTP(w, r)
 	})
 }
