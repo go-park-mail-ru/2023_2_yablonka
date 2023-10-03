@@ -66,3 +66,9 @@ func (a *AuthJWTService) VerifyAuth(ctx context.Context, incomingToken string) (
 func (a *AuthJWTService) GetLifetime() time.Duration {
 	return a.tokenLifetime
 }
+
+// LogOut
+// удаляет сессию пользователя из хранилища, если она существует
+func (a *AuthJWTService) LogOut(ctx context.Context, sessionString string) error {
+	return nil
+}

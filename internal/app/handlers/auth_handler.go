@@ -154,6 +154,48 @@ func (ah AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 
 func (ah AuthHandler) LogOut(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
+
+	rCtx := r.Context()
+
+	cookie, err := r.Cookie("tabula_user")
+	if err != nil {
+		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.GenericUnauthorizedResponse))
+		return
+	}
+
+	token := cookie.Value
+
+	auth, err := ah.as.VerifyAuth(rCtx, token)
+	if err != nil {
+		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.ErrorMap[err]))
+		return
+	}
+
+	err = ah.as.LogOut(rCtx, token)
+	if err != nil {
+		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.ErrorMap[err]))
+		return
+	}
+
+	err = ah.us.DeleteUser(rCtx, auth.UserID)
+	if err == apperrors.ErrUserNotFound {
+		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.GenericUnauthorizedResponse))
+		return
+	} else if err != nil {
+		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.ErrorMap[err]))
+		return
+	}
+
+	response := dto.JSONResponse{
+		Body: dto.JSONMap{},
+	}
+	jsonResponse, err := json.Marshal(response)
+	if err != nil {
+		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.InternalServerErrorResponse))
+		return
+	}
+
+	w.Write(jsonResponse)
 }
 
 func (ah AuthHandler) VerifyAuthMiddleware(next http.Handler) http.Handler {

@@ -11,13 +11,13 @@ import (
 // LocalUserStorage
 // Локальное хранилище данных
 type LocalUserStorage struct {
-	userData map[string]entities.User
+	userData map[string]*entities.User
 	mu       *sync.RWMutex
 }
 
 func NewUserStorage() *LocalUserStorage {
 	return &LocalUserStorage{
-		userData: map[string]entities.User{
+		userData: map[string]*entities.User{
 			"test@email.com": {
 				ID:           1,
 				Email:        "test@email.com",
@@ -80,7 +80,7 @@ func (s *LocalUserStorage) GetUser(ctx context.Context, login dto.LoginInfo) (*e
 		return nil, apperrors.ErrUserNotFound
 	}
 
-	return &user, nil
+	return user, nil
 }
 
 func (s *LocalUserStorage) GetUserByID(ctx context.Context, uid uint64) (*entities.User, error) {
@@ -89,7 +89,7 @@ func (s *LocalUserStorage) GetUserByID(ctx context.Context, uid uint64) (*entiti
 	s.mu.RLock()
 	for _, user := range s.userData {
 		if user.ID == uid {
-			return &user, nil
+			return user, nil
 		}
 	}
 
@@ -113,7 +113,7 @@ func (s *LocalUserStorage) CreateUser(ctx context.Context, signup dto.SignupInfo
 	}
 
 	s.mu.Lock()
-	s.userData[signup.Email] = newUser
+	s.userData[signup.Email] = &newUser
 	s.mu.Unlock()
 
 	return &newUser, nil
@@ -137,8 +137,34 @@ func (s *LocalUserStorage) UpdateUser(ctx context.Context, updatedInfo dto.Updat
 	}
 
 	s.mu.Lock()
-	s.userData[updatedInfo.Email] = updatedUser
+	s.userData[updatedInfo.Email] = &updatedUser
 	s.mu.Unlock()
 
 	return &updatedUser, nil
+}
+
+func (s *LocalUserStorage) DeleteUser(ctx context.Context, id uint64) error {
+	var (
+		userEmail string
+		ok        bool = false
+	)
+	s.mu.RLock()
+	for k := range s.userData {
+		if s.userData[k].ID == id {
+			userEmail = k
+			ok = true
+			break
+		}
+	}
+	s.mu.RUnlock()
+
+	if !ok {
+		return apperrors.ErrUserNotFound
+	}
+
+	s.mu.Lock()
+	s.userData[userEmail] = nil
+	s.mu.Unlock()
+
+	return nil
 }
