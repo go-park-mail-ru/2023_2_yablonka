@@ -37,7 +37,7 @@ func (ah AuthHandler) LogIn(w http.ResponseWriter, r *http.Request) {
 	var login dto.AuthInfo
 	err := json.NewDecoder(r.Body).Decode(&login)
 	if err != nil {
-		*r = *r.WithContext(context.WithValue(rCtx, "errorResponse", apperrors.BadRequestResponse))
+		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.BadRequestResponse))
 		return
 	}
 
@@ -49,13 +49,13 @@ func (ah AuthHandler) LogIn(w http.ResponseWriter, r *http.Request) {
 
 	user, err := ah.us.GetUser(rCtx, incomingAuth)
 	if err != nil {
-		*r = *r.WithContext(context.WithValue(rCtx, "errorResponse", apperrors.ErrorMap[err]))
+		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.ErrorMap[err]))
 		return
 	}
 
 	token, expiresAt, err := ah.as.AuthUser(rCtx, user)
 	if err != nil {
-		*r = *r.WithContext(context.WithValue(rCtx, "errorResponse", apperrors.ErrorMap[err]))
+		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.ErrorMap[err]))
 		return
 	}
 
@@ -77,7 +77,7 @@ func (ah AuthHandler) LogIn(w http.ResponseWriter, r *http.Request) {
 	}
 	jsonResponse, err := json.Marshal(response)
 	if err != nil {
-		*r = *r.WithContext(context.WithValue(rCtx, "errorResponse", apperrors.InternalServerErrorResponse))
+		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.InternalServerErrorResponse))
 		return
 	}
 
@@ -100,7 +100,7 @@ func (ah AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 	var signup dto.AuthInfo
 	err := json.NewDecoder(r.Body).Decode(&signup)
 	if err != nil {
-		*r = *r.WithContext(context.WithValue(rCtx, "errorResponse", apperrors.BadRequestResponse))
+		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.BadRequestResponse))
 		return
 	}
 
@@ -112,13 +112,13 @@ func (ah AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 
 	user, err := ah.us.CreateUser(rCtx, incomingAuth)
 	if err != nil {
-		*r = *r.WithContext(context.WithValue(rCtx, "errorResponse", apperrors.ErrorMap[err]))
+		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.ErrorMap[err]))
 		return
 	}
 
 	token, expiresAt, err := ah.as.AuthUser(rCtx, user)
 	if err != nil {
-		*r = *r.WithContext(context.WithValue(rCtx, "errorResponse", apperrors.ErrorMap[err]))
+		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.ErrorMap[err]))
 		return
 	}
 
@@ -140,7 +140,7 @@ func (ah AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 	}
 	jsonResponse, err := json.Marshal(response)
 	if err != nil {
-		*r = *r.WithContext(context.WithValue(rCtx, "errorResponse", apperrors.InternalServerErrorResponse))
+		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.InternalServerErrorResponse))
 		return
 	}
 
@@ -157,26 +157,26 @@ func (ah AuthHandler) VerifyAuthMiddleware(next http.Handler) http.Handler {
 		rCtx := r.Context()
 		cookie, err := r.Cookie("tabula_user")
 		if err != nil {
-			*r = *r.WithContext(context.WithValue(rCtx, "errorResponse", apperrors.GenericUnauthorizedResponse))
+			*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.GenericUnauthorizedResponse))
 			return
 		}
 		token := cookie.Value
 		userInfo, err := ah.as.VerifyAuth(rCtx, token)
 		if err != nil {
-			*r = *r.WithContext(context.WithValue(rCtx, "errorResponse", apperrors.ErrorMap[err]))
+			*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.ErrorMap[err]))
 			return
 		}
 
 		userObj, err := ah.us.GetUserByID(rCtx, userInfo.UserID)
 		if err == apperrors.ErrUserNotFound {
-			*r = *r.WithContext(context.WithValue(rCtx, "errorResponse", apperrors.GenericUnauthorizedResponse))
+			*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.GenericUnauthorizedResponse))
 			return
 		} else if err != nil {
-			*r = *r.WithContext(context.WithValue(rCtx, "errorResponse", apperrors.ErrorMap[err]))
+			*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.ErrorMap[err]))
 			return
 		}
 
-		next.ServeHTTP(w, r.WithContext(context.WithValue(rCtx, "userObj", userObj)))
+		next.ServeHTTP(w, r.WithContext(context.WithValue(rCtx, dto.UserObjKey, userObj)))
 	})
 }
 
@@ -185,7 +185,7 @@ func (ah AuthHandler) VerifyAuthEndpoint(w http.ResponseWriter, r *http.Request)
 
 	cookie, err := r.Cookie("tabula_user")
 	if err != nil {
-		*r = *r.WithContext(context.WithValue(rCtx, "errorResponse", apperrors.GenericUnauthorizedResponse))
+		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.GenericUnauthorizedResponse))
 		return
 	}
 
@@ -193,15 +193,15 @@ func (ah AuthHandler) VerifyAuthEndpoint(w http.ResponseWriter, r *http.Request)
 
 	userInfo, err := ah.as.VerifyAuth(rCtx, token)
 	if err != nil {
-		*r = *r.WithContext(context.WithValue(rCtx, "errorResponse", apperrors.ErrorMap[err]))
+		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.ErrorMap[err]))
 		return
 	}
 	userObj, err := ah.us.GetUserByID(rCtx, userInfo.UserID)
 	if err == apperrors.ErrUserNotFound {
-		*r = *r.WithContext(context.WithValue(rCtx, "errorResponse", apperrors.GenericUnauthorizedResponse))
+		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.GenericUnauthorizedResponse))
 		return
 	} else if err != nil {
-		*r = *r.WithContext(context.WithValue(rCtx, "errorResponse", apperrors.ErrorMap[err]))
+		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.ErrorMap[err]))
 		return
 	}
 
@@ -212,7 +212,7 @@ func (ah AuthHandler) VerifyAuthEndpoint(w http.ResponseWriter, r *http.Request)
 	}
 	jsonResponse, err := json.Marshal(response)
 	if err != nil {
-		*r = *r.WithContext(context.WithValue(rCtx, "errorResponse", apperrors.InternalServerErrorResponse))
+		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.InternalServerErrorResponse))
 		return
 	}
 
