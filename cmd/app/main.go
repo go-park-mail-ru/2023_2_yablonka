@@ -57,10 +57,10 @@ func main() {
 	log.Println("router configured")
 
 	c := cors.New(cors.Options{
-		AllowedOrigins:   []string{"localhost:8080"},
+		AllowedOrigins:   []string{"localhost:8080", "213.219.215.40:8080"},
 		AllowCredentials: true,
-		// Enable Debugging for testing, consider disabling in production
-		Debug: true,
+		AllowedMethods:   []string{"GET", "POST", "OPTIONS"},
+		Debug:            true,
 	})
 	mux = c.Handler(mux)
 	log.Println("cors configured")
