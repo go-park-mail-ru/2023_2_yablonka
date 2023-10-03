@@ -102,7 +102,7 @@ func Test_Login(t *testing.T) {
 					},
 					JWTSecret: "TESTJWTSECRET123",
 				}
-				authService = authservice.NewAuthJWTService(config.JWTSecret, config.Base.SessionDuration)
+				authService = authservice.NewAuthJWTService(config)
 			case "Session":
 				config := session.SessionServerConfig{
 					Base: config.BaseServerConfig{
@@ -111,7 +111,7 @@ func Test_Login(t *testing.T) {
 					SessionIDLength: 32,
 				}
 				authStorage := in_memory.NewAuthStorage()
-				authService = authservice.NewAuthSessionService(config.SessionIDLength, config.Base.SessionDuration, authStorage)
+				authService = authservice.NewAuthSessionService(config, authStorage)
 			}
 
 			authHandler := NewAuthHandler(authService, userAuthService)
@@ -205,7 +205,7 @@ func Test_Signup(t *testing.T) {
 					},
 					JWTSecret: "TESTJWTSECRET123",
 				}
-				authService = authservice.NewAuthJWTService(config.JWTSecret, config.Base.SessionDuration)
+				authService = authservice.NewAuthJWTService(config)
 			case "Session":
 				config := session.SessionServerConfig{
 					Base: config.BaseServerConfig{
@@ -214,7 +214,7 @@ func Test_Signup(t *testing.T) {
 					SessionIDLength: 32,
 				}
 				authStorage := in_memory.NewAuthStorage()
-				authService = authservice.NewAuthSessionService(config.SessionIDLength, config.Base.SessionDuration, authStorage)
+				authService = authservice.NewAuthSessionService(config, authStorage)
 			}
 
 			authHandler := NewAuthHandler(authService, userAuthService)
@@ -349,7 +349,7 @@ func Test_VerifyAuth(t *testing.T) {
 					},
 					JWTSecret: "TESTJWTSECRET123",
 				}
-				authService = authservice.NewAuthJWTService(config.JWTSecret, config.Base.SessionDuration)
+				authService = authservice.NewAuthJWTService(config)
 			case "Session":
 				config := session.SessionServerConfig{
 					Base: config.BaseServerConfig{
@@ -358,7 +358,7 @@ func Test_VerifyAuth(t *testing.T) {
 					SessionIDLength: 32,
 				}
 				authStorage := in_memory.NewAuthStorage()
-				authService = authservice.NewAuthSessionService(config.SessionIDLength, config.Base.SessionDuration, authStorage)
+				authService = authservice.NewAuthSessionService(config, authStorage)
 			}
 
 			authHandler := NewAuthHandler(authService, userAuthService)

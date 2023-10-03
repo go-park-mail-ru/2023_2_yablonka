@@ -25,7 +25,7 @@ func SessionConfigMux(config session.SessionServerConfig) (http.Handler, error) 
 	authStorage := in_memory.NewAuthStorage()
 	boardStorage := in_memory.NewBoardStorage()
 
-	authService := auth.NewAuthSessionService(config.SessionIDLength, config.Base.SessionDuration, authStorage)
+	authService := auth.NewAuthSessionService(config, authStorage)
 	userAuthService := user.NewAuthUserService(userStorage)
 	//userUserService := user.NewUserService(userStorage)
 	boardService := board.NewBoardService(boardStorage)

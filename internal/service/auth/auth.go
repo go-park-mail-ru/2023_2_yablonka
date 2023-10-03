@@ -1,25 +1,26 @@
 package service
 
 import (
+	jwt "server/internal/config/jwt"
+	session "server/internal/config/session"
 	"server/internal/storage"
-	"time"
 )
 
 // NewAuthJWTService
 // возвращает AuthJWTService с инициализированным JWT-секретом и датой истечения рефреш-токенов
-func NewAuthJWTService(JWTSecret string, sessionDuration time.Duration) *AuthJWTService {
+func NewAuthJWTService(config jwt.JWTServerConfig) *AuthJWTService {
 	return &AuthJWTService{
-		jwtSecret:     []byte(JWTSecret),
-		tokenLifetime: sessionDuration,
+		jwtSecret:     []byte(config.JWTSecret),
+		tokenLifetime: config.Base.SessionDuration,
 	}
 }
 
 // NewAuthSessionService
 // возвращает AuthSessionService с инициализированной датой истечения сессии и хранилищем сессий
-func NewAuthSessionService(sessionIDLength uint, sessionDuration time.Duration, storage storage.IAuthStorage) *AuthSessionService {
+func NewAuthSessionService(config session.SessionServerConfig, storage storage.IAuthStorage) *AuthSessionService {
 	return &AuthSessionService{
-		sessionDuration: sessionDuration,
-		sessionIDLength: sessionIDLength,
+		sessionDuration: config.Base.SessionDuration,
+		sessionIDLength: config.SessionIDLength,
 		storage:         storage,
 	}
 }
