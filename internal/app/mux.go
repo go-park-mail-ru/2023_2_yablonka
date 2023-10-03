@@ -20,13 +20,14 @@ func GetChiMux(manager handlers.HandlerManager) (http.Handler, error) {
 	mux.Use(middleware.JsonHeader)
 
 	mux.Route("/api/v1/auth", func(r chi.Router) {
-		mux.Post("/login", manager.AuthHandler.LogIn)
-		mux.Post("/signup", manager.AuthHandler.SignUp)
-		mux.Get("/verify", manager.AuthHandler.VerifyAuth)
+		r.Post("/login", manager.AuthHandler.LogIn)
+		r.Post("/signup", manager.AuthHandler.SignUp)
+		r.Get("/verify", manager.AuthHandler.VerifyAuthEndpoint)
 	})
 
 	mux.Route("/api/v1/user", func(r chi.Router) {
-		mux.Get("/boards", manager.BoardHandler.GetUserBoards)
+		r.Use(manager.AuthHandler.VerifyAuthMiddleware)
+		r.Get("/boards", manager.BoardHandler.GetUserBoards)
 	})
 
 	return mux, nil
