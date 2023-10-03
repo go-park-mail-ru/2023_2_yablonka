@@ -1,10 +1,8 @@
 package handlers
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 	"server/internal/apperrors"
 	"server/internal/pkg/dto"
@@ -29,26 +27,24 @@ type BoardHandler struct {
 func (bh BoardHandler) GetUserBoards(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
-	// remake with r.Context
-	// add timeout
-	cookie, err := r.Cookie("tabula_user")
+	ctx := r.Context()
 
-	if err != nil {
-		log.Println("User is missing the cookie")
-		w.WriteHeader(http.StatusUnauthorized)
+	user, ok := ctx.Value("userObj").(*entities.User)
+	if !ok {
+		w.WriteHeader(apperrors.GenericUnauthorizedResponse.Code)
 		w.Write([]byte(
 			fmt.Sprintf(`{"body": {
 				"error_response": "%s"
-			}}`, http.StatusText(http.StatusUnauthorized))),
-		)
+			}}`, apperrors.GenericUnauthorizedResponse.Message),
+		))
 		return
 	}
 
-	ctx := context.Background()
-	token := cookie.Value
+	userInfo := dto.VerifiedAuthInfo{
+		UserID: user.ID,
+	}
 
-	user, err := bh.as.VerifyAuth(ctx, token)
-
+	ownedBoards, err := bh.bs.GetUserOwnedBoards(ctx, userInfo)
 	if err != nil {
 		w.WriteHeader(apperrors.ErrorMap[err].Code)
 		w.Write([]byte(
@@ -58,18 +54,7 @@ func (bh BoardHandler) GetUserBoards(w http.ResponseWriter, r *http.Request) {
 		)
 		return
 	}
-
-	ownedBoards, err := bh.bs.GetUserOwnedBoards(ctx, *user)
-	if err != nil {
-		w.WriteHeader(apperrors.ErrorMap[err].Code)
-		w.Write([]byte(
-			fmt.Sprintf(`{"body": {
-				"error_response": "%s"
-			}}`, apperrors.ErrorMap[err].Message)),
-		)
-		return
-	}
-	guestBoards, err := bh.bs.GetUserGuestBoards(ctx, *user)
+	guestBoards, err := bh.bs.GetUserGuestBoards(ctx, userInfo)
 	if err != nil {
 		w.WriteHeader(apperrors.ErrorMap[err].Code)
 		w.Write([]byte(
@@ -98,7 +83,7 @@ func (bh BoardHandler) GetUserBoards(w http.ResponseWriter, r *http.Request) {
 	userObj := r.Context().Value("userObj").(*entities.User)
 	userJson, _ := json.Marshal(&userObj)
 	boardJson, _ := json.Marshal(userBoards)
-	response := fmt.Sprintf(`{"body": "user": %s, "boards": %s}`, string(userJson), string(boardJson))
+	response := fmt.Sprintf(`{"body": {"user": %s, "boards": %s}}`, string(userJson), string(boardJson))
 
 	w.Write([]byte(response))
 }
