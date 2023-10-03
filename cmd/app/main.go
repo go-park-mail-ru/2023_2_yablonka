@@ -57,10 +57,6 @@ func main() {
 	}
 	log.Println("router configured")
 
-	log.Println("server configured")
-
-	log.Println("server configured")
-
 	var server = http.Server{
 		Addr:    ":8080",
 		Handler: mux,
