@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"server/internal/apperrors"
 	"server/internal/pkg/dto"
@@ -32,7 +33,13 @@ func (bh BoardHandler) GetUserBoards(w http.ResponseWriter, r *http.Request) {
 	cookie, err := r.Cookie("tabula_user")
 
 	if err != nil {
-		http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
+		log.Println("User is missing the cookie")
+		w.WriteHeader(http.StatusUnauthorized)
+		w.Write([]byte(
+			fmt.Sprintf(`{"body": {
+				"error_response": "%s"
+			}}`, http.StatusText(http.StatusUnauthorized))),
+		)
 		return
 	}
 
@@ -42,18 +49,33 @@ func (bh BoardHandler) GetUserBoards(w http.ResponseWriter, r *http.Request) {
 	user, err := bh.as.VerifyAuth(ctx, token)
 
 	if err != nil {
-		http.Error(w, apperrors.ErrorMap[err].Message, apperrors.ErrorMap[err].Code)
+		w.WriteHeader(apperrors.ErrorMap[err].Code)
+		w.Write([]byte(
+			fmt.Sprintf(`{"body": {
+				"error_response": "%s"
+			}}`, apperrors.ErrorMap[err].Message)),
+		)
 		return
 	}
 
 	ownedBoards, err := bh.bs.GetUserOwnedBoards(ctx, *user)
 	if err != nil {
-		http.Error(w, apperrors.ErrorMap[err].Message, apperrors.ErrorMap[err].Code)
+		w.WriteHeader(apperrors.ErrorMap[err].Code)
+		w.Write([]byte(
+			fmt.Sprintf(`{"body": {
+				"error_response": "%s"
+			}}`, apperrors.ErrorMap[err].Message)),
+		)
 		return
 	}
 	guestBoards, err := bh.bs.GetUserGuestBoards(ctx, *user)
 	if err != nil {
-		http.Error(w, apperrors.ErrorMap[err].Message, apperrors.ErrorMap[err].Code)
+		w.WriteHeader(apperrors.ErrorMap[err].Code)
+		w.Write([]byte(
+			fmt.Sprintf(`{"body": {
+				"error_response": "%s"
+			}}`, apperrors.ErrorMap[err].Message)),
+		)
 		return
 	}
 
@@ -63,7 +85,12 @@ func (bh BoardHandler) GetUserBoards(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err != nil {
-		http.Error(w, apperrors.ErrorMap[err].Message, apperrors.ErrorMap[err].Code)
+		w.WriteHeader(apperrors.ErrorMap[err].Code)
+		w.Write([]byte(
+			fmt.Sprintf(`{"body": {
+				"error_response": "%s"
+			}}`, apperrors.ErrorMap[err].Message)),
+		)
 		return
 	}
 

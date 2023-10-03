@@ -46,14 +46,24 @@ func (ah AuthHandler) LogIn(w http.ResponseWriter, r *http.Request) {
 
 	user, err := ah.us.GetUser(ctx, incomingAuth)
 	if err != nil {
-		http.Error(w, apperrors.ErrorMap[err].Message, apperrors.ErrorMap[err].Code)
+		w.WriteHeader(apperrors.ErrorMap[err].Code)
+		w.Write([]byte(
+			fmt.Sprintf(`{"body": {
+				"error_response": "%s"
+			}}`, apperrors.ErrorMap[err].Message)),
+		)
 		return
 	}
 
 	// Return as JSON
 	token, expiresAt, err := ah.as.AuthUser(ctx, user)
 	if err != nil {
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		w.WriteHeader(apperrors.ErrorMap[err].Code)
+		w.Write([]byte(
+			fmt.Sprintf(`{"body": {
+				"error_response": "%s"
+			}}`, apperrors.ErrorMap[err].Message),
+		))
 		return
 	}
 
@@ -63,12 +73,15 @@ func (ah AuthHandler) LogIn(w http.ResponseWriter, r *http.Request) {
 		HttpOnly: true,
 		SameSite: http.SameSiteDefaultMode,
 		Expires:  expiresAt,
+		Path:     "/api/v1/",
 	}
 
 	http.SetCookie(w, cookie)
 
-	// Return user info
-	w.Write([]byte(`{"body": {}}`))
+	json, _ := json.Marshal(user)
+	response := fmt.Sprintf(`{"body": %s}`, string(json))
+
+	w.Write([]byte(response))
 }
 
 // TODO change the default data
@@ -86,7 +99,12 @@ func (ah AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 	var signup dto.AuthInfo
 	err := json.NewDecoder(r.Body).Decode(&signup)
 	if err != nil {
-		http.Error(w, `Signup error`, http.StatusBadRequest)
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte(
+			fmt.Sprintf(`{"body": {
+				"error_response": "%s"
+			}}`, "Во время регистрации возникла ошибка")),
+		)
 		return
 	}
 
@@ -100,13 +118,23 @@ func (ah AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 
 	user, err := ah.us.CreateUser(ctx, incomingAuth)
 	if err != nil {
-		http.Error(w, apperrors.ErrorMap[err].Message, apperrors.ErrorMap[err].Code)
+		w.WriteHeader(apperrors.ErrorMap[err].Code)
+		w.Write([]byte(
+			fmt.Sprintf(`{"body": {
+				"error_response": "%s"
+			}}`, apperrors.ErrorMap[err].Message),
+		))
 		return
 	}
 
 	token, expiresAt, err := ah.as.AuthUser(ctx, user)
 	if err != nil {
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		w.WriteHeader(apperrors.ErrorMap[err].Code)
+		w.Write([]byte(
+			fmt.Sprintf(`{"body": {
+				"error_response": "%s"
+			}}`, apperrors.ErrorMap[err].Message),
+		))
 		return
 	}
 
@@ -116,11 +144,15 @@ func (ah AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 		HttpOnly: true,
 		SameSite: http.SameSiteDefaultMode,
 		Expires:  expiresAt,
+		Path:     "/api/v1/",
 	}
 
 	http.SetCookie(w, cookie)
 
-	w.Write([]byte(`{"body": {}}`))
+	json, _ := json.Marshal(user)
+	response := fmt.Sprintf(`{"body": %s}`, string(json))
+
+	w.Write([]byte(response))
 }
 
 func (ah AuthHandler) VerifyAuth(w http.ResponseWriter, r *http.Request) {
@@ -129,7 +161,12 @@ func (ah AuthHandler) VerifyAuth(w http.ResponseWriter, r *http.Request) {
 	cookie, err := r.Cookie("tabula_user")
 
 	if err != nil {
-		http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
+		w.WriteHeader(apperrors.GenericUnauthorizedResponse.Code)
+		w.Write([]byte(
+			fmt.Sprintf(`{"body": {
+				"error_response": "%s"
+			}}`, apperrors.GenericUnauthorizedResponse.Message),
+		))
 		return
 	}
 
@@ -138,15 +175,30 @@ func (ah AuthHandler) VerifyAuth(w http.ResponseWriter, r *http.Request) {
 
 	userInfo, err := ah.as.VerifyAuth(ctx, token)
 	if err != nil {
-		http.Error(w, apperrors.ErrorMap[err].Message, apperrors.ErrorMap[err].Code)
+		w.WriteHeader(apperrors.ErrorMap[err].Code)
+		w.Write([]byte(
+			fmt.Sprintf(`{"body": {
+				"error_response": "%s"
+			}}`, apperrors.ErrorMap[err].Message),
+		))
 		return
 	}
 	userObj, err := ah.us.GetUserByID(ctx, userInfo.UserID)
 	if err == apperrors.ErrUserNotFound {
-		http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
+		w.WriteHeader(apperrors.GenericUnauthorizedResponse.Code)
+		w.Write([]byte(
+			fmt.Sprintf(`{"body": {
+				"error_response": "%s"
+			}}`, apperrors.GenericUnauthorizedResponse.Message),
+		))
 		return
 	} else if err != nil {
-		http.Error(w, apperrors.ErrorMap[err].Message, apperrors.ErrorMap[err].Code)
+		w.WriteHeader(apperrors.ErrorMap[err].Code)
+		w.Write([]byte(
+			fmt.Sprintf(`{"body": {
+				"error_response": "%s"
+			}}`, apperrors.ErrorMap[err].Message),
+		))
 		return
 	}
 
