@@ -62,7 +62,7 @@ func main() {
 	// TODO Move this into a config
 	c := cors.New(cors.Options{
 		AllowedHeaders: []string{
-			"Acccess-Control-Allow-Origin",
+			"*",
 		},
 		AllowedOrigins: []string{
 			"localhost:8080",
