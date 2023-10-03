@@ -29,6 +29,8 @@ func GetChiMux(manager handlers.HandlerManager) (http.Handler, error) {
 			"213.219.215.40:8080",
 			"localhost:8081",
 			"213.219.215.40:8081",
+			"http://localhost:8081",
+			"http://213.219.215.40:8081",
 		},
 		AllowCredentials: true,
 		AllowedMethods:   []string{"GET", "POST", "OPTIONS"},
