@@ -9,11 +9,70 @@ import (
 	board "server/internal/service/board"
 	user "server/internal/service/user"
 	"server/internal/storage/in_memory"
+
+	"github.com/go-chi/chi"
 )
 
 // SessionConfigMux
 // обвешивает mux приложения хендлерами
 func SessionConfigMux(config session.SessionServerConfig, mux *http.ServeMux) error {
+	ok, err := config.Validate()
+	if !ok {
+		return err
+	}
+
+	userStorage := in_memory.NewUserStorage()
+	authStorage := in_memory.NewAuthStorage()
+	boardStorage := in_memory.NewBoardStorage()
+
+	authService := auth.NewAuthSessionService(config.SessionIDLength, config.Base.SessionDuration, authStorage)
+	userAuthService := user.NewAuthUserService(userStorage)
+	boardService := board.NewBoardService(boardStorage)
+	// userService := userservice.NewUserService(userStorage)
+	authHandler := handlers.NewAuthHandler(authService, userAuthService)
+	boardHandler := handlers.NewBoardHandler(authService, boardService)
+
+	router := chi.NewRouter()
+
+	router.Route("/api/v1/auth", func(r chi.Router) {
+		router.Post("/login", func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("Content-Type", "application/json")
+
+			log.Println(r.URL.Path)
+
+			authHandler.LogIn(w, r)
+		})
+		router.Post("/signup", func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("Content-Type", "application/json")
+
+			log.Println(r.URL.Path)
+
+			authHandler.SignUp(w, r)
+		})
+		router.Get("/verify", func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("Content-Type", "application/json")
+
+			log.Println(r.URL.Path)
+
+			authHandler.VerifyAuth(w, r)
+		})
+	})
+
+	router.Route("/api/v1/user", func(r chi.Router) {
+		router.Get("/boards", func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("Content-Type", "application/json")
+
+			log.Println(r.URL.Path)
+
+			boardHandler.GetUserBoards(w, r)
+		})
+	})
+
+	return nil
+}
+
+/*
+func SessionConfigMuxOld(config session.SessionServerConfig, mux *http.ServeMux) error {
 	ok, err := config.Validate()
 	if !ok {
 		return err
@@ -83,3 +142,4 @@ func SessionConfigMux(config session.SessionServerConfig, mux *http.ServeMux) er
 	})
 	return nil
 }
+*/
