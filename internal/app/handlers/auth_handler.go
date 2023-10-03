@@ -5,6 +5,7 @@ import (
 	"crypto/sha256"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 
 	"server/internal/apperrors"
@@ -49,12 +50,14 @@ func (ah AuthHandler) LogIn(w http.ResponseWriter, r *http.Request) {
 
 	user, err := ah.us.GetUser(rCtx, incomingAuth)
 	if err != nil {
+		log.Println("GetUser failed")
 		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.ErrorMap[err]))
 		return
 	}
 
 	token, expiresAt, err := ah.as.AuthUser(rCtx, user)
 	if err != nil {
+		log.Println("AuthUser failed")
 		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.ErrorMap[err]))
 		return
 	}
@@ -69,6 +72,7 @@ func (ah AuthHandler) LogIn(w http.ResponseWriter, r *http.Request) {
 	}
 
 	http.SetCookie(w, cookie)
+	log.Println("Cookie set")
 
 	response := dto.JSONResponse{
 		Body: dto.JSONMap{
