@@ -79,12 +79,12 @@ func (s *LocalBoardStorage) GetHighestID() uint64 {
 	return highest
 }
 
-func (s *LocalBoardStorage) GetUserOwnedBoards(ctx context.Context, userInfo dto.VerifiedAuthInfo) (*[]*entities.Board, error) {
-	var boards []*entities.Board
+func (s *LocalBoardStorage) GetUserOwnedBoards(ctx context.Context, userInfo dto.VerifiedAuthInfo) (*[]entities.Board, error) {
+	var boards []entities.Board
 	s.mu.RLock()
 	for _, board := range s.boardData {
 		if board.Owner.ID == userInfo.UserID {
-			boards = append(boards, &board)
+			boards = append(boards, board)
 		}
 	}
 	s.mu.RUnlock()
@@ -92,13 +92,13 @@ func (s *LocalBoardStorage) GetUserOwnedBoards(ctx context.Context, userInfo dto
 	return &boards, nil
 }
 
-func (s *LocalBoardStorage) GetUserGuestBoards(ctx context.Context, userInfo dto.VerifiedAuthInfo) (*[]*entities.Board, error) {
-	var boards []*entities.Board
+func (s *LocalBoardStorage) GetUserGuestBoards(ctx context.Context, userInfo dto.VerifiedAuthInfo) (*[]entities.Board, error) {
+	var boards []entities.Board
 	s.mu.RLock()
 	for _, board := range s.boardData {
 		for _, guest := range board.Guests {
 			if guest.ID == userInfo.UserID {
-				boards = append(boards, &board)
+				boards = append(boards, board)
 			}
 		}
 	}

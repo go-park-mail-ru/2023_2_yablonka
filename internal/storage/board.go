@@ -13,7 +13,7 @@ type IBoardStorage interface {
 	// UpdateBoard(context.Context, dto.IndividualBoardInfo) (*entities.Board, error)
 	// CreateBoard(context.Context, dto.NewBoardInfo) (*entities.Board, error)
 	// GetUserBoards(context.Context, dto.VerifiedAuthInfo) (*[]entities.Board, error)
-	GetUserOwnedBoards(context.Context, dto.VerifiedAuthInfo) (*[]*entities.Board, error)
-	GetUserGuestBoards(context.Context, dto.VerifiedAuthInfo) (*[]*entities.Board, error)
+	GetUserOwnedBoards(context.Context, dto.VerifiedAuthInfo) (*[]entities.Board, error)
+	GetUserGuestBoards(context.Context, dto.VerifiedAuthInfo) (*[]entities.Board, error)
 	// DeleteBoard(context.Context, dto.IndividualBoardInfo) error
 }
