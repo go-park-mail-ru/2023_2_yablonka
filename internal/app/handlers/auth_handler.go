@@ -32,17 +32,12 @@ type AuthHandler struct {
 //
 // @Router /api/v1/users/{id} [get]
 func (ah AuthHandler) LogIn(w http.ResponseWriter, r *http.Request) {
-	defer r.Body.Close()
+	rCtx := r.Context()
 
 	var login dto.AuthInfo
 	err := json.NewDecoder(r.Body).Decode(&login)
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte(
-			fmt.Sprintf(`{"body": {
-				"error_response": "%s"
-			}}`, "Во время авторизации возникла ошибка")),
-		)
+		*r = *r.WithContext(context.WithValue(rCtx, "errorResponse", apperrors.BadRequestResponse))
 		return
 	}
 
@@ -52,28 +47,15 @@ func (ah AuthHandler) LogIn(w http.ResponseWriter, r *http.Request) {
 		PasswordHash: passwordHash,
 	}
 
-	ctx := context.Background()
-
-	user, err := ah.us.GetUser(ctx, incomingAuth)
+	user, err := ah.us.GetUser(rCtx, incomingAuth)
 	if err != nil {
-		w.WriteHeader(apperrors.ErrorMap[err].Code)
-		w.Write([]byte(
-			fmt.Sprintf(`{"body": {
-				"error_response": "%s"
-			}}`, apperrors.ErrorMap[err].Message)),
-		)
+		*r = *r.WithContext(context.WithValue(rCtx, "errorResponse", apperrors.ErrorMap[err]))
 		return
 	}
 
-	// Return as JSON
-	token, expiresAt, err := ah.as.AuthUser(ctx, user)
+	token, expiresAt, err := ah.as.AuthUser(rCtx, user)
 	if err != nil {
-		w.WriteHeader(apperrors.ErrorMap[err].Code)
-		w.Write([]byte(
-			fmt.Sprintf(`{"body": {
-				"error_response": "%s"
-			}}`, apperrors.ErrorMap[err].Message),
-		))
+		*r = *r.WithContext(context.WithValue(rCtx, "errorResponse", apperrors.ErrorMap[err]))
 		return
 	}
 
@@ -88,10 +70,19 @@ func (ah AuthHandler) LogIn(w http.ResponseWriter, r *http.Request) {
 
 	http.SetCookie(w, cookie)
 
-	json, _ := json.Marshal(user)
-	response := fmt.Sprintf(`{"body": {"user":%s}}`, string(json))
+	response := dto.JSONResponse{
+		Body: dto.JSONMap{
+			"user": user,
+		},
+	}
+	jsonResponse, err := json.Marshal(response)
+	if err != nil {
+		*r = *r.WithContext(context.WithValue(rCtx, "errorResponse", apperrors.InternalServerErrorResponse))
+		return
+	}
 
-	w.Write([]byte(response))
+	w.Write(jsonResponse)
+	r.Body.Close()
 }
 
 // TODO change the default data
@@ -104,17 +95,12 @@ func (ah AuthHandler) LogIn(w http.ResponseWriter, r *http.Request) {
 // @Success 200 {object} nil
 // @Router /api/v1/users/{id} [get]
 func (ah AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
-	defer r.Body.Close()
+	rCtx := r.Context()
 
 	var signup dto.AuthInfo
 	err := json.NewDecoder(r.Body).Decode(&signup)
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte(
-			fmt.Sprintf(`{"body": {
-				"error_response": "%s"
-			}}`, "Во время регистрации возникла ошибка")),
-		)
+		*r = *r.WithContext(context.WithValue(rCtx, "errorResponse", apperrors.BadRequestResponse))
 		return
 	}
 
@@ -124,27 +110,15 @@ func (ah AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 		PasswordHash: passwordHash,
 	}
 
-	ctx := context.Background()
-
-	user, err := ah.us.CreateUser(ctx, incomingAuth)
+	user, err := ah.us.CreateUser(rCtx, incomingAuth)
 	if err != nil {
-		w.WriteHeader(apperrors.ErrorMap[err].Code)
-		w.Write([]byte(
-			fmt.Sprintf(`{"body": {
-				"error_response": "%s"
-			}}`, apperrors.ErrorMap[err].Message),
-		))
+		*r = *r.WithContext(context.WithValue(rCtx, "errorResponse", apperrors.ErrorMap[err]))
 		return
 	}
 
-	token, expiresAt, err := ah.as.AuthUser(ctx, user)
+	token, expiresAt, err := ah.as.AuthUser(rCtx, user)
 	if err != nil {
-		w.WriteHeader(apperrors.ErrorMap[err].Code)
-		w.Write([]byte(
-			fmt.Sprintf(`{"body": {
-				"error_response": "%s"
-			}}`, apperrors.ErrorMap[err].Message),
-		))
+		*r = *r.WithContext(context.WithValue(rCtx, "errorResponse", apperrors.ErrorMap[err]))
 		return
 	}
 
@@ -159,10 +133,19 @@ func (ah AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 
 	http.SetCookie(w, cookie)
 
-	json, _ := json.Marshal(user)
-	response := fmt.Sprintf(`{"body": {"user":%s}}`, string(json))
+	response := dto.JSONResponse{
+		Body: dto.JSONMap{
+			"user": user,
+		},
+	}
+	jsonResponse, err := json.Marshal(response)
+	if err != nil {
+		*r = *r.WithContext(context.WithValue(rCtx, "errorResponse", apperrors.InternalServerErrorResponse))
+		return
+	}
 
-	w.Write([]byte(response))
+	w.Write(jsonResponse)
+	r.Body.Close()
 }
 
 func (ah AuthHandler) LogOut(w http.ResponseWriter, r *http.Request) {
@@ -171,105 +154,70 @@ func (ah AuthHandler) LogOut(w http.ResponseWriter, r *http.Request) {
 
 func (ah AuthHandler) VerifyAuthMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		defer r.Body.Close()
+		rCtx := r.Context()
 		cookie, err := r.Cookie("tabula_user")
 		if err != nil {
-			w.WriteHeader(apperrors.GenericUnauthorizedResponse.Code)
-			w.Write([]byte(
-				fmt.Sprintf(`{"body": {
-                    "error_response": "%s"
-                }}`, apperrors.GenericUnauthorizedResponse.Message),
-			))
+			*r = *r.WithContext(context.WithValue(rCtx, "errorResponse", apperrors.GenericUnauthorizedResponse))
 			return
 		}
 		token := cookie.Value
-		rCtx := r.Context()
 		userInfo, err := ah.as.VerifyAuth(rCtx, token)
 		if err != nil {
-			w.WriteHeader(apperrors.ErrorMap[err].Code)
-			w.Write([]byte(
-				fmt.Sprintf(`{"body": {
-                "error_response": "%s"
-            }}`, apperrors.ErrorMap[err].Message),
-			))
+			*r = *r.WithContext(context.WithValue(rCtx, "errorResponse", apperrors.ErrorMap[err]))
 			return
 		}
 
 		userObj, err := ah.us.GetUserByID(rCtx, userInfo.UserID)
 		if err == apperrors.ErrUserNotFound {
-			w.WriteHeader(apperrors.GenericUnauthorizedResponse.Code)
-			w.Write([]byte(
-				fmt.Sprintf(`{"body": {
-                "error_response": "%s"
-            }}`, apperrors.GenericUnauthorizedResponse.Message),
-			))
+			*r = *r.WithContext(context.WithValue(rCtx, "errorResponse", apperrors.GenericUnauthorizedResponse))
 			return
 		} else if err != nil {
-			w.WriteHeader(apperrors.ErrorMap[err].Code)
-			w.Write([]byte(
-				fmt.Sprintf(`{"body": {
-                "error_response": "%s"
-            }}`, apperrors.ErrorMap[err].Message),
-			))
+			*r = *r.WithContext(context.WithValue(rCtx, "errorResponse", apperrors.ErrorMap[err]))
 			return
 		}
 
-		ctx := context.WithValue(rCtx, "userObj", userObj)
-		next.ServeHTTP(w, r.WithContext(ctx))
+		next.ServeHTTP(w, r.WithContext(context.WithValue(rCtx, "userObj", userObj)))
 	})
 }
 
 func (ah AuthHandler) VerifyAuthEndpoint(w http.ResponseWriter, r *http.Request) {
-	defer r.Body.Close()
+	rCtx := r.Context()
 
 	cookie, err := r.Cookie("tabula_user")
-
 	if err != nil {
-		w.WriteHeader(apperrors.GenericUnauthorizedResponse.Code)
-		w.Write([]byte(
-			fmt.Sprintf(`{"body": {
-				"error_response": "%s"
-			}}`, apperrors.GenericUnauthorizedResponse.Message),
-		))
+		*r = *r.WithContext(context.WithValue(rCtx, "errorResponse", apperrors.GenericUnauthorizedResponse))
 		return
 	}
 
-	ctx := context.Background()
 	token := cookie.Value
 
-	userInfo, err := ah.as.VerifyAuth(ctx, token)
+	userInfo, err := ah.as.VerifyAuth(rCtx, token)
 	if err != nil {
-		w.WriteHeader(apperrors.ErrorMap[err].Code)
-		w.Write([]byte(
-			fmt.Sprintf(`{"body": {
-				"error_response": "%s"
-			}}`, apperrors.ErrorMap[err].Message),
-		))
+		*r = *r.WithContext(context.WithValue(rCtx, "errorResponse", apperrors.ErrorMap[err]))
 		return
 	}
-	userObj, err := ah.us.GetUserByID(ctx, userInfo.UserID)
+	userObj, err := ah.us.GetUserByID(rCtx, userInfo.UserID)
 	if err == apperrors.ErrUserNotFound {
-		w.WriteHeader(apperrors.GenericUnauthorizedResponse.Code)
-		w.Write([]byte(
-			fmt.Sprintf(`{"body": {
-				"error_response": "%s"
-			}}`, apperrors.GenericUnauthorizedResponse.Message),
-		))
+		*r = *r.WithContext(context.WithValue(rCtx, "errorResponse", apperrors.GenericUnauthorizedResponse))
 		return
 	} else if err != nil {
-		w.WriteHeader(apperrors.ErrorMap[err].Code)
-		w.Write([]byte(
-			fmt.Sprintf(`{"body": {
-				"error_response": "%s"
-			}}`, apperrors.ErrorMap[err].Message),
-		))
+		*r = *r.WithContext(context.WithValue(rCtx, "errorResponse", apperrors.ErrorMap[err]))
 		return
 	}
 
-	json, _ := json.Marshal(userObj)
-	response := fmt.Sprintf(`{"body": {"user":%s}}`, string(json))
+	response := dto.JSONResponse{
+		Body: dto.JSONMap{
+			"user": userObj,
+		},
+	}
+	jsonResponse, err := json.Marshal(response)
+	if err != nil {
+		*r = *r.WithContext(context.WithValue(rCtx, "errorResponse", apperrors.InternalServerErrorResponse))
+		return
+	}
 
-	w.Write([]byte(response))
+	w.Write(jsonResponse)
+	r.Body.Close()
 }
 
 // TODO salt
