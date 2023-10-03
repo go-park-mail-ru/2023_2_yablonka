@@ -82,3 +82,9 @@ type UpdatedUserInfo struct {
 	Name    string `json:"name"`
 	Surname string `json:"surname"`
 }
+
+type JSONMap map[string]interface{}
+
+type JSONResponse struct {
+	Body interface{} `json:"body"`
+}
