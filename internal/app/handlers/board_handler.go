@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"server/internal/apperrors"
 	"server/internal/pkg/dto"
+	"server/internal/pkg/entities"
 	"server/internal/service"
 )
 
@@ -94,8 +95,10 @@ func (bh BoardHandler) GetUserBoards(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	json, _ := json.Marshal(userBoards)
-	response := fmt.Sprintf(`{"body": %s}`, string(json))
+	userObj := r.Context().Value("userObj").(*entities.User)
+	userJson, _ := json.Marshal(&userObj)
+	boardJson, _ := json.Marshal(userBoards)
+	response := fmt.Sprintf(`{"body": "user": %s, "boards": %s}`, string(userJson), string(boardJson))
 
 	w.Write([]byte(response))
 }
