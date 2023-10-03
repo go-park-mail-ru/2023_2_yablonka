@@ -3,8 +3,8 @@ package mux_stuff
 import (
 	"log"
 	"net/http"
-	session "server/internal/app/config/session"
 	"server/internal/app/handlers"
+	session "server/internal/config/session"
 	auth "server/internal/service/auth"
 	board "server/internal/service/board"
 	user "server/internal/service/user"

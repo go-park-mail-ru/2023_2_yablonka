@@ -10,9 +10,9 @@ import (
 	"testing"
 	"time"
 
-	config "server/internal/app/config"
-	jwt "server/internal/app/config/jwt"
-	session "server/internal/app/config/session"
+	config "server/internal/config"
+	jwt "server/internal/config/jwt"
+	session "server/internal/config/session"
 	"server/internal/pkg/entities"
 	"server/internal/service"
 	authservice "server/internal/service/auth"

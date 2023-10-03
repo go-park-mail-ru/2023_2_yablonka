@@ -3,8 +3,8 @@ package config
 import (
 	"log"
 	"os"
-	"server/internal/app/config"
 	"server/internal/apperrors"
+	"server/internal/config"
 	"strconv"
 )
 

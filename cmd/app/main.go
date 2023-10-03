@@ -3,8 +3,8 @@ package main
 import (
 	"log"
 	"net/http"
-	config "server/internal/app/config/session"
 	mux_stuff "server/internal/app/mux"
+	config "server/internal/config/session"
 )
 
 // @title LA TABULA API

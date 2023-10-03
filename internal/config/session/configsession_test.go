@@ -1,8 +1,8 @@
 package config
 
 import (
-	"server/internal/app/config"
 	"server/internal/apperrors"
+	"server/internal/config"
 	"testing"
 	"time"
 

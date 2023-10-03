@@ -2,8 +2,8 @@ package config
 
 import (
 	"os"
-	"server/internal/app/config"
 	"server/internal/apperrors"
+	"server/internal/config"
 )
 
 // ServerConfig
