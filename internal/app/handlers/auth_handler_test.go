@@ -383,7 +383,7 @@ func Test_VerifyAuth(t *testing.T) {
 			}
 
 			w.Header().Set("Content-Type", "application/json")
-			authHandler.VerifyAuth(w, r)
+			authHandler.VerifyAuthEndpoint(w, r)
 			status := w.Result().StatusCode
 			responseBody := w.Body.Bytes()
 
