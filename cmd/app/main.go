@@ -10,6 +10,8 @@ import (
 	board "server/internal/service/board"
 	user "server/internal/service/user"
 	"server/internal/storage/in_memory"
+
+	"github.com/rs/cors"
 )
 
 // @title LA TABULA API
@@ -53,6 +55,15 @@ func main() {
 		log.Fatal(err.Error())
 	}
 	log.Println("router configured")
+
+	c := cors.New(cors.Options{
+		AllowedOrigins:   []string{"http://localhost:8080"},
+		AllowCredentials: true,
+		// Enable Debugging for testing, consider disabling in production
+		Debug: true,
+	})
+	mux = c.Handler(mux)
+	log.Println("cors configured")
 
 	log.Println("server configured")
 
