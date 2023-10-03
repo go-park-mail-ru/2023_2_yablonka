@@ -32,7 +32,12 @@ func (ah AuthHandler) LogIn(w http.ResponseWriter, r *http.Request) {
 	var login dto.AuthInfo
 	err := json.NewDecoder(r.Body).Decode(&login)
 	if err != nil {
-		http.Error(w, `Login error`, http.StatusBadRequest)
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte(
+			fmt.Sprintf(`{"body": {
+				"error_response": "%s"
+			}}`, "Во время авторизации возникла ошибка")),
+		)
 		return
 	}
 
