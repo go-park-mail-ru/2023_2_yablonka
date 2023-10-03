@@ -38,8 +38,6 @@ func main() {
 	boardStorage := in_memory.NewBoardStorage()
 	log.Println("storages configured")
 
-	log.Println("handlers configured")
-
 	mux, err := app.GetChiMux(*handlers.NewHandlerManager(
 		*serverConfig,
 		auth.NewAuthSessionService(*serverConfig, authStorage),
@@ -53,6 +51,7 @@ func main() {
 	log.Println("router configured")
 
 	log.Println("server configured")
+
 	http.ListenAndServe(":8080", mux)
 	if err != nil {
 		log.Fatal("Failed to start server")
