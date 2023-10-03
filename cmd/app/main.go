@@ -56,8 +56,14 @@ func main() {
 	}
 	log.Println("router configured")
 
+	// TODO Move this into a config
 	c := cors.New(cors.Options{
-		AllowedOrigins:   []string{"localhost:8080", "213.219.215.40:8080"},
+		AllowedOrigins: []string{
+			"localhost:8080",
+			"213.219.215.40:8080",
+			"localhost:8081",
+			"213.219.215.40:8081",
+		},
 		AllowCredentials: true,
 		AllowedMethods:   []string{"GET", "POST", "OPTIONS"},
 		Debug:            true,
