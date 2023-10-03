@@ -165,7 +165,57 @@ func (ah AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(response))
 }
 
-func (ah AuthHandler) VerifyAuth(w http.ResponseWriter, r *http.Request) {
+func (ah AuthHandler) VerifyAuthMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
+		cookie, err := r.Cookie("tabula_user")
+		if err != nil {
+			w.WriteHeader(apperrors.GenericUnauthorizedResponse.Code)
+			w.Write([]byte(
+				fmt.Sprintf(`{"body": {
+                    "error_response": "%s"
+                }}`, apperrors.GenericUnauthorizedResponse.Message),
+			))
+			return
+		}
+		token := cookie.Value
+		rCtx := r.Context()
+		userInfo, err := ah.as.VerifyAuth(rCtx, token)
+		if err != nil {
+			w.WriteHeader(apperrors.ErrorMap[err].Code)
+			w.Write([]byte(
+				fmt.Sprintf(`{"body": {
+                "error_response": "%s"
+            }}`, apperrors.ErrorMap[err].Message),
+			))
+			return
+		}
+
+		userObj, err := ah.us.GetUserByID(rCtx, userInfo.UserID)
+		if err == apperrors.ErrUserNotFound {
+			w.WriteHeader(apperrors.GenericUnauthorizedResponse.Code)
+			w.Write([]byte(
+				fmt.Sprintf(`{"body": {
+                "error_response": "%s"
+            }}`, apperrors.GenericUnauthorizedResponse.Message),
+			))
+			return
+		} else if err != nil {
+			w.WriteHeader(apperrors.ErrorMap[err].Code)
+			w.Write([]byte(
+				fmt.Sprintf(`{"body": {
+                "error_response": "%s"
+            }}`, apperrors.ErrorMap[err].Message),
+			))
+			return
+		}
+
+		ctx := context.WithValue(rCtx, "userObj", userObj)
+		next.ServeHTTP(w, r.WithContext(ctx))
+	})
+}
+
+func (ah AuthHandler) VerifyAuthEndpoint(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
 	cookie, err := r.Cookie("tabula_user")
