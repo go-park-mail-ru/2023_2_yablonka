@@ -5,7 +5,7 @@ import (
 	"server/internal/app/handlers"
 	"server/internal/app/middleware"
 
-	"github.com/go-chi/chi"
+	chi "github.com/go-chi/chi/v5"
 )
 
 // type Mux interface {
@@ -16,17 +16,20 @@ import (
 // возвращает mux, реализованный с помощью модуля chi
 func GetChiMux(manager handlers.HandlerManager) (http.Handler, error) {
 	mux := chi.NewRouter()
-	mux.Use(middleware.Logger)
 	mux.Use(middleware.JsonHeader)
+	mux.Use(middleware.ErrorHandler)
+	mux.Use(middleware.Logger)
+	// mux.Use(middleware.PanicRecovery)
 
 	mux.Route("/api/v1/auth", func(r chi.Router) {
-		mux.Post("/login", manager.AuthHandler.LogIn)
-		mux.Post("/signup", manager.AuthHandler.SignUp)
-		mux.Get("/verify", manager.AuthHandler.VerifyAuth)
+		r.Post("/login/", manager.AuthHandler.LogIn)
+		r.Post("/signup/", manager.AuthHandler.SignUp)
+		r.Get("/verify/", manager.AuthHandler.VerifyAuthEndpoint)
 	})
 
 	mux.Route("/api/v1/user", func(r chi.Router) {
-		mux.Get("/boards", manager.BoardHandler.GetUserBoards)
+		r.Use(manager.AuthHandler.VerifyAuthMiddleware)
+		r.Get("/boards/", manager.BoardHandler.GetUserBoards)
 	})
 
 	return mux, nil

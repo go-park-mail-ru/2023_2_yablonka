@@ -3,11 +3,10 @@ package handlers
 import (
 	"context"
 	"encoding/json"
-	"fmt"
-	"log"
 	"net/http"
 	"server/internal/apperrors"
 	"server/internal/pkg/dto"
+	"server/internal/pkg/entities"
 	"server/internal/service"
 )
 
@@ -26,56 +25,27 @@ type BoardHandler struct {
 // @Success 200 {object} nil
 // @Router /api/v1/users/{id} [get]
 func (bh BoardHandler) GetUserBoards(w http.ResponseWriter, r *http.Request) {
-	defer r.Body.Close()
+	rCtx := r.Context()
+	var jsonResponse []byte
 
-	// remake with r.Context
-	// add timeout
-	cookie, err := r.Cookie("tabula_user")
-
-	if err != nil {
-		log.Println("User is missing the cookie")
-		w.WriteHeader(http.StatusUnauthorized)
-		w.Write([]byte(
-			fmt.Sprintf(`{"body": {
-				"error_response": "%s"
-			}}`, http.StatusText(http.StatusUnauthorized))),
-		)
+	user, ok := rCtx.Value(dto.UserObjKey).(*entities.User)
+	if !ok {
+		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.GenericUnauthorizedResponse))
 		return
 	}
 
-	ctx := context.Background()
-	token := cookie.Value
-
-	user, err := bh.as.VerifyAuth(ctx, token)
-
-	if err != nil {
-		w.WriteHeader(apperrors.ErrorMap[err].Code)
-		w.Write([]byte(
-			fmt.Sprintf(`{"body": {
-				"error_response": "%s"
-			}}`, apperrors.ErrorMap[err].Message)),
-		)
-		return
+	userInfo := dto.VerifiedAuthInfo{
+		UserID: user.ID,
 	}
 
-	ownedBoards, err := bh.bs.GetUserOwnedBoards(ctx, *user)
+	ownedBoards, err := bh.bs.GetUserOwnedBoards(rCtx, userInfo)
 	if err != nil {
-		w.WriteHeader(apperrors.ErrorMap[err].Code)
-		w.Write([]byte(
-			fmt.Sprintf(`{"body": {
-				"error_response": "%s"
-			}}`, apperrors.ErrorMap[err].Message)),
-		)
+		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.ErrorMap[err]))
 		return
 	}
-	guestBoards, err := bh.bs.GetUserGuestBoards(ctx, *user)
+	guestBoards, err := bh.bs.GetUserGuestBoards(rCtx, userInfo)
 	if err != nil {
-		w.WriteHeader(apperrors.ErrorMap[err].Code)
-		w.Write([]byte(
-			fmt.Sprintf(`{"body": {
-				"error_response": "%s"
-			}}`, apperrors.ErrorMap[err].Message)),
-		)
+		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.ErrorMap[err]))
 		return
 	}
 
@@ -83,19 +53,19 @@ func (bh BoardHandler) GetUserBoards(w http.ResponseWriter, r *http.Request) {
 		OwnedBoards: ownedBoards,
 		GuestBoards: guestBoards,
 	}
-
+	userObj := rCtx.Value(dto.UserObjKey).(*entities.User)
+	response := dto.JSONResponse{
+		Body: dto.JSONMap{
+			"user":   userObj,
+			"boards": userBoards,
+		},
+	}
+	jsonResponse, err = json.Marshal(response)
 	if err != nil {
-		w.WriteHeader(apperrors.ErrorMap[err].Code)
-		w.Write([]byte(
-			fmt.Sprintf(`{"body": {
-				"error_response": "%s"
-			}}`, apperrors.ErrorMap[err].Message)),
-		)
+		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.InternalServerErrorResponse))
 		return
 	}
 
-	json, _ := json.Marshal(userBoards)
-	response := fmt.Sprintf(`{"body": %s}`, string(json))
-
-	w.Write([]byte(response))
+	w.Write(jsonResponse)
+	r.Body.Close()
 }

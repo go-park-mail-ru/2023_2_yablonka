@@ -10,6 +10,7 @@ import (
 	"testing"
 	"time"
 
+	"server/internal/apperrors"
 	config "server/internal/config"
 	jwt "server/internal/config/jwt"
 	session "server/internal/config/session"
@@ -113,7 +114,15 @@ func Test_Login(t *testing.T) {
 
 			handlerManager.AuthHandler.LogIn(w, r)
 
-			require.EqualValuesf(t, test.expectedStatus, w.Code,
+			var status int
+			if !test.successful {
+				err := r.Context().Value(dto.ErrorKey).(apperrors.ErrorResponse)
+				status = err.Code
+			} else {
+				status = w.Result().StatusCode
+			}
+
+			require.EqualValuesf(t, test.expectedStatus, status,
 				"Expected code %d (%s), received code %d (%s)",
 				test.expectedStatus, http.StatusText(test.expectedStatus),
 				w.Code, http.StatusText(w.Code))
@@ -204,7 +213,15 @@ func Test_Signup(t *testing.T) {
 
 			handlerManager.AuthHandler.SignUp(w, r)
 
-			require.EqualValuesf(t, test.expectedStatus, w.Code,
+			var status int
+			if !test.successful {
+				err := r.Context().Value(dto.ErrorKey).(apperrors.ErrorResponse)
+				status = err.Code
+			} else {
+				status = w.Result().StatusCode
+			}
+
+			require.EqualValuesf(t, test.expectedStatus, status,
 				"Expected code %d (%s), received code %d (%s)",
 				test.expectedStatus, http.StatusText(test.expectedStatus),
 				w.Code, http.StatusText(w.Code))
@@ -346,18 +363,20 @@ func Test_VerifyAuth(t *testing.T) {
 			}
 
 			w.Header().Set("Content-Type", "application/json")
-			handlerManager.AuthHandler.VerifyAuth(w, r)
-			status := w.Result().StatusCode
+			handlerManager.AuthHandler.VerifyAuthEndpoint(w, r)
 			responseBody := w.Body.Bytes()
 
 			if !test.authorized || (test.authorized && !test.successful) {
+				err := r.Context().Value(dto.ErrorKey).(apperrors.ErrorResponse)
+				status := err.Code
 				require.Equal(t, http.StatusUnauthorized, status)
 			} else {
+				status := w.Result().StatusCode
 				require.Equal(t, http.StatusOK, status)
-				var jsonBody map[string]entities.User
+				var jsonBody map[string]map[string]interface{}
 				err := json.Unmarshal(responseBody, &jsonBody)
 				require.NoError(t, err)
-				authedUser := jsonBody["body"]
+				authedUser := jsonBody["body"]["user"].(entities.User)
 				require.Equal(t, test.user.ID, authedUser.ID)
 				require.Equal(t, test.user.Email, authedUser.Email)
 				require.Empty(t, authedUser.PasswordHash)
@@ -449,34 +468,42 @@ func Test_GetUserBoards(t *testing.T) {
 
 			if test.authorized {
 				ctx := context.Background()
-				token, expiresAt, err := authService.AuthUser(ctx, test.user)
+				token, _, err := authService.AuthUser(ctx, test.user)
 				require.NoError(t, err)
-				cookie := &http.Cookie{
-					Name:     "tabula_user",
-					Value:    token,
-					HttpOnly: true,
-					SameSite: http.SameSiteDefaultMode,
-					Expires:  expiresAt,
-				}
-				r.AddCookie(cookie)
+				userInfo, err := authService.VerifyAuth(ctx, token)
+				require.NoError(t, err)
+				userObj, err := userAuthService.GetUserByID(ctx, userInfo.UserID)
+				require.NoError(t, err)
+				*r = *r.WithContext(context.WithValue(r.Context(), dto.UserObjKey, userObj))
 			}
 
 			w.Header().Set("Content-Type", "application/json")
 
 			handlerManager.BoardHandler.GetUserBoards(w, r)
-			status := w.Result().StatusCode
 			responseBody := w.Body.Bytes()
 
 			if !test.authorized {
+				err := r.Context().Value(dto.ErrorKey).(apperrors.ErrorResponse)
+				status := err.Code
 				require.Equal(t, http.StatusUnauthorized, status)
 			} else {
+				status := w.Result().StatusCode
 				require.Equal(t, http.StatusOK, status)
-				var jsonBody map[string]dto.UserTotalBoardInfo
+				var jsonBody dto.JSONResponse
 				err := json.Unmarshal(responseBody, &jsonBody)
 				require.NoError(t, err)
-				userBoards := jsonBody["body"]
-				require.Equal(t, test.ownedBoards, len(userBoards.OwnedBoards))
-				require.Equal(t, test.guestBoards, len(userBoards.GuestBoards))
+				jsonMap := jsonBody.Body.(map[string]map[string]map[string][]interface{})
+				userBoards := jsonMap["body"]["boards"]
+				var ownedBoards []interface{}
+				var guestBoards []interface{}
+				if userBoards["user_owned_boards"] != nil {
+					ownedBoards = userBoards["user_owned_boards"]
+				}
+				if userBoards["user_guest_boards"] != nil {
+					guestBoards = userBoards["user_guest_boards"]
+				}
+				require.Equal(t, test.ownedBoards, len(ownedBoards))
+				require.Equal(t, test.guestBoards, len(guestBoards))
 			}
 		})
 	}

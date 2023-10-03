@@ -1,8 +1,10 @@
 package apperrors
 
 import (
+	"encoding/json"
 	"errors"
 	"net/http"
+	"server/internal/pkg/dto"
 )
 
 // Ошибки, связанные с конфигурацией сервера
@@ -56,8 +58,15 @@ var (
 // ErrorResponse
 // структура для обёртки ошибок приложения в ответ бэкэнд-сервера со статусом
 type ErrorResponse struct {
-	Code    int
-	Message string
+	Code    int    `json:"-"`
+	Message string `json:"error_response"`
+}
+
+// BadRequestResponse
+// заглушка для ответа 401 без разглашения имплементации чувствительных процессов
+var BadRequestResponse = ErrorResponse{
+	Code:    http.StatusBadRequest,
+	Message: "Ошибка авторизации",
 }
 
 // GenericUnauthorizedResponse
@@ -100,4 +109,12 @@ var ErrorMap = map[error]ErrorResponse{
 	ErrSessionNullIDLength:    InternalServerErrorResponse,
 	ErrSessionExpired:         GenericUnauthorizedResponse,
 	ErrSessionNotFound:        GenericUnauthorizedResponse,
+}
+
+func ErrorJSON(err ErrorResponse) []byte {
+	response := dto.JSONResponse{
+		Body: err,
+	}
+	jsonResponse, _ := json.Marshal(response)
+	return jsonResponse
 }
