@@ -1,12 +1,7 @@
 package handlers
 
 import (
-	session "server/internal/config/session"
 	"server/internal/service"
-	auth "server/internal/service/auth"
-	board "server/internal/service/board"
-	user "server/internal/service/user"
-	"server/internal/storage/in_memory"
 )
 
 // HandlerManager
@@ -16,26 +11,17 @@ type HandlerManager struct {
 	BoardHandler
 }
 
-// NewAuthHandler
+// NewHandlerManager
 // возвращает HandlerManager со всеми хэндлерами приложения
-func NewHandlerManager(config session.SessionServerConfig) (*HandlerManager, error) {
-	err := config.Validate()
-	if err != nil {
-		return nil, err
+func NewHandlerManager(
+	authService service.IAuthService,
+	userAuthService service.IUserAuthService,
+	//userUserService := user.NewUserService(userStorage),
+	boardService service.IBoardService) *HandlerManager {
+	return &HandlerManager{
+		AuthHandler:  *NewAuthHandler(authService, userAuthService),
+		BoardHandler: *NewBoardHandler(authService, boardService),
 	}
-	userStorage := in_memory.NewUserStorage()
-	authStorage := in_memory.NewAuthStorage()
-	boardStorage := in_memory.NewBoardStorage()
-
-	authService := auth.NewAuthSessionService(config, authStorage)
-	userAuthService := user.NewAuthUserService(userStorage)
-	//userUserService := user.NewUserService(userStorage)
-	boardService := board.NewBoardService(boardStorage)
-
-	var manager HandlerManager
-	manager.AuthHandler = *NewAuthHandler(authService, userAuthService)
-	manager.BoardHandler = *NewBoardHandler(authService, boardService)
-	return &manager, nil
 }
 
 // NewAuthHandler

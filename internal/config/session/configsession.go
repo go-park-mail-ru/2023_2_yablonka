@@ -43,9 +43,15 @@ func NewSessionEnvConfig(filepath string) (*SessionServerConfig, error) {
 			return nil, err
 		}
 	}
-
-	return &SessionServerConfig{
+	finalConfig := SessionServerConfig{
 		Base:            *baseConfig,
 		SessionIDLength: sidLength,
-	}, nil
+	}
+
+	err = finalConfig.Validate()
+	if err != nil {
+		return nil, err
+	}
+
+	return &finalConfig, nil
 }
