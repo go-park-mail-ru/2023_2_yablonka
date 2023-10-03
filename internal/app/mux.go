@@ -22,7 +22,7 @@ func GetChiMux(manager handlers.HandlerManager) (http.Handler, error) {
 	mux.Use(middleware.Logger)
 	c := cors.New(cors.Options{
 		AllowedHeaders: []string{
-			"*",
+			"Acccess-Control-Allow-Origin",
 		},
 		AllowedOrigins: []string{
 			"localhost:8080",
