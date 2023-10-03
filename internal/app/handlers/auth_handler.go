@@ -35,12 +35,21 @@ type AuthHandler struct {
 func (ah AuthHandler) LogIn(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
 
-	var login dto.AuthInfo
-	err := json.NewDecoder(r.Body).Decode(&login)
+	// var login dto.AuthInfo
+	var loginRaw map[string]string
+
+	err := json.NewDecoder(r.Body).Decode(&loginRaw)
 	if err != nil {
 		log.Println(err.Error())
 		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.BadRequestResponse))
 		return
+	}
+
+	log.Println(loginRaw)
+
+	var login = dto.AuthInfo{
+		Email:    loginRaw["email"],
+		Password: loginRaw["password"],
 	}
 
 	passwordHash := hashFromAuthInfo(login)
