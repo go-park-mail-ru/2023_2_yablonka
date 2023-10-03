@@ -1,8 +1,11 @@
 package main
 
 import (
+	"context"
 	"log"
 	"net/http"
+	"os"
+	"os/signal"
 	"server/internal/app"
 	"server/internal/app/handlers"
 	config "server/internal/config/session"
@@ -56,9 +59,32 @@ func main() {
 
 	log.Println("server configured")
 
-	http.ListenAndServe(":8080", mux)
-	if err != nil {
-		log.Fatal("Failed to start server")
+	log.Println("server configured")
+
+	var server = http.Server{
+		Addr:    ":8080",
+		Handler: mux,
 	}
+
+	idleConnsClosed := make(chan struct{})
+	go func() {
+		sigint := make(chan os.Signal, 1)
+		signal.Notify(sigint, os.Interrupt)
+		<-sigint
+
+		// We received an interrupt signal, shut down.
+		if err := server.Shutdown(context.Background()); err != nil {
+			// Error from closing listeners, or context timeout:
+			log.Printf("HTTP server Shutdown: %v", err)
+		}
+		close(idleConnsClosed)
+	}()
+
+	if err := server.ListenAndServe(); err != http.ErrServerClosed {
+		// Error starting or closing listener:
+		log.Fatalf("HTTP server ListenAndServe: %v", err)
+	}
+
+	<-idleConnsClosed
 	// TODO graceful shutdown
 }
