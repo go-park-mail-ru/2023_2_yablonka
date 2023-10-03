@@ -16,8 +16,8 @@ import (
 // SessionConfigMux
 // обвешивает mux приложения хендлерами
 func SessionConfigMux(config session.SessionServerConfig, mux *http.ServeMux) error {
-	ok, err := config.Validate()
-	if !ok {
+	err := config.Validate()
+	if err != nil {
 		return err
 	}
 

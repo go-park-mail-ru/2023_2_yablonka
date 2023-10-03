@@ -16,7 +16,6 @@ func Test_SessionConfig(t *testing.T) {
 		name          string
 		config        *SessionServerConfig
 		serviceType   string
-		successful    bool
 		expectedError error
 	}{
 		{
@@ -27,7 +26,6 @@ func Test_SessionConfig(t *testing.T) {
 				},
 				SessionIDLength: 32,
 			},
-			successful:    true,
 			expectedError: nil,
 		},
 		{
@@ -38,7 +36,6 @@ func Test_SessionConfig(t *testing.T) {
 				},
 				SessionIDLength: 32,
 			},
-			successful:    false,
 			expectedError: apperrors.ErrSessionNullDuration,
 		},
 		{
@@ -49,7 +46,6 @@ func Test_SessionConfig(t *testing.T) {
 				},
 				SessionIDLength: 0,
 			},
-			successful:    false,
 			expectedError: apperrors.ErrSessionNullIDLength,
 		},
 	}
@@ -59,8 +55,7 @@ func Test_SessionConfig(t *testing.T) {
 			t.Parallel()
 			config := test.config
 
-			ok, err := config.Validate()
-			require.Equal(t, test.successful, ok)
+			err := config.Validate()
 			require.ErrorIs(t, test.expectedError, err)
 		})
 	}

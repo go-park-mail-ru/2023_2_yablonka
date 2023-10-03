@@ -19,16 +19,16 @@ type BaseServerConfig struct {
 // ServerConfig
 // структура для хранения параметров сервера
 type ServerConfig interface {
-	Validate() (bool, error)
+	Validate() error
 }
 
 // Validate
 // проверяет параметры конфига на валидность
-func (config *BaseServerConfig) Validate() (bool, error) {
+func (config *BaseServerConfig) Validate() error {
 	if config.SessionDuration < time.Duration(1*time.Second) {
-		return false, apperrors.ErrSessionNullDuration
+		return apperrors.ErrSessionNullDuration
 	}
-	return true, nil
+	return nil
 }
 
 // NewJWTEnvConfig

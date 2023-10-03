@@ -13,15 +13,15 @@ type JWTServerConfig struct {
 	Base      config.BaseServerConfig
 }
 
-func (config *JWTServerConfig) Validate() (bool, error) {
-	base, err := config.Base.Validate()
+func (config *JWTServerConfig) Validate() error {
+	err := config.Base.Validate()
 	if err != nil {
-		return base, err
+		return err
 	}
 	if config.JWTSecret == "" {
-		return false, apperrors.ErrJWTSecretMissing
+		return apperrors.ErrJWTSecretMissing
 	}
-	return true, nil
+	return nil
 }
 
 func NewJWTEnvConfig(filepath string) (*JWTServerConfig, error) {
