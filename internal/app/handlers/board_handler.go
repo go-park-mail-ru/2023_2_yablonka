@@ -1,8 +1,8 @@
 package handlers
 
 import (
+	"context"
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"server/internal/apperrors"
 	"server/internal/pkg/dto"
@@ -25,18 +25,12 @@ type BoardHandler struct {
 // @Success 200 {object} nil
 // @Router /api/v1/users/{id} [get]
 func (bh BoardHandler) GetUserBoards(w http.ResponseWriter, r *http.Request) {
-	defer r.Body.Close()
+	rCtx := r.Context()
+	var jsonResponse []byte
 
-	ctx := r.Context()
-
-	user, ok := ctx.Value("userObj").(*entities.User)
+	user, ok := rCtx.Value("userObj").(*entities.User)
 	if !ok {
-		w.WriteHeader(apperrors.GenericUnauthorizedResponse.Code)
-		w.Write([]byte(
-			fmt.Sprintf(`{"body": {
-				"error_response": "%s"
-			}}`, apperrors.GenericUnauthorizedResponse.Message),
-		))
+		*r = *r.WithContext(context.WithValue(rCtx, "errorResponse", apperrors.GenericUnauthorizedResponse))
 		return
 	}
 
@@ -44,24 +38,14 @@ func (bh BoardHandler) GetUserBoards(w http.ResponseWriter, r *http.Request) {
 		UserID: user.ID,
 	}
 
-	ownedBoards, err := bh.bs.GetUserOwnedBoards(ctx, userInfo)
+	ownedBoards, err := bh.bs.GetUserOwnedBoards(rCtx, userInfo)
 	if err != nil {
-		w.WriteHeader(apperrors.ErrorMap[err].Code)
-		w.Write([]byte(
-			fmt.Sprintf(`{"body": {
-				"error_response": "%s"
-			}}`, apperrors.ErrorMap[err].Message)),
-		)
+		*r = *r.WithContext(context.WithValue(rCtx, "errorResponse", apperrors.ErrorMap[err]))
 		return
 	}
-	guestBoards, err := bh.bs.GetUserGuestBoards(ctx, userInfo)
+	guestBoards, err := bh.bs.GetUserGuestBoards(rCtx, userInfo)
 	if err != nil {
-		w.WriteHeader(apperrors.ErrorMap[err].Code)
-		w.Write([]byte(
-			fmt.Sprintf(`{"body": {
-				"error_response": "%s"
-			}}`, apperrors.ErrorMap[err].Message)),
-		)
+		*r = *r.WithContext(context.WithValue(rCtx, "errorResponse", apperrors.ErrorMap[err]))
 		return
 	}
 
@@ -69,21 +53,19 @@ func (bh BoardHandler) GetUserBoards(w http.ResponseWriter, r *http.Request) {
 		OwnedBoards: ownedBoards,
 		GuestBoards: guestBoards,
 	}
-
+	userObj := rCtx.Value("userObj").(*entities.User)
+	response := dto.JSONResponse{
+		Body: dto.JSONMap{
+			"user":   userObj,
+			"boards": userBoards,
+		},
+	}
+	jsonResponse, err = json.Marshal(response)
 	if err != nil {
-		w.WriteHeader(apperrors.ErrorMap[err].Code)
-		w.Write([]byte(
-			fmt.Sprintf(`{"body": {
-				"error_response": "%s"
-			}}`, apperrors.ErrorMap[err].Message)),
-		)
+		*r = *r.WithContext(context.WithValue(rCtx, "errorResponse", apperrors.InternalServerErrorResponse))
 		return
 	}
 
-	userObj := r.Context().Value("userObj").(*entities.User)
-	userJson, _ := json.Marshal(&userObj)
-	boardJson, _ := json.Marshal(userBoards)
-	response := fmt.Sprintf(`{"body": {"user": %s, "boards": %s}}`, string(userJson), string(boardJson))
-
-	w.Write([]byte(response))
+	w.Write(jsonResponse)
+	r.Body.Close()
 }
