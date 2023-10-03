@@ -10,9 +10,9 @@ import (
 	board "server/internal/service/board"
 	user "server/internal/service/user"
 	"server/internal/storage/in_memory"
-
-	"github.com/rs/cors"
 )
+
+const configPath string = "internal/config/config.yml"
 
 // @title LA TABULA API
 // @version 1.0
@@ -56,19 +56,13 @@ func main() {
 	}
 	log.Println("router configured")
 
-	// TODO Move this into a config
-	c := cors.New(cors.Options{
-		AllowedOrigins: []string{
-			"localhost:8080",
-			"213.219.215.40:8080",
-			"localhost:8081",
-			"213.219.215.40:8081",
-		},
-		AllowCredentials: true,
-		AllowedMethods:   []string{"GET", "POST", "OPTIONS"},
-		Debug:            true,
-	})
-	mux = c.Handler(mux)
+	config, err := app.NewConfig(configPath)
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+	log.Println("config loaded")
+
+	mux = app.EnableCors(mux, *config)
 	log.Println("cors configured")
 
 	log.Println("server configured")
