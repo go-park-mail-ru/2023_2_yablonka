@@ -6,6 +6,7 @@ import (
 	"server/internal/app/middleware"
 
 	chi "github.com/go-chi/chi/v5"
+	"github.com/rs/cors"
 )
 
 // type Mux interface {
@@ -19,6 +20,21 @@ func GetChiMux(manager handlers.HandlerManager) (http.Handler, error) {
 	mux.Use(middleware.JsonHeader)
 	mux.Use(middleware.ErrorHandler)
 	mux.Use(middleware.Logger)
+	c := cors.New(cors.Options{
+		AllowedHeaders: []string{
+			"*",
+		},
+		AllowedOrigins: []string{
+			"localhost:8080",
+			"213.219.215.40:8080",
+			"localhost:8081",
+			"213.219.215.40:8081",
+		},
+		AllowCredentials: true,
+		AllowedMethods:   []string{"GET", "POST", "OPTIONS"},
+		Debug:            true,
+	})
+	mux.Use(c.Handler)
 	// mux.Use(middleware.PanicRecovery)
 
 	mux.Route("/api/v1/auth", func(r chi.Router) {
