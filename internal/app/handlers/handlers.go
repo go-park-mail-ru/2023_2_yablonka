@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	session "server/internal/config/session"
 	"server/internal/service"
 )
 
@@ -14,7 +13,7 @@ type HandlerManager struct {
 
 // NewHandlerManager
 // возвращает HandlerManager со всеми хэндлерами приложения
-func NewHandlerManager(config session.SessionServerConfig,
+func NewHandlerManager(
 	authService service.IAuthService,
 	userAuthService service.IUserAuthService,
 	//userUserService := user.NewUserService(userStorage),

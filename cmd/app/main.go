@@ -38,12 +38,16 @@ func main() {
 	boardStorage := in_memory.NewBoardStorage()
 	log.Println("storages configured")
 
+	userAuthService := user.NewAuthUserService(userStorage)
+	authServise := auth.NewAuthSessionService(*serverConfig, authStorage)
+	boardService := board.NewBoardService(boardStorage)
+	log.Println("services configured")
+
 	mux, err := app.GetChiMux(*handlers.NewHandlerManager(
-		*serverConfig,
-		auth.NewAuthSessionService(*serverConfig, authStorage),
-		user.NewAuthUserService(userStorage),
+		authServise,
+		userAuthService,
 		//user.NewUserService(userStorage),
-		board.NewBoardService(boardStorage),
+		boardService,
 	))
 	if err != nil {
 		log.Fatal(err.Error())
