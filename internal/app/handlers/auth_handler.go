@@ -89,7 +89,7 @@ func (ah AuthHandler) LogIn(w http.ResponseWriter, r *http.Request) {
 	http.SetCookie(w, cookie)
 
 	json, _ := json.Marshal(user)
-	response := fmt.Sprintf(`{"body": %s}`, string(json))
+	response := fmt.Sprintf(`{"body": {"user":%s}}`, string(json))
 
 	w.Write([]byte(response))
 }
@@ -160,9 +160,13 @@ func (ah AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 	http.SetCookie(w, cookie)
 
 	json, _ := json.Marshal(user)
-	response := fmt.Sprintf(`{"body": %s}`, string(json))
+	response := fmt.Sprintf(`{"body": {"user":%s}}`, string(json))
 
 	w.Write([]byte(response))
+}
+
+func (ah AuthHandler) LogOut(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
 }
 
 func (ah AuthHandler) VerifyAuthMiddleware(next http.Handler) http.Handler {
@@ -263,7 +267,7 @@ func (ah AuthHandler) VerifyAuthEndpoint(w http.ResponseWriter, r *http.Request)
 	}
 
 	json, _ := json.Marshal(userObj)
-	response := fmt.Sprintf(`{"body": %s}`, string(json))
+	response := fmt.Sprintf(`{"body": {"user":%s}}`, string(json))
 
 	w.Write([]byte(response))
 }
