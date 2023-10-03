@@ -13,9 +13,11 @@ import (
 	config "server/internal/config"
 	jwt "server/internal/config/jwt"
 	session "server/internal/config/session"
+	"server/internal/pkg/dto"
 	"server/internal/pkg/entities"
 	"server/internal/service"
 	authservice "server/internal/service/auth"
+	boardservice "server/internal/service/board"
 	userservice "server/internal/service/user"
 	"server/internal/storage/in_memory"
 
@@ -91,30 +93,17 @@ func Test_Login(t *testing.T) {
 			t.Parallel()
 
 			userStorage := in_memory.NewUserStorage()
-			var authService service.IAuthService
+			boardStorage := in_memory.NewBoardStorage()
+
+			authService := getAuthService(test.serviceType)
 			userAuthService := userservice.NewAuthUserService(userStorage)
+			boardService := boardservice.NewBoardService(boardStorage)
 
-			switch test.serviceType {
-			case "JWT":
-				config := jwt.JWTServerConfig{
-					Base: config.BaseServerConfig{
-						SessionDuration: time.Duration(14 * 24 * time.Hour),
-					},
-					JWTSecret: "TESTJWTSECRET123",
-				}
-				authService = authservice.NewAuthJWTService(config)
-			case "Session":
-				config := session.SessionServerConfig{
-					Base: config.BaseServerConfig{
-						SessionDuration: time.Duration(14 * 24 * time.Hour),
-					},
-					SessionIDLength: 32,
-				}
-				authStorage := in_memory.NewAuthStorage()
-				authService = authservice.NewAuthSessionService(config, authStorage)
-			}
-
-			authHandler := NewAuthHandler(authService, userAuthService)
+			handlerManager := NewHandlerManager(
+				authService,
+				userAuthService,
+				boardService,
+			)
 			body := bytes.NewReader([]byte(
 				fmt.Sprintf(`{"email":"%s", "password":"%s"}`, test.email, test.password),
 			))
@@ -122,7 +111,7 @@ func Test_Login(t *testing.T) {
 			r := httptest.NewRequest("POST", "/api/v1/auth/login/", body)
 			w := httptest.NewRecorder()
 
-			authHandler.LogIn(w, r)
+			handlerManager.AuthHandler.LogIn(w, r)
 
 			require.EqualValuesf(t, test.expectedStatus, w.Code,
 				"Expected code %d (%s), received code %d (%s)",
@@ -194,30 +183,17 @@ func Test_Signup(t *testing.T) {
 			t.Parallel()
 
 			userStorage := in_memory.NewUserStorage()
-			var authService service.IAuthService
+			boardStorage := in_memory.NewBoardStorage()
+
+			authService := getAuthService(test.serviceType)
 			userAuthService := userservice.NewAuthUserService(userStorage)
+			boardService := boardservice.NewBoardService(boardStorage)
 
-			switch test.serviceType {
-			case "JWT":
-				config := jwt.JWTServerConfig{
-					Base: config.BaseServerConfig{
-						SessionDuration: time.Duration(14 * 24 * time.Hour),
-					},
-					JWTSecret: "TESTJWTSECRET123",
-				}
-				authService = authservice.NewAuthJWTService(config)
-			case "Session":
-				config := session.SessionServerConfig{
-					Base: config.BaseServerConfig{
-						SessionDuration: time.Duration(14 * 24 * time.Hour),
-					},
-					SessionIDLength: 32,
-				}
-				authStorage := in_memory.NewAuthStorage()
-				authService = authservice.NewAuthSessionService(config, authStorage)
-			}
-
-			authHandler := NewAuthHandler(authService, userAuthService)
+			handlerManager := NewHandlerManager(
+				authService,
+				userAuthService,
+				boardService,
+			)
 
 			body := bytes.NewReader([]byte(
 				fmt.Sprintf(`{"email":"%s", "password":"%s"}`, test.email, test.password),
@@ -226,7 +202,7 @@ func Test_Signup(t *testing.T) {
 			r := httptest.NewRequest("POST", "/api/v1/auth/signup/", body)
 			w := httptest.NewRecorder()
 
-			authHandler.SignUp(w, r)
+			handlerManager.AuthHandler.SignUp(w, r)
 
 			require.EqualValuesf(t, test.expectedStatus, w.Code,
 				"Expected code %d (%s), received code %d (%s)",
@@ -338,30 +314,17 @@ func Test_VerifyAuth(t *testing.T) {
 			t.Parallel()
 
 			userStorage := in_memory.NewUserStorage()
-			var authService service.IAuthService
+			boardStorage := in_memory.NewBoardStorage()
+
+			authService := getAuthService(test.serviceType)
 			userAuthService := userservice.NewAuthUserService(userStorage)
+			boardService := boardservice.NewBoardService(boardStorage)
 
-			switch test.serviceType {
-			case "JWT":
-				config := jwt.JWTServerConfig{
-					Base: config.BaseServerConfig{
-						SessionDuration: time.Duration(14 * 24 * time.Hour),
-					},
-					JWTSecret: "TESTJWTSECRET123",
-				}
-				authService = authservice.NewAuthJWTService(config)
-			case "Session":
-				config := session.SessionServerConfig{
-					Base: config.BaseServerConfig{
-						SessionDuration: time.Duration(14 * 24 * time.Hour),
-					},
-					SessionIDLength: 32,
-				}
-				authStorage := in_memory.NewAuthStorage()
-				authService = authservice.NewAuthSessionService(config, authStorage)
-			}
-
-			authHandler := NewAuthHandler(authService, userAuthService)
+			handlerManager := NewHandlerManager(
+				authService,
+				userAuthService,
+				boardService,
+			)
 
 			body := bytes.NewReader([]byte(""))
 
@@ -383,7 +346,7 @@ func Test_VerifyAuth(t *testing.T) {
 			}
 
 			w.Header().Set("Content-Type", "application/json")
-			authHandler.VerifyAuth(w, r)
+			handlerManager.AuthHandler.VerifyAuth(w, r)
 			status := w.Result().StatusCode
 			responseBody := w.Body.Bytes()
 
@@ -403,5 +366,149 @@ func Test_VerifyAuth(t *testing.T) {
 				require.Equal(t, test.user.ThumbnailURL, authedUser.ThumbnailURL)
 			}
 		})
+	}
+}
+
+func Test_GetUserBoards(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name        string
+		authorized  bool
+		user        *entities.User
+		ownedBoards int
+		guestBoards int
+	}{
+		{
+			name:       "Valid response (owned and guest boards)",
+			authorized: true,
+			user: &entities.User{
+				ID:    1,
+				Email: "test@example.com",
+			},
+			ownedBoards: 2,
+			guestBoards: 1,
+		},
+		{
+			name:       "Valid response (only owned boards)",
+			authorized: true,
+			user: &entities.User{
+				ID:    2,
+				Email: "example@email.com",
+			},
+			ownedBoards: 1,
+			guestBoards: 0,
+		},
+		{
+			name:       "Valid response (only guest boards)",
+			authorized: true,
+			user: &entities.User{
+				ID:    3,
+				Email: "newchallenger@example.com",
+			},
+			ownedBoards: 0,
+			guestBoards: 2,
+		},
+		{
+			name:       "Valid response (no boards)",
+			authorized: true,
+			user: &entities.User{
+				ID:    4,
+				Email: "ghostinthem@chi.ne",
+			},
+			ownedBoards: 0,
+			guestBoards: 0,
+		},
+		{
+			name:       "Auth error",
+			authorized: false,
+		},
+	}
+	for _, test := range tests {
+		test := test
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+
+			userStorage := in_memory.NewUserStorage()
+			boardStorage := in_memory.NewBoardStorage()
+
+			authService := getAuthService("Session")
+			userAuthService := userservice.NewAuthUserService(userStorage)
+			boardService := boardservice.NewBoardService(boardStorage)
+
+			handlerManager := NewHandlerManager(
+				authService,
+				userAuthService,
+				boardService,
+			)
+
+			body := bytes.NewReader([]byte(""))
+
+			r := httptest.NewRequest("GET", "/api/v1/auth/login/", body)
+			w := httptest.NewRecorder()
+
+			if test.authorized {
+				ctx := context.Background()
+				token, expiresAt, err := authService.AuthUser(ctx, test.user)
+				require.NoError(t, err)
+				cookie := &http.Cookie{
+					Name:     "tabula_user",
+					Value:    token,
+					HttpOnly: true,
+					SameSite: http.SameSiteDefaultMode,
+					Expires:  expiresAt,
+				}
+				r.AddCookie(cookie)
+			}
+
+			w.Header().Set("Content-Type", "application/json")
+
+			handlerManager.BoardHandler.GetUserBoards(w, r)
+			status := w.Result().StatusCode
+			responseBody := w.Body.Bytes()
+
+			if !test.authorized {
+				require.Equal(t, http.StatusUnauthorized, status)
+			} else {
+				require.Equal(t, http.StatusOK, status)
+				var jsonBody map[string]dto.UserTotalBoardInfo
+				err := json.Unmarshal(responseBody, &jsonBody)
+				require.NoError(t, err)
+				userBoards := jsonBody["body"]
+				require.Equal(t, test.ownedBoards, len(userBoards.OwnedBoards))
+				require.Equal(t, test.guestBoards, len(userBoards.GuestBoards))
+			}
+		})
+	}
+}
+
+func getAuthService(serviceType string) service.IAuthService {
+	switch serviceType {
+	case "JWT":
+		config := jwt.JWTServerConfig{
+			Base: config.BaseServerConfig{
+				SessionDuration: time.Duration(14 * 24 * time.Hour),
+			},
+			JWTSecret: "TESTJWTSECRET123",
+		}
+		return authservice.NewAuthJWTService(config)
+	case "Session":
+		config := session.SessionServerConfig{
+			Base: config.BaseServerConfig{
+				SessionDuration: time.Duration(14 * 24 * time.Hour),
+			},
+			SessionIDLength: 32,
+		}
+		authStorage := in_memory.NewAuthStorage()
+		return authservice.NewAuthSessionService(config, authStorage)
+	default:
+		config := session.SessionServerConfig{
+			Base: config.BaseServerConfig{
+				SessionDuration: time.Duration(1),
+			},
+			SessionIDLength: 32,
+		}
+		authStorage := in_memory.NewAuthStorage()
+		return authservice.NewAuthSessionService(config, authStorage)
 	}
 }
