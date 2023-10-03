@@ -9,8 +9,8 @@ type VerifiedAuthInfo struct {
 // AuthInfo
 // DTO для обработки данных, полученных при входе
 type AuthInfo struct {
-	Email    string
-	Password string
+	Email    string `json:"email"`
+	Password string `json:"password"`
 }
 
 // LoginInfo

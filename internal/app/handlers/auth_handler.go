@@ -38,6 +38,7 @@ func (ah AuthHandler) LogIn(w http.ResponseWriter, r *http.Request) {
 	var login dto.AuthInfo
 	err := json.NewDecoder(r.Body).Decode(&login)
 	if err != nil {
+		log.Println(err.Error())
 		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.BadRequestResponse))
 		return
 	}
