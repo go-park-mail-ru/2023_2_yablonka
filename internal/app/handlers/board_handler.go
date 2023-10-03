@@ -28,9 +28,9 @@ func (bh BoardHandler) GetUserBoards(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
 	var jsonResponse []byte
 
-	user, ok := rCtx.Value("userObj").(*entities.User)
+	user, ok := rCtx.Value(dto.UserObjKey).(*entities.User)
 	if !ok {
-		*r = *r.WithContext(context.WithValue(rCtx, "errorResponse", apperrors.GenericUnauthorizedResponse))
+		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.GenericUnauthorizedResponse))
 		return
 	}
 
@@ -40,12 +40,12 @@ func (bh BoardHandler) GetUserBoards(w http.ResponseWriter, r *http.Request) {
 
 	ownedBoards, err := bh.bs.GetUserOwnedBoards(rCtx, userInfo)
 	if err != nil {
-		*r = *r.WithContext(context.WithValue(rCtx, "errorResponse", apperrors.ErrorMap[err]))
+		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.ErrorMap[err]))
 		return
 	}
 	guestBoards, err := bh.bs.GetUserGuestBoards(rCtx, userInfo)
 	if err != nil {
-		*r = *r.WithContext(context.WithValue(rCtx, "errorResponse", apperrors.ErrorMap[err]))
+		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.ErrorMap[err]))
 		return
 	}
 
@@ -53,7 +53,7 @@ func (bh BoardHandler) GetUserBoards(w http.ResponseWriter, r *http.Request) {
 		OwnedBoards: ownedBoards,
 		GuestBoards: guestBoards,
 	}
-	userObj := rCtx.Value("userObj").(*entities.User)
+	userObj := rCtx.Value(dto.UserObjKey).(*entities.User)
 	response := dto.JSONResponse{
 		Body: dto.JSONMap{
 			"user":   userObj,
@@ -62,7 +62,7 @@ func (bh BoardHandler) GetUserBoards(w http.ResponseWriter, r *http.Request) {
 	}
 	jsonResponse, err = json.Marshal(response)
 	if err != nil {
-		*r = *r.WithContext(context.WithValue(rCtx, "errorResponse", apperrors.InternalServerErrorResponse))
+		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.InternalServerErrorResponse))
 		return
 	}
 

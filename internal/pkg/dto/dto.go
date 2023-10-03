@@ -88,3 +88,11 @@ type JSONMap map[string]interface{}
 type JSONResponse struct {
 	Body interface{} `json:"body"`
 }
+
+type key int
+
+const (
+	UserObjKey key = iota
+	BoardsObjKey
+	ErrorKey
+)
