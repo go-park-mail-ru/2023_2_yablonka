@@ -17,14 +17,19 @@ type AuthHandler struct {
 	us service.IUserAuthService
 }
 
-// TODO change the default data
-// @Summary Log user into the system
-// @Description Create new session or continue old one
-// @ID login
-// @Accept  json
-// @Produce  json
-// @Param id path int true "User ID"
-// @Success 200 {object} nil
+//	@Summary Log user into the system
+//	@Description Create new session or continue old one
+//
+//	@Accept  json
+//	@Produce  json
+//
+//	@Param id path int true "User ID"
+
+//	@Success 200  {object}  nil
+//	@Failure 400  {object}  error
+//	@Failure 404  {object}  error
+//	@Failure 500  {object}  error
+//
 // @Router /api/v1/users/{id} [get]
 func (ah AuthHandler) LogIn(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
