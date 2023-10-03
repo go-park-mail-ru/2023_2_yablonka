@@ -3,7 +3,7 @@ package main
 import (
 	"log"
 	"net/http"
-	mux_stuff "server/internal/app/mux"
+	"server/internal/app"
 	config "server/internal/config/session"
 )
 
@@ -28,8 +28,7 @@ func main() {
 	}
 	log.Println("server configured")
 
-	mux := http.NewServeMux()
-	err = mux_stuff.SessionConfigMux(*serverConfig, mux)
+	mux, err := app.SessionConfigMux(*serverConfig)
 	log.Println("mux configured")
 
 	http.ListenAndServe(":8080", mux)
