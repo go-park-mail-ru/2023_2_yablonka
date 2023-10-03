@@ -3,8 +3,8 @@ package config
 import (
 	"log"
 	"os"
-	"server/internal/app/config"
 	"server/internal/apperrors"
+	"server/internal/config"
 	"strconv"
 )
 
@@ -13,15 +13,15 @@ type SessionServerConfig struct {
 	Base            config.BaseServerConfig
 }
 
-func (config *SessionServerConfig) Validate() (bool, error) {
-	base, err := config.Base.Validate()
+func (config *SessionServerConfig) Validate() error {
+	err := config.Base.Validate()
 	if err != nil {
-		return base, err
+		return err
 	}
 	if config.SessionIDLength < 1 {
-		return false, apperrors.ErrSessionNullIDLength
+		return apperrors.ErrSessionNullIDLength
 	}
-	return true, nil
+	return nil
 }
 
 func NewSessionEnvConfig(filepath string) (*SessionServerConfig, error) {

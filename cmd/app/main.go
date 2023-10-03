@@ -3,8 +3,9 @@ package main
 import (
 	"log"
 	"net/http"
-	config "server/internal/app/config/session"
-	mux_stuff "server/internal/app/mux"
+	"server/internal/app"
+	"server/internal/app/handlers"
+	config "server/internal/config/session"
 )
 
 // @title LA TABULA API
@@ -27,10 +28,17 @@ func main() {
 		log.Fatal(err.Error())
 	}
 	log.Println("server configured")
+	handlerManager, err := handlers.NewHandlerManager(*serverConfig)
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+	log.Println("handlers configured")
 
-	mux := http.NewServeMux()
-	err = mux_stuff.SessionConfigMux(*serverConfig, mux)
-	log.Println("mux configured")
+	mux, err := app.GetChiMux(*handlerManager)
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+	log.Println("router configured")
 
 	http.ListenAndServe(":8080", mux)
 	if err != nil {

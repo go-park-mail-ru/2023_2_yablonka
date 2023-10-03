@@ -1,8 +1,8 @@
 package config
 
 import (
-	"server/internal/app/config"
 	"server/internal/apperrors"
+	"server/internal/config"
 	"testing"
 	"time"
 
@@ -16,7 +16,6 @@ func Test_JWTConfig(t *testing.T) {
 		name          string
 		config        *JWTServerConfig
 		serviceType   string
-		successful    bool
 		expectedError error
 	}{
 		{
@@ -27,7 +26,6 @@ func Test_JWTConfig(t *testing.T) {
 				},
 				JWTSecret: "",
 			},
-			successful:    false,
 			expectedError: apperrors.ErrJWTSecretMissing,
 		},
 	}
@@ -37,8 +35,7 @@ func Test_JWTConfig(t *testing.T) {
 			t.Parallel()
 			config := test.config
 
-			ok, err := config.Validate()
-			require.Equal(t, test.successful, ok)
+			err := config.Validate()
 			require.ErrorIs(t, test.expectedError, err)
 		})
 	}
