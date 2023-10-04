@@ -195,16 +195,6 @@ func (ah AuthHandler) LogOut(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Зачем??
-	// err = ah.us.DeleteUser(rCtx, auth.UserID)
-	// if err == apperrors.ErrUserNotFound {
-	// 	*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.GenericUnauthorizedResponse))
-	// 	return
-	// } else if err != nil {
-	// 	*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.ErrorMap[err]))
-	// 	return
-	// }
-
 	cookie = &http.Cookie{
 		Name:     "tabula_user",
 		Value:    "",
