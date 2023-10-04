@@ -3,7 +3,6 @@ package in_memory
 import (
 	"context"
 	"crypto/rand"
-	"fmt"
 	"math/big"
 	"server/internal/apperrors"
 	"server/internal/pkg/dto"
@@ -65,10 +64,8 @@ func (as LocalAuthStorage) GetSession(ctx context.Context, sid string) (*entitie
 	session, ok := as.authData[sid]
 	as.mu.RUnlock()
 	if !ok {
-		fmt.Println("Session not found")
 		return nil, apperrors.ErrSessionNotFound
 	}
-	fmt.Println("Session found")
 	return session, nil
 }
 

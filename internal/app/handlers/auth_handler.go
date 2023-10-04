@@ -5,7 +5,6 @@ import (
 	"crypto/sha256"
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 	"time"
 
@@ -99,8 +98,6 @@ func (ah AuthHandler) LogIn(w http.ResponseWriter, r *http.Request) {
 		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.InternalServerErrorResponse))
 		return
 	}
-
-	log.Println(string(jsonResponse))
 
 	r.Body.Close()
 	w.Write(jsonResponse)
