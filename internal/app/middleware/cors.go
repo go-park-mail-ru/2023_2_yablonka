@@ -1,7 +1,6 @@
 package middleware
 
 import (
-	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -9,7 +8,7 @@ import (
 	"github.com/rs/cors"
 )
 
-const configPath string = "internal/config/config.yml"
+const configPath string = "../../internal/config/config.yml"
 
 func Cors(next http.Handler) http.Handler {
 	return cors.New(cors.Options{
@@ -35,7 +34,6 @@ func Cors(next http.Handler) http.Handler {
 
 func CorsNew(h http.Handler) http.Handler {
 	config, _ := NewConfig(configPath)
-	log.Println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!config", config)
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Access-Control-Allow-Origin", strings.Join(config.Server.AllowedHosts, ", "))
 		w.Header().Add("Access-Control-Allow-Headers", strings.Join(config.Server.AllowedHeaders, ", "))
