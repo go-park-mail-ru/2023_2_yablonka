@@ -53,9 +53,9 @@ func (ah AuthHandler) LogIn(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	govalidator.ValidateStruct(login)
+	_, err = govalidator.ValidateStruct(login)
 	if err != nil {
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.InternalServerErrorResponse))
+		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.GenericUnauthorizedResponse))
 		return
 	}
 
@@ -122,9 +122,9 @@ func (ah AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	govalidator.ValidateStruct(signup)
+	_, err = govalidator.ValidateStruct(signup)
 	if err != nil {
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.InternalServerErrorResponse))
+		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.BadRequestResponse))
 		return
 	}
 

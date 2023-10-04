@@ -13,6 +13,8 @@ import (
 	board "server/internal/service/board"
 	user "server/internal/service/user"
 	"server/internal/storage/in_memory"
+
+	"github.com/asaskevich/govalidator"
 )
 
 // @title LA TABULA API
@@ -31,6 +33,7 @@ import (
 // @query.collection.format multi
 func main() {
 	serverConfig, err := config.NewSessionEnvConfig("")
+	govalidator.SetFieldsRequiredByDefault(true)
 	if err != nil {
 		log.Fatal(err.Error())
 	}
