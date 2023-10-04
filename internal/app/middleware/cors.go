@@ -10,7 +10,7 @@ import (
 
 const configPath string = "internal/config/config.yml"
 
-func CorsOld(next http.Handler) http.Handler {
+func Cors(next http.Handler) http.Handler {
 	return cors.New(cors.Options{
 		AllowedHeaders: []string{
 			//"*",
@@ -32,10 +32,10 @@ func CorsOld(next http.Handler) http.Handler {
 	}).Handler(next)
 }
 
-func Cors(h http.Handler) http.Handler {
+func CorsNew(h http.Handler) http.Handler {
 	config, _ := NewConfig(configPath)
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Add("Access-Control-Allow-Origin", strings.Join(config.Server.AllowedHosts, ", "))
+		w.Header().Add("Access-Control-Allow-Origin", strings.Join(config.Server.AllowedHeaders, ", "))
 		w.Header().Add("Access-Control-Allow-Headers", strings.Join(config.Server.AllowedHosts, ", "))
 		w.Header().Add("Access-Control-Allow-Methods", strings.Join(config.Server.AllowedMethods, ", "))
 		w.Header().Add("Access-Control-Allow-Credentials", strconv.FormatBool(config.Server.AllowCredentials))

@@ -10,7 +10,7 @@ type Config struct {
 	Server struct {
 		AllowedMethods   []string `yaml:"allowed_methods"`
 		AllowedHosts     []string `yaml:"allowed_hosts"`
-		AllowHeaders     []string `yaml:"allowed_headers"`
+		AllowedHeaders   []string `yaml:"allowed_headers"`
 		AllowCredentials bool     `yaml:"allow_credentials"`
 	} `yaml:"server"`
 }
