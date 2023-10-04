@@ -81,7 +81,7 @@ func (ah AuthHandler) LogIn(w http.ResponseWriter, r *http.Request) {
 		Name:     "tabula_user",
 		Value:    token,
 		HttpOnly: true,
-		SameSite: http.SameSiteDefaultMode,
+		SameSite: http.SameSiteLaxMode,
 		Expires:  expiresAt,
 		Path:     "/api/v1/",
 	}
@@ -150,7 +150,7 @@ func (ah AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 		Name:     "tabula_user",
 		Value:    token,
 		HttpOnly: true,
-		SameSite: http.SameSiteDefaultMode,
+		SameSite: http.SameSiteLaxMode,
 		Expires:  expiresAt,
 		Path:     "/api/v1/",
 	}
@@ -209,7 +209,7 @@ func (ah AuthHandler) LogOut(w http.ResponseWriter, r *http.Request) {
 		Name:     "tabula_user",
 		Value:    "",
 		HttpOnly: true,
-		SameSite: http.SameSiteDefaultMode,
+		SameSite: http.SameSiteLaxMode,
 		Expires:  time.Time{},
 		Path:     "/api/v1/",
 	}
