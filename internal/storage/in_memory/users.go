@@ -110,6 +110,7 @@ func (s *LocalUserStorage) CreateUser(ctx context.Context, signup dto.SignupInfo
 		ID:           newID,
 		Email:        signup.Email,
 		PasswordHash: signup.PasswordHash,
+		ThumbnailURL: "avatar.jpg",
 	}
 
 	s.mu.Lock()
