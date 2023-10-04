@@ -57,15 +57,12 @@ func main() {
 	}
 	log.Println("router configured")
 
-	// TODO Move this into a config
-	log.Println("cors configured")
-
-	log.Println("server configured")
-
 	var server = http.Server{
 		Addr:    ":8080",
 		Handler: mux,
 	}
+
+	log.Println("server configured")
 
 	idleConnsClosed := make(chan struct{})
 	go func() {
