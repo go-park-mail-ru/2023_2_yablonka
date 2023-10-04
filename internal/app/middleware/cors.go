@@ -35,8 +35,8 @@ func Cors(next http.Handler) http.Handler {
 func CorsNew(h http.Handler) http.Handler {
 	config, _ := NewConfig(configPath)
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Add("Access-Control-Allow-Origin", strings.Join(config.Server.AllowedHeaders, ", "))
-		w.Header().Add("Access-Control-Allow-Headers", strings.Join(config.Server.AllowedHosts, ", "))
+		w.Header().Add("Access-Control-Allow-Origin", strings.Join(config.Server.AllowedHosts, ", "))
+		w.Header().Add("Access-Control-Allow-Headers", strings.Join(config.Server.AllowedHeaders, ", "))
 		w.Header().Add("Access-Control-Allow-Methods", strings.Join(config.Server.AllowedMethods, ", "))
 		w.Header().Add("Access-Control-Allow-Credentials", strconv.FormatBool(config.Server.AllowCredentials))
 		h.ServeHTTP(w, r)
