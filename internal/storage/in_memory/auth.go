@@ -5,7 +5,6 @@ import (
 	"crypto/rand"
 	"math/big"
 	"server/internal/apperrors"
-	"server/internal/pkg/dto"
 	"server/internal/pkg/entities"
 	"sync"
 )
@@ -40,14 +39,13 @@ func NewAuthStorage() *LocalAuthStorage {
 
 // CreateSession
 // сохраняет сессию в хранилище, возвращает ID сесссии для куки
-func (as LocalAuthStorage) CreateSession(ctx context.Context, session *entities.Session) (string, error) {
+func (as LocalAuthStorage) CreateSession(ctx context.Context, session *entities.Session, sidLength uint) (string, error) {
 	// for sessionID, storedSession := range as.authData {
 	// 	if storedSession.UserID == session.UserID {
 	// 		return "", apperrors.ErrSessionExists
 	// 	}
 	// }
-	sessionIDLength := ctx.Value(dto.SIDLengthKey).(uint)
-	sessionID, err := generateSessionID(sessionIDLength)
+	sessionID, err := generateSessionID(sidLength)
 	if err != nil {
 		return "", err
 	}

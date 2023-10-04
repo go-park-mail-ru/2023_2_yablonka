@@ -25,9 +25,8 @@ func (a *AuthSessionService) AuthUser(ctx context.Context, user *entities.User) 
 		UserID:     user.ID,
 		ExpiryDate: time.Now().Add(a.sessionDuration),
 	}
-	authCtx := context.WithValue(ctx, dto.SIDLengthKey, a.sessionIDLength)
 	expiresAt := session.ExpiryDate
-	sessionId, err := a.storage.CreateSession(authCtx, session)
+	sessionId, err := a.storage.CreateSession(ctx, session, a.sessionIDLength)
 	if err != nil {
 		return "", time.Time{}, err
 	}
