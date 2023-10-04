@@ -40,7 +40,7 @@ func GetChiMux(manager handlers.HandlerManager) (http.Handler, error) {
 	})
 	log.Println("cors configured")
 	mux.Use(c.Handler)
-	// mux.Use(middleware.PanicRecovery)
+	mux.Use(middleware.PanicRecovery)
 
 	mux.Route("/api/v1/auth", func(r chi.Router) {
 		r.Post("/login/", manager.AuthHandler.LogIn)
