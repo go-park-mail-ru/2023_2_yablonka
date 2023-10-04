@@ -7,7 +7,7 @@ import (
 )
 
 func Cors(next http.Handler) http.Handler {
-	c := cors.New(cors.Options{
+	return cors.New(cors.Options{
 		AllowedHeaders: []string{
 			//"*",
 			"Acccess-Control-Allow-Origin",
@@ -25,6 +25,5 @@ func Cors(next http.Handler) http.Handler {
 		AllowCredentials: true,
 		AllowedMethods:   []string{"GET", "POST", "OPTIONS"},
 		Debug:            true,
-	})
-	return c.Handler(next)
+	}).Handler(next)
 }
