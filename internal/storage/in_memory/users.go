@@ -21,7 +21,7 @@ func NewUserStorage() *LocalUserStorage {
 			"test@email.com": {
 				ID:           1,
 				Email:        "test@email.com",
-				PasswordHash: "8a65f9232aec42190593cebe45067d14ade16eaf9aaefe0c2e9ec425b5b8ca73",
+				PasswordHash: "96f26ec2d7cb62eb260fa23a4c3a87be3f39193b221d9703f9b3f92ce473c514",
 				Name:         "Никита",
 				Surname:      "Архаров",
 				ThumbnailURL: "https://sun1-27.userapi.com/s/v1/ig1/cAIfmwiDayww2WxVGPnIr5sHTSgXaf_567nuovSw_X4Cy9XAKrSVsAT2yAmJcJXDPkVOsXPW.jpg?size=50x50&quality=96&crop=351,248,540,540&ava=1",
@@ -29,7 +29,7 @@ func NewUserStorage() *LocalUserStorage {
 			"email@example.com": {
 				ID:           2,
 				Email:        "email@example.com",
-				PasswordHash: "177e4fd1a8b22992e78145c3ba9c8781124e5c166d03b9c302cf8e100d77ad22",
+				PasswordHash: "09322ee98fa00d2629b9024891c3f14226212902c66a093b8ca80a1a0e5868db",
 				Name:         "Даниил",
 				Surname:      "Капитанов",
 				ThumbnailURL: "https://sun1-47.userapi.com/s/v1/ig2/aby-Y8KQ-yfQPLdvO-gq-ZenU63Iiw3ULbNlimdfaqLauSOj1cJ2jLxfBDtBMLpBW5T0UhaLFpyLVxAoYuVZiPB8.jpg?size=50x50&quality=95&crop=0,0,400,400&ava=1",
@@ -37,7 +37,7 @@ func NewUserStorage() *LocalUserStorage {
 			"newchallenger@email.com": {
 				ID:           3,
 				Email:        "newchallenger@email.com",
-				PasswordHash: "4aeb64424005ea74206c1a8e2c054ae1f34fec181bca5c8899152d8791c5c27f",
+				PasswordHash: "3982eb632b951487cdb457765cf8cd2dbdc5ad2481c2dfe4edc3b2d98c43c777",
 				Name:         "Major",
 				Surname:      "Guile",
 				ThumbnailURL: "https://sun1-56.userapi.com/s/v1/ig2/tZBD5-zfhGO0BMktMHmj82YYqRowSPJbj7ZZE2lQ33DO1WzXB7z3fISjgAWaccX0marlKBf6tV_x0ScnO7CdM_ay.jpg?size=50x0&quality=96&crop=192,40,539,539&ava=1",
@@ -45,7 +45,7 @@ func NewUserStorage() *LocalUserStorage {
 			"ghostinthem@chi.ne": {
 				ID:           4,
 				Email:        "ghostinthem@chi.ne",
-				PasswordHash: "cae8f1b32ad474ef1d27bbe387be25e6e6ee848a1726208cc970ef8a08ed3b08",
+				PasswordHash: "f92d2d249c891710aafa1622946889bb3bedcf5d9c1bae3430b061b1f58e2e5c",
 				Name:         "Lain",
 				Surname:      "Iwakura",
 				ThumbnailURL: "https://sun1-57.userapi.com/s/v1/ig2/YWU6FC5ElvSSShdkrSEqWC6InGJfDQv2yuWQREEFBpHt9Nsvs_o9qc3rR2yAyVdTGy7MLMaaGbOj1DhY33JWS-b7.jpg?size=50x50&quality=95&crop=439,244,605,605&ava=1",
