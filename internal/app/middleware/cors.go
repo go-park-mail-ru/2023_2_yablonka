@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -34,6 +35,7 @@ func Cors(next http.Handler) http.Handler {
 
 func CorsNew(h http.Handler) http.Handler {
 	config, _ := NewConfig(configPath)
+	log.Println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!config", config)
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Access-Control-Allow-Origin", strings.Join(config.Server.AllowedHosts, ", "))
 		w.Header().Add("Access-Control-Allow-Headers", strings.Join(config.Server.AllowedHeaders, ", "))
