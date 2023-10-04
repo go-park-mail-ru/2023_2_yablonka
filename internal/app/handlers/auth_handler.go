@@ -34,7 +34,7 @@ func (ah AuthHandler) GetUserAuthService() service.IUserAuthService {
 //	@Accept  json
 //	@Produce  json
 
-//	@Success 200  body object{} true "User ID and comma separated roles"
+//	@Success 200  body object{} true "Объект пользователя"
 //	@Failure 400  {object}  error
 //	@Failure 401  {object}  error
 //	@Failure 500  {object}  error
@@ -107,7 +107,7 @@ func (ah AuthHandler) LogIn(w http.ResponseWriter, r *http.Request) {
 //	@Accept  json
 //	@Produce  json
 
-//	@Success 200  body object{} true "User ID and comma separated roles"
+//	@Success 200  body object{} true "Объект пользователя"
 //	@Failure 400  {object}  error
 //	@Failure 404  {object}  error
 //	@Failure 500  {object}  error
@@ -179,7 +179,7 @@ func (ah AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 //	@Accept  json
 //	@Produce  json
 
-//	@Success 200  body object{} true "User ID and comma separated roles"
+//	@Success 200  body object{} true "Пустой объект"
 //	@Failure 400  {object}  error
 //	@Failure 404  {object}  error
 //	@Failure 500  {object}  error
@@ -237,12 +237,12 @@ func (ah AuthHandler) LogOut(w http.ResponseWriter, r *http.Request) {
 //	@Accept  json
 //	@Produce  json
 
-//	@Success 200  body object{} true "User ID and comma separated roles"
+//	@Success 200  body object{} true "Пустой объект"
 //	@Failure 400  {object}  error
 //	@Failure 404  {object}  error
 //	@Failure 500  {object}  error
 //
-// @Router /api/v1/auth/logout [post]
+// @Router /api/v1/auth/verify [get]
 func (ah AuthHandler) VerifyAuthEndpoint(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
 
