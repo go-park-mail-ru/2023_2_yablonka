@@ -19,11 +19,11 @@ import (
 
 // @title LA TABULA API
 // @version 1.0
-// @description haha
+// @description Лучший сервис для слежкой за прогрессом над проектом.
 
-// @contact.name API Support
-// @contact.url http://www.swagger.io/support
-// @contact.email support@swagger.io
+// @contact.name Глеб Макаренко
+// @contact.url https://vk.com/glibu_s
+// @contact.email kdanil01@mail.ru
 
 // @license.name MIT
 // @license.url https://opensource.org/licenses/MIT

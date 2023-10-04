@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"server/internal/apperrors"
-	"server/internal/pkg/dto"
+	dto "server/internal/pkg/dto"
 	"server/internal/service"
 
 	"github.com/asaskevich/govalidator"
@@ -33,15 +33,13 @@ func (ah AuthHandler) GetUserAuthService() service.IUserAuthService {
 //
 //	@Accept  json
 //	@Produce  json
-//
-//	@Param id path int true "User ID"
 
-//	@Success 200  {object}  nil
+//	@Success 200  body object{} true "User ID and comma separated roles"
 //	@Failure 400  {object}  error
-//	@Failure 404  {object}  error
+//	@Failure 401  {object}  error
 //	@Failure 500  {object}  error
 //
-// @Router /api/v1/users/{id} [get]
+// @Router /api/v1/auth/login [post]
 func (ah AuthHandler) LogIn(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
 
@@ -103,15 +101,18 @@ func (ah AuthHandler) LogIn(w http.ResponseWriter, r *http.Request) {
 	w.Write(jsonResponse)
 }
 
-// TODO change the default data
-// @Summary Log user into the system
-// @Description Create new session or continue old one
-// @ID login
-// @Accept  json
-// @Produce  json
-// @Param id path int true "User ID"
-// @Success 200 {object} nil
-// @Router /api/v1/users/{id} [get]
+//	@Summary Зарегистрировать нового пользователя
+//	@Description Также вводит пользователя в систему
+//
+//	@Accept  json
+//	@Produce  json
+
+//	@Success 200  body object{} true "User ID and comma separated roles"
+//	@Failure 400  {object}  error
+//	@Failure 404  {object}  error
+//	@Failure 500  {object}  error
+//
+// @Router /api/v1/auth/signup [post]
 func (ah AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
 
@@ -172,6 +173,18 @@ func (ah AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 	r.Body.Close()
 }
 
+//	@Summary Выйти из системы
+//	@Description Заканчивает текущую сессию
+//
+//	@Accept  json
+//	@Produce  json
+
+//	@Success 200  body object{} true "User ID and comma separated roles"
+//	@Failure 400  {object}  error
+//	@Failure 404  {object}  error
+//	@Failure 500  {object}  error
+//
+// @Router /api/v1/auth/logout [post]
 func (ah AuthHandler) LogOut(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
 
@@ -218,6 +231,18 @@ func (ah AuthHandler) LogOut(w http.ResponseWriter, r *http.Request) {
 	r.Body.Close()
 }
 
+//	@Summary Выйти из системы
+//	@Description Заканчивает текущую сессию
+//
+//	@Accept  json
+//	@Produce  json
+
+//	@Success 200  body object{} true "User ID and comma separated roles"
+//	@Failure 400  {object}  error
+//	@Failure 404  {object}  error
+//	@Failure 500  {object}  error
+//
+// @Router /api/v1/auth/logout [post]
 func (ah AuthHandler) VerifyAuthEndpoint(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
 

@@ -1,12 +1,12 @@
 {
     "swagger": "2.0",
     "info": {
-        "description": "haha",
+        "description": "Лучший сервис для слежкой за прогрессом над проектом.",
         "title": "LA TABULA API",
         "contact": {
-            "name": "API Support",
-            "url": "http://www.swagger.io/support",
-            "email": "support@swagger.io"
+            "name": "Глеб Макаренко",
+            "url": "https://vk.com/glibu_s",
+            "email": "kdanil01@mail.ru"
         },
         "license": {
             "name": "MIT",
@@ -17,6 +17,51 @@
     "host": "localhost:8080",
     "basePath": "/",
     "paths": {
+        "/api/v1/auth/login": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "User ID and comma separated roles",
+                        "schema": {
+                            "type": "body"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {}
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {}
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {}
+                    }
+                }
+            }
+        },
+        "/api/v1/auth/signup": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {}
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {}
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {}
+                    }
+                }
+            }
+        },
         "/api/v1/users/{id}": {
             "get": {
                 "description": "Create new session or continue old one",

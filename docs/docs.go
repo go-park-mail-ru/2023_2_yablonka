@@ -10,9 +10,9 @@ const docTemplate = `{
         "description": "{{escape .Description}}",
         "title": "{{.Title}}",
         "contact": {
-            "name": "API Support",
-            "url": "http://www.swagger.io/support",
-            "email": "support@swagger.io"
+            "name": "Глеб Макаренко",
+            "url": "https://vk.com/glibu_s",
+            "email": "kdanil01@mail.ru"
         },
         "license": {
             "name": "MIT",
@@ -23,6 +23,51 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/api/v1/auth/login": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "User ID and comma separated roles",
+                        "schema": {
+                            "type": "body"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {}
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {}
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {}
+                    }
+                }
+            }
+        },
+        "/api/v1/auth/signup": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {}
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {}
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {}
+                    }
+                }
+            }
+        },
         "/api/v1/users/{id}": {
             "get": {
                 "description": "Create new session or continue old one",
@@ -60,7 +105,7 @@ var SwaggerInfo = &swag.Spec{
 	BasePath:         "/",
 	Schemes:          []string{},
 	Title:            "LA TABULA API",
-	Description:      "haha",
+	Description:      "Лучший сервис для слежкой за прогрессом над проектом.",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 	LeftDelim:        "{{",

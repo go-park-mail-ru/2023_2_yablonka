@@ -14,6 +14,7 @@ type IAuthService interface {
 	AuthUser(context.Context, *entities.User) (string, time.Time, error)
 	// VerifyAuth
 	// проверяет состояние авторизации, возвращает ID авторизированного пользователя
+	// Ошибки:
 	VerifyAuth(context.Context, string) (*dto.VerifiedAuthInfo, error)
 	// GetLifetime
 	// возвращает длительность авторизации
