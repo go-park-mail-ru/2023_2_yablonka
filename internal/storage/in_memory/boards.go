@@ -24,7 +24,7 @@ func NewBoardStorage() *LocalBoardStorage {
 					ID:    1,
 					Email: "test@example.com",
 				},
-				ThumbnailURL: "https://wallpapercave.com/wp/wp3204058.png",
+				ThumbnailURL: "https://images.freecreatives.com/wp-content/uploads/2016/04/Download-Pastel-HD-Wallpaper.jpg",
 				Guests: []dto.UserInfo{
 					{
 						ID:    3,
@@ -39,7 +39,7 @@ func NewBoardStorage() *LocalBoardStorage {
 					ID:    1,
 					Email: "test@example.com",
 				},
-				ThumbnailURL: "https://wallpapercave.com/wp/V07TK5t.jpg",
+				ThumbnailURL: "https://images.freecreatives.com/wp-content/uploads/2016/04/Pastel-HD-Widescreen-Wallpaper.jpg",
 			},
 			{
 				ID:   3,
