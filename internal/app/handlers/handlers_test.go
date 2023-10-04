@@ -5,7 +5,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -238,7 +237,6 @@ func Test_VerifyAuth(t *testing.T) {
 
 	tests := []struct {
 		name           string
-		email          string
 		password       string
 		serviceType    string
 		user           *entities.User
@@ -262,59 +260,59 @@ func Test_VerifyAuth(t *testing.T) {
 			successful:     true,
 			expectedStatus: http.StatusOK,
 		},
-		/*
-			{
-				name:           "[JWT] No auth",
-				serviceType:    "JWT",
-				authorized:     false,
-				expectedStatus: http.StatusUnauthorized,
+		{
+			name:           "[JWT] No auth",
+			serviceType:    "JWT",
+			authorized:     false,
+			expectedStatus: http.StatusUnauthorized,
+		},
+		{
+			name:        "[JWT] Auth as nonexistent user",
+			serviceType: "JWT",
+			user: &entities.User{
+				ID:           5,
+				Email:        "fakeuser@email.com",
+				PasswordHash: "72232ddaebd2ed90de93428069234c137b58f64f3d2ada273944fe5b52264310",
 			},
-			{
-				name:        "[JWT] Auth as nonexistent user",
-				serviceType: "JWT",
-				user: &entities.User{
-					ID:           5,
-					Email:        "fakeuser@email.com",
-					PasswordHash: "8a65f9232aec42190593cebe45067d14ade16eaf9aaefe0c2e9ec425b5b8ca73",
-				},
-				authorized:     true,
-				successful:     false,
-				expectedStatus: http.StatusUnauthorized,
+			password:       "12345678",
+			authorized:     true,
+			successful:     false,
+			expectedStatus: http.StatusUnauthorized,
+		},
+		{
+			name:        "[Session] Valid authentification",
+			serviceType: "Session",
+			user: &entities.User{
+				ID:           2,
+				Email:        "email@example.com",
+				PasswordHash: "dd1ffd3fb76da152f41b103fb567910452708ad615b57876a63292797a041448",
+				Name:         "Даниил",
+				Surname:      "Капитанов",
+				ThumbnailURL: "https://sun1-47.userapi.com/s/v1/ig2/aby-Y8KQ-yfQPLdvO-gq-ZenU63Iiw3ULbNlimdfaqLauSOj1cJ2jLxfBDtBMLpBW5T0UhaLFpyLVxAoYuVZiPB8.jpg?size=50x50&quality=95&crop=0,0,400,400&ava=1",
 			},
-			{
-				name:        "[Session] Valid authentification",
-				serviceType: "Session",
-				user: &entities.User{
-					ID:           2,
-					Email:        "email@example.com",
-					PasswordHash: "177e4fd1a8b22992e78145c3ba9c8781124e5c166d03b9c302cf8e100d77ad22",
-					Name:         "Даниил",
-					Surname:      "Капитанов",
-					ThumbnailURL: "https://sun1-47.userapi.com/s/v1/ig2/aby-Y8KQ-yfQPLdvO-gq-ZenU63Iiw3ULbNlimdfaqLauSOj1cJ2jLxfBDtBMLpBW5T0UhaLFpyLVxAoYuVZiPB8.jpg?size=50x50&quality=95&crop=0,0,400,400&ava=1",
-				},
-				authorized:     true,
-				successful:     true,
-				expectedStatus: http.StatusOK,
+			password:       "13579246",
+			authorized:     true,
+			successful:     true,
+			expectedStatus: http.StatusOK,
+		},
+		{
+			name:           "[Session] No auth",
+			serviceType:    "Session",
+			authorized:     false,
+			expectedStatus: http.StatusUnauthorized,
+		},
+		{
+			name:        "[Session] Auth as nonexistent user",
+			serviceType: "Session",
+			user: &entities.User{
+				ID:           5,
+				Email:        "fakeuser@email.com",
+				PasswordHash: "8a65f9232aec42190593cebe45067d14ade16eaf9aaefe0c2e9ec425b5b8ca73",
 			},
-			{
-				name:           "[Session] No auth",
-				serviceType:    "Session",
-				authorized:     false,
-				expectedStatus: http.StatusUnauthorized,
-			},
-			{
-				name:        "[Session] Auth as nonexistent user",
-				serviceType: "Session",
-				user: &entities.User{
-					ID:           5,
-					Email:        "fakeuser@email.com",
-					PasswordHash: "8a65f9232aec42190593cebe45067d14ade16eaf9aaefe0c2e9ec425b5b8ca73",
-				},
-				authorized:     true,
-				successful:     false,
-				expectedStatus: http.StatusUnauthorized,
-			},
-		*/
+			authorized:     true,
+			successful:     false,
+			expectedStatus: http.StatusUnauthorized,
+		},
 	}
 	for _, test := range tests {
 		test := test
@@ -337,20 +335,27 @@ func Test_VerifyAuth(t *testing.T) {
 
 			body := bytes.NewReader([]byte(""))
 
-			r := httptest.NewRequest("POST", "/api/v1/auth/verify", body)
+			r := httptest.NewRequest("GET", "/api/v1/auth/verify/", body)
 			r.Header.Add("Access-Control-Request-Headers", "content-type")
 			r.Header.Add("Origin", "localhost:8081")
 			w := httptest.NewRecorder()
 
+			rCtx := context.Background()
+
 			if test.authorized {
-				body := bytes.NewReader([]byte(
-					fmt.Sprintf(`{"email":"%s", "password":"%s"}`, test.email, test.password),
-				))
-				r := httptest.NewRequest("POST", "/api/v1/auth/login", body)
-				r.Header.Add("Access-Control-Request-Headers", "content-type")
-				r.Header.Add("Origin", "localhost:8081")
-				mux.ServeHTTP(w, r)
-				log.Println(w.Result().Cookies())
+				token, expiresAt, err := authService.AuthUser(rCtx, test.user)
+				require.NoError(t, err)
+
+				cookie := &http.Cookie{
+					Name:     "tabula_user",
+					Value:    token,
+					HttpOnly: true,
+					SameSite: http.SameSiteLaxMode,
+					Expires:  expiresAt,
+					Path:     "/api/v1/",
+				}
+
+				r.AddCookie(cookie)
 			}
 
 			mux.ServeHTTP(w, r)
@@ -363,11 +368,11 @@ func Test_VerifyAuth(t *testing.T) {
 				test.expectedStatus, http.StatusText(test.expectedStatus),
 				w.Code, http.StatusText(w.Code))
 
-			if test.authorized {
-				var jsonBody map[string]map[string]interface{}
+			if test.authorized && test.successful {
+				var jsonBody map[string]map[string]entities.User
 				err := json.Unmarshal(responseBody, &jsonBody)
 				require.NoError(t, err)
-				authedUser := jsonBody["body"]["user"].(entities.User)
+				authedUser := jsonBody["body"]["user"]
 				require.Equal(t, test.user.ID, authedUser.ID)
 				require.Equal(t, test.user.Email, authedUser.Email)
 				require.Empty(t, authedUser.PasswordHash)
