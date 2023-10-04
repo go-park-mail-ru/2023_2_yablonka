@@ -1,6 +1,7 @@
 package app
 
 import (
+	"log"
 	"net/http"
 	"server/internal/app/handlers"
 	"server/internal/app/middleware"
@@ -37,12 +38,14 @@ func GetChiMux(manager handlers.HandlerManager) (http.Handler, error) {
 		AllowedMethods:   []string{"GET", "POST", "OPTIONS"},
 		Debug:            true,
 	})
+	log.Println("cors configured")
 	mux.Use(c.Handler)
 	// mux.Use(middleware.PanicRecovery)
 
 	mux.Route("/api/v1/auth", func(r chi.Router) {
 		r.Post("/login/", manager.AuthHandler.LogIn)
 		r.Post("/signup/", manager.AuthHandler.SignUp)
+		r.Post("/logout/", manager.AuthHandler.LogOut)
 		r.Get("/verify/", manager.AuthHandler.VerifyAuthEndpoint)
 	})
 
