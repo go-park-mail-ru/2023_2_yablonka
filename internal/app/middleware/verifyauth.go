@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"context"
+	"errors"
 	"net/http"
 	"server/internal/apperrors"
 	"server/internal/pkg/dto"
@@ -25,7 +26,8 @@ func AuthMiddleware(as service.IAuthService, us service.IUserAuthService) func(h
 			}
 
 			userObj, err := us.GetUserByID(rCtx, userInfo.UserID)
-			if err == apperrors.ErrUserNotFound {
+
+			if errors.Is(err, apperrors.ErrUserNotFound) {
 				*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.GenericUnauthorizedResponse))
 				return
 			} else if err != nil {
