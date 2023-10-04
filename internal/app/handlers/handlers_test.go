@@ -12,9 +12,11 @@ import (
 
 	"server/internal/app"
 	"server/internal/app/handlers"
+	"server/internal/apperrors"
 	config "server/internal/config"
 	jwt "server/internal/config/jwt"
 	session "server/internal/config/session"
+	"server/internal/pkg/dto"
 	"server/internal/pkg/entities"
 	"server/internal/service"
 	authservice "server/internal/service/auth"
@@ -384,126 +386,139 @@ func Test_VerifyAuth(t *testing.T) {
 	}
 }
 
-// func Test_GetUserBoards(t *testing.T) {
-// 	t.Parallel()
+func Test_GetUserBoards(t *testing.T) {
+	// t.Parallel()
 
-// 	tests := []struct {
-// 		name        string
-// 		authorized  bool
-// 		user        *entities.User
-// 		ownedBoards int
-// 		guestBoards int
-// 	}{
-// 		{
-// 			name:       "Valid response (owned and guest boards)",
-// 			authorized: true,
-// 			user: &entities.User{
-// 				ID:    1,
-// 				Email: "test@example.com",
-// 			},
-// 			ownedBoards: 2,
-// 			guestBoards: 1,
-// 		},
-// 		{
-// 			name:       "Valid response (only owned boards)",
-// 			authorized: true,
-// 			user: &entities.User{
-// 				ID:    2,
-// 				Email: "example@email.com",
-// 			},
-// 			ownedBoards: 1,
-// 			guestBoards: 0,
-// 		},
-// 		{
-// 			name:       "Valid response (only guest boards)",
-// 			authorized: true,
-// 			user: &entities.User{
-// 				ID:    3,
-// 				Email: "newchallenger@example.com",
-// 			},
-// 			ownedBoards: 0,
-// 			guestBoards: 2,
-// 		},
-// 		{
-// 			name:       "Valid response (no boards)",
-// 			authorized: true,
-// 			user: &entities.User{
-// 				ID:    4,
-// 				Email: "ghostinthem@chi.ne",
-// 			},
-// 			ownedBoards: 0,
-// 			guestBoards: 0,
-// 		},
-// 		{
-// 			name:       "Auth error",
-// 			authorized: false,
-// 		},
-// 	}
-// 	for _, test := range tests {
-// 		test := test
-// 		t.Run(test.name, func(t *testing.T) {
-// 			t.Parallel()
+	tests := []struct {
+		name        string
+		authorized  bool
+		user        *entities.User
+		ownedBoards int
+		guestBoards int
+	}{
+		{
+			name:       "Valid response (owned and guest boards)",
+			authorized: true,
+			user: &entities.User{
+				ID:    1,
+				Email: "test@email.com",
+			},
+			ownedBoards: 2,
+			guestBoards: 1,
+		},
+		{
+			name:       "Valid response (only owned boards)",
+			authorized: true,
+			user: &entities.User{
+				ID:    2,
+				Email: "email@example.com",
+			},
+			ownedBoards: 1,
+			guestBoards: 0,
+		},
+		{
+			name:       "Valid response (only guest boards)",
+			authorized: true,
+			user: &entities.User{
+				ID:    3,
+				Email: "newchallenger@email.com",
+			},
+			ownedBoards: 0,
+			guestBoards: 2,
+		},
+		{
+			name:       "Valid response (no boards)",
+			authorized: true,
+			user: &entities.User{
+				ID:    4,
+				Email: "ghostinthem@chi.ne",
+			},
+			ownedBoards: 0,
+			guestBoards: 0,
+		},
+		{
+			name:       "Auth error",
+			authorized: false,
+		},
+	}
+	for _, test := range tests {
+		test := test
+		t.Run(test.name, func(t *testing.T) {
+			// t.Parallel()
 
-// 			userStorage := in_memory.NewUserStorage()
-// 			boardStorage := in_memory.NewBoardStorage()
+			userStorage := in_memory.NewUserStorage()
+			boardStorage := in_memory.NewBoardStorage()
 
-// 			authService := getAuthService("Session")
-// 			userAuthService := userservice.NewAuthUserService(userStorage)
-// 			boardService := boardservice.NewBoardService(boardStorage)
+			authService := getAuthService("Session")
+			userAuthService := userservice.NewAuthUserService(userStorage)
+			boardService := boardservice.NewBoardService(boardStorage)
 
-// 			handlerManager := NewHandlerManager(
-// 				authService,
-// 				userAuthService,
-// 				boardService,
-// 			)
+			handlerManager := handlers.NewHandlerManager(
+				authService,
+				userAuthService,
+				boardService,
+			)
 
-// 			body := bytes.NewReader([]byte(""))
+			body := bytes.NewReader([]byte(""))
 
-// 			r := httptest.NewRequest("GET", "/api/v1/auth/login/", body)
-// 			w := httptest.NewRecorder()
+			r := httptest.NewRequest("GET", "/api/v1/auth/login/", body)
+			w := httptest.NewRecorder()
 
-// 			if test.authorized {
-// 				ctx := context.Background()
-// 				token, _, err := authService.AuthUser(ctx, test.user)
-// 				require.NoError(t, err)
-// 				userInfo, err := authService.VerifyAuth(ctx, token)
-// 				require.NoError(t, err)
-// 				userObj, err := userAuthService.GetUserByID(ctx, userInfo.UserID)
-// 				require.NoError(t, err)
-// 				*r = *r.WithContext(context.WithValue(r.Context(), dto.UserObjKey, userObj))
-// 			}
+			if test.authorized {
+				ctx := context.Background()
+				token, _, err := authService.AuthUser(ctx, test.user)
+				require.NoError(t, err)
+				userInfo, err := authService.VerifyAuth(ctx, token)
+				require.NoError(t, err)
+				userObj, err := userAuthService.GetUserByID(ctx, userInfo.UserID)
+				require.NoError(t, err)
+				*r = *r.WithContext(context.WithValue(r.Context(), dto.UserObjKey, userObj))
+			}
 
-// 			w.Header().Set("Content-Type", "application/json")
+			w.Header().Set("Content-Type", "application/json")
 
-// 			handlerManager.BoardHandler.GetUserBoards(w, r)
-// 			responseBody := w.Body.Bytes()
+			handlerManager.BoardHandler.GetUserBoards(w, r)
+			responseBody := w.Body.Bytes()
 
-// 			if !test.authorized {
-// 				err := r.Context().Value(dto.ErrorKey).(apperrors.ErrorResponse)
-// 				status := err.Code
-// 				require.Equal(t, http.StatusUnauthorized, status)
-// 			} else {
-// 				status := w.Result().StatusCode
-// 				require.Equal(t, http.StatusOK, status)
-// 				var jsonBody dto.JSONResponse
-// 				err := json.Unmarshal(responseBody, &jsonBody)
-// 				require.NoError(t, err)
-// 				jsonMap := jsonBody.Body.(map[string]map[string]map[string][]interface{})
-// 				userBoards := jsonMap["body"]["boards"]
-// 				var ownedBoards []interface{}
-// 				var guestBoards []interface{}
-// 				if userBoards["user_owned_boards"] != nil {
-// 					ownedBoards = userBoards["user_owned_boards"]
-// 				}
-// 				if userBoards["user_guest_boards"] != nil {
-// 					guestBoards = userBoards["user_guest_boards"]
-// 				}
-// 				require.Equal(t, test.ownedBoards, len(ownedBoards))
-// 				require.Equal(t, test.guestBoards, len(guestBoards))
-// 			}
-// 		})
-// 	}
-// }
+			if !test.authorized {
+				err := r.Context().Value(dto.ErrorKey).(apperrors.ErrorResponse)
+				status := err.Code
+				require.Equal(t, http.StatusUnauthorized, status)
+			} else {
+				status := w.Result().StatusCode
+				require.Equal(t, http.StatusOK, status)
+				var jsonBody = dto.JSONResponse{
+					Body: dto.JSONMap{
+						"user": entities.User{},
+						"boards": map[string]interface{}{
+							"user_owned_boards": []dto.UserOwnedBoardInfo{},
+							"user_guest_boards": []dto.UserGuestBoardInfo{},
+						},
+					},
+				}
+				err := json.Unmarshal(responseBody, &jsonBody)
+				require.NoError(t, err)
+				bodyMap := jsonBody.Body.(map[string]interface{})
+				userMap := bodyMap["user"].(map[string]interface{})
+				require.Equal(t, test.user.ID, uint64(userMap["user_id"].(float64)))
+				require.Equal(t, test.user.Email, userMap["email"])
+				boardMap := bodyMap["boards"].(map[string]interface{})
+				ownedBoardsI := boardMap["user_owned_boards"]
+				guestBoardsI := boardMap["user_guest_boards"]
+				var ownedBoards []interface{}
+				var guestBoards []interface{}
+				if ownedBoardsI != nil {
+					ownedBoards = ownedBoardsI.([]interface{})
+				}
+				if guestBoardsI != nil {
+					guestBoards = guestBoardsI.([]interface{})
+				}
+				require.Equal(t, test.ownedBoards, len(ownedBoards))
+				require.Equal(t, test.guestBoards, len(guestBoards))
+			}
+		})
+	}
+}
 
 func getAuthService(serviceType string) service.IAuthService {
 	switch serviceType {
