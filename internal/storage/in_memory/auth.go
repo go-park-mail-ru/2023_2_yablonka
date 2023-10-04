@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"math/big"
 	"server/internal/apperrors"
+	"server/internal/pkg/dto"
 	"server/internal/pkg/entities"
 	"sync"
 )
@@ -46,7 +47,7 @@ func (as LocalAuthStorage) CreateSession(ctx context.Context, session *entities.
 	// 		return "", apperrors.ErrSessionExists
 	// 	}
 	// }
-	sessionIDLength := ctx.Value("sessionIDLength").(uint)
+	sessionIDLength := ctx.Value(dto.SIDLengthKey).(uint)
 	sessionID, err := generateSessionID(sessionIDLength)
 	if err != nil {
 		return "", err

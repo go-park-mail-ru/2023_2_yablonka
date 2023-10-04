@@ -95,4 +95,5 @@ const (
 	UserObjKey key = iota
 	BoardsObjKey
 	ErrorKey
+	SIDLengthKey
 )
