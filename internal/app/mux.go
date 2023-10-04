@@ -50,7 +50,7 @@ func GetChiMux(manager handlers.HandlerManager) (http.Handler, error) {
 	})
 
 	mux.Route("/api/v1/user", func(r chi.Router) {
-		r.Use(manager.AuthHandler.VerifyAuthMiddleware)
+		r.Use(middleware.AuthMiddleware(manager.AuthHandler.GetAuthService(), manager.AuthHandler.GetUserAuthService()))
 		r.Get("/boards/", manager.BoardHandler.GetUserBoards)
 	})
 

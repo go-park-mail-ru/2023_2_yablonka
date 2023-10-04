@@ -21,6 +21,14 @@ type AuthHandler struct {
 	us service.IUserAuthService
 }
 
+func (ah AuthHandler) GetAuthService() service.IAuthService {
+	return ah.as
+}
+
+func (ah AuthHandler) GetUserAuthService() service.IUserAuthService {
+	return ah.us
+}
+
 //	@Summary Log user into the system
 //	@Description Create new session or continue old one
 //
@@ -221,34 +229,6 @@ func (ah AuthHandler) LogOut(w http.ResponseWriter, r *http.Request) {
 
 	w.Write(jsonResponse)
 	r.Body.Close()
-}
-
-func (ah AuthHandler) VerifyAuthMiddleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		rCtx := r.Context()
-		cookie, err := r.Cookie("tabula_user")
-		if err != nil {
-			*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.GenericUnauthorizedResponse))
-			return
-		}
-		token := cookie.Value
-		userInfo, err := ah.as.VerifyAuth(rCtx, token)
-		if err != nil {
-			*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.ErrorMap[err]))
-			return
-		}
-
-		userObj, err := ah.us.GetUserByID(rCtx, userInfo.UserID)
-		if err == apperrors.ErrUserNotFound {
-			*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.GenericUnauthorizedResponse))
-			return
-		} else if err != nil {
-			*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.ErrorMap[err]))
-			return
-		}
-
-		next.ServeHTTP(w, r.WithContext(context.WithValue(rCtx, dto.UserObjKey, userObj)))
-	})
 }
 
 func (ah AuthHandler) VerifyAuthEndpoint(w http.ResponseWriter, r *http.Request) {
