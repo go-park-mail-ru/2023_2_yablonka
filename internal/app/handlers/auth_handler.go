@@ -88,8 +88,8 @@ func (ah AuthHandler) LogIn(w http.ResponseWriter, r *http.Request) {
 
 	log.Println(string(jsonResponse))
 
-	w.Write(jsonResponse)
 	r.Body.Close()
+	w.Write(jsonResponse)
 }
 
 // TODO change the default data
