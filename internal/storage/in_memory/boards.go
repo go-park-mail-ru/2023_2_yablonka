@@ -24,7 +24,7 @@ func NewBoardStorage() *LocalBoardStorage {
 					ID:    1,
 					Email: "test@example.com",
 				},
-				ThumbnailURL: "https://media.moddb.com/images/downloads/1/203/202069/missing_textures.png",
+				ThumbnailURL: "https://wallpapercave.com/wp/wp3204058.png",
 				Guests: []dto.UserInfo{
 					{
 						ID:    3,
@@ -34,21 +34,21 @@ func NewBoardStorage() *LocalBoardStorage {
 			},
 			{
 				ID:   2,
-				Name: "Разработка Ведра 2",
+				Name: "Проект 2",
 				Owner: dto.UserInfo{
 					ID:    1,
 					Email: "test@example.com",
 				},
-				ThumbnailURL: "https://nicollelamerichs.files.wordpress.com/2022/05/2022043021483800-9e19570e6059798a45aec175873b4ac1.jpg?w=640",
+				ThumbnailURL: "https://wallpapercave.com/wp/V07TK5t.jpg",
 			},
 			{
 				ID:   3,
-				Name: "лучшая вещь",
+				Name: "Проект 3",
 				Owner: dto.UserInfo{
 					ID:    2,
 					Email: "example@email.com",
 				},
-				ThumbnailURL: "https://media.istockphoto.com/id/868643608/photo/thumbs-up-emoji-isolated-on-white-background-emoticon-giving-likes-3d-rendering.jpg?s=612x612&w=0&k=20&c=ulAeL-xm8S-g5VU_28CUlOqzqT-ooGTKuXYe097XEL8=",
+				ThumbnailURL: "https://images.freecreatives.com/wp-content/uploads/2016/04/Soft-Pastels-Wallpaper.jpg",
 				Guests: []dto.UserInfo{
 					{
 						ID:    1,
