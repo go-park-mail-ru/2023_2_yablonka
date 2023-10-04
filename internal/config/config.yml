@@ -1,0 +1,18 @@
+# config.yml
+
+server:
+  allowed_methods:
+    - GET
+    - POST
+    - OPTIONS
+  allowed_hosts:
+    - localhost:8080
+    - localhost:8081
+    - 213.219.215.40:8080
+    - 213.219.215.40:8081
+    - http://localhost:8081
+    - http://213.219.215.40:8081
+  allowed_headers:
+    - Acccess-Control-Allow-Origin
+    - Content-Type
+  allow_credentials: true

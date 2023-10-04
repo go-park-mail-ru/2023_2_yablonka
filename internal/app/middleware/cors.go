@@ -2,11 +2,15 @@ package middleware
 
 import (
 	"net/http"
+	"strconv"
+	"strings"
 
 	"github.com/rs/cors"
 )
 
-func Cors(next http.Handler) http.Handler {
+const configPath string = "internal/config/config.yml"
+
+func CorsOld(next http.Handler) http.Handler {
 	return cors.New(cors.Options{
 		AllowedHeaders: []string{
 			//"*",
@@ -26,4 +30,15 @@ func Cors(next http.Handler) http.Handler {
 		AllowedMethods:   []string{"GET", "POST", "OPTIONS"},
 		Debug:            true,
 	}).Handler(next)
+}
+
+func Cors(h http.Handler) http.Handler {
+	config, _ := NewConfig(configPath)
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Add("Access-Control-Allow-Origin", strings.Join(config.Server.AllowedHosts, ", "))
+		w.Header().Add("Access-Control-Allow-Headers", strings.Join(config.Server.AllowedHosts, ", "))
+		w.Header().Add("Access-Control-Allow-Methods", strings.Join(config.Server.AllowedMethods, ", "))
+		w.Header().Add("Access-Control-Allow-Credentials", strconv.FormatBool(config.Server.AllowCredentials))
+		h.ServeHTTP(w, r)
+	})
 }

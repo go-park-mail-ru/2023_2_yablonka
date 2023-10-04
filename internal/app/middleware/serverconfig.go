@@ -1,15 +1,16 @@
-package app
+package middleware
 
 import (
 	"os"
 
-	"gopkg.in/yaml.v2"
+	yaml "gopkg.in/yaml.v2"
 )
 
 type Config struct {
 	Server struct {
 		AllowedMethods   []string `yaml:"allowed_methods"`
 		AllowedHosts     []string `yaml:"allowed_hosts"`
+		AllowHeaders     []string `yaml:"allowed_headers"`
 		AllowCredentials bool     `yaml:"allow_credentials"`
 	} `yaml:"server"`
 }
