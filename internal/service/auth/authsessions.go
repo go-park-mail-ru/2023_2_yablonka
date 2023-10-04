@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"fmt"
 	"server/internal/apperrors"
 	"server/internal/pkg/dto"
 	"server/internal/pkg/entities"
@@ -38,6 +39,7 @@ func (a *AuthSessionService) AuthUser(ctx context.Context, user *entities.User) 
 // возвращает ID пользователя, которому принадлежит сессия
 func (a *AuthSessionService) VerifyAuth(ctx context.Context, sessionString string) (*dto.VerifiedAuthInfo, error) {
 	sessionObj, err := a.storage.GetSession(ctx, sessionString)
+	fmt.Println("session obj", sessionObj, "err", err)
 	if err != nil {
 		return nil, err
 	}
