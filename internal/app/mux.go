@@ -19,7 +19,7 @@ func GetChiMux(manager handlers.HandlerManager) (http.Handler, error) {
 	mux.Use(middleware.JsonHeader)
 	mux.Use(middleware.ErrorHandler)
 	mux.Use(middleware.Logger)
-	mux.Use(middleware.CorsNew)
+	mux.Use(middleware.Cors)
 	mux.Use(middleware.PanicRecovery)
 
 	mux.Route("/api/v1/auth", func(r chi.Router) {
