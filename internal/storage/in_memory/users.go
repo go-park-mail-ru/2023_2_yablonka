@@ -11,17 +11,17 @@ import (
 // LocalUserStorage
 // Локальное хранилище данных
 type LocalUserStorage struct {
-	userData map[string]entities.User
+	userData map[string]*entities.User
 	mu       *sync.RWMutex
 }
 
 func NewUserStorage() *LocalUserStorage {
 	return &LocalUserStorage{
-		userData: map[string]entities.User{
+		userData: map[string]*entities.User{
 			"test@email.com": {
 				ID:           1,
 				Email:        "test@email.com",
-				PasswordHash: "8a65f9232aec42190593cebe45067d14ade16eaf9aaefe0c2e9ec425b5b8ca73",
+				PasswordHash: "d40040163489d60c9adcbb768a6aa7a48ecc4b091bc8b43328fd51a46492fe75",
 				Name:         "Никита",
 				Surname:      "Архаров",
 				ThumbnailURL: "https://sun1-27.userapi.com/s/v1/ig1/cAIfmwiDayww2WxVGPnIr5sHTSgXaf_567nuovSw_X4Cy9XAKrSVsAT2yAmJcJXDPkVOsXPW.jpg?size=50x50&quality=96&crop=351,248,540,540&ava=1",
@@ -29,7 +29,7 @@ func NewUserStorage() *LocalUserStorage {
 			"email@example.com": {
 				ID:           2,
 				Email:        "email@example.com",
-				PasswordHash: "177e4fd1a8b22992e78145c3ba9c8781124e5c166d03b9c302cf8e100d77ad22",
+				PasswordHash: "dd1ffd3fb76da152f41b103fb567910452708ad615b57876a63292797a041448",
 				Name:         "Даниил",
 				Surname:      "Капитанов",
 				ThumbnailURL: "https://sun1-47.userapi.com/s/v1/ig2/aby-Y8KQ-yfQPLdvO-gq-ZenU63Iiw3ULbNlimdfaqLauSOj1cJ2jLxfBDtBMLpBW5T0UhaLFpyLVxAoYuVZiPB8.jpg?size=50x50&quality=95&crop=0,0,400,400&ava=1",
@@ -37,7 +37,7 @@ func NewUserStorage() *LocalUserStorage {
 			"newchallenger@email.com": {
 				ID:           3,
 				Email:        "newchallenger@email.com",
-				PasswordHash: "4aeb64424005ea74206c1a8e2c054ae1f34fec181bca5c8899152d8791c5c27f",
+				PasswordHash: "99eda9a6805ed9c1a6da21147b5a309c390e7bc4dfe27614cdb517867d10f641",
 				Name:         "Major",
 				Surname:      "Guile",
 				ThumbnailURL: "https://sun1-56.userapi.com/s/v1/ig2/tZBD5-zfhGO0BMktMHmj82YYqRowSPJbj7ZZE2lQ33DO1WzXB7z3fISjgAWaccX0marlKBf6tV_x0ScnO7CdM_ay.jpg?size=50x0&quality=96&crop=192,40,539,539&ava=1",
@@ -45,7 +45,7 @@ func NewUserStorage() *LocalUserStorage {
 			"ghostinthem@chi.ne": {
 				ID:           4,
 				Email:        "ghostinthem@chi.ne",
-				PasswordHash: "cae8f1b32ad474ef1d27bbe387be25e6e6ee848a1726208cc970ef8a08ed3b08",
+				PasswordHash: "b101ec338e4f2d79398a61f3f044caad33c43e834ae6bfffe6bee2bf4a04e1c4",
 				Name:         "Lain",
 				Surname:      "Iwakura",
 				ThumbnailURL: "https://sun1-57.userapi.com/s/v1/ig2/YWU6FC5ElvSSShdkrSEqWC6InGJfDQv2yuWQREEFBpHt9Nsvs_o9qc3rR2yAyVdTGy7MLMaaGbOj1DhY33JWS-b7.jpg?size=50x50&quality=95&crop=439,244,605,605&ava=1",
@@ -80,7 +80,7 @@ func (s *LocalUserStorage) GetUser(ctx context.Context, login dto.LoginInfo) (*e
 		return nil, apperrors.ErrUserNotFound
 	}
 
-	return &user, nil
+	return user, nil
 }
 
 func (s *LocalUserStorage) GetUserByID(ctx context.Context, uid uint64) (*entities.User, error) {
@@ -89,7 +89,7 @@ func (s *LocalUserStorage) GetUserByID(ctx context.Context, uid uint64) (*entiti
 	s.mu.RLock()
 	for _, user := range s.userData {
 		if user.ID == uid {
-			return &user, nil
+			return user, nil
 		}
 	}
 
@@ -110,10 +110,11 @@ func (s *LocalUserStorage) CreateUser(ctx context.Context, signup dto.SignupInfo
 		ID:           newID,
 		Email:        signup.Email,
 		PasswordHash: signup.PasswordHash,
+		ThumbnailURL: "avatar.jpg",
 	}
 
 	s.mu.Lock()
-	s.userData[signup.Email] = newUser
+	s.userData[signup.Email] = &newUser
 	s.mu.Unlock()
 
 	return &newUser, nil
@@ -137,8 +138,34 @@ func (s *LocalUserStorage) UpdateUser(ctx context.Context, updatedInfo dto.Updat
 	}
 
 	s.mu.Lock()
-	s.userData[updatedInfo.Email] = updatedUser
+	s.userData[updatedInfo.Email] = &updatedUser
 	s.mu.Unlock()
 
 	return &updatedUser, nil
+}
+
+func (s *LocalUserStorage) DeleteUser(ctx context.Context, id uint64) error {
+	var (
+		userEmail string
+		ok        bool = false
+	)
+	s.mu.RLock()
+	for k := range s.userData {
+		if s.userData[k].ID == id {
+			userEmail = k
+			ok = true
+			break
+		}
+	}
+	s.mu.RUnlock()
+
+	if !ok {
+		return apperrors.ErrUserNotFound
+	}
+
+	s.mu.Lock()
+	s.userData[userEmail] = nil
+	s.mu.Unlock()
+
+	return nil
 }

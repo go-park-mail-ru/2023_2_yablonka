@@ -17,7 +17,8 @@ func NewHandlerManager(
 	authService service.IAuthService,
 	userAuthService service.IUserAuthService,
 	//userUserService := user.NewUserService(userStorage),
-	boardService service.IBoardService) *HandlerManager {
+	boardService service.IBoardService,
+) *HandlerManager {
 	return &HandlerManager{
 		AuthHandler:  *NewAuthHandler(authService, userAuthService),
 		BoardHandler: *NewBoardHandler(authService, boardService),

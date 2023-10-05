@@ -39,14 +39,13 @@ func NewAuthStorage() *LocalAuthStorage {
 
 // CreateSession
 // сохраняет сессию в хранилище, возвращает ID сесссии для куки
-func (as LocalAuthStorage) CreateSession(ctx context.Context, session *entities.Session) (string, error) {
+func (as LocalAuthStorage) CreateSession(ctx context.Context, session *entities.Session, sidLength uint) (string, error) {
 	// for sessionID, storedSession := range as.authData {
 	// 	if storedSession.UserID == session.UserID {
 	// 		return "", apperrors.ErrSessionExists
 	// 	}
 	// }
-	sessionIDLength := ctx.Value("sessionIDLength").(uint)
-	sessionID, err := generateSessionID(sessionIDLength)
+	sessionID, err := generateSessionID(sidLength)
 	if err != nil {
 		return "", err
 	}
@@ -79,6 +78,7 @@ func (as LocalAuthStorage) DeleteSession(ctx context.Context, sid string) error 
 	}
 	as.mu.Lock()
 	as.authData[sid] = nil
+	delete(as.authData, sid)
 	as.mu.Unlock()
 	return nil
 }

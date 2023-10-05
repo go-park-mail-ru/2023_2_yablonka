@@ -18,4 +18,5 @@ type IAuthService interface {
 	// GetLifetime
 	// возвращает длительность авторизации
 	GetLifetime() time.Duration
+	LogOut(context.Context, string) error
 }

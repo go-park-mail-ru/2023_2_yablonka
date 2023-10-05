@@ -14,7 +14,7 @@ import (
 	user "server/internal/service/user"
 	"server/internal/storage/in_memory"
 
-	"github.com/rs/cors"
+	"github.com/asaskevich/govalidator"
 )
 
 // @title LA TABULA API
@@ -33,6 +33,7 @@ import (
 // @query.collection.format multi
 func main() {
 	serverConfig, err := config.NewSessionEnvConfig("")
+	govalidator.SetFieldsRequiredByDefault(true)
 	if err != nil {
 		log.Fatal(err.Error())
 	}
@@ -44,12 +45,12 @@ func main() {
 	log.Println("storages configured")
 
 	userAuthService := user.NewAuthUserService(userStorage)
-	authServise := auth.NewAuthSessionService(*serverConfig, authStorage)
+	authService := auth.NewAuthSessionService(*serverConfig, authStorage)
 	boardService := board.NewBoardService(boardStorage)
 	log.Println("services configured")
 
 	mux, err := app.GetChiMux(*handlers.NewHandlerManager(
-		authServise,
+		authService,
 		userAuthService,
 		//user.NewUserService(userStorage),
 		boardService,
@@ -59,29 +60,12 @@ func main() {
 	}
 	log.Println("router configured")
 
-	// TODO Move this into a config
-	c := cors.New(cors.Options{
-		AllowedOrigins: []string{
-			"localhost:8080",
-			"213.219.215.40:8080",
-			"localhost:8081",
-			"213.219.215.40:8081",
-		},
-		AllowCredentials: true,
-		AllowedMethods:   []string{"GET", "POST", "OPTIONS"},
-		Debug:            true,
-	})
-	mux = c.Handler(mux)
-	log.Println("cors configured")
-
-	log.Println("server configured")
-
-	log.Println("server configured")
-
 	var server = http.Server{
 		Addr:    ":8080",
 		Handler: mux,
 	}
+
+	log.Println("server configured")
 
 	idleConnsClosed := make(chan struct{})
 	go func() {

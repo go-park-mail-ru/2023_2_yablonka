@@ -62,6 +62,12 @@ type ErrorResponse struct {
 	Message string `json:"error_response"`
 }
 
+// WrongLoginResponse
+var WrongLoginResponse = ErrorResponse{
+	Code:    http.StatusUnauthorized,
+	Message: "Неверный адрес почты или пароль",
+}
+
 // BadRequestResponse
 // заглушка для ответа 401 без разглашения имплементации чувствительных процессов
 var BadRequestResponse = ErrorResponse{
@@ -86,14 +92,8 @@ var InternalServerErrorResponse = ErrorResponse{
 // ErrorMap
 // карта для связи ошибок приложения и ответа бэкэнд-сервера
 var ErrorMap = map[error]ErrorResponse{
-	ErrUserNotFound: {
-		Code:    http.StatusNotFound,
-		Message: "Пользователя не существует",
-	},
-	ErrWrongPassword: {
-		Code:    http.StatusUnauthorized,
-		Message: "Указан неправильный пароль",
-	},
+	ErrUserNotFound:  WrongLoginResponse,
+	ErrWrongPassword: WrongLoginResponse,
 	ErrUserAlreadyExists: {
 		Code:    http.StatusConflict,
 		Message: "Пользователь с таким адресом почты уже существует",

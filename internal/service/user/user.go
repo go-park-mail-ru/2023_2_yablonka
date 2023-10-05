@@ -69,3 +69,9 @@ func (us AuthUserService) CreateUser(ctx context.Context, info dto.SignupInfo) (
 func (us UserService) UpdateUser(ctx context.Context, info dto.UpdatedUserInfo) (*entities.User, error) {
 	return us.storage.UpdateUser(ctx, info)
 }
+
+// DeleteUser
+// удаляет пользователя, возвращает ошибку
+func (us AuthUserService) DeleteUser(ctx context.Context, uid uint64) error {
+	return us.storage.DeleteUser(ctx, uid)
+}

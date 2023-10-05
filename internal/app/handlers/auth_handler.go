@@ -6,15 +6,26 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"time"
 
 	"server/internal/apperrors"
 	"server/internal/pkg/dto"
 	"server/internal/service"
+
+	"github.com/asaskevich/govalidator"
 )
 
 type AuthHandler struct {
 	as service.IAuthService
 	us service.IUserAuthService
+}
+
+func (ah AuthHandler) GetAuthService() service.IAuthService {
+	return ah.as
+}
+
+func (ah AuthHandler) GetUserAuthService() service.IUserAuthService {
+	return ah.us
 }
 
 //	@Summary Log user into the system
@@ -35,9 +46,16 @@ func (ah AuthHandler) LogIn(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
 
 	var login dto.AuthInfo
+
 	err := json.NewDecoder(r.Body).Decode(&login)
 	if err != nil {
 		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.BadRequestResponse))
+		return
+	}
+
+	_, err = govalidator.ValidateStruct(login)
+	if err != nil {
+		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.GenericUnauthorizedResponse))
 		return
 	}
 
@@ -63,7 +81,7 @@ func (ah AuthHandler) LogIn(w http.ResponseWriter, r *http.Request) {
 		Name:     "tabula_user",
 		Value:    token,
 		HttpOnly: true,
-		SameSite: http.SameSiteDefaultMode,
+		SameSite: http.SameSiteLaxMode,
 		Expires:  expiresAt,
 		Path:     "/api/v1/",
 	}
@@ -81,8 +99,8 @@ func (ah AuthHandler) LogIn(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Write(jsonResponse)
 	r.Body.Close()
+	w.Write(jsonResponse)
 }
 
 // TODO change the default data
@@ -99,6 +117,12 @@ func (ah AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 
 	var signup dto.AuthInfo
 	err := json.NewDecoder(r.Body).Decode(&signup)
+	if err != nil {
+		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.BadRequestResponse))
+		return
+	}
+
+	_, err = govalidator.ValidateStruct(signup)
 	if err != nil {
 		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.BadRequestResponse))
 		return
@@ -126,7 +150,7 @@ func (ah AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 		Name:     "tabula_user",
 		Value:    token,
 		HttpOnly: true,
-		SameSite: http.SameSiteDefaultMode,
+		SameSite: http.SameSiteLaxMode,
 		Expires:  expiresAt,
 		Path:     "/api/v1/",
 	}
@@ -149,35 +173,49 @@ func (ah AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 }
 
 func (ah AuthHandler) LogOut(w http.ResponseWriter, r *http.Request) {
-	defer r.Body.Close()
-}
+	rCtx := r.Context()
 
-func (ah AuthHandler) VerifyAuthMiddleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		rCtx := r.Context()
-		cookie, err := r.Cookie("tabula_user")
-		if err != nil {
-			*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.GenericUnauthorizedResponse))
-			return
-		}
-		token := cookie.Value
-		userInfo, err := ah.as.VerifyAuth(rCtx, token)
-		if err != nil {
-			*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.ErrorMap[err]))
-			return
-		}
+	cookie, err := r.Cookie("tabula_user")
+	if err != nil {
+		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.GenericUnauthorizedResponse))
+		return
+	}
 
-		userObj, err := ah.us.GetUserByID(rCtx, userInfo.UserID)
-		if err == apperrors.ErrUserNotFound {
-			*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.GenericUnauthorizedResponse))
-			return
-		} else if err != nil {
-			*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.ErrorMap[err]))
-			return
-		}
+	token := cookie.Value
 
-		next.ServeHTTP(w, r.WithContext(context.WithValue(rCtx, dto.UserObjKey, userObj)))
-	})
+	_, err = ah.as.VerifyAuth(rCtx, token)
+	if err != nil {
+		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.ErrorMap[err]))
+		return
+	}
+
+	err = ah.as.LogOut(rCtx, token)
+	if err != nil {
+		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.ErrorMap[err]))
+		return
+	}
+
+	cookie = &http.Cookie{
+		Name:     "tabula_user",
+		Value:    "",
+		HttpOnly: true,
+		SameSite: http.SameSiteLaxMode,
+		Expires:  time.Time{},
+		Path:     "/api/v1/",
+	}
+	http.SetCookie(w, cookie)
+
+	response := dto.JSONResponse{
+		Body: dto.JSONMap{},
+	}
+	jsonResponse, err := json.Marshal(response)
+	if err != nil {
+		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.InternalServerErrorResponse))
+		return
+	}
+
+	w.Write(jsonResponse)
+	r.Body.Close()
 }
 
 func (ah AuthHandler) VerifyAuthEndpoint(w http.ResponseWriter, r *http.Request) {

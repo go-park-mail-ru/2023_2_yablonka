@@ -1,4 +1,4 @@
-package handlers
+package handlers_test
 
 import (
 	"bytes"
@@ -10,6 +10,8 @@ import (
 	"testing"
 	"time"
 
+	"server/internal/app"
+	"server/internal/app/handlers"
 	"server/internal/apperrors"
 	config "server/internal/config"
 	jwt "server/internal/config/jwt"
@@ -38,38 +40,21 @@ func Test_Login(t *testing.T) {
 		expectedStatus int
 	}{
 		{
-			name:           "[JWT] Existing entry",
-			userID:         1,
-			email:          "test@email.com",
-			password:       "123456",
-			serviceType:    "JWT",
-			successful:     true,
-			expectedStatus: http.StatusOK,
-		},
-		{
-			name:           "[JWT] User not found",
-			email:          "notfound@email.com",
-			password:       "doesntmatter",
-			serviceType:    "JWT",
-			successful:     false,
-			expectedStatus: http.StatusNotFound,
-		},
-		{
-			name:           "[JWT] Wrong password",
-			email:          "test@email.com",
-			password:       "wrongpassword",
-			serviceType:    "JWT",
-			successful:     false,
-			expectedStatus: http.StatusUnauthorized,
-		},
-		{
 			name:           "[Session] Existing entry",
 			userID:         1,
 			email:          "test@email.com",
-			password:       "123456",
+			password:       "12345678",
 			serviceType:    "Session",
 			successful:     true,
 			expectedStatus: http.StatusOK,
+		},
+		{
+			name:           "[Session] Wrong password",
+			email:          "test@email.com",
+			password:       "wrongpassword",
+			serviceType:    "Session",
+			successful:     false,
+			expectedStatus: http.StatusUnauthorized,
 		},
 		{
 			name:           "[Session] User not found",
@@ -77,13 +62,30 @@ func Test_Login(t *testing.T) {
 			password:       "doesntmatter",
 			serviceType:    "Session",
 			successful:     false,
-			expectedStatus: http.StatusNotFound,
+			expectedStatus: http.StatusUnauthorized,
 		},
 		{
-			name:           "[Session] Wrong password",
+			name:           "[JWT] User not found",
+			email:          "notfound@email.com",
+			password:       "doesntmatter",
+			serviceType:    "JWT",
+			successful:     false,
+			expectedStatus: http.StatusUnauthorized,
+		},
+		{
+			name:           "[JWT] Existing entry",
+			userID:         1,
+			email:          "test@email.com",
+			password:       "12345678",
+			serviceType:    "JWT",
+			successful:     true,
+			expectedStatus: http.StatusOK,
+		},
+		{
+			name:           "[JWT] Wrong password",
 			email:          "test@email.com",
 			password:       "wrongpassword",
-			serviceType:    "Session",
+			serviceType:    "JWT",
 			successful:     false,
 			expectedStatus: http.StatusUnauthorized,
 		},
@@ -100,27 +102,25 @@ func Test_Login(t *testing.T) {
 			userAuthService := userservice.NewAuthUserService(userStorage)
 			boardService := boardservice.NewBoardService(boardStorage)
 
-			handlerManager := NewHandlerManager(
+			mux, _ := app.GetChiMux(*handlers.NewHandlerManager(
 				authService,
 				userAuthService,
+				//user.NewUserService(userStorage),
 				boardService,
-			)
+			))
+
 			body := bytes.NewReader([]byte(
 				fmt.Sprintf(`{"email":"%s", "password":"%s"}`, test.email, test.password),
 			))
 
 			r := httptest.NewRequest("POST", "/api/v1/auth/login/", body)
+			r.Header.Add("Access-Control-Request-Headers", "content-type")
+			r.Header.Add("Origin", "localhost:8081")
 			w := httptest.NewRecorder()
 
-			handlerManager.AuthHandler.LogIn(w, r)
+			mux.ServeHTTP(w, r)
 
-			var status int
-			if !test.successful {
-				err := r.Context().Value(dto.ErrorKey).(apperrors.ErrorResponse)
-				status = err.Code
-			} else {
-				status = w.Result().StatusCode
-			}
+			status := w.Result().StatusCode
 
 			require.EqualValuesf(t, test.expectedStatus, status,
 				"Expected code %d (%s), received code %d (%s)",
@@ -154,25 +154,17 @@ func Test_Signup(t *testing.T) {
 		expectedStatus int
 	}{
 		{
-			name:           "[JWT] New user",
+			name:           "[Session] New user",
 			email:          "newuser@email.com",
-			password:       "100500",
-			serviceType:    "JWT",
+			password:       "100500600",
+			serviceType:    "Session",
 			successful:     true,
 			expectedStatus: http.StatusOK,
 		},
 		{
-			name:           "[JWT] User already exists",
-			email:          "test@email.com",
-			password:       "coolpassword",
-			serviceType:    "JWT",
-			successful:     false,
-			expectedStatus: http.StatusConflict,
-		},
-		{
 			name:           "[Session] New user",
 			email:          "newuser@email.com",
-			password:       "100500",
+			password:       "100500600",
 			serviceType:    "Session",
 			successful:     true,
 			expectedStatus: http.StatusOK,
@@ -198,28 +190,25 @@ func Test_Signup(t *testing.T) {
 			userAuthService := userservice.NewAuthUserService(userStorage)
 			boardService := boardservice.NewBoardService(boardStorage)
 
-			handlerManager := NewHandlerManager(
+			mux, _ := app.GetChiMux(*handlers.NewHandlerManager(
 				authService,
 				userAuthService,
+				//user.NewUserService(userStorage),
 				boardService,
-			)
+			))
 
 			body := bytes.NewReader([]byte(
 				fmt.Sprintf(`{"email":"%s", "password":"%s"}`, test.email, test.password),
 			))
 
 			r := httptest.NewRequest("POST", "/api/v1/auth/signup/", body)
+			r.Header.Add("Access-Control-Request-Headers", "content-type")
+			r.Header.Add("Origin", "localhost:8081")
 			w := httptest.NewRecorder()
 
-			handlerManager.AuthHandler.SignUp(w, r)
+			mux.ServeHTTP(w, r)
 
-			var status int
-			if !test.successful {
-				err := r.Context().Value(dto.ErrorKey).(apperrors.ErrorResponse)
-				status = err.Code
-			} else {
-				status = w.Result().StatusCode
-			}
+			status := w.Result().StatusCode
 
 			require.EqualValuesf(t, test.expectedStatus, status,
 				"Expected code %d (%s), received code %d (%s)",
@@ -250,7 +239,6 @@ func Test_VerifyAuth(t *testing.T) {
 
 	tests := []struct {
 		name           string
-		email          string
 		password       string
 		serviceType    string
 		user           *entities.User
@@ -264,11 +252,12 @@ func Test_VerifyAuth(t *testing.T) {
 			user: &entities.User{
 				ID:           1,
 				Email:        "test@email.com",
-				PasswordHash: "8a65f9232aec42190593cebe45067d14ade16eaf9aaefe0c2e9ec425b5b8ca73",
+				PasswordHash: "d40040163489d60c9adcbb768a6aa7a48ecc4b091bc8b43328fd51a46492fe75",
 				Name:         "Никита",
 				Surname:      "Архаров",
 				ThumbnailURL: "https://sun1-27.userapi.com/s/v1/ig1/cAIfmwiDayww2WxVGPnIr5sHTSgXaf_567nuovSw_X4Cy9XAKrSVsAT2yAmJcJXDPkVOsXPW.jpg?size=50x50&quality=96&crop=351,248,540,540&ava=1",
 			},
+			password:       "12345678",
 			authorized:     true,
 			successful:     true,
 			expectedStatus: http.StatusOK,
@@ -285,8 +274,9 @@ func Test_VerifyAuth(t *testing.T) {
 			user: &entities.User{
 				ID:           5,
 				Email:        "fakeuser@email.com",
-				PasswordHash: "8a65f9232aec42190593cebe45067d14ade16eaf9aaefe0c2e9ec425b5b8ca73",
+				PasswordHash: "72232ddaebd2ed90de93428069234c137b58f64f3d2ada273944fe5b52264310",
 			},
+			password:       "12345678",
 			authorized:     true,
 			successful:     false,
 			expectedStatus: http.StatusUnauthorized,
@@ -297,11 +287,12 @@ func Test_VerifyAuth(t *testing.T) {
 			user: &entities.User{
 				ID:           2,
 				Email:        "email@example.com",
-				PasswordHash: "177e4fd1a8b22992e78145c3ba9c8781124e5c166d03b9c302cf8e100d77ad22",
+				PasswordHash: "dd1ffd3fb76da152f41b103fb567910452708ad615b57876a63292797a041448",
 				Name:         "Даниил",
 				Surname:      "Капитанов",
 				ThumbnailURL: "https://sun1-47.userapi.com/s/v1/ig2/aby-Y8KQ-yfQPLdvO-gq-ZenU63Iiw3ULbNlimdfaqLauSOj1cJ2jLxfBDtBMLpBW5T0UhaLFpyLVxAoYuVZiPB8.jpg?size=50x50&quality=95&crop=0,0,400,400&ava=1",
 			},
+			password:       "13579246",
 			authorized:     true,
 			successful:     true,
 			expectedStatus: http.StatusOK,
@@ -337,46 +328,53 @@ func Test_VerifyAuth(t *testing.T) {
 			userAuthService := userservice.NewAuthUserService(userStorage)
 			boardService := boardservice.NewBoardService(boardStorage)
 
-			handlerManager := NewHandlerManager(
+			mux, _ := app.GetChiMux(*handlers.NewHandlerManager(
 				authService,
 				userAuthService,
+				//user.NewUserService(userStorage),
 				boardService,
-			)
+			))
 
 			body := bytes.NewReader([]byte(""))
 
-			r := httptest.NewRequest("GET", "/api/v1/auth/verifyauth/", body)
+			r := httptest.NewRequest("GET", "/api/v1/auth/verify/", body)
+			r.Header.Add("Access-Control-Request-Headers", "content-type")
+			r.Header.Add("Origin", "localhost:8081")
 			w := httptest.NewRecorder()
 
+			rCtx := context.Background()
+
 			if test.authorized {
-				ctx := context.Background()
-				token, expiresAt, err := authService.AuthUser(ctx, test.user)
+				token, expiresAt, err := authService.AuthUser(rCtx, test.user)
 				require.NoError(t, err)
+
 				cookie := &http.Cookie{
 					Name:     "tabula_user",
 					Value:    token,
 					HttpOnly: true,
-					SameSite: http.SameSiteDefaultMode,
+					SameSite: http.SameSiteLaxMode,
 					Expires:  expiresAt,
+					Path:     "/api/v1/",
 				}
+
 				r.AddCookie(cookie)
 			}
 
-			w.Header().Set("Content-Type", "application/json")
-			handlerManager.AuthHandler.VerifyAuthEndpoint(w, r)
-			responseBody := w.Body.Bytes()
+			mux.ServeHTTP(w, r)
 
-			if !test.authorized || (test.authorized && !test.successful) {
-				err := r.Context().Value(dto.ErrorKey).(apperrors.ErrorResponse)
-				status := err.Code
-				require.Equal(t, http.StatusUnauthorized, status)
-			} else {
-				status := w.Result().StatusCode
-				require.Equal(t, http.StatusOK, status)
-				var jsonBody map[string]map[string]interface{}
+			responseBody := w.Body.Bytes()
+			status := w.Result().StatusCode
+
+			require.EqualValuesf(t, test.expectedStatus, status,
+				"Expected code %d (%s), received code %d (%s)",
+				test.expectedStatus, http.StatusText(test.expectedStatus),
+				w.Code, http.StatusText(w.Code))
+
+			if test.authorized && test.successful {
+				var jsonBody map[string]map[string]entities.User
 				err := json.Unmarshal(responseBody, &jsonBody)
 				require.NoError(t, err)
-				authedUser := jsonBody["body"]["user"].(entities.User)
+				authedUser := jsonBody["body"]["user"]
 				require.Equal(t, test.user.ID, authedUser.ID)
 				require.Equal(t, test.user.Email, authedUser.Email)
 				require.Empty(t, authedUser.PasswordHash)
@@ -389,7 +387,7 @@ func Test_VerifyAuth(t *testing.T) {
 }
 
 func Test_GetUserBoards(t *testing.T) {
-	t.Parallel()
+	// t.Parallel()
 
 	tests := []struct {
 		name        string
@@ -403,7 +401,7 @@ func Test_GetUserBoards(t *testing.T) {
 			authorized: true,
 			user: &entities.User{
 				ID:    1,
-				Email: "test@example.com",
+				Email: "test@email.com",
 			},
 			ownedBoards: 2,
 			guestBoards: 1,
@@ -413,7 +411,7 @@ func Test_GetUserBoards(t *testing.T) {
 			authorized: true,
 			user: &entities.User{
 				ID:    2,
-				Email: "example@email.com",
+				Email: "email@example.com",
 			},
 			ownedBoards: 1,
 			guestBoards: 0,
@@ -423,7 +421,7 @@ func Test_GetUserBoards(t *testing.T) {
 			authorized: true,
 			user: &entities.User{
 				ID:    3,
-				Email: "newchallenger@example.com",
+				Email: "newchallenger@email.com",
 			},
 			ownedBoards: 0,
 			guestBoards: 2,
@@ -446,7 +444,7 @@ func Test_GetUserBoards(t *testing.T) {
 	for _, test := range tests {
 		test := test
 		t.Run(test.name, func(t *testing.T) {
-			t.Parallel()
+			// t.Parallel()
 
 			userStorage := in_memory.NewUserStorage()
 			boardStorage := in_memory.NewBoardStorage()
@@ -455,7 +453,7 @@ func Test_GetUserBoards(t *testing.T) {
 			userAuthService := userservice.NewAuthUserService(userStorage)
 			boardService := boardservice.NewBoardService(boardStorage)
 
-			handlerManager := NewHandlerManager(
+			handlerManager := handlers.NewHandlerManager(
 				authService,
 				userAuthService,
 				boardService,
@@ -489,18 +487,31 @@ func Test_GetUserBoards(t *testing.T) {
 			} else {
 				status := w.Result().StatusCode
 				require.Equal(t, http.StatusOK, status)
-				var jsonBody dto.JSONResponse
+				var jsonBody = dto.JSONResponse{
+					Body: dto.JSONMap{
+						"user": entities.User{},
+						"boards": map[string]interface{}{
+							"user_owned_boards": []dto.UserOwnedBoardInfo{},
+							"user_guest_boards": []dto.UserGuestBoardInfo{},
+						},
+					},
+				}
 				err := json.Unmarshal(responseBody, &jsonBody)
 				require.NoError(t, err)
-				jsonMap := jsonBody.Body.(map[string]map[string]map[string][]interface{})
-				userBoards := jsonMap["body"]["boards"]
+				bodyMap := jsonBody.Body.(map[string]interface{})
+				userMap := bodyMap["user"].(map[string]interface{})
+				require.Equal(t, test.user.ID, uint64(userMap["user_id"].(float64)))
+				require.Equal(t, test.user.Email, userMap["email"])
+				boardMap := bodyMap["boards"].(map[string]interface{})
+				ownedBoardsI := boardMap["user_owned_boards"]
+				guestBoardsI := boardMap["user_guest_boards"]
 				var ownedBoards []interface{}
 				var guestBoards []interface{}
-				if userBoards["user_owned_boards"] != nil {
-					ownedBoards = userBoards["user_owned_boards"]
+				if ownedBoardsI != nil {
+					ownedBoards = ownedBoardsI.([]interface{})
 				}
-				if userBoards["user_guest_boards"] != nil {
-					guestBoards = userBoards["user_guest_boards"]
+				if guestBoardsI != nil {
+					guestBoards = guestBoardsI.([]interface{})
 				}
 				require.Equal(t, test.ownedBoards, len(ownedBoards))
 				require.Equal(t, test.guestBoards, len(guestBoards))

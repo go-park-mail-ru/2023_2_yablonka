@@ -9,8 +9,8 @@ type VerifiedAuthInfo struct {
 // AuthInfo
 // DTO для обработки данных, полученных при входе
 type AuthInfo struct {
-	Email    string
-	Password string
+	Email    string `json:"email" valid:"type(string),email"`
+	Password string `json:"password" valid:"type(string),stringlength(8|32)"`
 }
 
 // LoginInfo
@@ -95,4 +95,5 @@ const (
 	UserObjKey key = iota
 	BoardsObjKey
 	ErrorKey
+	SIDLengthKey
 )
