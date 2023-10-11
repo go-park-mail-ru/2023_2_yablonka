@@ -107,7 +107,7 @@ func (ah AuthHandler) LogIn(w http.ResponseWriter, r *http.Request) {
 //	@Accept  json
 //	@Produce  json
 
-//	@Success 200  body object{} true "Объект пользователя"
+//	@Success 200  {object} dto.AuthInfo "Объект пользователя"
 //	@Failure 400  {object}  error
 //	@Failure 404  {object}  error
 //	@Failure 500  {object}  error

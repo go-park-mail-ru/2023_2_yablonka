@@ -1,4 +1,12 @@
 basePath: /
+definitions:
+  dto.AuthInfo:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    type: object
 host: localhost:8080
 info:
   contact:
@@ -50,7 +58,7 @@ paths:
         "200":
           description: Объект пользователя
           schema:
-            type: body
+            $ref: '#/definitions/dto.AuthInfo'
         "400":
           description: Bad Request
           schema: {}

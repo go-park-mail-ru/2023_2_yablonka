@@ -77,7 +77,7 @@ const docTemplate = `{
                     "200": {
                         "description": "Объект пользователя",
                         "schema": {
-                            "type": "body"
+                            "$ref": "#/definitions/dto.AuthInfo"
                         }
                     },
                     "400": {
@@ -140,6 +140,19 @@ const docTemplate = `{
                         "description": "Internal Server Error",
                         "schema": {}
                     }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "dto.AuthInfo": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
                 }
             }
         }
