@@ -2,10 +2,12 @@ package app
 
 import (
 	"net/http"
+	_ "server/docs"
 	"server/internal/app/handlers"
 	"server/internal/app/middleware"
 
 	chi "github.com/go-chi/chi/v5"
+	httpSwagger "github.com/swaggo/http-swagger/v2"
 )
 
 // type Mux interface {
@@ -16,12 +18,12 @@ import (
 // возвращает mux, реализованный с помощью модуля chi
 func GetChiMux(manager handlers.HandlerManager) (http.Handler, error) {
 	mux := chi.NewRouter()
+
 	mux.Use(middleware.JsonHeader)
 	mux.Use(middleware.ErrorHandler)
 	mux.Use(middleware.Logger)
 	mux.Use(middleware.Cors)
 	mux.Use(middleware.PanicRecovery)
-
 	mux.Route("/api/v1/auth", func(r chi.Router) {
 		r.Post("/login/", manager.AuthHandler.LogIn)
 		r.Post("/signup/", manager.AuthHandler.SignUp)
@@ -33,6 +35,10 @@ func GetChiMux(manager handlers.HandlerManager) (http.Handler, error) {
 		r.Use(middleware.AuthMiddleware(manager.AuthHandler.GetAuthService(), manager.AuthHandler.GetUserAuthService()))
 		r.Get("/boards/", manager.BoardHandler.GetUserBoards)
 	})
+
+	mux.Get("/swagger/*", httpSwagger.Handler(
+		httpSwagger.URL("http://localhost:8080/swagger/doc.json"), //The url pointing to API definition
+	))
 
 	return mux, nil
 }

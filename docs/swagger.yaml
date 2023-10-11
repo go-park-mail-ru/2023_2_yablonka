@@ -1,4 +1,12 @@
 basePath: /
+definitions:
+  dto.AuthInfo:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    type: object
 host: localhost:8080
 info:
   contact:
@@ -12,22 +20,84 @@ info:
   title: LA TABULA API
   version: "1.0"
 paths:
-  /api/v1/users/{id}:
-    get:
-      consumes:
-      - application/json
-      description: Create new session or continue old one
-      operationId: login
-      parameters:
-      - description: User ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      produces:
-      - application/json
+  /api/v1/auth/login:
+    post:
       responses:
         "200":
-          description: OK
-      summary: Log user into the system
+          description: Объект пользователя
+          schema:
+            type: body
+        "400":
+          description: Bad Request
+          schema: {}
+        "401":
+          description: Unauthorized
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+  /api/v1/auth/logout:
+    post:
+      responses:
+        "200":
+          description: Пустой объект
+          schema:
+            type: body
+        "400":
+          description: Bad Request
+          schema: {}
+        "404":
+          description: Not Found
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+  /api/v1/auth/signup:
+    post:
+      responses:
+        "200":
+          description: Объект пользователя
+          schema:
+            $ref: '#/definitions/dto.AuthInfo'
+        "400":
+          description: Bad Request
+          schema: {}
+        "404":
+          description: Not Found
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+  /api/v1/auth/verify:
+    get:
+      responses:
+        "200":
+          description: Пустой объект
+          schema:
+            type: body
+        "400":
+          description: Bad Request
+          schema: {}
+        "404":
+          description: Not Found
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+  /api/v1/user/boards:
+    get:
+      responses:
+        "200":
+          description: Список объектов досок
+          schema:
+            type: body
+        "400":
+          description: Bad Request
+          schema: {}
+        "404":
+          description: Not Found
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
 swagger: "2.0"
