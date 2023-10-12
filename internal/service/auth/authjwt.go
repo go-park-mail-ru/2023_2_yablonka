@@ -18,6 +18,10 @@ type AuthJWTService struct {
 	tokenLifetime time.Duration
 }
 
+// AuthUser
+// возвращает уникальную строку авторизации и её длительность
+// или возвращает ошибки apperrors.ErrTokenNotGenerated (500),
+// apperrors.ErrJWTWrongMethod (401), apperrors.ErrJWTMissingClaim (401), apperrors.ErrJWTInvalidToken (401)
 func (a *AuthJWTService) AuthUser(ctx context.Context, user *entities.User) (string, time.Time, error) {
 	expiresAt := time.Now().Add(a.tokenLifetime)
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
@@ -33,6 +37,9 @@ func (a *AuthJWTService) AuthUser(ctx context.Context, user *entities.User) (str
 	return str, expiresAt, nil
 }
 
+// VerifyAuth
+// проверяет состояние авторизации, возвращает ID авторизированного пользователя
+// или возвращает ошибки apperrors.ErrJWTWrongMethod (401), apperrors.ErrJWTMissingClaim (401), apperrors.ErrJWTInvalidToken (401)
 func (a *AuthJWTService) VerifyAuth(ctx context.Context, incomingToken string) (*dto.VerifiedAuthInfo, error) {
 	token, err := jwt.Parse(incomingToken, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
@@ -57,10 +64,15 @@ func (a *AuthJWTService) VerifyAuth(ctx context.Context, incomingToken string) (
 	return nil, apperrors.ErrJWTInvalidToken
 }
 
+// GetLifetime
+// возвращает длительность авторизации
 func (a *AuthJWTService) GetLifetime() time.Duration {
 	return a.tokenLifetime
 }
 
+// LogOut
+// удаляет текущую сессию
+// или возвращает ошибку apperrors.ErrSessionNotFound (401)
 func (a *AuthJWTService) LogOut(ctx context.Context, sessionString string) error {
 	return nil
 }

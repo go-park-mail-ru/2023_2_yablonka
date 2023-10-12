@@ -5,11 +5,13 @@ server:
     - GET
     - POST
     - OPTIONS
+    - DELETE
   allowed_hosts:
     - localhost:8080
     - localhost:8081
     - 213.219.215.40:8080
     - 213.219.215.40:8081
+    - http://localhost:8080
     - http://localhost:8081
     - http://213.219.215.40:8081
   allowed_headers:

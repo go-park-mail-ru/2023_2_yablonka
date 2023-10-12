@@ -66,20 +66,9 @@ func NewBoardStorage() *LocalBoardStorage {
 	}
 }
 
-func (s *LocalBoardStorage) GetHighestID() uint64 {
-	if len(s.boardData) == 0 {
-		return 0
-	}
-	var highest uint64 = 0
-	for _, board := range s.boardData {
-		if board.ID > highest {
-			highest = board.ID
-		}
-	}
-
-	return highest
-}
-
+// GetUserOwnedBoards
+// находит все доски, созданные пользователем
+// или возвращает ошибку apperrors.ErrUserNotFound (401)
 func (s *LocalBoardStorage) GetUserOwnedBoards(ctx context.Context, userInfo dto.VerifiedAuthInfo) (*[]entities.Board, error) {
 	var boards []entities.Board
 	userFound := false
@@ -99,6 +88,9 @@ func (s *LocalBoardStorage) GetUserOwnedBoards(ctx context.Context, userInfo dto
 	return &boards, nil
 }
 
+// GetUserGuestBoards
+// находит все доски, в которых участвует пользователь
+// или возвращает ошибку apperrors.ErrUserNotFound (401)
 func (s *LocalBoardStorage) GetUserGuestBoards(ctx context.Context, userInfo dto.VerifiedAuthInfo) (*[]entities.Board, error) {
 	var boards []entities.Board
 	s.mu.RLock()
@@ -112,6 +104,20 @@ func (s *LocalBoardStorage) GetUserGuestBoards(ctx context.Context, userInfo dto
 	s.mu.RUnlock()
 
 	return &boards, nil
+}
+
+func (s *LocalBoardStorage) GetHighestID() uint64 {
+	if len(s.boardData) == 0 {
+		return 0
+	}
+	var highest uint64 = 0
+	for _, board := range s.boardData {
+		if board.ID > highest {
+			highest = board.ID
+		}
+	}
+
+	return highest
 }
 
 func (s *LocalBoardStorage) GetBoard(ctx context.Context, board dto.IndividualBoardInfo) (*entities.Board, error) {

@@ -8,12 +8,19 @@ import (
 	"time"
 
 	"github.com/joho/godotenv"
+	yaml "gopkg.in/yaml.v2"
 )
 
 // ServerConfig
 // структура для хранения параметров сервера
 type BaseServerConfig struct {
-	SessionDuration time.Duration
+	SessionDuration time.Duration `yaml:"-"`
+	Server          struct {
+		AllowedMethods   []string `yaml:"allowed_methods"`
+		AllowedHosts     []string `yaml:"allowed_hosts"`
+		AllowedHeaders   []string `yaml:"allowed_headers"`
+		AllowCredentials bool     `yaml:"allow_credentials"`
+	} `yaml:"server"`
 }
 
 // ServerConfig
@@ -33,12 +40,12 @@ func (config *BaseServerConfig) Validate() error {
 
 // NewJWTEnvConfig
 // создаёт конфиг из .env файла, находящегося по полученному пути
-func NewBaseEnvConfig(filepath string) (*BaseServerConfig, error) {
+func NewBaseEnvConfig(envPath string, configPath string) (*BaseServerConfig, error) {
 	var err error
-	if filepath == "" {
+	if envPath == "" {
 		err = godotenv.Load()
 	} else {
-		err = godotenv.Load(filepath)
+		err = godotenv.Load(envPath)
 	}
 
 	if err != nil {
@@ -50,9 +57,23 @@ func NewBaseEnvConfig(filepath string) (*BaseServerConfig, error) {
 		return nil, err
 	}
 
-	return &BaseServerConfig{
+	config := &BaseServerConfig{
 		SessionDuration: sessionDuration,
-	}, nil
+	}
+
+	file, err := os.Open(configPath)
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+
+	d := yaml.NewDecoder(file)
+
+	if err := d.Decode(&config); err != nil {
+		return nil, err
+	}
+
+	return config, nil
 }
 
 // buildSessionDurationEnv

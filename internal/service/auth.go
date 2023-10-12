@@ -18,11 +18,11 @@ type IAuthService interface {
 	// проверяет состояние авторизации, возвращает ID авторизированного пользователя
 	// или вариации GenericUnauthorizedResponse (401) в зависимости от имплементации
 	VerifyAuth(context.Context, string) (*dto.VerifiedAuthInfo, error)
-	// GetLifetime
-	// возвращает длительность авторизации
-	GetLifetime() time.Duration
 	// LogOut
 	// удаляет текущую сессию
 	// или возвращает ошибку apperrors.ErrSessionNotFound (401)
 	LogOut(context.Context, string) error
+	// GetLifetime
+	// возвращает длительность авторизации
+	GetLifetime() time.Duration
 }

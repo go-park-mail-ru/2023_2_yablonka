@@ -1,8 +1,29 @@
-basePath: /
+basePath: /api/v2
 definitions:
   apperrors.ErrorResponse:
     properties:
       error_response:
+        type: string
+    type: object
+  doc_structs.UserBoardsResponse:
+    properties:
+      boards:
+        items:
+          $ref: '#/definitions/entities.Board'
+        type: array
+      user:
+        $ref: '#/definitions/entities.User'
+    type: object
+  doc_structs.UserResponse:
+    properties:
+      user:
+        $ref: '#/definitions/entities.User'
+    type: object
+  dto.AuthInfo:
+    properties:
+      email:
+        type: string
+      password:
         type: string
     type: object
   dto.UserInfo:
@@ -40,56 +61,66 @@ definitions:
       user_id:
         type: integer
     type: object
-  handlers.UserBoardsResponse:
-    properties:
-      boards:
-        items:
-          $ref: '#/definitions/entities.Board'
-        type: array
-      user:
-        $ref: '#/definitions/entities.User'
-    type: object
-  handlers.UserResponse:
-    properties:
-      user:
-        $ref: '#/definitions/entities.User'
-    type: object
 host: localhost:8080
 info:
   contact:
-    email: support@swagger.io
-    name: API Support
-    url: http://www.swagger.io/support
-  description: haha
+    email: kdanil01@mail.ru
+    name: Капитанов Даниил
+    url: https://vk.com/poophead27
+  description: Лучшее и единственно приложение, имитирующее Trello.
   license:
-    name: MIT
-    url: https://opensource.org/licenses/MIT
+    name: None
+    url: None
   title: LA TABULA API
   version: "2.0"
 paths:
-  /api/v2/auth/login/:
+  /api/v2/user/boards/:
+    get:
+      consumes:
+      - application/json
+      description: Выводит и созданные им доски и те, в которых он гость. Работает
+        только для авторизированного пользователя.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Пользователь и его доски
+          schema:
+            $ref: '#/definitions/doc_structs.UserBoardsResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+      summary: Вывести все доски текущего пользователя
+      tags:
+      - boards
+  /auth/login/:
     post:
       consumes:
       - application/json
       description: Для этого использует сессии
       parameters:
-      - description: Эл. почта
-        in: path
-        name: login
+      - description: Эл. почта и логин пользователя
+        in: body
+        name: authData
         required: true
-        type: string
-      - description: Пароль
-        in: path
-        name: password
-        required: true
-        type: string
+        schema:
+          $ref: '#/definitions/dto.AuthInfo'
       produces:
       - application/json
       responses:
         "200":
           description: Объект пользователя
           schema:
-            $ref: '#/definitions/handlers.UserResponse'
+            $ref: '#/definitions/doc_structs.UserResponse'
         "400":
           description: Bad Request
           schema:
@@ -105,12 +136,13 @@ paths:
       summary: Войти в систему
       tags:
       - auth
-  /api/v2/auth/logout/:
+  /auth/logout/:
     delete:
       consumes:
       - application/json
       description: Удаляет текущую сессию пользователя. Может сделать только авторизированный
-        пользователь.
+        пользователь. Текущая сессия определяется по cookie "tabula_user", в которой
+        лежит строка-токен.
       produces:
       - application/json
       responses:
@@ -133,29 +165,25 @@ paths:
       summary: Выйти из системы
       tags:
       - auth
-  /api/v2/auth/signup/:
+  /auth/signup/:
     post:
       consumes:
       - application/json
       description: Также вводит пользователя в систему
       parameters:
-      - description: Эл. почта
-        in: path
-        name: login
+      - description: Эл. почта и логин пользователя
+        in: body
+        name: authData
         required: true
-        type: string
-      - description: Пароль
-        in: path
-        name: password
-        required: true
-        type: string
+        schema:
+          $ref: '#/definitions/dto.AuthInfo'
       produces:
       - application/json
       responses:
         "200":
           description: Объект пользователя
           schema:
-            $ref: '#/definitions/handlers.UserResponse'
+            $ref: '#/definitions/doc_structs.UserResponse'
         "400":
           description: Bad Request
           schema:
@@ -175,18 +203,19 @@ paths:
       summary: Зарегистрировать нового пользователя
       tags:
       - auth
-  /api/v2/auth/verify:
+  /auth/verify:
     get:
       consumes:
       - application/json
-      description: Узнать существует ли сессия текущего пользователя
+      description: Узнать существует ли сессия текущего пользователя. Сессия определяется
+        по cookie "tabula_user", в которой лежит строка-токен.
       produces:
       - application/json
       responses:
         "200":
           description: Объект пользователя
           schema:
-            $ref: '#/definitions/handlers.UserResponse'
+            $ref: '#/definitions/doc_structs.UserResponse'
         "400":
           description: Bad Request
           schema:
@@ -202,32 +231,4 @@ paths:
       summary: Подтвердить вход
       tags:
       - auth
-  /api/v2/user/boards/:
-    get:
-      consumes:
-      - application/json
-      description: Выводит и созданные им доски и те, в которых он гость. Работает
-        только для авторизированного пользователя.
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Пользователь и его доски
-          schema:
-            $ref: '#/definitions/handlers.UserBoardsResponse'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/apperrors.ErrorResponse'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/apperrors.ErrorResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/apperrors.ErrorResponse'
-      summary: Вывести все доски текущего пользователя
-      tags:
-      - boards
 swagger: "2.0"

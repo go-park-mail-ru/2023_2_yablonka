@@ -10,22 +10,22 @@ const docTemplate = `{
         "description": "{{escape .Description}}",
         "title": "{{.Title}}",
         "contact": {
-            "name": "API Support",
-            "url": "http://www.swagger.io/support",
-            "email": "support@swagger.io"
+            "name": "Капитанов Даниил",
+            "url": "https://vk.com/poophead27",
+            "email": "kdanil01@mail.ru"
         },
         "license": {
-            "name": "MIT",
-            "url": "https://opensource.org/licenses/MIT"
+            "name": "None",
+            "url": "None"
         },
         "version": "{{.Version}}"
     },
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/api/v2/auth/login/": {
-            "post": {
-                "description": "Для этого использует сессии",
+        "/api/v2/user/boards/": {
+            "get": {
+                "description": "Выводит и созданные им доски и те, в которых он гость. Работает только для авторизированного пользователя.",
                 "consumes": [
                     "application/json"
                 ],
@@ -33,30 +33,14 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "auth"
+                    "boards"
                 ],
-                "summary": "Войти в систему",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Эл. почта",
-                        "name": "login",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Пароль",
-                        "name": "password",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
+                "summary": "Вывести все доски текущего пользователя",
                 "responses": {
                     "200": {
-                        "description": "Объект пользователя",
+                        "description": "Пользователь и его доски",
                         "schema": {
-                            "$ref": "#/definitions/handlers.UserResponse"
+                            "$ref": "#/definitions/doc_structs.UserBoardsResponse"
                         }
                     },
                     "400": {
@@ -80,9 +64,61 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v2/auth/logout/": {
+        "/auth/login/": {
+            "post": {
+                "description": "Для этого использует сессии",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Войти в систему",
+                "parameters": [
+                    {
+                        "description": "Эл. почта и логин пользователя",
+                        "name": "authData",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.AuthInfo"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Объект пользователя",
+                        "schema": {
+                            "$ref": "#/definitions/doc_structs.UserResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/logout/": {
             "delete": {
-                "description": "Удаляет текущую сессию пользователя. Может сделать только авторизированный пользователь.",
+                "description": "Удаляет текущую сессию пользователя. Может сделать только авторизированный пользователь. Текущая сессия определяется по cookie \"tabula_user\", в которой лежит строка-токен.",
                 "consumes": [
                     "application/json"
                 ],
@@ -121,7 +157,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v2/auth/signup/": {
+        "/auth/signup/": {
             "post": {
                 "description": "Также вводит пользователя в систему",
                 "consumes": [
@@ -136,25 +172,20 @@ const docTemplate = `{
                 "summary": "Зарегистрировать нового пользователя",
                 "parameters": [
                     {
-                        "type": "string",
-                        "description": "Эл. почта",
-                        "name": "login",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Пароль",
-                        "name": "password",
-                        "in": "path",
-                        "required": true
+                        "description": "Эл. почта и логин пользователя",
+                        "name": "authData",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.AuthInfo"
+                        }
                     }
                 ],
                 "responses": {
                     "200": {
                         "description": "Объект пользователя",
                         "schema": {
-                            "$ref": "#/definitions/handlers.UserResponse"
+                            "$ref": "#/definitions/doc_structs.UserResponse"
                         }
                     },
                     "400": {
@@ -184,9 +215,9 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v2/auth/verify": {
+        "/auth/verify": {
             "get": {
-                "description": "Узнать существует ли сессия текущего пользователя",
+                "description": "Узнать существует ли сессия текущего пользователя. Сессия определяется по cookie \"tabula_user\", в которой лежит строка-токен.",
                 "consumes": [
                     "application/json"
                 ],
@@ -201,48 +232,7 @@ const docTemplate = `{
                     "200": {
                         "description": "Объект пользователя",
                         "schema": {
-                            "$ref": "#/definitions/handlers.UserResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/apperrors.ErrorResponse"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/apperrors.ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/apperrors.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v2/user/boards/": {
-            "get": {
-                "description": "Выводит и созданные им доски и те, в которых он гость. Работает только для авторизированного пользователя.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "boards"
-                ],
-                "summary": "Вывести все доски текущего пользователя",
-                "responses": {
-                    "200": {
-                        "description": "Пользователь и его доски",
-                        "schema": {
-                            "$ref": "#/definitions/handlers.UserBoardsResponse"
+                            "$ref": "#/definitions/doc_structs.UserResponse"
                         }
                     },
                     "400": {
@@ -272,6 +262,39 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "error_response": {
+                    "type": "string"
+                }
+            }
+        },
+        "doc_structs.UserBoardsResponse": {
+            "type": "object",
+            "properties": {
+                "boards": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/entities.Board"
+                    }
+                },
+                "user": {
+                    "$ref": "#/definitions/entities.User"
+                }
+            }
+        },
+        "doc_structs.UserResponse": {
+            "type": "object",
+            "properties": {
+                "user": {
+                    "$ref": "#/definitions/entities.User"
+                }
+            }
+        },
+        "dto.AuthInfo": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "password": {
                     "type": "string"
                 }
             }
@@ -329,28 +352,6 @@ const docTemplate = `{
                     "type": "integer"
                 }
             }
-        },
-        "handlers.UserBoardsResponse": {
-            "type": "object",
-            "properties": {
-                "boards": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/entities.Board"
-                    }
-                },
-                "user": {
-                    "$ref": "#/definitions/entities.User"
-                }
-            }
-        },
-        "handlers.UserResponse": {
-            "type": "object",
-            "properties": {
-                "user": {
-                    "$ref": "#/definitions/entities.User"
-                }
-            }
         }
     }
 }`
@@ -359,10 +360,10 @@ const docTemplate = `{
 var SwaggerInfo = &swag.Spec{
 	Version:          "2.0",
 	Host:             "localhost:8080",
-	BasePath:         "/",
+	BasePath:         "/api/v2",
 	Schemes:          []string{},
 	Title:            "LA TABULA API",
-	Description:      "haha",
+	Description:      "Лучшее и единственно приложение, имитирующее Trello.",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 	LeftDelim:        "{{",

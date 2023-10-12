@@ -5,6 +5,7 @@ import (
 	"crypto/sha256"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"time"
 
@@ -36,15 +37,14 @@ func (ah AuthHandler) GetUserAuthService() service.IUserAuthService {
 // @Accept  json
 // @Produce  json
 //
-// @Param login path string true "Эл. почта"
-// @Param password path string true "Пароль"
+// @Param authData body dto.AuthInfo true "Эл. почта и логин пользователя"
 //
 // @Success 200  {object}  doc_structs.UserResponse "Объект пользователя"
 // @Failure 400  {object}  apperrors.ErrorResponse
 // @Failure 401  {object}  apperrors.ErrorResponse
 // @Failure 500  {object}  apperrors.ErrorResponse
 //
-// @Router /api/v2/auth/login/ [post]
+// @Router /auth/login/ [post]
 func (ah AuthHandler) LogIn(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
 
@@ -85,8 +85,10 @@ func (ah AuthHandler) LogIn(w http.ResponseWriter, r *http.Request) {
 		HttpOnly: true,
 		SameSite: http.SameSiteLaxMode,
 		Expires:  expiresAt,
-		Path:     "/api/v1/",
+		Path:     "/api/v2/",
 	}
+
+	fmt.Println(token)
 
 	http.SetCookie(w, cookie)
 
@@ -112,8 +114,7 @@ func (ah AuthHandler) LogIn(w http.ResponseWriter, r *http.Request) {
 // @Accept  json
 // @Produce  json
 //
-// @Param login path string true "Эл. почта"
-// @Param password path string true "Пароль"
+// @Param authData body dto.AuthInfo true "Эл. почта и логин пользователя"
 //
 // @Success 200  {object}  doc_structs.UserResponse "Объект пользователя"
 // @Failure 400  {object}  apperrors.ErrorResponse
@@ -121,7 +122,7 @@ func (ah AuthHandler) LogIn(w http.ResponseWriter, r *http.Request) {
 // @Failure 409  {object}  apperrors.ErrorResponse
 // @Failure 500  {object}  apperrors.ErrorResponse
 //
-// @Router /api/v2/auth/signup/ [post]
+// @Router /auth/signup/ [post]
 func (ah AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
 
@@ -183,7 +184,7 @@ func (ah AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 }
 
 // @Summary Выйти из системы
-// @Description Удаляет текущую сессию пользователя. Может сделать только авторизированный пользователь.
+// @Description Удаляет текущую сессию пользователя. Может сделать только авторизированный пользователь. Текущая сессия определяется по cookie "tabula_user", в которой лежит строка-токен.
 // @Tags auth
 //
 // @Accept  json
@@ -194,7 +195,7 @@ func (ah AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 // @Failure 401  {object}  apperrors.ErrorResponse
 // @Failure 500  {object}  apperrors.ErrorResponse
 //
-// @Router /api/v2/auth/logout/ [delete]
+// @Router /auth/logout/ [delete]
 func (ah AuthHandler) LogOut(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
 
@@ -224,7 +225,7 @@ func (ah AuthHandler) LogOut(w http.ResponseWriter, r *http.Request) {
 		HttpOnly: true,
 		SameSite: http.SameSiteLaxMode,
 		Expires:  time.Time{},
-		Path:     "/api/v1/",
+		Path:     "/api/v2/",
 	}
 	http.SetCookie(w, cookie)
 
@@ -242,7 +243,7 @@ func (ah AuthHandler) LogOut(w http.ResponseWriter, r *http.Request) {
 }
 
 // @Summary Подтвердить вход
-// @Description Узнать существует ли сессия текущего пользователя
+// @Description Узнать существует ли сессия текущего пользователя. Сессия определяется по cookie "tabula_user", в которой лежит строка-токен.
 // @Tags auth
 //
 // @Accept  json
@@ -253,15 +254,18 @@ func (ah AuthHandler) LogOut(w http.ResponseWriter, r *http.Request) {
 // @Failure 401  {object}  apperrors.ErrorResponse
 // @Failure 500  {object}  apperrors.ErrorResponse
 //
-// @Router /api/v2/auth/verify [get]
+// @Router /auth/verify [get]
 func (ah AuthHandler) VerifyAuthEndpoint(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
+	log.Println(r.Cookies())
 
 	cookie, err := r.Cookie("tabula_user")
+
 	if err != nil {
 		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.GenericUnauthorizedResponse))
 		return
 	}
+	log.Println(cookie.Value)
 
 	token := cookie.Value
 
