@@ -29,7 +29,7 @@ func GetChiMux(manager handlers.HandlerManager) (http.Handler, error) {
 		r.Route("/auth", func(r chi.Router) {
 			r.Post("/login/", manager.AuthHandler.LogIn)
 			r.Post("/signup/", manager.AuthHandler.SignUp)
-			r.Post("/logout/", manager.AuthHandler.LogOut)
+			r.Delete("/logout/", manager.AuthHandler.LogOut)
 			r.Get("/verify/", manager.AuthHandler.VerifyAuthEndpoint)
 		})
 		r.Route("/user", func(r chi.Router) {
@@ -38,7 +38,7 @@ func GetChiMux(manager handlers.HandlerManager) (http.Handler, error) {
 		})
 
 		r.Get("/swagger/*", httpSwagger.Handler(
-			httpSwagger.URL("http://localhost:8080/api/v2/swagger/doc.json"), //The url pointing to API definition
+			httpSwagger.URL("http://localhost:8080/api/v2/swagger/doc.json"),
 		))
 
 	})

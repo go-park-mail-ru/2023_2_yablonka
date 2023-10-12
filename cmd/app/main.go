@@ -18,18 +18,18 @@ import (
 )
 
 // @title LA TABULA API
-// @version 1.0
-// @description haha
+// @version 2.0
+// @description Лучшее и единственно приложение, имитирующее Trello.
 
-// @contact.name API Support
-// @contact.url http://www.swagger.io/support
-// @contact.email support@swagger.io
+// @contact.name Капитанов Даниил
+// @contact.url https://vk.com/poophead27
+// @contact.email kdanil01@mail.ru
 
-// @license.name MIT
-// @license.url https://opensource.org/licenses/MIT
+// @license.name None
+// @license.url None
 
-// @host localhost:8080
-// @BasePath /
+// @host http://213.219.215.40:8080
+// @BasePath /api/v2
 // @query.collection.format multi
 func main() {
 	serverConfig, err := config.NewSessionEnvConfig("")
