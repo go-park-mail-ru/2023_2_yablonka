@@ -125,8 +125,8 @@ func (s *LocalUserStorage) UpdateUser(ctx context.Context, updatedInfo dto.Updat
 	oldUser, ok := s.userData[updatedInfo.Email]
 	s.mu.RUnlock()
 
-	if ok {
-		return nil, apperrors.ErrUserAlreadyExists
+	if !ok {
+		return nil, apperrors.ErrUserNotFound
 	}
 
 	updatedUser := entities.User{

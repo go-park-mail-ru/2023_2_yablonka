@@ -2,6 +2,7 @@ package in_memory
 
 import (
 	"context"
+	"server/internal/apperrors"
 	"server/internal/pkg/dto"
 	"server/internal/pkg/entities"
 	"sync"
@@ -81,13 +82,19 @@ func (s *LocalBoardStorage) GetHighestID() uint64 {
 
 func (s *LocalBoardStorage) GetUserOwnedBoards(ctx context.Context, userInfo dto.VerifiedAuthInfo) (*[]entities.Board, error) {
 	var boards []entities.Board
+	userFound := false
 	s.mu.RLock()
 	for _, board := range s.boardData {
 		if board.Owner.ID == userInfo.UserID {
+			userFound = true
 			boards = append(boards, board)
 		}
 	}
 	s.mu.RUnlock()
+
+	if !userFound {
+		return nil, apperrors.ErrUserNotFound
+	}
 
 	return &boards, nil
 }

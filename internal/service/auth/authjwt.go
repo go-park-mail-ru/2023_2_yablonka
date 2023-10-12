@@ -18,8 +18,6 @@ type AuthJWTService struct {
 	tokenLifetime time.Duration
 }
 
-// AuthUser
-// возвращает токен JWT, сгенерированный с помощью секрета в []byte и дату+время его истечения для полученного пользователя
 func (a *AuthJWTService) AuthUser(ctx context.Context, user *entities.User) (string, time.Time, error) {
 	expiresAt := time.Now().Add(a.tokenLifetime)
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
@@ -30,13 +28,11 @@ func (a *AuthJWTService) AuthUser(ctx context.Context, user *entities.User) (str
 
 	str, err := token.SignedString(a.jwtSecret)
 	if err != nil {
-		return "", time.Time{}, err
+		return "", time.Time{}, apperrors.ErrTokenNotGenerated
 	}
 	return str, expiresAt, nil
 }
 
-// VerifyAuth
-// валидирует токен, возвращает ID пользователя, которому принадлежит токен
 func (a *AuthJWTService) VerifyAuth(ctx context.Context, incomingToken string) (*dto.VerifiedAuthInfo, error) {
 	token, err := jwt.Parse(incomingToken, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
@@ -61,14 +57,10 @@ func (a *AuthJWTService) VerifyAuth(ctx context.Context, incomingToken string) (
 	return nil, apperrors.ErrJWTInvalidToken
 }
 
-// GetLifetime
-// возвращает длительность жизни токена
 func (a *AuthJWTService) GetLifetime() time.Duration {
 	return a.tokenLifetime
 }
 
-// LogOut
-// удаляет сессию пользователя из хранилища, если она существует
 func (a *AuthJWTService) LogOut(ctx context.Context, sessionString string) error {
 	return nil
 }

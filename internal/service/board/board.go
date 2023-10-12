@@ -30,8 +30,6 @@ func NewBoardService(storage storage.IBoardStorage) *BoardService {
 // 	return us.storage.UpdateBoard(board)
 // }
 
-// GetUserOwnedBoards
-// возвращает слайс DTO досок, принадлежащих данному пользователю
 func (us BoardService) GetUserOwnedBoards(ctx context.Context, userInfo dto.VerifiedAuthInfo) ([]dto.UserOwnedBoardInfo, error) {
 	boards, err := us.storage.GetUserOwnedBoards(ctx, userInfo)
 	if err != nil {
@@ -49,8 +47,6 @@ func (us BoardService) GetUserOwnedBoards(ctx context.Context, userInfo dto.Veri
 	return boardInfo, nil
 }
 
-// GetUserOwnedBoards
-// возвращает слайс DTO досок, в которых пользователь гость
 func (us BoardService) GetUserGuestBoards(ctx context.Context, userInfo dto.VerifiedAuthInfo) ([]dto.UserGuestBoardInfo, error) {
 	boards, err := us.storage.GetUserGuestBoards(ctx, userInfo)
 	if err != nil {

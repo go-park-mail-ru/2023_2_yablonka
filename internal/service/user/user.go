@@ -33,8 +33,6 @@ func NewUserService(storage storage.IUserStorage) *UserService {
 	}
 }
 
-// GetUser
-// возвращает объект пользователя по полученным авторизационным данным
 func (us AuthUserService) GetUser(ctx context.Context, info dto.LoginInfo) (*entities.User, error) {
 	user, err := us.storage.GetUser(ctx, info)
 	if err != nil {
@@ -48,30 +46,18 @@ func (us AuthUserService) GetUser(ctx context.Context, info dto.LoginInfo) (*ent
 	return user, nil
 }
 
-// GetUserByID
-// возвращает объект пользователя по полученным авторизационным данным
 func (us AuthUserService) GetUserByID(ctx context.Context, uid uint64) (*entities.User, error) {
-	user, err := us.storage.GetUserByID(ctx, uid)
-	if err != nil {
-		return nil, err
-	}
-	return user, nil
+	return us.storage.GetUserByID(ctx, uid)
 }
 
-// CreateUser
-// возвращает объект пользователя по полученным регистрационным данным с записью в хранилище
 func (us AuthUserService) CreateUser(ctx context.Context, info dto.SignupInfo) (*entities.User, error) {
 	return us.storage.CreateUser(ctx, info)
 }
 
-// UpdateUser
-// возвращает объект пользователя с изменёнными данными с записью изменений в хранилище
 func (us UserService) UpdateUser(ctx context.Context, info dto.UpdatedUserInfo) (*entities.User, error) {
 	return us.storage.UpdateUser(ctx, info)
 }
 
-// DeleteUser
-// удаляет пользователя, возвращает ошибку
 func (us AuthUserService) DeleteUser(ctx context.Context, uid uint64) error {
 	return us.storage.DeleteUser(ctx, uid)
 }
