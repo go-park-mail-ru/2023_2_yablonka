@@ -18,18 +18,9 @@ func NewBoardService(storage storage.IBoardStorage) *BoardService {
 	}
 }
 
-// func (us BoardService) GetBoard(ctx context.Context, board dto.IndividualBoardInfo) (*entities.Board, error) {
-// 	return us.storage.GetBoard(board)
-// }
-
-// func (us BoardService) CreateBoard(ctx context.Context, board dto.NewBoardInfo) (*entities.Board, error) {
-// 	return us.storage.CreateBoard(board)
-// }
-
-// func (us BoardService) UpdateBoard(ctx context.Context, board dto.IndividualBoardInfo) (*entities.Board, error) {
-// 	return us.storage.UpdateBoard(board)
-// }
-
+// GetUserOwnedBoards
+// находит все доски, созданные пользователем
+// или возвращает ошибку apperrors.ErrUserNotFound (401)
 func (us BoardService) GetUserOwnedBoards(ctx context.Context, userInfo dto.VerifiedAuthInfo) ([]dto.UserOwnedBoardInfo, error) {
 	boards, err := us.storage.GetUserOwnedBoards(ctx, userInfo)
 	if err != nil {
@@ -47,6 +38,9 @@ func (us BoardService) GetUserOwnedBoards(ctx context.Context, userInfo dto.Veri
 	return boardInfo, nil
 }
 
+// GetUserGuestBoards
+// находит все доски, в которых участвует пользователь
+// или возвращает ошибку apperrors.ErrUserNotFound (401)
 func (us BoardService) GetUserGuestBoards(ctx context.Context, userInfo dto.VerifiedAuthInfo) ([]dto.UserGuestBoardInfo, error) {
 	boards, err := us.storage.GetUserGuestBoards(ctx, userInfo)
 	if err != nil {
@@ -67,3 +61,15 @@ func (us BoardService) GetUserGuestBoards(ctx context.Context, userInfo dto.Veri
 	}
 	return boardInfo, nil
 }
+
+// func (us BoardService) GetBoard(ctx context.Context, board dto.IndividualBoardInfo) (*entities.Board, error) {
+// 	return us.storage.GetBoard(board)
+// }
+
+// func (us BoardService) CreateBoard(ctx context.Context, board dto.NewBoardInfo) (*entities.Board, error) {
+// 	return us.storage.CreateBoard(board)
+// }
+
+// func (us BoardService) UpdateBoard(ctx context.Context, board dto.IndividualBoardInfo) (*entities.Board, error) {
+// 	return us.storage.UpdateBoard(board)
+// }
