@@ -9,9 +9,6 @@ import (
 	"time"
 )
 
-// AuthJWTService
-// структура сервиса аутентификации с помощью создания сессий
-// содержит интерфейс для работы с БД и длительность сессии
 type AuthSessionService struct {
 	sessionDuration time.Duration
 	sessionIDLength uint
@@ -19,7 +16,8 @@ type AuthSessionService struct {
 }
 
 // AuthUser
-// возвращает ID сессии её длительность
+// возвращает уникальную строку авторизации и её длительность
+// или возвращает ошибки apperrors.ErrTokenNotGenerated (500)
 func (a *AuthSessionService) AuthUser(ctx context.Context, user *entities.User) (string, time.Time, error) {
 	session := &entities.Session{
 		UserID:     user.ID,
@@ -34,7 +32,8 @@ func (a *AuthSessionService) AuthUser(ctx context.Context, user *entities.User) 
 }
 
 // VerifyAuth
-// возвращает ID пользователя, которому принадлежит сессия
+// проверяет состояние авторизации, возвращает ID авторизированного пользователя
+// или возвращает ошибки apperrors.ErrSessionNotFound (401)
 func (a *AuthSessionService) VerifyAuth(ctx context.Context, sessionString string) (*dto.VerifiedAuthInfo, error) {
 	sessionObj, err := a.storage.GetSession(ctx, sessionString)
 	if err != nil {
@@ -49,7 +48,8 @@ func (a *AuthSessionService) VerifyAuth(ctx context.Context, sessionString strin
 }
 
 // LogOut
-// удаляет сессию пользователя из хранилища, если она существует
+// удаляет текущую сессию
+// или возвращает ошибку apperrors.ErrSessionNotFound (401)
 func (a *AuthSessionService) LogOut(ctx context.Context, sessionString string) error {
 	_, err := a.storage.GetSession(ctx, sessionString)
 	if err != nil {
@@ -59,7 +59,7 @@ func (a *AuthSessionService) LogOut(ctx context.Context, sessionString string) e
 }
 
 // GetLifetime
-// возвращает длительность сессии
+// возвращает длительность авторизации
 func (a *AuthSessionService) GetLifetime() time.Duration {
 	return a.sessionDuration
 }

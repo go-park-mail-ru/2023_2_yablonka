@@ -71,6 +71,9 @@ func (s *LocalUserStorage) GetHighestID() uint64 {
 	return highest
 }
 
+// GetUser
+// находит пользователя в БД по почте
+// или возвращает ошибку apperrors.ErrUserNotFound (401)
 func (s *LocalUserStorage) GetUser(ctx context.Context, login dto.LoginInfo) (*entities.User, error) {
 	s.mu.RLock()
 	user, ok := s.userData[login.Email]
@@ -83,6 +86,9 @@ func (s *LocalUserStorage) GetUser(ctx context.Context, login dto.LoginInfo) (*e
 	return user, nil
 }
 
+// GetUserByID
+// находит пользователя в БД по его id
+// или возвращает ошибку apperrors.ErrUserNotFound (401)
 func (s *LocalUserStorage) GetUserByID(ctx context.Context, uid uint64) (*entities.User, error) {
 	defer s.mu.RUnlock()
 
@@ -96,6 +102,9 @@ func (s *LocalUserStorage) GetUserByID(ctx context.Context, uid uint64) (*entiti
 	return nil, apperrors.ErrUserNotFound
 }
 
+// CreateUser
+// создает нового пользователя в БД по данным
+// или возвращает ошибку apperrors.ErrUserAlreadyExists (409)
 func (s *LocalUserStorage) CreateUser(ctx context.Context, signup dto.SignupInfo) (*entities.User, error) {
 	s.mu.RLock()
 	_, ok := s.userData[signup.Email]
@@ -120,13 +129,16 @@ func (s *LocalUserStorage) CreateUser(ctx context.Context, signup dto.SignupInfo
 	return &newUser, nil
 }
 
+// UpdateUser
+// обновляет пользователя в БД
+// или возвращает ошибку apperrors.ErrUserNotFound (409)
 func (s *LocalUserStorage) UpdateUser(ctx context.Context, updatedInfo dto.UpdatedUserInfo) (*entities.User, error) {
 	s.mu.RLock()
 	oldUser, ok := s.userData[updatedInfo.Email]
 	s.mu.RUnlock()
 
-	if ok {
-		return nil, apperrors.ErrUserAlreadyExists
+	if !ok {
+		return nil, apperrors.ErrUserNotFound
 	}
 
 	updatedUser := entities.User{
@@ -144,6 +156,9 @@ func (s *LocalUserStorage) UpdateUser(ctx context.Context, updatedInfo dto.Updat
 	return &updatedUser, nil
 }
 
+// DeleteUser
+// удаляет данного пользователя в БД по id
+// или возвращает ошибку apperrors.ErrUserNotFound (409)
 func (s *LocalUserStorage) DeleteUser(ctx context.Context, id uint64) error {
 	var (
 		userEmail string

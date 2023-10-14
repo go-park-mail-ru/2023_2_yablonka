@@ -8,7 +8,8 @@ import (
 	"net/http"
 	"time"
 
-	"server/internal/apperrors"
+	apperrors "server/internal/apperrors"
+	_ "server/internal/pkg/doc_structs"
 	dto "server/internal/pkg/dto"
 	"server/internal/service"
 
@@ -28,18 +29,22 @@ func (ah AuthHandler) GetUserAuthService() service.IUserAuthService {
 	return ah.us
 }
 
-//	@Summary Log user into the system
-//	@Description Create new session or continue old one
+// @Summary Войти в систему
+// @Description Для этого использует сессии
+// @Tags auth
 //
-//	@Accept  json
-//	@Produce  json
-
-//	@Success 200  body object{} true "Объект пользователя"
-//	@Failure 400  {object}  error
-//	@Failure 401  {object}  error
-//	@Failure 500  {object}  error
+// @Accept  json
+// @Produce  json
 //
-// @Router /api/v1/auth/login [post]
+// @Param login path string true "Эл. почта"
+// @Param password path string true "Пароль"
+//
+// @Success 200  {object}  doc_structs.UserResponse "Объект пользователя"
+// @Failure 400  {object}  apperrors.ErrorResponse
+// @Failure 401  {object}  apperrors.ErrorResponse
+// @Failure 500  {object}  apperrors.ErrorResponse
+//
+// @Router /api/v2/auth/login/ [post]
 func (ah AuthHandler) LogIn(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
 
@@ -57,10 +62,9 @@ func (ah AuthHandler) LogIn(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	passwordHash := hashFromAuthInfo(login)
 	incomingAuth := dto.LoginInfo{
 		Email:        login.Email,
-		PasswordHash: passwordHash,
+		PasswordHash: hashFromAuthInfo(login),
 	}
 
 	user, err := ah.us.GetUser(rCtx, incomingAuth)
@@ -101,18 +105,23 @@ func (ah AuthHandler) LogIn(w http.ResponseWriter, r *http.Request) {
 	w.Write(jsonResponse)
 }
 
-//	@Summary Зарегистрировать нового пользователя
-//	@Description Также вводит пользователя в систему
+// @Summary Зарегистрировать нового пользователя
+// @Description Также вводит пользователя в систему
+// @Tags auth
 //
-//	@Accept  json
-//	@Produce  json
-
-//	@Success 200  {object} dto.AuthInfo "Объект пользователя"
-//	@Failure 400  {object}  error
-//	@Failure 404  {object}  error
-//	@Failure 500  {object}  error
+// @Accept  json
+// @Produce  json
 //
-// @Router /api/v1/auth/signup [post]
+// @Param login path string true "Эл. почта"
+// @Param password path string true "Пароль"
+//
+// @Success 200  {object}  doc_structs.UserResponse "Объект пользователя"
+// @Failure 400  {object}  apperrors.ErrorResponse
+// @Failure 401  {object}  apperrors.ErrorResponse
+// @Failure 409  {object}  apperrors.ErrorResponse
+// @Failure 500  {object}  apperrors.ErrorResponse
+//
+// @Router /api/v2/auth/signup/ [post]
 func (ah AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
 
@@ -153,7 +162,7 @@ func (ah AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 		HttpOnly: true,
 		SameSite: http.SameSiteLaxMode,
 		Expires:  expiresAt,
-		Path:     "/api/v1/",
+		Path:     "/api/v2/",
 	}
 
 	http.SetCookie(w, cookie)
@@ -173,18 +182,19 @@ func (ah AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 	r.Body.Close()
 }
 
-//	@Summary Выйти из системы
-//	@Description Заканчивает текущую сессию
+// @Summary Выйти из системы
+// @Description Удаляет текущую сессию пользователя. Может сделать только авторизированный пользователь.
+// @Tags auth
 //
-//	@Accept  json
-//	@Produce  json
-
-//	@Success 200  body object{} true "Пустой объект"
-//	@Failure 400  {object}  error
-//	@Failure 404  {object}  error
-//	@Failure 500  {object}  error
+// @Accept  json
+// @Produce  json
 //
-// @Router /api/v1/auth/logout [post]
+// @Success 204 {string} string "no content"
+// @Failure 400  {object}  apperrors.ErrorResponse
+// @Failure 401  {object}  apperrors.ErrorResponse
+// @Failure 500  {object}  apperrors.ErrorResponse
+//
+// @Router /api/v2/auth/logout/ [delete]
 func (ah AuthHandler) LogOut(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
 
@@ -231,18 +241,19 @@ func (ah AuthHandler) LogOut(w http.ResponseWriter, r *http.Request) {
 	r.Body.Close()
 }
 
-//	@Summary Выйти из системы
-//	@Description Заканчивает текущую сессию
+// @Summary Подтвердить вход
+// @Description Узнать существует ли сессия текущего пользователя
+// @Tags auth
 //
-//	@Accept  json
-//	@Produce  json
-
-//	@Success 200  body object{} true "Пустой объект"
-//	@Failure 400  {object}  error
-//	@Failure 404  {object}  error
-//	@Failure 500  {object}  error
+// @Accept  json
+// @Produce  json
 //
-// @Router /api/v1/auth/verify [get]
+// @Success 200  {object}  doc_structs.UserResponse "Объект пользователя"
+// @Failure 400  {object}  apperrors.ErrorResponse
+// @Failure 401  {object}  apperrors.ErrorResponse
+// @Failure 500  {object}  apperrors.ErrorResponse
+//
+// @Router /api/v2/auth/verify [get]
 func (ah AuthHandler) VerifyAuthEndpoint(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
 

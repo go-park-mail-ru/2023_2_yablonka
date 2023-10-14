@@ -24,21 +24,23 @@ func GetChiMux(manager handlers.HandlerManager) (http.Handler, error) {
 	mux.Use(middleware.Logger)
 	mux.Use(middleware.Cors)
 	mux.Use(middleware.PanicRecovery)
-	mux.Route("/api/v1/auth", func(r chi.Router) {
-		r.Post("/login/", manager.AuthHandler.LogIn)
-		r.Post("/signup/", manager.AuthHandler.SignUp)
-		r.Post("/logout/", manager.AuthHandler.LogOut)
-		r.Get("/verify/", manager.AuthHandler.VerifyAuthEndpoint)
+
+	mux.Route("/api/v2", func(r chi.Router) {
+		r.Route("/auth", func(r chi.Router) {
+			r.Post("/login/", manager.AuthHandler.LogIn)
+			r.Post("/signup/", manager.AuthHandler.SignUp)
+			r.Delete("/logout/", manager.AuthHandler.LogOut)
+			r.Get("/verify/", manager.AuthHandler.VerifyAuthEndpoint)
+		})
+		r.Route("/user", func(r chi.Router) {
+			r.Use(middleware.AuthMiddleware(manager.AuthHandler.GetAuthService(), manager.AuthHandler.GetUserAuthService()))
+			r.Get("/boards/", manager.BoardHandler.GetUserBoards)
+		})
+
+		r.Get("/swagger/*", httpSwagger.Handler(
+			httpSwagger.URL("http://localhost:8080/api/v2/swagger/doc.json"),
+		))
+
 	})
-
-	mux.Route("/api/v1/user", func(r chi.Router) {
-		r.Use(middleware.AuthMiddleware(manager.AuthHandler.GetAuthService(), manager.AuthHandler.GetUserAuthService()))
-		r.Get("/boards/", manager.BoardHandler.GetUserBoards)
-	})
-
-	mux.Get("/swagger/*", httpSwagger.Handler(
-		httpSwagger.URL("http://localhost:8080/swagger/doc.json"), //The url pointing to API definition
-	))
-
 	return mux, nil
 }

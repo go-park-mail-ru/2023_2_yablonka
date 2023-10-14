@@ -1,11 +1,58 @@
 basePath: /
 definitions:
-  dto.AuthInfo:
+  apperrors.ErrorResponse:
+    properties:
+      error_response:
+        type: string
+    type: object
+  dto.UserInfo:
     properties:
       email:
         type: string
-      password:
+      id:
+        type: integer
+    type: object
+  entities.Board:
+    properties:
+      board_id:
+        type: integer
+      guests:
+        items:
+          $ref: '#/definitions/dto.UserInfo'
+        type: array
+      name:
         type: string
+      owner:
+        $ref: '#/definitions/dto.UserInfo'
+      thumbnail_url:
+        type: string
+    type: object
+  entities.User:
+    properties:
+      email:
+        type: string
+      name:
+        type: string
+      surname:
+        type: string
+      thumbnail_url:
+        type: string
+      user_id:
+        type: integer
+    type: object
+  handlers.UserBoardsResponse:
+    properties:
+      boards:
+        items:
+          $ref: '#/definitions/entities.Board'
+        type: array
+      user:
+        $ref: '#/definitions/entities.User'
+    type: object
+  handlers.UserResponse:
+    properties:
+      user:
+        $ref: '#/definitions/entities.User'
     type: object
 host: localhost:8080
 info:
@@ -18,86 +65,169 @@ info:
     name: MIT
     url: https://opensource.org/licenses/MIT
   title: LA TABULA API
-  version: "1.0"
+  version: "2.0"
 paths:
-  /api/v1/auth/login:
+  /api/v2/auth/login/:
     post:
+      consumes:
+      - application/json
+      description: Для этого использует сессии
+      parameters:
+      - description: Эл. почта
+        in: path
+        name: login
+        required: true
+        type: string
+      - description: Пароль
+        in: path
+        name: password
+        required: true
+        type: string
+      produces:
+      - application/json
       responses:
         "200":
           description: Объект пользователя
           schema:
-            type: body
+            $ref: '#/definitions/handlers.UserResponse'
         "400":
           description: Bad Request
-          schema: {}
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
         "401":
           description: Unauthorized
-          schema: {}
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
         "500":
           description: Internal Server Error
-          schema: {}
-  /api/v1/auth/logout:
-    post:
-      responses:
-        "200":
-          description: Пустой объект
           schema:
-            type: body
+            $ref: '#/definitions/apperrors.ErrorResponse'
+      summary: Войти в систему
+      tags:
+      - auth
+  /api/v2/auth/logout/:
+    delete:
+      consumes:
+      - application/json
+      description: Удаляет текущую сессию пользователя. Может сделать только авторизированный
+        пользователь.
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: no content
+          schema:
+            type: string
         "400":
           description: Bad Request
-          schema: {}
-        "404":
-          description: Not Found
-          schema: {}
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
         "500":
           description: Internal Server Error
-          schema: {}
-  /api/v1/auth/signup:
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+      summary: Выйти из системы
+      tags:
+      - auth
+  /api/v2/auth/signup/:
     post:
+      consumes:
+      - application/json
+      description: Также вводит пользователя в систему
+      parameters:
+      - description: Эл. почта
+        in: path
+        name: login
+        required: true
+        type: string
+      - description: Пароль
+        in: path
+        name: password
+        required: true
+        type: string
+      produces:
+      - application/json
       responses:
         "200":
           description: Объект пользователя
           schema:
-            $ref: '#/definitions/dto.AuthInfo'
+            $ref: '#/definitions/handlers.UserResponse'
         "400":
           description: Bad Request
-          schema: {}
-        "404":
-          description: Not Found
-          schema: {}
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
         "500":
           description: Internal Server Error
-          schema: {}
-  /api/v1/auth/verify:
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+      summary: Зарегистрировать нового пользователя
+      tags:
+      - auth
+  /api/v2/auth/verify:
     get:
+      consumes:
+      - application/json
+      description: Узнать существует ли сессия текущего пользователя
+      produces:
+      - application/json
       responses:
         "200":
-          description: Пустой объект
+          description: Объект пользователя
           schema:
-            type: body
+            $ref: '#/definitions/handlers.UserResponse'
         "400":
           description: Bad Request
-          schema: {}
-        "404":
-          description: Not Found
-          schema: {}
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
         "500":
           description: Internal Server Error
-          schema: {}
-  /api/v1/user/boards:
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+      summary: Подтвердить вход
+      tags:
+      - auth
+  /api/v2/user/boards/:
     get:
+      consumes:
+      - application/json
+      description: Выводит и созданные им доски и те, в которых он гость. Работает
+        только для авторизированного пользователя.
+      produces:
+      - application/json
       responses:
         "200":
-          description: Список объектов досок
+          description: Пользователь и его доски
           schema:
-            type: body
+            $ref: '#/definitions/handlers.UserBoardsResponse'
         "400":
           description: Bad Request
-          schema: {}
-        "404":
-          description: Not Found
-          schema: {}
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
         "500":
           description: Internal Server Error
-          schema: {}
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+      summary: Вывести все доски текущего пользователя
+      tags:
+      - boards
 swagger: "2.0"

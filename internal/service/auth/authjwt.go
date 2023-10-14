@@ -19,7 +19,9 @@ type AuthJWTService struct {
 }
 
 // AuthUser
-// возвращает токен JWT, сгенерированный с помощью секрета в []byte и дату+время его истечения для полученного пользователя
+// возвращает уникальную строку авторизации и её длительность
+// или возвращает ошибки apperrors.ErrTokenNotGenerated (500),
+// apperrors.ErrJWTWrongMethod (401), apperrors.ErrJWTMissingClaim (401), apperrors.ErrJWTInvalidToken (401)
 func (a *AuthJWTService) AuthUser(ctx context.Context, user *entities.User) (string, time.Time, error) {
 	expiresAt := time.Now().Add(a.tokenLifetime)
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
@@ -30,13 +32,14 @@ func (a *AuthJWTService) AuthUser(ctx context.Context, user *entities.User) (str
 
 	str, err := token.SignedString(a.jwtSecret)
 	if err != nil {
-		return "", time.Time{}, err
+		return "", time.Time{}, apperrors.ErrTokenNotGenerated
 	}
 	return str, expiresAt, nil
 }
 
 // VerifyAuth
-// валидирует токен, возвращает ID пользователя, которому принадлежит токен
+// проверяет состояние авторизации, возвращает ID авторизированного пользователя
+// или возвращает ошибки apperrors.ErrJWTWrongMethod (401), apperrors.ErrJWTMissingClaim (401), apperrors.ErrJWTInvalidToken (401)
 func (a *AuthJWTService) VerifyAuth(ctx context.Context, incomingToken string) (*dto.VerifiedAuthInfo, error) {
 	token, err := jwt.Parse(incomingToken, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
@@ -62,13 +65,14 @@ func (a *AuthJWTService) VerifyAuth(ctx context.Context, incomingToken string) (
 }
 
 // GetLifetime
-// возвращает длительность жизни токена
+// возвращает длительность авторизации
 func (a *AuthJWTService) GetLifetime() time.Duration {
 	return a.tokenLifetime
 }
 
 // LogOut
-// удаляет сессию пользователя из хранилища, если она существует
+// удаляет текущую сессию
+// или возвращает ошибку apperrors.ErrSessionNotFound (401)
 func (a *AuthJWTService) LogOut(ctx context.Context, sessionString string) error {
 	return nil
 }

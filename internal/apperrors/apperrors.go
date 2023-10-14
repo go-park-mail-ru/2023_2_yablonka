@@ -37,6 +37,8 @@ var (
 var (
 	// ErrJWTWrongMethod ошибка: у полученного JWT неправильный метод подписи
 	ErrJWTWrongMethod = errors.New("provided token has the wrong signing method")
+	// ErrTokenNotGenerated ошибка: у полученного JWT неправильный метод подписи
+	ErrTokenNotGenerated = errors.New("the system had trouble generating a session token")
 	// ErrJWTInvalidToken ошибка: полученный JWT не валиден
 	ErrJWTInvalidToken = errors.New("provided token is invalid")
 	// ErrJWTMissingClaim ошибка: у полученного JWT отсутствует необходимое поле
@@ -63,6 +65,7 @@ type ErrorResponse struct {
 }
 
 // WrongLoginResponse
+// заглушка для ответа 401 без разглашения имплементации чувствительных процессов
 var WrongLoginResponse = ErrorResponse{
 	Code:    http.StatusUnauthorized,
 	Message: "Неверный адрес почты или пароль",
@@ -89,16 +92,21 @@ var InternalServerErrorResponse = ErrorResponse{
 	Message: "Ошибка сервера",
 }
 
+// InternalServerErrorResponse
+// заглушка для ответа 409 без разглашения имплементации чувствительных процессов
+var StatusConflictResponse = ErrorResponse{
+	Code:    http.StatusConflict,
+	Message: "Пользователь с таким адресом почты уже существует",
+}
+
 // ErrorMap
 // карта для связи ошибок приложения и ответа бэкэнд-сервера
 var ErrorMap = map[error]ErrorResponse{
-	ErrUserNotFound:  WrongLoginResponse,
-	ErrWrongPassword: WrongLoginResponse,
-	ErrUserAlreadyExists: {
-		Code:    http.StatusConflict,
-		Message: "Пользователь с таким адресом почты уже существует",
-	},
+	ErrUserNotFound:           WrongLoginResponse,
+	ErrWrongPassword:          WrongLoginResponse,
+	ErrUserAlreadyExists:      StatusConflictResponse,
 	ErrJWTSecretMissing:       InternalServerErrorResponse,
+	ErrTokenNotGenerated:      InternalServerErrorResponse,
 	ErrJWTWrongMethod:         GenericUnauthorizedResponse,
 	ErrJWTInvalidToken:        GenericUnauthorizedResponse,
 	ErrJWTMissingClaim:        GenericUnauthorizedResponse,

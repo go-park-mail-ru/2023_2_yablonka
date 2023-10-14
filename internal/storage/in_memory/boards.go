@@ -2,6 +2,7 @@ package in_memory
 
 import (
 	"context"
+	"server/internal/apperrors"
 	"server/internal/pkg/dto"
 	"server/internal/pkg/entities"
 	"sync"
@@ -65,33 +66,31 @@ func NewBoardStorage() *LocalBoardStorage {
 	}
 }
 
-func (s *LocalBoardStorage) GetHighestID() uint64 {
-	if len(s.boardData) == 0 {
-		return 0
-	}
-	var highest uint64 = 0
-	for _, board := range s.boardData {
-		if board.ID > highest {
-			highest = board.ID
-		}
-	}
-
-	return highest
-}
-
+// GetUserOwnedBoards
+// находит все доски, созданные пользователем
+// или возвращает ошибку apperrors.ErrUserNotFound (401)
 func (s *LocalBoardStorage) GetUserOwnedBoards(ctx context.Context, userInfo dto.VerifiedAuthInfo) (*[]entities.Board, error) {
 	var boards []entities.Board
+	userFound := false
 	s.mu.RLock()
 	for _, board := range s.boardData {
 		if board.Owner.ID == userInfo.UserID {
+			userFound = true
 			boards = append(boards, board)
 		}
 	}
 	s.mu.RUnlock()
 
+	if !userFound {
+		return nil, apperrors.ErrUserNotFound
+	}
+
 	return &boards, nil
 }
 
+// GetUserGuestBoards
+// находит все доски, в которых участвует пользователь
+// или возвращает ошибку apperrors.ErrUserNotFound (401)
 func (s *LocalBoardStorage) GetUserGuestBoards(ctx context.Context, userInfo dto.VerifiedAuthInfo) (*[]entities.Board, error) {
 	var boards []entities.Board
 	s.mu.RLock()
@@ -105,6 +104,20 @@ func (s *LocalBoardStorage) GetUserGuestBoards(ctx context.Context, userInfo dto
 	s.mu.RUnlock()
 
 	return &boards, nil
+}
+
+func (s *LocalBoardStorage) GetHighestID() uint64 {
+	if len(s.boardData) == 0 {
+		return 0
+	}
+	var highest uint64 = 0
+	for _, board := range s.boardData {
+		if board.ID > highest {
+			highest = board.ID
+		}
+	}
+
+	return highest
 }
 
 func (s *LocalBoardStorage) GetBoard(ctx context.Context, board dto.IndividualBoardInfo) (*entities.Board, error) {

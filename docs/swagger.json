@@ -12,141 +12,337 @@
             "name": "MIT",
             "url": "https://opensource.org/licenses/MIT"
         },
-        "version": "1.0"
+        "version": "2.0"
     },
     "host": "localhost:8080",
     "basePath": "/",
     "paths": {
-        "/api/v1/auth/login": {
+        "/api/v2/auth/login/": {
             "post": {
+                "description": "Для этого использует сессии",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Войти в систему",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Эл. почта",
+                        "name": "login",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Пароль",
+                        "name": "password",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "Объект пользователя",
                         "schema": {
-                            "type": "body"
+                            "$ref": "#/definitions/handlers.UserResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
-                        "schema": {}
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
                     },
                     "401": {
                         "description": "Unauthorized",
-                        "schema": {}
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
                     },
                     "500": {
                         "description": "Internal Server Error",
-                        "schema": {}
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
                     }
                 }
             }
         },
-        "/api/v1/auth/logout": {
-            "post": {
+        "/api/v2/auth/logout/": {
+            "delete": {
+                "description": "Удаляет текущую сессию пользователя. Может сделать только авторизированный пользователь.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Выйти из системы",
                 "responses": {
-                    "200": {
-                        "description": "Пустой объект",
+                    "204": {
+                        "description": "no content",
                         "schema": {
-                            "type": "body"
+                            "type": "string"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
-                        "schema": {}
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
                     },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {}
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
                     },
                     "500": {
                         "description": "Internal Server Error",
-                        "schema": {}
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
                     }
                 }
             }
         },
-        "/api/v1/auth/signup": {
+        "/api/v2/auth/signup/": {
             "post": {
+                "description": "Также вводит пользователя в систему",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Зарегистрировать нового пользователя",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Эл. почта",
+                        "name": "login",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Пароль",
+                        "name": "password",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "Объект пользователя",
                         "schema": {
-                            "$ref": "#/definitions/dto.AuthInfo"
+                            "$ref": "#/definitions/handlers.UserResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
-                        "schema": {}
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
                     },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {}
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
                     },
                     "500": {
                         "description": "Internal Server Error",
-                        "schema": {}
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
                     }
                 }
             }
         },
-        "/api/v1/auth/verify": {
+        "/api/v2/auth/verify": {
             "get": {
+                "description": "Узнать существует ли сессия текущего пользователя",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Подтвердить вход",
                 "responses": {
                     "200": {
-                        "description": "Пустой объект",
+                        "description": "Объект пользователя",
                         "schema": {
-                            "type": "body"
+                            "$ref": "#/definitions/handlers.UserResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
-                        "schema": {}
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
                     },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {}
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
                     },
                     "500": {
                         "description": "Internal Server Error",
-                        "schema": {}
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
                     }
                 }
             }
         },
-        "/api/v1/user/boards": {
+        "/api/v2/user/boards/": {
             "get": {
+                "description": "Выводит и созданные им доски и те, в которых он гость. Работает только для авторизированного пользователя.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "boards"
+                ],
+                "summary": "Вывести все доски текущего пользователя",
                 "responses": {
                     "200": {
-                        "description": "Список объектов досок",
+                        "description": "Пользователь и его доски",
                         "schema": {
-                            "type": "body"
+                            "$ref": "#/definitions/handlers.UserBoardsResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
-                        "schema": {}
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
                     },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {}
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
                     },
                     "500": {
                         "description": "Internal Server Error",
-                        "schema": {}
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
                     }
                 }
             }
         }
     },
     "definitions": {
-        "dto.AuthInfo": {
+        "apperrors.ErrorResponse": {
+            "type": "object",
+            "properties": {
+                "error_response": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.UserInfo": {
             "type": "object",
             "properties": {
                 "email": {
                     "type": "string"
                 },
-                "password": {
+                "id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "entities.Board": {
+            "type": "object",
+            "properties": {
+                "board_id": {
+                    "type": "integer"
+                },
+                "guests": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.UserInfo"
+                    }
+                },
+                "name": {
                     "type": "string"
+                },
+                "owner": {
+                    "$ref": "#/definitions/dto.UserInfo"
+                },
+                "thumbnail_url": {
+                    "type": "string"
+                }
+            }
+        },
+        "entities.User": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "surname": {
+                    "type": "string"
+                },
+                "thumbnail_url": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "handlers.UserBoardsResponse": {
+            "type": "object",
+            "properties": {
+                "boards": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/entities.Board"
+                    }
+                },
+                "user": {
+                    "$ref": "#/definitions/entities.User"
+                }
+            }
+        },
+        "handlers.UserResponse": {
+            "type": "object",
+            "properties": {
+                "user": {
+                    "$ref": "#/definitions/entities.User"
                 }
             }
         }

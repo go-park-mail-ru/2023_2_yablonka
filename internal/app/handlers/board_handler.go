@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"server/internal/apperrors"
+	_ "server/internal/pkg/doc_structs"
 	"server/internal/pkg/dto"
 	"server/internal/pkg/entities"
 	"server/internal/service"
@@ -15,18 +16,19 @@ type BoardHandler struct {
 	bs service.IBoardService
 }
 
-//	@Summary Получить все доски пользователя
-//	@Description И те, которые он создал и те, у которых он гость
+// @Summary Вывести все доски текущего пользователя
+// @Description Выводит и созданные им доски и те, в которых он гость. Работает только для авторизированного пользователя.
+// @Tags boards
 //
-//	@Accept  json
-//	@Produce  json
-
-//	@Success 200  body object{} true "Список объектов досок"
-//	@Failure 400  {object}  error
-//	@Failure 404  {object}  error
-//	@Failure 500  {object}  error
+// @Accept  json
+// @Produce  json
 //
-// @Router /api/v1/user/boards [get]
+// @Success 200  {object}  doc_structs.UserBoardsResponse "Пользователь и его доски"
+// @Failure 400  {object}  apperrors.ErrorResponse
+// @Failure 401  {object}  apperrors.ErrorResponse
+// @Failure 500  {object}  apperrors.ErrorResponse
+//
+// @Router /api/v2/user/boards/ [get]
 func (bh BoardHandler) GetUserBoards(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
 	var jsonResponse []byte
