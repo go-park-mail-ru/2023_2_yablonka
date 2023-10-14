@@ -24,8 +24,8 @@ func (config *JWTServerConfig) Validate() error {
 	return nil
 }
 
-func NewJWTEnvConfig(filepath string) (*JWTServerConfig, error) {
-	baseConfig, err := config.NewBaseEnvConfig(filepath)
+func NewJWTEnvConfig(envPath string, configPath string) (*JWTServerConfig, error) {
+	baseConfig, err := config.NewBaseEnvConfig(envPath, configPath)
 
 	if err != nil {
 		return nil, err
