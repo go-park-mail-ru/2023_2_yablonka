@@ -142,12 +142,6 @@ paths:
       - application/json
       description: Удаляет текущую сессию пользователя. Может сделать только авторизированный
         пользователь.
-      parameters:
-      - description: Токен сессии
-        in: header
-        name: token
-        required: true
-        type: string
       produces:
       - application/json
       responses:
@@ -213,12 +207,6 @@ paths:
       consumes:
       - application/json
       description: Узнать существует ли сессия текущего пользователя
-      parameters:
-      - description: Токен сессии
-        in: header
-        name: Cookie
-        required: true
-        type: string
       produces:
       - application/json
       responses:
