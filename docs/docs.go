@@ -129,15 +129,6 @@ const docTemplate = `{
                     "auth"
                 ],
                 "summary": "Выйти из системы",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Токен сессии",
-                        "name": "token",
-                        "in": "header",
-                        "required": true
-                    }
-                ],
                 "responses": {
                     "204": {
                         "description": "no content",
@@ -237,15 +228,6 @@ const docTemplate = `{
                     "auth"
                 ],
                 "summary": "Подтвердить вход",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Токен сессии",
-                        "name": "Cookie",
-                        "in": "header",
-                        "required": true
-                    }
-                ],
                 "responses": {
                     "200": {
                         "description": "Объект пользователя",

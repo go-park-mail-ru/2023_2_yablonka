@@ -190,8 +190,6 @@ func (ah AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 // @Accept  json
 // @Produce  json
 //
-// @Param token header string true "Токен сессии"
-//
 // @Success 204 {string} string "no content"
 // @Failure 400  {object}  apperrors.ErrorResponse
 // @Failure 401  {object}  apperrors.ErrorResponse
@@ -250,8 +248,6 @@ func (ah AuthHandler) LogOut(w http.ResponseWriter, r *http.Request) {
 //
 // @Accept  json
 // @Produce  json
-//
-// @Param Cookie header string true "Токен сессии"
 //
 // @Success 200  {object}  doc_structs.UserResponse "Объект пользователя"
 // @Failure 400  {object}  apperrors.ErrorResponse
