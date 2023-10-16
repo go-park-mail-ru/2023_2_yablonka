@@ -47,7 +47,6 @@ func main() {
 	boardStorage := in_memory.NewBoardStorage()
 	log.Println("storages configured")
 
-	userAuthService := user.NewAuthUserService(userStorage)
 	userService := user.NewUserService(userStorage)
 	authService := auth.NewAuthSessionService(*config, authStorage)
 	boardService := board.NewBoardService(boardStorage)
@@ -55,8 +54,7 @@ func main() {
 
 	mux, err := app.GetChiMux(*handlers.NewHandlerManager(
 		authService,
-		userAuthService,
-		//user.NewUserService(userStorage),
+		userService,
 		boardService),
 		config.Base,
 	)

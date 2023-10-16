@@ -15,8 +15,7 @@ type HandlerManager struct {
 // возвращает HandlerManager со всеми хэндлерами приложения
 func NewHandlerManager(
 	authService service.IAuthService,
-	userAuthService service.IUserAuthService,
-	//userUserService := user.NewUserService(userStorage),
+	userAuthService service.IUserService,
 	boardService service.IBoardService,
 ) *HandlerManager {
 	return &HandlerManager{
