@@ -31,11 +31,14 @@ func GetChiMux(manager handlers.HandlerManager, config config.BaseServerConfig) 
 			r.Post("/login/", manager.AuthHandler.LogIn)
 			r.Post("/signup/", manager.AuthHandler.SignUp)
 			r.Delete("/logout/", manager.AuthHandler.LogOut)
-			r.Get("/verify", manager.AuthHandler.VerifyAuthEndpoint)
+			r.Get("/verify/", manager.AuthHandler.VerifyAuthEndpoint)
 		})
 		r.Route("/user", func(r chi.Router) {
 			r.Use(middleware.AuthMiddleware(manager.AuthHandler.GetAuthService(), manager.AuthHandler.GetUserAuthService()))
 			r.Get("/boards/", manager.BoardHandler.GetUserBoards)
+		})
+		r.Route("/boards", func(r chi.Router) {
+			r.Post("/create/", manager.BoardHandler.CreateBoard)
 		})
 
 		r.Get("/swagger/*", httpSwagger.Handler(

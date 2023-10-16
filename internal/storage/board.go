@@ -21,7 +21,7 @@ type IBoardStorage interface {
 	// TODO Implement
 	// GetBoard(context.Context, dto.IndividualBoardInfo) (*entities.Board, error)
 	// UpdateBoard(context.Context, dto.IndividualBoardInfo) (*entities.Board, error)
-	// CreateBoard(context.Context, dto.NewBoardInfo) (*entities.Board, error)
+	CreateBoard(context.Context, dto.NewBoardInfo) (*entities.Board, error)
 	// GetUserBoards(context.Context, dto.VerifiedAuthInfo) (*[]entities.Board, error)
 	// DeleteBoard(context.Context, dto.IndividualBoardInfo) error
 }

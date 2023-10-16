@@ -4,8 +4,6 @@ import (
 	"server/internal/pkg/entities"
 )
 
-// VerifiedAuthInfo
-// DTO, подтверждающее личность на основе сессии, полученных при регистрации
 type UserResponse struct {
 	User entities.User `json:"user"`
 }
@@ -13,4 +11,8 @@ type UserResponse struct {
 type UserBoardsResponse struct {
 	User   entities.User    `json:"user"`
 	Boards []entities.Board `json:"boards"`
+}
+
+type NewBoardResponse struct {
+	Board entities.Board `json:"board"`
 }

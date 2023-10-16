@@ -48,6 +48,7 @@ func main() {
 	log.Println("storages configured")
 
 	userAuthService := user.NewAuthUserService(userStorage)
+	userService := user.NewUserService(userStorage)
 	authService := auth.NewAuthSessionService(*config, authStorage)
 	boardService := board.NewBoardService(boardStorage)
 	log.Println("services configured")
