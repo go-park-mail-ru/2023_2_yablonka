@@ -1,6 +1,7 @@
 package app
 
 import (
+	"fmt"
 	"net/http"
 	_ "server/docs"
 	"server/internal/app/handlers"
@@ -36,11 +37,20 @@ func GetChiMux(manager handlers.HandlerManager) (http.Handler, error) {
 			r.Use(middleware.AuthMiddleware(manager.AuthHandler.GetAuthService(), manager.AuthHandler.GetUserAuthService()))
 			r.Get("/boards/", manager.BoardHandler.GetUserBoards)
 		})
-
-		r.Get("/swagger/*", httpSwagger.Handler(
-			httpSwagger.URL("http://localhost:8080/api/v2/swagger/doc.json"),
-		))
-
 	})
+	return mux, nil
+}
+
+// GetChiMux
+// возвращает mux Сваггера, реализованный с помощью модуля chi
+func GetSwaggerMux(host string, port string) (http.Handler, error) {
+	mux := chi.NewRouter()
+
+	url := fmt.Sprint("http://", host, port, "/swagger/doc.json")
+
+	mux.Get("/swagger/*", httpSwagger.Handler(
+		httpSwagger.URL(url),
+	))
+
 	return mux, nil
 }
