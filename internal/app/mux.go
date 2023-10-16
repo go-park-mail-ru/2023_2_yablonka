@@ -37,6 +37,10 @@ func GetChiMux(manager handlers.HandlerManager) (http.Handler, error) {
 			r.Use(middleware.AuthMiddleware(manager.AuthHandler.GetAuthService(), manager.AuthHandler.GetUserAuthService()))
 			r.Get("/boards/", manager.BoardHandler.GetUserBoards)
 		})
+		r.Route("/swagger/*", func(r chi.Router) {
+			r.Get("/", httpSwagger.Handler(
+				httpSwagger.URL("swagger/doc.json")))
+		})
 	})
 	return mux, nil
 }
