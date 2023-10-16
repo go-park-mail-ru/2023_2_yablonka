@@ -46,7 +46,8 @@ func GetChiMux(manager handlers.HandlerManager) (http.Handler, error) {
 func GetSwaggerMux(host string, port string) (http.Handler, error) {
 	mux := chi.NewRouter()
 
-	url := fmt.Sprint("http://", host, port, "/swagger/doc.json")
+	url := fmt.Sprint("http://", host, ":", port, "/swagger/doc.json")
+	fmt.Println(url)
 
 	mux.Get("/swagger/*", httpSwagger.Handler(
 		httpSwagger.URL(url),

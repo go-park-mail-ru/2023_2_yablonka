@@ -60,7 +60,7 @@ func main() {
 	}
 	log.Println("router configured")
 
-	swagmux, err := app.GetSwaggerMux("213.219.215.40", "8082")
+	swagmux, err := app.GetSwaggerMux("213.219.215.40", "8080")
 	if err != nil {
 		log.Fatal(err.Error())
 	}
@@ -74,7 +74,7 @@ func main() {
 	log.Println("server configured")
 
 	var swagserver = http.Server{
-		Addr:    ":8082",
+		Addr:    ":8080",
 		Handler: swagmux,
 	}
 
