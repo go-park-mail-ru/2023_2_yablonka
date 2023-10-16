@@ -60,12 +60,25 @@ func main() {
 	}
 	log.Println("router configured")
 
+	swagmux, err := app.GetSwaggerMux("213.219.215.40", "8082")
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+	log.Println("swagger router configured")
+
 	var server = http.Server{
 		Addr:    ":8080",
 		Handler: mux,
 	}
 
 	log.Println("server configured")
+
+	var swagserver = http.Server{
+		Addr:    ":8082",
+		Handler: swagmux,
+	}
+
+	log.Println("swagger server configured")
 
 	idleConnsClosed := make(chan struct{})
 	go func() {
@@ -79,6 +92,13 @@ func main() {
 			log.Printf("HTTP server Shutdown: %v", err)
 		}
 		close(idleConnsClosed)
+	}()
+
+	go func() {
+		if err := swagserver.ListenAndServe(); err != http.ErrServerClosed {
+			// Error starting or closing listener:
+			log.Fatalf("swagger server ListenAndServe: %v", err)
+		}
 	}()
 
 	if err := server.ListenAndServe(); err != http.ErrServerClosed {
