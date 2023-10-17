@@ -141,7 +141,8 @@ paths:
       consumes:
       - application/json
       description: Удаляет текущую сессию пользователя. Может сделать только авторизированный
-        пользователь.
+        пользователь. Текущая сессия определяется по cookie "tabula_user", в которой
+        лежит строка-токен.
       produces:
       - application/json
       responses:
@@ -206,7 +207,8 @@ paths:
     get:
       consumes:
       - application/json
-      description: Узнать существует ли сессия текущего пользователя
+      description: Узнать существует ли сессия текущего пользователя. Сессия определяется
+        по cookie "tabula_user", в которой лежит строка-токен.
       produces:
       - application/json
       responses:
