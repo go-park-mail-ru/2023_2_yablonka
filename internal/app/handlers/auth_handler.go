@@ -184,7 +184,7 @@ func (ah AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 }
 
 // @Summary Выйти из системы
-// @Description Удаляет текущую сессию пользователя. Может сделать только авторизированный пользователь.
+// @Description Удаляет текущую сессию пользователя. Может сделать только авторизированный пользователь. Текущая сессия определяется по cookie "tabula_user", в которой лежит строка-токен.
 // @Tags auth
 //
 // @Accept  json
@@ -243,7 +243,7 @@ func (ah AuthHandler) LogOut(w http.ResponseWriter, r *http.Request) {
 }
 
 // @Summary Подтвердить вход
-// @Description Узнать существует ли сессия текущего пользователя
+// @Description Узнать существует ли сессия текущего пользователя. Сессия определяется по cookie "tabula_user", в которой лежит строка-токен.
 // @Tags auth
 //
 // @Accept  json
