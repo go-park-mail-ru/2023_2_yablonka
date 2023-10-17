@@ -17,6 +17,9 @@ import (
 	"github.com/asaskevich/govalidator"
 )
 
+const configPath string = "internal/config/config.yml"
+const envPath string = "internal/config/.env"
+
 // @title LA TABULA API
 // @version 2.0
 // @description Лучшее и единственно приложение, имитирующее Trello.
@@ -28,11 +31,11 @@ import (
 // @license.name None
 // @license.url None
 
-// @host http://213.219.215.40:8080
+// @host localhost:8080
 // @BasePath /api/v2
 // @query.collection.format multi
 func main() {
-	serverConfig, err := config.NewSessionEnvConfig("")
+	config, err := config.NewSessionEnvConfig(envPath, configPath)
 	govalidator.SetFieldsRequiredByDefault(true)
 	if err != nil {
 		log.Fatal(err.Error())
@@ -45,7 +48,7 @@ func main() {
 	log.Println("storages configured")
 
 	userAuthService := user.NewAuthUserService(userStorage)
-	authService := auth.NewAuthSessionService(*serverConfig, authStorage)
+	authService := auth.NewAuthSessionService(*config, authStorage)
 	boardService := board.NewBoardService(boardStorage)
 	log.Println("services configured")
 
@@ -53,8 +56,9 @@ func main() {
 		authService,
 		userAuthService,
 		//user.NewUserService(userStorage),
-		boardService,
-	))
+		boardService),
+		config.Base,
+	)
 	if err != nil {
 		log.Fatal(err.Error())
 	}

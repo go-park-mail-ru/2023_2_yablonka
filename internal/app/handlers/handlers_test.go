@@ -27,6 +27,9 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+const configPath string = "../../internal/config/config.yml"
+const envPath string = ""
+
 func Test_Login(t *testing.T) {
 	t.Parallel()
 
@@ -95,6 +98,9 @@ func Test_Login(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
 
+			config, err := config.NewBaseEnvConfig(envPath, configPath)
+			require.Equal(t, nil, err)
+
 			userStorage := in_memory.NewUserStorage()
 			boardStorage := in_memory.NewBoardStorage()
 
@@ -107,7 +113,9 @@ func Test_Login(t *testing.T) {
 				userAuthService,
 				//user.NewUserService(userStorage),
 				boardService,
-			))
+			),
+				*config,
+			)
 
 			body := bytes.NewReader([]byte(
 				fmt.Sprintf(`{"email":"%s", "password":"%s"}`, test.email, test.password),
@@ -183,6 +191,9 @@ func Test_Signup(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
 
+			config, err := config.NewBaseEnvConfig(envPath, configPath)
+			require.Equal(t, nil, err)
+
 			userStorage := in_memory.NewUserStorage()
 			boardStorage := in_memory.NewBoardStorage()
 
@@ -195,7 +206,9 @@ func Test_Signup(t *testing.T) {
 				userAuthService,
 				//user.NewUserService(userStorage),
 				boardService,
-			))
+			),
+				*config,
+			)
 
 			body := bytes.NewReader([]byte(
 				fmt.Sprintf(`{"email":"%s", "password":"%s"}`, test.email, test.password),
@@ -321,6 +334,9 @@ func Test_VerifyAuth(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
 
+			config, err := config.NewBaseEnvConfig(envPath, configPath)
+			require.Equal(t, nil, err)
+
 			userStorage := in_memory.NewUserStorage()
 			boardStorage := in_memory.NewBoardStorage()
 
@@ -333,7 +349,9 @@ func Test_VerifyAuth(t *testing.T) {
 				userAuthService,
 				//user.NewUserService(userStorage),
 				boardService,
-			))
+			),
+				*config,
+			)
 
 			body := bytes.NewReader([]byte(""))
 
