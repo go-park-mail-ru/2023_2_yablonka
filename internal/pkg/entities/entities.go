@@ -32,3 +32,7 @@ type Board struct {
 	ThumbnailURL string         `json:"thumbnail_url"`
 	Guests       []dto.UserInfo `json:"guests"`
 }
+
+func (u *User) TableName() string {
+	return "user"
+}
