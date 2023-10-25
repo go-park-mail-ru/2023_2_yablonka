@@ -1,4 +1,4 @@
-package in_memory
+package postgresql
 
 import (
 	"context"
@@ -11,11 +11,13 @@ import (
 // LocalUserStorage
 // Локальное хранилище данных
 type PostgresUserStorage struct {
-	db sql.DB
+	db *sql.DB
 }
 
-func NewUserStorage() *PostgresUserStorage {
-	return &PostgresUserStorage{}
+func NewUserStorage(db *sql.DB) *PostgresUserStorage {
+	return &PostgresUserStorage{
+		db: db,
+	}
 }
 
 func (s *PostgresUserStorage) GetHighestID() uint64 {
