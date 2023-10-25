@@ -1,222 +1,216 @@
 # Функциональные зависимости
-## Таблица Tag:
-    {T1} -> T1
-    {T1} -> T2
-    {T1} -> T3
-
-## Связь Tag и Task:
-    {T1, Ta1} -> T1
-    {T1, Ta1} -> T2
-    {T1, Ta1} -> T3
-    {T1, Ta1} -> Ta1
-    {T1, Ta1} -> Ta2
-    {T1, Ta1} -> Ta3
-    {T1, Ta1} -> Ta4
-    {T1, Ta1} -> Ta5
-    {T1, Ta1} -> Ta6
-    {T1, Ta1} -> Ta7
-
-## Таблица Checklist_Item:
-    {CI1} -> CI1
-    {CI1} -> CI2
-    {CI1} -> CI3
-    {CI1} -> CI4
-
-## Принадлежание Checklist_Item к одному Checklist-у:
-    {CI1} -> C1
-
-## Таблица Checklist:
-    {C1} -> C1
-    {C1} -> C2
-    {C1} -> C3
-
-## Принадлежание Checklist к одному Task-у:
-    {C1} -> Ta1
 
 ## Таблица Workspace:
-    {W1} -> W1
-    {W1} -> W2
-    {W1} -> W3
-    {W1} -> W4
-
-## Таблица Board:
-    {B1} -> B1
-    {B1} -> B2
-    {B1} -> B3
-    {B1} -> B4
-    {B1} -> B5
-
-## Принадлежание Board к одному Workspace-у:
-    {B1} -> W1
-
-## Таблица Column:
-    {Co1} -> Co1
-    {Co1} -> Co2
-    {Co1} -> Co3
-    {Co1} -> Co4
-    {Co1} -> Co5
-
-## Принадлежание Column к одному Board-у:
-    {Co1} -> B1
-
-## Таблица Task:
-    {Ta1} -> Ta1
-    {Ta1} -> Ta2
-    {Ta1} -> Ta3
-    {Ta1} -> Ta4
-    {Ta1} -> Ta5
-    {Ta1} -> Ta6
-    {Ta1} -> Ta7
-
-## Принадлежание Task к одному Column-у:
-    {Ta1} -> Co1
+    {Workspace.id} -> Workspace.id
+    {Workspace.id} -> Workspace.name
+    {Workspace.id} -> Workspace.thumbnail_url
+    {Workspace.id} -> Workspace.date_created
+    {Workspace.id} -> Workspace.description
 
 ## Role User-a по его id и связанному Workspace-у:
-    {U1, W1} -> R1
+    {User.id, Workspace.id} -> Role.id
 
-## User, которому доверен Task:
-    {UR, Ta1} -> UR
-    {UR, Ta1} -> UWA
-    {UR, Ta1} -> U1
-    {UR, Ta1} -> U2
-    {UR, Ta1} -> U3
-    {UR, Ta1} -> U4
-    {UR, Ta1} -> U5
-    {UR, Ta1} -> U6
-    {UR, Ta1} -> U7
-    {UR, Ta1} -> Ta1
-    {UR, Ta1} -> Ta2
-    {UR, Ta1} -> Ta3
-    {UR, Ta1} -> Ta4
-    {UR, Ta1} -> Ta5
-    {UR, Ta1} -> Ta6
-    {UR, Ta1} -> Ta7
+## Таблица Board:
+    {Board.id} -> Board.id
+    {Board.id} -> Board.name
+    {Board.id} -> Board.description
+    {Board.id} -> Board.date_created
+    {Board.id} -> Board.thumbnail_url
+
+## Принадлежание Board к одному Workspace-у:
+    {Board.id} -> Workspace.id
+
+## Таблица Column:
+    {Column.id} -> Column.id
+    {Column.id} -> Column.name
+    {Column.id} -> Column.description
+    {Column.id} -> Column.list_position
+
+## Принадлежание Column к одному Board-у:
+    {Column.id} -> Board.id
 
 ## Таблица Role:
-    {R1} -> R1
-    {R1} -> R2
-    {R1} -> R3
+    {Role.id} -> Role.id
+    {Role.id} -> Role.name
+    {Role.id} -> Role.description
 
-## Таблица Task_Embedding:
-    {TE1} -> TE1
-    {TE1} -> TE2
+## Таблица Task:
+    {Task.id} -> Task.id
+    {Task.id} -> Task.name
+    {Task.id} -> Task.date_created
+    {Task.id} -> Task.description
+    {Task.id} -> Task.start
+    {Task.id} -> Task.end
+    {Task.id} -> Task.list_position
 
-## Принадлежание Task_Embedding к одному Task-у:
-    {TE1} -> Ta1
+## Принадлежание Task к одному Column-у:
+    {Task.id} -> Column.id
 
-## Принадлежание Task_Embedding к одному User-у:
-    {TE1} -> U1
+## Таблица Tag:
+    {Tag.id} -> Tag.id
+    {Tag.id} -> Tag.name
+    {Tag.id} -> Tag.color
+
+## Связь Tag и Task:
+    {Tag.id, Task.id} -> Tag.id
+    {Tag.id, Task.id} -> Tag.name
+    {Tag.id, Task.id} -> Tag.color
+    {Tag.id, Task.id} -> Task.id
+    {Tag.id, Task.id} -> Task.name
+    {Tag.id, Task.id} -> Task.date_created
+    {Tag.id, Task.id} -> Task.description
+    {Tag.id, Task.id} -> Task.start
+    {Tag.id, Task.id} -> Task.end
+    {Tag.id, Task.id} -> Task.list_position
 
 ## Таблица User:
-    {U1} -> U1
-    {U1} -> U2
-    {U1} -> U3
-    {U1} -> U4
-    {U1} -> U5
-    {U1} -> U6
-    {U1} -> U7
+    {User.id} -> User.id
+    {User.id} -> User.email
+    {User.id} -> User.password_hash
+    {User.id} -> User.name
+    {User.id} -> User.surname
+    {User.id} -> User.avatar_url
+    {User.id} -> User.description
     
 ## Любимые Board-ы User-а:
-    {FB} -> U1
-    {FB} -> U2
-    {FB} -> U3
-    {FB} -> U4
-    {FB} -> U5
-    {FB} -> U6
-    {FB} -> U7
-    {FB} -> FB
-    {FB} -> B1
-    {FB} -> B2
-    {FB} -> B3
-    {FB} -> B4
-    {FB} -> B5
+    {Board.id User.id} -> User.id
+    {Board.id User.id} -> User.email
+    {Board.id User.id} -> User.password_hash
+    {Board.id User.id} -> User.name
+    {Board.id User.id} -> User.surname
+    {Board.id User.id} -> User.avatar_url
+    {Board.id User.id} -> User.description
+    {Board.id User.id} -> Board.id
+    {Board.id User.id} -> Board.name
+    {Board.id User.id} -> Board.description
+    {Board.id User.id} -> Board.date_created
+    {Board.id User.id} -> Board.thumbnail_url
 
 ## Связь Board и User:
-    {UWA, B1} -> UWA
-    {UWA, B1} -> U1
-    {UWA, B1} -> U2
-    {UWA, B1} -> U3
-    {UWA, B1} -> U4
-    {UWA, B1} -> U5
-    {UWA, B1} -> U6
-    {UWA, B1} -> U7
-    {UWA, B1} -> B1
-    {UWA, B1} -> B2
-    {UWA, B1} -> B3
-    {UWA, B1} -> B4
-    {UWA, B1} -> B5
+    {User.id, Board.id} -> User.id
+    {User.id, Board.id} -> User.email
+    {User.id, Board.id} -> User.password_hash
+    {User.id, Board.id} -> User.name
+    {User.id, Board.id} -> User.surname
+    {User.id, Board.id} -> User.avatar_url
+    {User.id, Board.id} -> User.description
+    {User.id, Board.id} -> Board.id
+    {User.id, Board.id} -> Board.name
+    {User.id, Board.id} -> Board.description
+    {User.id, Board.id} -> Board.date_created
+    {User.id, Board.id} -> Board.thumbnail_url
 
 ## Таблица Task_Template:
-    {TT1} -> TT1
-    {TT1} -> TT2
+    {Task_Template.id} -> Task_Template.id
+    {Task_Template.id} -> Task_Template.data
+
+## Связь Task_Template и User-а:
+    {User.id, Task_Template.id} -> User.id
+    {User.id, Task_Template.id} -> User.email
+    {User.id, Task_Template.id} -> User.password_hash
+    {User.id, Task_Template.id} -> User.name
+    {User.id, Task_Template.id} -> User.surname
+    {User.id, Task_Template.id} -> User.avatar_url
+    {User.id, Task_Template.id} -> User.description
+    {User.id, Task_Template.id} -> Task_Template.id
+    {User.id, Task_Template.id} -> Task_Template.data
 
 ## Таблица Board_Template:
-    {BT1} -> BT1
-    {BT1} -> BT2
+    {Board_template.id} -> Board_template.id
+    {Board_template.id} -> Board_template.data
+
+## Таблица Board_Template:
+    {User.id, Board_template.id} -> User.id
+    {User.id, Board_template.id} -> User.email
+    {User.id, Board_template.id} -> User.password_hash
+    {User.id, Board_template.id} -> User.name
+    {User.id, Board_template.id} -> User.surname
+    {User.id, Board_template.id} -> User.avatar_url
+    {User.id, Board_template.id} -> User.description
+    {User.id, Board_template.id} -> Board_template.id
+    {User.id, Board_template.id} -> Board_template.data
+
+## Таблица Checklist:
+    {Checklist.id} -> Checklist.id
+    {Checklist.id} -> Checklist.name
+    {Checklist.id} -> Checklist.list_position
+
+## Принадлежание Checklist к одному Task-у:
+    {Checklist.id} -> Task.id
+
+## Таблица Checklist_Item:
+    {Checklist_item.id} -> Checklist_item.id
+    {Checklist_item.id} -> Checklist_item.name
+    {Checklist_item.id} -> Checklist_item.done
+    {Checklist_item.id} -> Checklist_item.list_position
+
+## Принадлежание Checklist_Item к одному Checklist-у:
+    {Checklist_item.id} -> Checklist.id
+
+## User, которому доверен Task:
+    {User.id, Task.id} -> User.id
+    {User.id, Task.id} -> User.id
+    {User.id, Task.id} -> User.email
+    {User.id, Task.id} -> User.password_hash
+    {User.id, Task.id} -> User.name
+    {User.id, Task.id} -> User.surname
+    {User.id, Task.id} -> User.avatar_url
+    {User.id, Task.id} -> User.description
+    {User.id, Task.id} -> Task.id
+    {User.id, Task.id} -> Task.name
+    {User.id, Task.id} -> Task.date_created
+    {User.id, Task.id} -> Task.description
+    {User.id, Task.id} -> Task.start
+    {User.id, Task.id} -> Task.end
+    {User.id, Task.id} -> Task.list_position
+
+## Таблица Task_embedding:
+    {Task_embedding.id} -> Task_embedding.id
+    {Task_embedding.id} -> Task_embedding.url
+
+## Принадлежание Task_embedding к одному Task-у:
+    {Task_embedding.id} -> Task.id
+
+## Принадлежание Task_embedding к одному User-у:
+    {Task_embedding.id} -> User.id
 
 ## Таблица Session:
-    {S1} -> S1
-    {S1} -> S2
+    {Session.token} -> Session.token
+    {Session.token} -> Session.expiration_date
 
 ## Принадлежание Session к одному User-у:
-    {S1} -> U1
-
-## Таблица Reaction:
-    {Re1} -> Re1
-    {Re1} -> Re2
-
-## Принадлежание Reaction к одному User-у:
-    {Re1} -> U1
-
-## Принадлежание Reaction к одному Comment-у:
-    {Re1} -> Com1
+    {Session.token} -> User.id
 
 ## Таблица Comment:
-    {Com1} -> Com1
-    {Com1} -> Com2
-    {Com1} -> Com3
+    {Comment.id} -> Comment.id
+    {Comment.id} -> Comment.content
+    {Comment.id} -> Comment.date_created
 
 ## Принадлежание Comment к одному User-у:
-    {Com1} -> U1
+    {Comment.id} -> User.id
 
 ## Принадлежание Comment к одному Task-у:
-    {Com1} -> Ta1
-
-## Таблица Comment_Embedding:
-    {CE1} -> CE1
-    {CE1} -> CE2
-
-## Принадлежание Comment_Embedding к одному User-у:
-    {CE1} -> U1
-
-## Принадлежание Comment_Embedding к одному Comment-у:
-    {CE1} -> Com1
+    {Comment.id} -> Task.id
 
 ## Принадлежание Comment_Reply к одному Comment-у:
-    {CR} -> Com1
+    {Comment_Reply.id} -> Comment.id
 
-# Условно неизбыточное покрытие
-        {T1} -> T2 T3
-        {T1, Ta1} -> T2 T3 Ta2 Ta3 Ta4 Ta5 Ta6 Ta7 Co1 Co2 Co3 Co5 B1 B2 B3 B4 B5 W1 W2 W3 W4
-        {W1} -> W2 W3 W4
-        {B1} -> B2 B3 B4 B5 W1 W2 W3 W4
-        {Co1} -> Co2 Co3 Co5 B1 B2 B3 B4 B5 W1 W2 W3 W4
-        {Ta1} -> Ta2 Ta3 Ta4 Ta5 Ta6 Ta7 Co1 Co2 Co3 Co5 B1 B2 B3 B4 B5 W1 W2 W3 W4
-        {C1} -> C2 C3 Ta1 Ta2 Ta3 Ta4 Ta5 Ta6 Ta7 Co1 Co2 Co3 Co5 B1 B2 B3 B4 B5 W1 W2 W3 W4
-        {CI1} -> CI2 CI3 CI4 C1 C2 C3 Ta1 Ta2 Ta3 Ta4 Ta5 Ta6 Ta7 Co1 Co2 Co3 Co5 B1 B2 B3 B4 B5 W1 W2 W3 W4
-        {U1, W1} -> U2 U3 U4 U5 U6 U7 W2 W3 W4 R1 R2 R3
-        {UWA, B1} -> U1 U2 U3 U4 U5 U6 U7 B2 B3 B4 B5 W1 W2 W3 W4 R1 R2 R3
-        {UR, Ta1} -> UWA U1, U2 U3 U4 U5 U6 U7 Ta2 Ta3 Ta4 Ta5 Ta6 Ta7 Co1 Co2 Co3 Co5 B1 B2 B3 B4 B5 W1 W2 W3 W4 R1 R2 R3
-        {R1} -> R2 R3
-        {TE1} -> TE2 Ta1 Ta2 Ta3 Ta4 Ta5 Ta6 Ta7 Co1 Co2 Co3 Co5 B1 B2 B3 B4 B5 W1 W2 W3 W4 U1 U2 U3 U4 U5 U6 U7 R1 R2 R3
-        {U1} -> U2 U3 U4 U5 U6 U7
-        {FB} -> U2 U3 U4 U5 U6 U7 B1 B2 B3 B4 B5 W1 W2 W3 W4 R1 R2 R3
-        {TT1} -> TT2
-        {BT1} -> BT2
-        {S1} -> S2 U1 U2 U3 U4 U5 U6 U7
-        {Re1} -> Re2 U1 U2 U3 U4 U5 U6 U7 Com1 Com2 Com3 Ta1 Ta2 Ta3 Ta4 Ta5 Ta6 Ta7 Co1 Co2 Co3 Co5 B1 B2 B3 B4 B5 W1 W2 W3 W4 R1 R2 R3
-        {Com1} -> Com2 Com3 U1 U2 U3 U4 U5 U6 U7 Ta1 Ta2 Ta3 Ta4 Ta5 Ta6 Ta7 Co1 Co2 Co3 Co5 B1 B2 B3 B4 B5 W1 W2 W3 W4 R1 R2 R3
-        {CR} -> Com1 Com2 Com3 U1 U2 U3 U4 U5 U6 U7 Ta1 Ta2 Ta3 Ta4 Ta5 Ta6 Ta7 Co1 Co2 Co3 Co5 B1 B2 B3 B4 B5 W1 W2 W3 W4 R1 R2 R3
-        {CE1} -> CE2 U1 U2 U3 U4 U5 U6 U7 Com1 Com2 Com3 Ta1 Ta2 Ta3 Ta4 Ta5 Ta6 Ta7 Co1 Co2 Co3 Co5 B1 B2 B3 B4 B5 W1 W2 W3 W4 R1 R2 R31
-        {T1 T2 T3 CI1 CI2 CI3 CI4 C1 C2 C3 W1 W2 W3 W4 B1 B2 B3 B4 B5 Co1 Co2 Co3 Co5 Ta1 Ta2 Ta3 Ta4 Ta5 Ta6 Ta7 R1 R2 R3 TE1 TE2 U1 U2 U3 U4 U5 U6 U7 TT1 TT2 BT1 BT2 S1 S2 Re1 Re2 Com1 Com2 Com3 CE1 CE2 CR FB UWA} -> Nil
-        
+## Таблица Reaction:
+    {Reaction.id} -> Reaction.id
+    {Reaction.id} -> Reaction.content
+
+## Принадлежание Reaction к одному User-у:
+    {Reaction.id} -> User.id
+
+## Принадлежание Reaction к одному Comment-у:
+    {Reaction.id} -> Comment.id
+
+## Таблица Comment_Embedding:
+    {Comment_embedding.id} -> Comment_embedding.id
+    {Comment_embedding.id} -> Comment_embedding.url
+
+## Принадлежание Comment_Embedding к одному User-у:
+    {Comment_embedding.id} -> User.id
+
+## Принадлежание Comment_Embedding к одному Comment-у:
+    {Comment_embedding.id} -> Comment.id
