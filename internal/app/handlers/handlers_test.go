@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"testing"
 	"time"
 
@@ -98,6 +99,21 @@ func Test_Login(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
 
+			cfgFile, err := os.Create(envPath + ".env")
+			require.NoError(t, err)
+			defer cfgFile.Close()
+
+			_, err = fmt.Fprint(cfgFile,
+				"JWT_SECRET='test secret'"+"\n"+
+					"SESSION_DURATION_DAYS=14"+"\n"+
+					"SESSION_DURATION_HOURS=0"+"\n"+
+					"SESSION_DURATION_MINUTES=0"+"\n"+
+					"SESSION_DURATION_SECONDS=0"+"\n"+
+					"SESSION_ID_LENGTH=32"+"\n",
+				envPath,
+			)
+			require.NoError(t, err)
+
 			config, err := config.NewBaseEnvConfig(envPath, configPath)
 			require.Equal(t, nil, err)
 
@@ -121,7 +137,7 @@ func Test_Login(t *testing.T) {
 				fmt.Sprintf(`{"email":"%s", "password":"%s"}`, test.email, test.password),
 			))
 
-			r := httptest.NewRequest("POST", "/api/v1/auth/login/", body)
+			r := httptest.NewRequest("POST", "/api/v2/auth/login/", body)
 			r.Header.Add("Access-Control-Request-Headers", "content-type")
 			r.Header.Add("Origin", "localhost:8081")
 			w := httptest.NewRecorder()
@@ -191,6 +207,21 @@ func Test_Signup(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
 
+			cfgFile, err := os.Create(envPath + ".env")
+			require.NoError(t, err)
+			defer cfgFile.Close()
+
+			_, err = fmt.Fprint(cfgFile,
+				"JWT_SECRET='test secret'"+"\n"+
+					"SESSION_DURATION_DAYS=14"+"\n"+
+					"SESSION_DURATION_HOURS=0"+"\n"+
+					"SESSION_DURATION_MINUTES=0"+"\n"+
+					"SESSION_DURATION_SECONDS=0"+"\n"+
+					"SESSION_ID_LENGTH=32"+"\n",
+				envPath,
+			)
+			require.NoError(t, err)
+
 			config, err := config.NewBaseEnvConfig(envPath, configPath)
 			require.Equal(t, nil, err)
 
@@ -214,7 +245,7 @@ func Test_Signup(t *testing.T) {
 				fmt.Sprintf(`{"email":"%s", "password":"%s"}`, test.email, test.password),
 			))
 
-			r := httptest.NewRequest("POST", "/api/v1/auth/signup/", body)
+			r := httptest.NewRequest("POST", "/api/v2/auth/signup/", body)
 			r.Header.Add("Access-Control-Request-Headers", "content-type")
 			r.Header.Add("Origin", "localhost:8081")
 			w := httptest.NewRecorder()
@@ -334,6 +365,21 @@ func Test_VerifyAuth(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
 
+			cfgFile, err := os.Create(envPath + ".env")
+			require.NoError(t, err)
+			defer cfgFile.Close()
+
+			_, err = fmt.Fprint(cfgFile,
+				"JWT_SECRET='test secret'"+"\n"+
+					"SESSION_DURATION_DAYS=14"+"\n"+
+					"SESSION_DURATION_HOURS=0"+"\n"+
+					"SESSION_DURATION_MINUTES=0"+"\n"+
+					"SESSION_DURATION_SECONDS=0"+"\n"+
+					"SESSION_ID_LENGTH=32"+"\n",
+				envPath,
+			)
+			require.NoError(t, err)
+
 			config, err := config.NewBaseEnvConfig(envPath, configPath)
 			require.Equal(t, nil, err)
 
@@ -355,7 +401,7 @@ func Test_VerifyAuth(t *testing.T) {
 
 			body := bytes.NewReader([]byte(""))
 
-			r := httptest.NewRequest("GET", "/api/v1/auth/verify/", body)
+			r := httptest.NewRequest("GET", "/api/v2/auth/verify/", body)
 			r.Header.Add("Access-Control-Request-Headers", "content-type")
 			r.Header.Add("Origin", "localhost:8081")
 			w := httptest.NewRecorder()
@@ -372,7 +418,7 @@ func Test_VerifyAuth(t *testing.T) {
 					HttpOnly: true,
 					SameSite: http.SameSiteLaxMode,
 					Expires:  expiresAt,
-					Path:     "/api/v1/",
+					Path:     "/api/v2/",
 				}
 
 				r.AddCookie(cookie)
@@ -405,7 +451,7 @@ func Test_VerifyAuth(t *testing.T) {
 }
 
 func Test_GetUserBoards(t *testing.T) {
-	// t.Parallel()
+	t.Parallel()
 
 	tests := []struct {
 		name        string
@@ -462,7 +508,7 @@ func Test_GetUserBoards(t *testing.T) {
 	for _, test := range tests {
 		test := test
 		t.Run(test.name, func(t *testing.T) {
-			// t.Parallel()
+			t.Parallel()
 
 			userStorage := in_memory.NewUserStorage()
 			boardStorage := in_memory.NewBoardStorage()
@@ -479,7 +525,7 @@ func Test_GetUserBoards(t *testing.T) {
 
 			body := bytes.NewReader([]byte(""))
 
-			r := httptest.NewRequest("GET", "/api/v1/auth/login/", body)
+			r := httptest.NewRequest("GET", "/api/v2/auth/login/", body)
 			w := httptest.NewRecorder()
 
 			if test.authorized {
