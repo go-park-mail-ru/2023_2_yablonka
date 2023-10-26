@@ -15,7 +15,7 @@ type LocalUserStorage struct {
 	mu       *sync.RWMutex
 }
 
-func NewUserStorage() *LocalUserStorage {
+func NewLocalUserStorage() *LocalUserStorage {
 	return &LocalUserStorage{
 		userData: map[string]*entities.User{
 			"test@email.com": {
@@ -74,9 +74,9 @@ func (s *LocalUserStorage) GetHighestID() uint64 {
 // GetUser
 // находит пользователя в БД по почте
 // или возвращает ошибку apperrors.ErrUserNotFound (401)
-func (s *LocalUserStorage) GetUser(ctx context.Context, login dto.LoginInfo) (*entities.User, error) {
+func (s *LocalUserStorage) GetUserByLogin(ctx context.Context, login string) (*entities.User, error) {
 	s.mu.RLock()
-	user, ok := s.userData[login.Email]
+	user, ok := s.userData[login]
 	s.mu.RUnlock()
 
 	if !ok {

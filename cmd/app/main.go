@@ -13,6 +13,7 @@ import (
 	board "server/internal/service/board"
 	user "server/internal/service/user"
 	"server/internal/storage/in_memory"
+	"server/internal/storage/postgresql"
 
 	"github.com/asaskevich/govalidator"
 )
@@ -42,7 +43,14 @@ func main() {
 	}
 	log.Println("config generated")
 
-	userStorage := in_memory.NewUserStorage()
+	dbConnection, err := postgresql.GetDBConnection(config)
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+	defer dbConnection.Close()
+	log.Println("database connected")
+
+	userStorage := postgresql.NewPostgresUserStorage(dbConnection)
 	authStorage := in_memory.NewAuthStorage()
 	boardStorage := in_memory.NewBoardStorage()
 	log.Println("storages configured")
@@ -69,7 +77,7 @@ func main() {
 		Handler: mux,
 	}
 
-	log.Println("server configured")
+	log.Println("server is running")
 
 	idleConnsClosed := make(chan struct{})
 	go func() {

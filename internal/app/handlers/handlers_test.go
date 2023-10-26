@@ -101,7 +101,7 @@ func Test_Login(t *testing.T) {
 			config, err := config.NewBaseEnvConfig(envPath, configPath)
 			require.Equal(t, nil, err)
 
-			userStorage := in_memory.NewUserStorage()
+			userStorage := in_memory.NewLocalUserStorage()
 			boardStorage := in_memory.NewBoardStorage()
 
 			authService := getAuthService(test.serviceType)
@@ -194,7 +194,7 @@ func Test_Signup(t *testing.T) {
 			config, err := config.NewBaseEnvConfig(envPath, configPath)
 			require.Equal(t, nil, err)
 
-			userStorage := in_memory.NewUserStorage()
+			userStorage := in_memory.NewLocalUserStorage()
 			boardStorage := in_memory.NewBoardStorage()
 
 			authService := getAuthService(test.serviceType)
@@ -337,7 +337,7 @@ func Test_VerifyAuth(t *testing.T) {
 			config, err := config.NewBaseEnvConfig(envPath, configPath)
 			require.Equal(t, nil, err)
 
-			userStorage := in_memory.NewUserStorage()
+			userStorage := in_memory.NewLocalUserStorage()
 			boardStorage := in_memory.NewBoardStorage()
 
 			authService := getAuthService(test.serviceType)
@@ -464,7 +464,7 @@ func Test_GetUserBoards(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			// t.Parallel()
 
-			userStorage := in_memory.NewUserStorage()
+			userStorage := in_memory.NewLocalUserStorage()
 			boardStorage := in_memory.NewBoardStorage()
 
 			authService := getAuthService("Session")

@@ -7,18 +7,18 @@ import (
 )
 
 type IUserAuthService interface {
-	// GetUser
+	// Login
 	// находит пользователя по почте
 	// или возвращает ошибки apperrors.ErrUserNotFound (401), apperrors.ErrWrongPassword (401)
-	GetUser(context.Context, dto.LoginInfo) (*entities.User, error)
+	Login(context.Context, dto.LoginInfo) (*entities.User, error)
 	// GetUserByID
 	// находит пользователя по его id
 	// или возвращает ошибку apperrors.ErrUserNotFound (401)
 	GetUserByID(context.Context, uint64) (*entities.User, error)
-	// CreateUser
+	// RegisterUser
 	// создает нового пользователя по данным
 	// или возвращает ошибку apperrors.ErrUserAlreadyExists (409)
-	CreateUser(context.Context, dto.SignupInfo) (*entities.User, error)
+	RegisterUser(context.Context, dto.SignupInfo) (*entities.User, error)
 	// DeleteUser
 	// удаляет данного пользователя по id
 	// или возвращает ошибку apperrors.ErrUserNotFound (409)

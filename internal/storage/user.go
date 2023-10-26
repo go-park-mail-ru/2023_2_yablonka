@@ -7,10 +7,10 @@ import (
 )
 
 type IUserStorage interface {
-	// GetUser
+	// GetUserByLogin
 	// находит пользователя в БД по почте
 	// или возвращает ошибку apperrors.ErrUserNotFound (401)
-	GetUser(context.Context, dto.LoginInfo) (*entities.User, error)
+	GetUserByLogin(context.Context, string) (*entities.User, error)
 	// GetUserByID
 	// находит пользователя в БД по его id
 	// или возвращает ошибку apperrors.ErrUserNotFound (401)

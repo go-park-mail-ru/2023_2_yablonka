@@ -31,6 +31,8 @@ var (
 	ErrWrongPassword = errors.New("wrong password")
 	// ErrUserAlreadyExists ошибка: пользователь с таким адресом почты уже существует
 	ErrUserAlreadyExists = errors.New("user with this email already exists")
+	// ErrUserNotCreated ошибка: не удалось добавить пользователя в БД
+	ErrUserNotCreated = errors.New("user couldn't be created")
 )
 
 // Ошибки, связанные с AuthService
@@ -49,6 +51,12 @@ var (
 	ErrSessionExpired = errors.New("user session has expired")
 	// ErrSessionNotFound ошибка: полученной сессии нет в хранилище
 	ErrSessionNotFound = errors.New("no session found for provided session ID")
+)
+
+// Ошибки, связанные с сервером
+var (
+	// ErrCouldntBuildQuery ошибка: не удалось сформировать SQL запрос
+	ErrCouldntBuildQuery = errors.New("error building an SQL query")
 )
 
 // Ошибки, связанные с BoardService
@@ -105,6 +113,7 @@ var ErrorMap = map[error]ErrorResponse{
 	ErrUserNotFound:           WrongLoginResponse,
 	ErrWrongPassword:          WrongLoginResponse,
 	ErrUserAlreadyExists:      StatusConflictResponse,
+	ErrUserNotCreated:         InternalServerErrorResponse,
 	ErrJWTSecretMissing:       InternalServerErrorResponse,
 	ErrTokenNotGenerated:      InternalServerErrorResponse,
 	ErrJWTWrongMethod:         GenericUnauthorizedResponse,
@@ -116,6 +125,7 @@ var ErrorMap = map[error]ErrorResponse{
 	ErrSessionIDLengthMissing: InternalServerErrorResponse,
 	ErrSessionNullIDLength:    InternalServerErrorResponse,
 	ErrSessionExpired:         GenericUnauthorizedResponse,
+	ErrCouldntBuildQuery:      InternalServerErrorResponse,
 	ErrSessionNotFound:        GenericUnauthorizedResponse,
 }
 

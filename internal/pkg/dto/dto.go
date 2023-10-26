@@ -6,6 +6,12 @@ type VerifiedAuthInfo struct {
 	UserID uint64
 }
 
+// VerifiedAuthInfo
+// DTO, подтверждающее личность на основе сессии, полученных при регистрации
+type UserEmail struct {
+	Email string `json:"email" valid:"type(string),email"`
+}
+
 // AuthInfo
 // DTO для обработки данных, полученных при входе
 type AuthInfo struct {

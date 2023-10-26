@@ -33,11 +33,11 @@ func NewUserService(storage storage.IUserStorage) *UserService {
 	}
 }
 
-// GetUser
+// Login
 // находит пользователя по почте
 // или возвращает ошибки apperrors.ErrUserNotFound (401), apperrors.ErrWrongPassword (401)
-func (us AuthUserService) GetUser(ctx context.Context, info dto.LoginInfo) (*entities.User, error) {
-	user, err := us.storage.GetUser(ctx, info)
+func (us AuthUserService) Login(ctx context.Context, info dto.LoginInfo) (*entities.User, error) {
+	user, err := us.storage.GetUserByLogin(ctx, info.Email)
 	if err != nil {
 		return nil, err
 	}
@@ -56,10 +56,16 @@ func (us AuthUserService) GetUserByID(ctx context.Context, uid uint64) (*entitie
 	return us.storage.GetUserByID(ctx, uid)
 }
 
-// CreateUser
+// RegisterUser
 // создает нового пользователя по данным
 // или возвращает ошибку apperrors.ErrUserAlreadyExists (409)
-func (us AuthUserService) CreateUser(ctx context.Context, info dto.SignupInfo) (*entities.User, error) {
+func (us AuthUserService) RegisterUser(ctx context.Context, info dto.SignupInfo) (*entities.User, error) {
+	_, err := us.storage.GetUserByLogin(ctx, info.Email)
+
+	if err == nil {
+		return nil, apperrors.ErrUserAlreadyExists
+	}
+
 	return us.storage.CreateUser(ctx, info)
 }
 
@@ -67,6 +73,12 @@ func (us AuthUserService) CreateUser(ctx context.Context, info dto.SignupInfo) (
 // обновляет пользователя в БД
 // или возвращает ошибку apperrors.ErrUserNotFound (409)
 func (us UserService) UpdateUser(ctx context.Context, info dto.UpdatedUserInfo) (*entities.User, error) {
+	_, err := us.storage.GetUserByLogin(ctx, info.Email)
+
+	if err == nil {
+		return nil, apperrors.ErrUserAlreadyExists
+	}
+
 	return us.storage.UpdateUser(ctx, info)
 }
 

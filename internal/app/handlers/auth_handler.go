@@ -67,7 +67,7 @@ func (ah AuthHandler) LogIn(w http.ResponseWriter, r *http.Request) {
 		PasswordHash: hashFromAuthInfo(login),
 	}
 
-	user, err := ah.us.GetUser(rCtx, incomingAuth)
+	user, err := ah.us.Login(rCtx, incomingAuth)
 	if err != nil {
 		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.ErrorMap[err]))
 		return
@@ -145,7 +145,7 @@ func (ah AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 		PasswordHash: passwordHash,
 	}
 
-	user, err := ah.us.CreateUser(rCtx, incomingAuth)
+	user, err := ah.us.RegisterUser(rCtx, incomingAuth)
 	if err != nil {
 		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.ErrorMap[err]))
 		return
