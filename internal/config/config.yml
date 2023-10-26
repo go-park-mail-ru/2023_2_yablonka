@@ -5,6 +5,7 @@ server:
     - GET
     - POST
     - OPTIONS
+    - DELETE
   allowed_hosts:
     - localhost:8080
     - localhost:8081

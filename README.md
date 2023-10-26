@@ -1,4 +1,5 @@
 # 2023_2_yablonka
+![Coverage](https://img.shields.io/badge/Coverage-56.0%25-yellow)
 Проект Trello команды ЯБлонька
 
 - [Репозиторий фронтенда](https://github.com/frontend-park-mail-ru/2023_2_yablonka)
