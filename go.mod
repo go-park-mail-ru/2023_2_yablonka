@@ -9,16 +9,11 @@ require (
 	github.com/joho/godotenv v1.5.1
 	github.com/rs/cors v1.10.1
 	github.com/stretchr/testify v1.8.4
+	github.com/swaggo/http-swagger/v2 v2.0.2
 	github.com/swaggo/swag v1.16.2
 )
 
-require (
-	github.com/swaggo/files v1.0.1 // indirect
-	github.com/swaggo/files/v2 v2.0.0 // indirect
-	github.com/swaggo/http-swagger v1.3.4 // indirect
-	github.com/swaggo/http-swagger/v2 v2.0.2 // indirect
-	golang.org/x/net v0.17.0 // indirect
-)
+require github.com/swaggo/files/v2 v2.0.0 // indirect
 
 require (
 	github.com/KyleBanks/depth v1.2.1 // indirect

@@ -13,7 +13,7 @@ func PanicRecovery(next http.Handler) http.Handler {
 				log.Println("recovered from", rcvr)
 				w.WriteHeader(http.StatusInternalServerError)
 				response := apperrors.ErrorJSON(apperrors.InternalServerErrorResponse)
-				w.Write(response)
+				_, _ = w.Write(response)
 				r.Body.Close()
 			}
 		}()
