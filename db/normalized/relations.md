@@ -363,7 +363,7 @@
     {Board.id} -> Board.date_created
     {Board.id} -> Board.thumbnail_url
 
-## Принадлежание Board к одному Workspace-у:
+## Принадлежность Board к одному Workspace-у:
     {Board.id} -> Workspace.id
 
 ## Таблица Column:
@@ -372,7 +372,7 @@
     {Column.id} -> Column.description
     {Column.id} -> Column.list_position
 
-## Принадлежание Column к одному Board-у:
+## Принадлежность Column к одному Board-у:
     {Column.id} -> Board.id
 
 ## Таблица Role:
@@ -389,7 +389,7 @@
     {Task.id} -> Task.end
     {Task.id} -> Task.list_position
 
-## Принадлежание Task к одному Column-у:
+## Принадлежность Task к одному Column-у:
     {Task.id} -> Column.id
 
 ## Таблица Tag:
@@ -481,7 +481,7 @@
     {Checklist.id} -> Checklist.name
     {Checklist.id} -> Checklist.list_position
 
-## Принадлежание Checklist к одному Task-у:
+## Принадлежность Checklist к одному Task-у:
     {Checklist.id} -> Task.id
 
 ## Таблица Checklist_Item:
@@ -490,7 +490,7 @@
     {Checklist_item.id} -> Checklist_item.done
     {Checklist_item.id} -> Checklist_item.list_position
 
-## Принадлежание Checklist_Item к одному Checklist-у:
+## Принадлежность Checklist_Item к одному Checklist-у:
     {Checklist_item.id} -> Checklist.id
 
 ## User, которому доверен Task:
@@ -514,17 +514,17 @@
     {Task_embedding.id} -> Task_embedding.id
     {Task_embedding.id} -> Task_embedding.url
 
-## Принадлежание Task_embedding к одному Task-у:
+## Принадлежность Task_embedding к одному Task-у:
     {Task_embedding.id} -> Task.id
 
-## Принадлежание Task_embedding к одному User-у:
+## Принадлежность Task_embedding к одному User-у:
     {Task_embedding.id} -> User.id
 
 ## Таблица Session:
     {Session.token} -> Session.token
     {Session.token} -> Session.expiration_date
 
-## Принадлежание Session к одному User-у:
+## Принадлежность Session к одному User-у:
     {Session.token} -> User.id
 
 ## Таблица Comment:
@@ -532,31 +532,31 @@
     {Comment.id} -> Comment.content
     {Comment.id} -> Comment.date_created
 
-## Принадлежание Comment к одному User-у:
+## Принадлежность Comment к одному User-у:
     {Comment.id} -> User.id
 
-## Принадлежание Comment к одному Task-у:
+## Принадлежность Comment к одному Task-у:
     {Comment.id} -> Task.id
 
-## Принадлежание Comment_Reply к одному Comment-у:
+## Принадлежность Comment_Reply к одному Comment-у:
     {Comment_Reply.id} -> Comment.id
 
 ## Таблица Reaction:
     {Reaction.id} -> Reaction.id
     {Reaction.id} -> Reaction.content
 
-## Принадлежание Reaction к одному User-у:
+## Принадлежность Reaction к одному User-у:
     {Reaction.id} -> User.id
 
-## Принадлежание Reaction к одному Comment-у:
+## Принадлежность Reaction к одному Comment-у:
     {Reaction.id} -> Comment.id
 
 ## Таблица Comment_Embedding:
     {Comment_embedding.id} -> Comment_embedding.id
     {Comment_embedding.id} -> Comment_embedding.url
 
-## Принадлежание Comment_Embedding к одному User-у:
+## Принадлежность Comment_Embedding к одному User-у:
     {Comment_embedding.id} -> User.id
 
-## Принадлежание Comment_Embedding к одному Comment-у:
+## Принадлежность Comment_Embedding к одному Comment-у:
     {Comment_embedding.id} -> Comment.id
