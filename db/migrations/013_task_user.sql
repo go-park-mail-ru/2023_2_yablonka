@@ -18,7 +18,7 @@ ALTER TABLE IF EXISTS public.Task_User
 
 ALTER TABLE IF EXISTS public.Task_User
     ADD FOREIGN KEY (id_user)
-    REFERENCES public."User" (id) MATCH SIMPLE
+    REFERENCES public.User (id) MATCH SIMPLE
     ON UPDATE NO ACTION
     ON DELETE NO ACTION
     NOT VALID;

@@ -31,7 +31,7 @@ func (s *PostgresUserStorage) GetHighestID() uint64 {
 // или возвращает ошибку apperrors.ErrUserNotFound (401)
 func (s *PostgresUserStorage) GetUserByLogin(ctx context.Context, login string) (*entities.User, error) {
 	sql, args, err := sq.
-		Select("id", "email", "password_hash", "name", "surname", "avatar_url", "description").
+		Select(allUserFields...).
 		From("user").
 		Where(sq.Eq{"login": login}).
 		ToSql()
@@ -55,7 +55,7 @@ func (s *PostgresUserStorage) GetUserByLogin(ctx context.Context, login string) 
 // или возвращает ошибку apperrors.ErrUserNotFound (401)
 func (s *PostgresUserStorage) GetUserByID(ctx context.Context, uid uint64) (*entities.User, error) {
 	sql, args, err := sq.
-		Select("id", "email", "password_hash", "name", "surname", "avatar_url", "description").
+		Select(allUserFields...).
 		From("user").
 		Where(sq.Eq{"id": uid}).
 		ToSql()
