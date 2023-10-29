@@ -12,7 +12,6 @@ import (
 	auth "server/internal/service/auth"
 	board "server/internal/service/board"
 	user "server/internal/service/user"
-	"server/internal/storage/in_memory"
 	"server/internal/storage/postgresql"
 
 	"github.com/asaskevich/govalidator"
@@ -50,9 +49,9 @@ func main() {
 	defer dbConnection.Close()
 	log.Println("database connected")
 
-	userStorage := postgresql.NewPostgresUserStorage(dbConnection)
-	authStorage := in_memory.NewAuthStorage()
-	boardStorage := in_memory.NewBoardStorage()
+	userStorage := postgresql.NewUserStorage(dbConnection)
+	authStorage := postgresql.NewAuthStorage(dbConnection)
+	boardStorage := postgresql.NewBoardStorage(dbConnection)
 	log.Println("storages configured")
 
 	userAuthService := user.NewAuthUserService(userStorage)

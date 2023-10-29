@@ -51,6 +51,8 @@ var (
 	ErrSessionExpired = errors.New("user session has expired")
 	// ErrSessionNotFound ошибка: полученной сессии нет в хранилище
 	ErrSessionNotFound = errors.New("no session found for provided session ID")
+	// ErrSessionNotCreated ошибка: полученной сессии нет в хранилище
+	ErrSessionNotCreated = errors.New("session couldn't be created")
 )
 
 // Ошибки, связанные с сервером
@@ -124,6 +126,7 @@ var ErrorMap = map[error]ErrorResponse{
 	ErrSessionNullDuration:    InternalServerErrorResponse,
 	ErrSessionIDLengthMissing: InternalServerErrorResponse,
 	ErrSessionNullIDLength:    InternalServerErrorResponse,
+	ErrSessionNotCreated:      InternalServerErrorResponse,
 	ErrSessionExpired:         GenericUnauthorizedResponse,
 	ErrCouldntBuildQuery:      InternalServerErrorResponse,
 	ErrSessionNotFound:        GenericUnauthorizedResponse,

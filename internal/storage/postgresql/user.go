@@ -11,12 +11,12 @@ import (
 )
 
 // LocalUserStorage
-// Локальное хранилище данных
+// Хранилище данных в PostgreSQL
 type PostgresUserStorage struct {
 	db *pgxpool.Pool
 }
 
-func NewPostgresUserStorage(db *pgxpool.Pool) *PostgresUserStorage {
+func NewUserStorage(db *pgxpool.Pool) *PostgresUserStorage {
 	return &PostgresUserStorage{
 		db: db,
 	}
@@ -32,7 +32,7 @@ func (s *PostgresUserStorage) GetHighestID() uint64 {
 func (s *PostgresUserStorage) GetUserByLogin(ctx context.Context, login string) (*entities.User, error) {
 	sql, args, err := sq.
 		Select(allUserFields...).
-		From("user").
+		From("public.User").
 		Where(sq.Eq{"login": login}).
 		ToSql()
 
@@ -56,7 +56,7 @@ func (s *PostgresUserStorage) GetUserByLogin(ctx context.Context, login string) 
 func (s *PostgresUserStorage) GetUserByID(ctx context.Context, uid uint64) (*entities.User, error) {
 	sql, args, err := sq.
 		Select(allUserFields...).
-		From("user").
+		From("public.User").
 		Where(sq.Eq{"id": uid}).
 		ToSql()
 
@@ -79,7 +79,7 @@ func (s *PostgresUserStorage) GetUserByID(ctx context.Context, uid uint64) (*ent
 // или возвращает ошибку apperrors.ErrUserAlreadyExists (409)
 func (s *PostgresUserStorage) CreateUser(ctx context.Context, signup dto.SignupInfo) (*entities.User, error) {
 	sql, args, err := sq.
-		Insert("public.user").
+		Insert("public.User").
 		Columns("email", "password_hash").
 		Values(signup.Email, signup.PasswordHash).
 		PlaceholderFormat(sq.Dollar).

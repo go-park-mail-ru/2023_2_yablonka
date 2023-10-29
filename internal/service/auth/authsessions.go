@@ -34,8 +34,8 @@ func (a *AuthSessionService) AuthUser(ctx context.Context, user *entities.User) 
 // VerifyAuth
 // проверяет состояние авторизации, возвращает ID авторизированного пользователя
 // или возвращает ошибки apperrors.ErrSessionNotFound (401)
-func (a *AuthSessionService) VerifyAuth(ctx context.Context, sessionString string) (*dto.VerifiedAuthInfo, error) {
-	sessionObj, err := a.storage.GetSession(ctx, sessionString)
+func (a *AuthSessionService) VerifyAuth(ctx context.Context, token string) (*dto.VerifiedAuthInfo, error) {
+	sessionObj, err := a.storage.GetSession(ctx, token)
 	if err != nil {
 		return nil, err
 	}

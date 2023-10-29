@@ -2,9 +2,12 @@ package postgresql
 
 import (
 	"context"
+	"log"
+	"server/internal/apperrors"
 	"server/internal/pkg/dto"
 	"server/internal/pkg/entities"
 
+	sq "github.com/Masterminds/squirrel"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -24,11 +27,39 @@ func NewBoardStorage(db *pgxpool.Pool) *PostgreSQLBoardStorage {
 // находит все доски, созданные пользователем
 // или возвращает ошибку apperrors.ErrUserNotFound (401)
 func (s *PostgreSQLBoardStorage) GetUserOwnedBoards(ctx context.Context, userInfo dto.VerifiedAuthInfo) (*[]entities.Board, error) {
-	boards := []entities.Board{}
-	err := s.db.QueryRow(context.Background(),
-		"SELECT id, email, password_hash, name, surname, avatar_url, description FROM user WEHRE id = :id",
-	).Scan(&boards)
-	return &boards, err
+	sql, args, err := sq.
+		Select(allBoardFields...).
+		From("public.Board").
+		Join("public.Board_User").
+		Where(sq.Eq{"public.Board_User.id_user": userInfo.UserID}).
+		ToSql()
+
+	if err != nil {
+		return nil, apperrors.ErrCouldntBuildQuery
+	}
+
+	rows, err := s.db.Query(ctx, sql, args...)
+
+	if err != nil {
+		return nil, apperrors.ErrCouldntBuildQuery
+	}
+
+	defer rows.Close()
+
+	var boards []entities.Board
+	for rows.Next() {
+		var board entities.Board
+		err := rows.Scan(&board.ID, &board.Name, &board.Owner, &board.ThumbnailURL, &board.Guests)
+		if err != nil {
+			log.Fatal(err)
+		}
+		boards = append(boards, board)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, apperrors.ErrBoardNotFound
+	}
+
+	return &boards, nil
 }
 
 // GetUserGuestBoards

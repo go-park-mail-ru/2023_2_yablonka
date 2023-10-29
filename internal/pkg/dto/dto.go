@@ -51,6 +51,23 @@ type NewBoardInfo struct {
 	OwnerEmail string `json:"owner_email"`
 }
 
+// NewWorkspaceInfo
+// DTO для нового рабочего пространства
+type NewWorkspaceInfo struct {
+	Name        string `json:"name"`
+	Description string `json:"description"`
+	DateCreated string `json:"thumbnail_url"`
+	OwnerID     uint64 `json:"owner_id"`
+}
+
+// NewWorkspaceInfo
+// DTO для нового рабочего пространства
+type UpdatedWorkspaceInfo struct {
+	Name        string     `json:"name"`
+	Description string     `json:"description"`
+	Guests      []UserInfo `json:"guests"`
+}
+
 // UserOwnedBoardInfo
 // DTO для доски, принадлежащей конкретному пользователю
 type UserOwnedBoardInfo struct {

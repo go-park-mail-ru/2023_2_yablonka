@@ -33,6 +33,16 @@ type Board struct {
 	Guests       []dto.UserInfo `json:"guests"`
 }
 
+// Board
+// структура для хранения доски
+type Workspace struct {
+	ID          uint64         `json:"board_id"`
+	Name        string         `json:"name"`
+	Description string         `json:"description"`
+	DateCreated string         `json:"thumbnail_url"`
+	Guests      []dto.UserInfo `json:"guests"`
+}
+
 func (u *User) TableName() string {
 	return "user"
 }
