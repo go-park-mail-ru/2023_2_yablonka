@@ -1,28 +1,20 @@
-CREATE TABLE IF NOT EXISTS public.User_Board_template
+CREATE TABLE IF NOT EXISTS public.user_board_template
 (
     id_user serial NOT NULL,
     id_template serial NOT NULL,
-    PRIMARY KEY (id_user, id_template),
-    UNIQUE (id_user, id_template)
-        INCLUDE(id_user, id_template)
-);
-
-ALTER TABLE IF EXISTS public.User_Board_template
-    ADD FOREIGN KEY (id_user)
-    REFERENCES public.User (id) MATCH SIMPLE
-    ON UPDATE NO ACTION
-    ON DELETE NO ACTION
-    NOT VALID;
-
-
-ALTER TABLE IF EXISTS public.User_Board_template
-    ADD FOREIGN KEY (id_template)
-    REFERENCES public.Board_template (id) MATCH SIMPLE
-    ON UPDATE NO ACTION
-    ON DELETE NO ACTION
-    NOT VALID;
-
+    CONSTRAINT user_board_template_pkey PRIMARY KEY (id_user, id_template),
+    CONSTRAINT user_board_template_id_template_fkey FOREIGN KEY (id_template)
+        REFERENCES public.board_template (id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION
+        NOT VALID,
+    CONSTRAINT user_board_template_id_user_fkey FOREIGN KEY (id_user)
+        REFERENCES public."user" (id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION
+        NOT VALID
+)
 
 ---- create above / drop below ----
 
-DROP TABLE IF EXISTS public.User_Board_template;
+DROP TABLE IF EXISTS public.user_board_template;

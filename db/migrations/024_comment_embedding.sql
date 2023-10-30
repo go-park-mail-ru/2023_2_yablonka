@@ -1,29 +1,20 @@
-CREATE TABLE IF NOT EXISTS public.Comment_embedding
+CREATE TABLE IF NOT EXISTS public.comment_embedding
 (
-    id serial NOT NULL,
-    id_user serial NOT NULL,
+    id_embedding serial NOT NULL,
     id_comment serial NOT NULL,
-    url character varying(2048) NOT NULL,
-    PRIMARY KEY (id)
-        INCLUDE(id)
-);
-
-ALTER TABLE IF EXISTS public.Comment_embedding
-    ADD FOREIGN KEY (id_comment)
-    REFERENCES public.Comment (id) MATCH SIMPLE
-    ON UPDATE NO ACTION
-    ON DELETE NO ACTION
-    NOT VALID;
-
-
-ALTER TABLE IF EXISTS public.Comment_embedding
-    ADD FOREIGN KEY (id_user)
-    REFERENCES public.User (id) MATCH SIMPLE
-    ON UPDATE NO ACTION
-    ON DELETE NO ACTION
-    NOT VALID;
-
+    CONSTRAINT comment_embedding_pkey PRIMARY KEY (id_embedding, id_comment),
+    CONSTRAINT comment_embedding_id_embedding_fkey FOREIGN KEY (id_embedding)
+        REFERENCES public.embedding (id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION
+        NOT VALID,
+    CONSTRAINT comment_embedding_id_comment_fkey FOREIGN KEY (id_comment)
+        REFERENCES public.comment (id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION
+        NOT VALID
+)
 
 ---- create above / drop below ----
 
-DROP TABLE IF EXISTS public.Comment_embedding;
+DROP TABLE IF EXISTS public.comment_embedding;

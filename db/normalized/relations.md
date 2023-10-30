@@ -17,7 +17,7 @@
             string thumbnail_url
             timestamp date_created
         }
-        COLUMN {
+        LIST {
             int id PK
             int id_board FK
             string name
@@ -27,7 +27,7 @@
         }
         TASK {
             int id PK
-            int id_column FK
+            int id_list FK
             string name
             string description
             string thumbnail_url
@@ -89,12 +89,6 @@
             int id_user PK, FK
             int id_task PK, FK
         }
-        TASK_EMBEDDING {
-            int id PK
-            int id_user FK
-            int id_task FK
-            string url
-        }
         SESSION {
             string token PK
             int id_user FK
@@ -134,20 +128,27 @@
             string content
         }
         COMMENT_EMBEDDING {
+            int id_embedding PK, FK
+            int id_comment PK, FK
+        }
+        TASK_EMBEDDING {
+            int id_embedding PK, FK
+            int id_task PK, FK
+        }
+        EMBEDDING {
             int id PK
-            int id_comment FK
             int id_user FK
-            content url
+            string url
         }
 
         WORKSPACE ||--o{ BOARD : contains
         WORKSPACE ||--o{ USER_WORKSPACE : associated_with
 
-        BOARD ||--o{ COLUMN : contains
+        BOARD ||--o{ LIST : contains
         BOARD ||--o{ BOARD_USER : associated_with
         BOARD ||--o{ FAVOURITE_BOARDS : included_in
 
-        COLUMN ||--o{ TASK : contains
+        LIST ||--o{ TASK : contains
 
         TASK ||--o{ CHECKLIST : contains
         TASK ||--o{ TASK_EMBEDDING : has
@@ -181,10 +182,14 @@
         TASK_TEMPLATE ||--o{ USER_TASK_TEMPLATE : used_by
 
         BOARD_TEMPLATE ||--o{ USER_BOARD_TEMPLATE : used_by
+
+        EMBEDDING ||--o{ TASK_EMBEDDING : included_in
+        EMBEDDING ||--o{ COMMENT_EMBEDDING : included_in
 ```
 
 # Описание таблиц
-## Workspace
+
+## workspace
 Рабочее пространство, в котором хранятся доски.
     id                          
     name                        
@@ -192,7 +197,7 @@
     date_created                
     description                 
 
-## Board
+## board
 Доска Канбан, разделенная на столбцы.
     id                          
     id_workspace                
@@ -201,24 +206,24 @@
     date_created                
     thumbnail_url               
 
-## Column
-Столбец в доске, в котором хранятся задания можно менять их порядок.
+## list
+Список в доске, в котором хранятся задания можно менять их порядок.
     id                          
     id_board                    
     name                        
     description                 
     list_position               
 
-## Role
+## role
 Роль пользователя в рабочем пространстве.
     id                          
     name                        
     description                 
 
-## Task
+## task
 Задание, ему можно добавить сроки и менять их порядок в столбце.
     id                          
-    id_column                   
+    id_list                   
     name                        
     date_created                
     description                 
@@ -226,13 +231,13 @@
     end                         
     list_position               
 
-## Tag
+## tag
 Тэги, которые можно добавить к заданиям и настроить их цвет в формате hex.
     id                          
     name                        
     color                       
 
-## User
+## user
 Пользователь сервиса, для работы достаточно указать почту и пароль, остальные поля опциональны, пароль хранится в виде хэша.
     id                          
     email                       
@@ -242,24 +247,24 @@
     avatar_url                  
     description                 
 
-## Task_template
-Шаблоны для заданий, некоторые созданы разработчиками, пользователи могут создавать свои. Данные хранятся в формате json, т.к. это лучший способ хранить копии данных из таблицы Task.
+## task_template
+Шаблоны для заданий, некоторые созданы разработчиками, пользователи могут создавать свои. Данные хранятся в формате json, т.к. это лучший способ хранить копии данных из таблицы task.
     id                          
     data                        
 
-## Board_template
-Шаблоны для досок, некоторые созданы разработчиками, пользователи могут создавать свои. Данные хранятся в формате json, т.к. это лучший способ хранить копии данных из таблицы Board.
+## board_template
+Шаблоны для досок, некоторые созданы разработчиками, пользователи могут создавать свои. Данные хранятся в формате json, т.к. это лучший способ хранить копии данных из таблицы board.
     id                          
     data                        
 
-## Checklist
+## checklist
 Список задач внутри задания, можно добавить несколько в одно задание и поменять их порядок.
     id                          
     id_task                     
     name                        
     list_position               
 
-## Checklist_item
+## checklist_item
 Одна мини-задача в чек-листе, которую можно пометить как завершенную.
     id                          
     id_checklist                
@@ -267,41 +272,34 @@
     done                        
     list_position               
 
-## User_Workspace
+## user_workspace
 Связующая таблица отношения М2М между пользователем и рабочими пространствоми, также позволяет добавить пользователю его роли в них.
     id_user                     
     id_workspace                
     id_role                     
 
-## Board_User
+## board_user
 Связующая таблица отношения М2М между пользователем и досками, к которым у него есть доступ.
     id_user                     
     id_board                    
 
-## Task_User
+## task_user
 Связующая таблица отношения М2М между пользователем и порученным ему заданием.
     id_user                     
     id_task                     
 
-## Task_embedding
-Ссылка на файловое вложение в задание, желательно хранить не упоминая конкретного сайта, а только путь к файлу, чтобы было легче их переносить.
-    id                          
-    id_user                     
-    id_task                     
-    url                         
-
-## Session
+## session
 Текущая сессия пользователя, чтобы не нужно было вводить логин и пароль несколько раз.
     token                       
     id_user                     
     expiration_date             
 
-## Tag_Task
+## tag_task
 Связующая таблица отношения М2М между тэгами и заданиями, помеченными ими.
     id_tag                      
     id_task                     
 
-## Comment
+## comment
 Комментарий к заданию, к которому можно прикрепить файл и на который можно ответить.
     id                          
     id_user                     
@@ -309,41 +307,51 @@
     content                     
     date_created                
 
-## Comment_Reply
+## comment_reply
 Таблица с ссылками на ответы к комментариям, чтобы рекурсивно проходить по ним.
     id_reply                    
     id_comment                  
 
-## Favourite_boards
+## favourite_boards
 Таблицы в списке избранного для каждого пользователя.
     id_board                    
     id_user                     
 
-## User_Task_template
+## user_task_template
 Связующая таблица отношения М2М между пользователями и шаблонами заданий, к которым у них есть доступ.
     id_user                     
     id_template                 
 
-## User_Board_template
+## user_board_template
 Связующая таблица отношения М2М между пользователями и шаблонами досок, к которым у них есть доступ.
     id_user                     
     id_template                 
 
-## Reaction
+## reaction
 Реакции-эмодзи на комментарии.
     id                          
     id_user                     
     id_comment                  
     content                     
 
-## Comment_embedding
-Ссылка на файловое вложение в комментарий, желательно хранить не упоминая конкретного сайта, а только путь к файлу, чтобы было легче их переносить.
+## embedding
+Ссылка на файловое вложение, желательно хранить не упоминая конкретного сайта, а только путь к файлу, чтобы было легче их переносить.
     id                          
-    id_user                     
-    id_comment                  
+    id_user                    
     url                         
 
+## comment_embedding
+Связующая таблица отношения между заданиями и вложениями, прикрепленными к ним.
+    id_embedding                    
+    id_comment                              
+
+## task_embedding
+Связующая таблица отношения между комментариями и вложениями, прикрепленными к ним.
+    id_embedding                    
+    id_task                     
+
 # Нормальные формы
+
 ## 1 Н.Ф.
 База данных находится в 1 Н.Ф., потому что в ней нет полей, в которых находятся повторяющиеся группы значений. Исключением являются таблицы шаблонов, у которых есть поля типа json, определяющие несколько полей сразу, но в данном случае, этот вариант хранения данных лучше хранения их в отдельной таблице, так как поля в них никогда не будут изменены, а лишь использаны для создания строк в таблицах заданий и досок.
 
@@ -358,217 +366,225 @@
 
 # Функциональные зависимости
 
-## Таблица Workspace:
-    {Workspace.id} -> Workspace.id
-    {Workspace.id} -> Workspace.name
-    {Workspace.id} -> Workspace.thumbnail_url
-    {Workspace.id} -> Workspace.date_created
-    {Workspace.id} -> Workspace.description
+## Таблица workspace:
+    {workspace.id} -> workspace.id
+    {workspace.id} -> workspace.name
+    {workspace.id} -> workspace.thumbnail_url
+    {workspace.id} -> workspace.date_created
+    {workspace.id} -> workspace.description
 
-## Role User-a по его id и связанному Workspace-у:
-    {User.id, Workspace.id} -> Role.id
+## role user-a по его id и связанному workspace-у:
+    {user.id, workspace.id} -> role.id
 
-## Таблица Board:
-    {Board.id} -> Board.id
-    {Board.id} -> Board.name
-    {Board.id} -> Board.description
-    {Board.id} -> Board.date_created
-    {Board.id} -> Board.thumbnail_url
+## Таблица board:
+    {board.id} -> board.id
+    {board.id} -> board.name
+    {board.id} -> board.description
+    {board.id} -> board.date_created
+    {board.id} -> board.thumbnail_url
 
-## Принадлежность Board к одному Workspace-у:
-    {Board.id} -> Workspace.id
+## Принадлежность board к одному workspace-у:
+    {board.id} -> workspace.id
 
-## Таблица Column:
-    {Column.id} -> Column.id
-    {Column.id} -> Column.name
-    {Column.id} -> Column.description
-    {Column.id} -> Column.list_position
+## Таблица list:
+    {list.id} -> list.id
+    {list.id} -> list.name
+    {list.id} -> list.description
+    {list.id} -> list.list_position
 
-## Принадлежность Column к одному Board-у:
-    {Column.id} -> Board.id
+## Принадлежность list к одному board-у:
+    {list.id} -> board.id
 
-## Таблица Role:
-    {Role.id} -> Role.id
-    {Role.id} -> Role.name
-    {Role.id} -> Role.description
+## Таблица role:
+    {role.id} -> role.id
+    {role.id} -> role.name
+    {role.id} -> role.description
 
-## Таблица Task:
-    {Task.id} -> Task.id
-    {Task.id} -> Task.name
-    {Task.id} -> Task.date_created
-    {Task.id} -> Task.description
-    {Task.id} -> Task.start
-    {Task.id} -> Task.end
-    {Task.id} -> Task.list_position
+## Таблица task:
+    {task.id} -> task.id
+    {task.id} -> task.name
+    {task.id} -> task.date_created
+    {task.id} -> task.description
+    {task.id} -> task.start
+    {task.id} -> task.end
+    {task.id} -> task.list_position
 
-## Принадлежность Task к одному Column-у:
-    {Task.id} -> Column.id
+## Принадлежность task к одному list-у:
+    {task.id} -> list.id
 
-## Таблица Tag:
-    {Tag.id} -> Tag.id
-    {Tag.id} -> Tag.name
-    {Tag.id} -> Tag.color
+## Таблица tag:
+    {tag.id} -> tag.id
+    {tag.id} -> tag.name
+    {tag.id} -> tag.color
 
-## Связь Tag и Task:
-    {Tag.id, Task.id} -> Tag.id
-    {Tag.id, Task.id} -> Tag.name
-    {Tag.id, Task.id} -> Tag.color
-    {Tag.id, Task.id} -> Task.id
-    {Tag.id, Task.id} -> Task.name
-    {Tag.id, Task.id} -> Task.date_created
-    {Tag.id, Task.id} -> Task.description
-    {Tag.id, Task.id} -> Task.start
-    {Tag.id, Task.id} -> Task.end
-    {Tag.id, Task.id} -> Task.list_position
+## Связь tag и task:
+    {tag.id, task.id} -> tag.id
+    {tag.id, task.id} -> tag.name
+    {tag.id, task.id} -> tag.color
+    {tag.id, task.id} -> task.id
+    {tag.id, task.id} -> task.name
+    {tag.id, task.id} -> task.date_created
+    {tag.id, task.id} -> task.description
+    {tag.id, task.id} -> task.start
+    {tag.id, task.id} -> task.end
+    {tag.id, task.id} -> task.list_position
 
-## Таблица User:
-    {User.id} -> User.id
-    {User.id} -> User.email
-    {User.id} -> User.password_hash
-    {User.id} -> User.name
-    {User.id} -> User.surname
-    {User.id} -> User.avatar_url
-    {User.id} -> User.description
+## Таблица user:
+    {user.id} -> user.id
+    {user.id} -> user.email
+    {user.id} -> user.password_hash
+    {user.id} -> user.name
+    {user.id} -> user.surname
+    {user.id} -> user.avatar_url
+    {user.id} -> user.description
     
-## Любимые Board-ы User-а:
-    {Board.id User.id} -> User.id
-    {Board.id User.id} -> User.email
-    {Board.id User.id} -> User.password_hash
-    {Board.id User.id} -> User.name
-    {Board.id User.id} -> User.surname
-    {Board.id User.id} -> User.avatar_url
-    {Board.id User.id} -> User.description
-    {Board.id User.id} -> Board.id
-    {Board.id User.id} -> Board.name
-    {Board.id User.id} -> Board.description
-    {Board.id User.id} -> Board.date_created
-    {Board.id User.id} -> Board.thumbnail_url
+## Любимые board-ы user-а:
+    {board.id user.id} -> user.id
+    {board.id user.id} -> user.email
+    {board.id user.id} -> user.password_hash
+    {board.id user.id} -> user.name
+    {board.id user.id} -> user.surname
+    {board.id user.id} -> user.avatar_url
+    {board.id user.id} -> user.description
+    {board.id user.id} -> board.id
+    {board.id user.id} -> board.name
+    {board.id user.id} -> board.description
+    {board.id user.id} -> board.date_created
+    {board.id user.id} -> board.thumbnail_url
 
-## Связь Board и User:
-    {User.id, Board.id} -> User.id
-    {User.id, Board.id} -> User.email
-    {User.id, Board.id} -> User.password_hash
-    {User.id, Board.id} -> User.name
-    {User.id, Board.id} -> User.surname
-    {User.id, Board.id} -> User.avatar_url
-    {User.id, Board.id} -> User.description
-    {User.id, Board.id} -> Board.id
-    {User.id, Board.id} -> Board.name
-    {User.id, Board.id} -> Board.description
-    {User.id, Board.id} -> Board.date_created
-    {User.id, Board.id} -> Board.thumbnail_url
+## Связь board и user:
+    {user.id, board.id} -> user.id
+    {user.id, board.id} -> user.email
+    {user.id, board.id} -> user.password_hash
+    {user.id, board.id} -> user.name
+    {user.id, board.id} -> user.surname
+    {user.id, board.id} -> user.avatar_url
+    {user.id, board.id} -> user.description
+    {user.id, board.id} -> board.id
+    {user.id, board.id} -> board.name
+    {user.id, board.id} -> board.description
+    {user.id, board.id} -> board.date_created
+    {user.id, board.id} -> board.thumbnail_url
 
 ## Таблица Task_Template:
     {Task_Template.id} -> Task_Template.id
     {Task_Template.id} -> Task_Template.data
 
-## Связь Task_Template и User-а:
-    {User.id, Task_Template.id} -> User.id
-    {User.id, Task_Template.id} -> User.email
-    {User.id, Task_Template.id} -> User.password_hash
-    {User.id, Task_Template.id} -> User.name
-    {User.id, Task_Template.id} -> User.surname
-    {User.id, Task_Template.id} -> User.avatar_url
-    {User.id, Task_Template.id} -> User.description
-    {User.id, Task_Template.id} -> Task_Template.id
-    {User.id, Task_Template.id} -> Task_Template.data
+## Связь Task_Template и user-а:
+    {user.id, Task_Template.id} -> user.id
+    {user.id, Task_Template.id} -> user.email
+    {user.id, Task_Template.id} -> user.password_hash
+    {user.id, Task_Template.id} -> user.name
+    {user.id, Task_Template.id} -> user.surname
+    {user.id, Task_Template.id} -> user.avatar_url
+    {user.id, Task_Template.id} -> user.description
+    {user.id, Task_Template.id} -> Task_Template.id
+    {user.id, Task_Template.id} -> Task_Template.data
 
 ## Таблица Board_Template:
-    {Board_template.id} -> Board_template.id
-    {Board_template.id} -> Board_template.data
+    {board_template.id} -> board_template.id
+    {board_template.id} -> board_template.data
 
 ## Таблица Board_Template:
-    {User.id, Board_template.id} -> User.id
-    {User.id, Board_template.id} -> User.email
-    {User.id, Board_template.id} -> User.password_hash
-    {User.id, Board_template.id} -> User.name
-    {User.id, Board_template.id} -> User.surname
-    {User.id, Board_template.id} -> User.avatar_url
-    {User.id, Board_template.id} -> User.description
-    {User.id, Board_template.id} -> Board_template.id
-    {User.id, Board_template.id} -> Board_template.data
+    {user.id, board_template.id} -> user.id
+    {user.id, board_template.id} -> user.email
+    {user.id, board_template.id} -> user.password_hash
+    {user.id, board_template.id} -> user.name
+    {user.id, board_template.id} -> user.surname
+    {user.id, board_template.id} -> user.avatar_url
+    {user.id, board_template.id} -> user.description
+    {user.id, board_template.id} -> board_template.id
+    {user.id, board_template.id} -> board_template.data
 
-## Таблица Checklist:
-    {Checklist.id} -> Checklist.id
-    {Checklist.id} -> Checklist.name
-    {Checklist.id} -> Checklist.list_position
+## Таблица checklist:
+    {checklist.id} -> checklist.id
+    {checklist.id} -> checklist.name
+    {checklist.id} -> checklist.list_position
 
-## Принадлежность Checklist к одному Task-у:
-    {Checklist.id} -> Task.id
+## Принадлежность checklist к одному task-у:
+    {checklist.id} -> task.id
 
 ## Таблица Checklist_Item:
-    {Checklist_item.id} -> Checklist_item.id
-    {Checklist_item.id} -> Checklist_item.name
-    {Checklist_item.id} -> Checklist_item.done
-    {Checklist_item.id} -> Checklist_item.list_position
+    {checklist_item.id} -> checklist_item.id
+    {checklist_item.id} -> checklist_item.name
+    {checklist_item.id} -> checklist_item.done
+    {checklist_item.id} -> checklist_item.list_position
 
-## Принадлежность Checklist_Item к одному Checklist-у:
-    {Checklist_item.id} -> Checklist.id
+## Принадлежность Checklist_Item к одному checklist-у:
+    {checklist_item.id} -> checklist.id
 
-## User, которому доверен Task:
-    {User.id, Task.id} -> User.id
-    {User.id, Task.id} -> User.id
-    {User.id, Task.id} -> User.email
-    {User.id, Task.id} -> User.password_hash
-    {User.id, Task.id} -> User.name
-    {User.id, Task.id} -> User.surname
-    {User.id, Task.id} -> User.avatar_url
-    {User.id, Task.id} -> User.description
-    {User.id, Task.id} -> Task.id
-    {User.id, Task.id} -> Task.name
-    {User.id, Task.id} -> Task.date_created
-    {User.id, Task.id} -> Task.description
-    {User.id, Task.id} -> Task.start
-    {User.id, Task.id} -> Task.end
-    {User.id, Task.id} -> Task.list_position
+## user, которому доверен task:
+    {user.id, task.id} -> user.id
+    {user.id, task.id} -> user.id
+    {user.id, task.id} -> user.email
+    {user.id, task.id} -> user.password_hash
+    {user.id, task.id} -> user.name
+    {user.id, task.id} -> user.surname
+    {user.id, task.id} -> user.avatar_url
+    {user.id, task.id} -> user.description
+    {user.id, task.id} -> task.id
+    {user.id, task.id} -> task.name
+    {user.id, task.id} -> task.date_created
+    {user.id, task.id} -> task.description
+    {user.id, task.id} -> task.start
+    {user.id, task.id} -> task.end
+    {user.id, task.id} -> task.list_position
 
-## Таблица Task_embedding:
-    {Task_embedding.id} -> Task_embedding.id
-    {Task_embedding.id} -> Task_embedding.url
+## Таблица embedding:
+    {embedding.id} -> embedding.id
+    {embedding.id} -> embedding.id_user
+    {embedding.id} -> embedding.url
 
-## Принадлежность Task_embedding к одному Task-у:
-    {Task_embedding.id} -> Task.id
+## Принадлежность embedding к одному user-у:
+    {embedding.id} -> user.id
 
-## Принадлежность Task_embedding к одному User-у:
-    {Task_embedding.id} -> User.id
+## Таблица task_embedding:
+    {task_embedding.id_embedding, task_embedding.id_task} -> embedding.id
+    {task_embedding.id_embedding, task_embedding.id_task} -> embedding.id_user
+    {task_embedding.id_embedding, task_embedding.id_task} -> embedding.url
+    {task_embedding.id_embedding, task_embedding.id_task} -> task.id
+    {task_embedding.id_embedding, task_embedding.id_task} -> task.name
+    {task_embedding.id_embedding, task_embedding.id_task} -> task.date_created
+    {task_embedding.id_embedding, task_embedding.id_task} -> task.description
+    {task_embedding.id_embedding, task_embedding.id_task} -> task.start
+    {task_embedding.id_embedding, task_embedding.id_task} -> task.end
+    {task_embedding.id_embedding, task_embedding.id_task} -> task.list_position
 
-## Таблица Session:
-    {Session.token} -> Session.token
-    {Session.token} -> Session.expiration_date
+## Таблица session:
+    {session.token} -> session.token
+    {session.token} -> session.expiration_date
 
-## Принадлежность Session к одному User-у:
-    {Session.token} -> User.id
+## Принадлежность session к одному user-у:
+    {session.token} -> user.id
 
-## Таблица Comment:
-    {Comment.id} -> Comment.id
-    {Comment.id} -> Comment.content
-    {Comment.id} -> Comment.date_created
+## Таблица comment:
+    {comment.id} -> comment.id
+    {comment.id} -> comment.content
+    {comment.id} -> comment.date_created
 
-## Принадлежность Comment к одному User-у:
-    {Comment.id} -> User.id
+## Принадлежность comment к одному user-у:
+    {comment.id} -> user.id
 
-## Принадлежность Comment к одному Task-у:
-    {Comment.id} -> Task.id
+## Принадлежность comment к одному task-у:
+    {comment.id} -> task.id
 
-## Принадлежность Comment_Reply к одному Comment-у:
-    {Comment_Reply.id} -> Comment.id
+## Принадлежность comment_reply к одному comment-у:
+    {comment_reply.id} -> comment.id
 
-## Таблица Reaction:
-    {Reaction.id} -> Reaction.id
-    {Reaction.id} -> Reaction.content
+## Таблица reaction:
+    {reaction.id} -> reaction.id
+    {reaction.id} -> reaction.content
 
-## Принадлежность Reaction к одному User-у:
-    {Reaction.id} -> User.id
+## Принадлежность reaction к одному user-у:
+    {reaction.id} -> user.id
 
-## Принадлежность Reaction к одному Comment-у:
-    {Reaction.id} -> Comment.id
+## Принадлежность reaction к одному comment-у:
+    {reaction.id} -> comment.id
 
-## Таблица Comment_Embedding:
-    {Comment_embedding.id} -> Comment_embedding.id
-    {Comment_embedding.id} -> Comment_embedding.url
-
-## Принадлежность Comment_Embedding к одному User-у:
-    {Comment_embedding.id} -> User.id
-
-## Принадлежность Comment_Embedding к одному Comment-у:
-    {Comment_embedding.id} -> Comment.id
+## Таблица comment_embedding:
+    {comment_embedding.id_embedding, comment_embedding.id_comment} -> embedding.id
+    {comment_embedding.id_embedding, comment_embedding.id_comment} -> embedding.id_user
+    {comment_embedding.id_embedding, comment_embedding.id_comment} -> embedding.url
+    {comment_embedding.id_embedding, comment_embedding.id_comment} -> comment.id
+    {comment_embedding.id_embedding, comment_embedding.id_comment} -> comment.content
+    {comment_embedding.id_embedding, comment_embedding.id_comment} -> comment.date_created

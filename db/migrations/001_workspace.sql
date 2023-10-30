@@ -1,15 +1,13 @@
-CREATE TABLE IF NOT EXISTS public.Workspace
+CREATE TABLE IF NOT EXISTS public.workspace
 (
     id serial NOT NULL,
     name character varying(150) NOT NULL DEFAULT 'Рабочее место',
-    thumbnail_url character varying(2048),
+    thumbnail_url text,
     date_created timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
     description text,
-    PRIMARY KEY (id),
-    UNIQUE (id)
-        INCLUDE(id)
-);
+    CONSTRAINT workspace_pkey PRIMARY KEY (id)
+)
 
 ---- create above / drop below ----
 
-DROP TABLE IF EXISTS public.Workspace;
+DROP TABLE IF EXISTS public.workspace;

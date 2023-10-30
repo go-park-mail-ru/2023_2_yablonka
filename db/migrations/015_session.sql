@@ -1,23 +1,16 @@
-
-CREATE TABLE IF NOT EXISTS public.Session
+CREATE TABLE IF NOT EXISTS public.session
 (
     token character varying(64) NOT NULL,
-    expiration_date timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP + INTERVAL '1 day',
+    expiration_date timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP + INTERVAL '14 days',
     id_user serial NOT NULL,
-    PRIMARY KEY (token)
-        INCLUDE(token),
-    UNIQUE (token, id_user)
-        INCLUDE(token, id_user)
-);
-
-ALTER TABLE IF EXISTS public.Session
-    ADD FOREIGN KEY (id_user)
-    REFERENCES public.User (id) MATCH SIMPLE
-    ON UPDATE NO ACTION
-    ON DELETE NO ACTION
-    NOT VALID;
-
+    CONSTRAINT session_pkey PRIMARY KEY (token),
+    CONSTRAINT session_id_user_fkey FOREIGN KEY (id_user)
+        REFERENCES public."user" (id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION
+        NOT VALID
+)
 
 ---- create above / drop below ----
 
-DROP TABLE IF EXISTS public.Session;
+DROP TABLE IF EXISTS public.session;
