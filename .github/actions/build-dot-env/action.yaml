@@ -1,0 +1,26 @@
+name: "Build .env file for CI"
+description: "Builds a .env to be used for the build CI job"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Load repository secrets and variables
+      env:
+        jwt_secret: ${{ secrets.JWT_SECRET }}
+        session_days: ${{ vars.SESSION_DURATION_DAYS }}
+        session_hours: ${{ vars.SESSION_DURATION_HOURS }}
+        session_minutes: ${{ vars.SESSION_DURATION_MINUTES }}
+        session_seconds: ${{ vars.SESSION_DURATION_SECONDS }}
+        id_length: ${{ vars.SESSION_ID_LENGTH }}
+
+    - name: "Build .env file"
+      run: |
+        echo "JWT_SECRET=\"$jwt_secret\"" > .env 
+        echo "SESSION_DURATION_DAYS=$session_days" > .env 
+        echo "SESSION_DURATION_HOURS=$session_hours" > .env
+        echo "SESSION_DURATION_MINUTES=$session_minutes" > .env
+        echo "SESSION_DURATION_SECONDS=$session_seconds" > .env
+        echo "SESSION_ID_LENGTH=$id_length" > .env

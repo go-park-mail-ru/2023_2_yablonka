@@ -1,10 +1,54 @@
-name: Tests
+name: Pull Request CI
 
-on: [pull_request]
+on:
+  pull_request:
+    branches:
+      - master
+      - main
 
 jobs:
-  run-tests: 
-    runs-on: ['ubuntu-latest']
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: Install Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.21.1'
+          cache: false
+      
+      - name: Run linter
+        uses: golangci/golangci-lint-action@v3
+        with:
+          version: v1.54
+  
+  build:
+    name: Binary build test
+    needs: lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Go
+        uses: actions/setup-go@v4
+        with:
+          go-version-file: go.mod
+          cache-dependency-path: go.sum
+
+      - name: Build .env file
+        uses: ./.github/actions/build-dot-env
+
+      - name: Build the binary
+        run: go build -o yablonka-backend ./cmd/app/main.go
+ 
+  test:
+    name: Run tests
+    needs: [lint, build]
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -48,5 +92,3 @@ jobs:
         with:
           github_token: ${{ github.token }}
           branch: ${{ github.head_ref }}
-
-      
