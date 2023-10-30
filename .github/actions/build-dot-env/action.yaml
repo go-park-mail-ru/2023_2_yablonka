@@ -1,0 +1,38 @@
+name: "Build .env file for CI"
+description: "Builds a .env to be used for the build CI job"
+
+inputs:
+  jwt_secret:
+    description: "The JWT secret used for encoding JWT"
+    required: true
+  session_days:
+    description: "The day component of session duration"
+    required: true
+  session_hours:
+    description: "The hour component of session duration"
+    required: true
+  session_minutes:
+    description: "The minute component of session duration"
+    required: true
+  session_seconds:
+    description: "The second component of session duration"
+    required: true
+  session_id_length:
+    description: "The length of the session ID string"
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: "Build .env file"
+      shell: bash
+      run: |
+        echo "JWT_SECRET=\"$jwt_secret\"" > .env 
+        echo "SESSION_DURATION_DAYS=$session_days" > .env 
+        echo "SESSION_DURATION_HOURS=$session_hours" > .env
+        echo "SESSION_DURATION_MINUTES=$session_minutes" > .env
+        echo "SESSION_DURATION_SECONDS=$session_seconds" > .env
+        echo "SESSION_ID_LENGTH=$session_id_length" > .env

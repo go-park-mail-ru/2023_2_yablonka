@@ -71,6 +71,10 @@ func (bh BoardHandler) GetUserBoards(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Write(jsonResponse)
+	_, err = w.Write(jsonResponse)
+	if err != nil {
+		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.InternalServerErrorResponse))
+		return
+	}
 	r.Body.Close()
 }
