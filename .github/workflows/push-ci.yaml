@@ -205,13 +205,16 @@ jobs:
       - name: Build .env file
         uses: ./.github/actions/build-dot-env
         with:
-          location: ./internal/config
+          location: ./internal/config/
           jwt_secret: ${{ secrets.JWT_SECRET }}
           session_days: ${{ vars.SESSION_DURATION_DAYS }}
           session_hours: ${{ vars.SESSION_DURATION_HOURS }}
           session_minutes: ${{ vars.SESSION_DURATION_MINUTES }}
           session_seconds: ${{ vars.SESSION_DURATION_SECONDS }}
           session_id_length: ${{ vars.SESSION_ID_LENGTH }}
+
+      - name: Check .env file
+        run: cat ./internal/config/.env
 
       - name: Login to Docker Hub
         uses: docker/login-action@v3
@@ -228,4 +231,4 @@ jobs:
           context: .
           file: ./Dockerfile
           push: true
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/clockbox:latest
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/yablonka-backend:latest

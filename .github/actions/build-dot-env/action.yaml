@@ -43,6 +43,4 @@ runs:
 
     - name: "Verify file exists"
       shell: bash
-      run: |
-        echo "${{ inputs.location }}"
-        cat ${{ inputs.location }}.env
+      run: cat ${{ inputs.location }}.env
