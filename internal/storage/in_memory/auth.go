@@ -59,9 +59,9 @@ func (as LocalAuthStorage) CreateSession(ctx context.Context, session *entities.
 // GetSession
 // находит сессию по строке-токену
 // или возвращает ошибку apperrors.ErrSessionNotFound (401)
-func (as LocalAuthStorage) GetSession(ctx context.Context, sid string) (*entities.Session, error) {
+func (as LocalAuthStorage) GetSession(ctx context.Context, token string) (*entities.Session, error) {
 	as.mu.RLock()
-	session, ok := as.authData[sid]
+	session, ok := as.authData[token]
 	as.mu.RUnlock()
 	if !ok {
 		return nil, apperrors.ErrSessionNotFound

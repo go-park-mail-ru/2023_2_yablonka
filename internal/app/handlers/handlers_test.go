@@ -295,7 +295,7 @@ func Test_VerifyAuth(t *testing.T) {
 				PasswordHash: "d40040163489d60c9adcbb768a6aa7a48ecc4b091bc8b43328fd51a46492fe75",
 				Name:         "Никита",
 				Surname:      "Архаров",
-				ThumbnailURL: "https://sun1-27.userapi.com/s/v1/ig1/cAIfmwiDayww2WxVGPnIr5sHTSgXaf_567nuovSw_X4Cy9XAKrSVsAT2yAmJcJXDPkVOsXPW.jpg?size=50x50&quality=96&crop=351,248,540,540&ava=1",
+				AvatarURL:    "https://sun1-27.userapi.com/s/v1/ig1/cAIfmwiDayww2WxVGPnIr5sHTSgXaf_567nuovSw_X4Cy9XAKrSVsAT2yAmJcJXDPkVOsXPW.jpg?size=50x50&quality=96&crop=351,248,540,540&ava=1",
 			},
 			password:       "12345678",
 			authorized:     true,
@@ -330,7 +330,7 @@ func Test_VerifyAuth(t *testing.T) {
 				PasswordHash: "dd1ffd3fb76da152f41b103fb567910452708ad615b57876a63292797a041448",
 				Name:         "Даниил",
 				Surname:      "Капитанов",
-				ThumbnailURL: "https://sun1-47.userapi.com/s/v1/ig2/aby-Y8KQ-yfQPLdvO-gq-ZenU63Iiw3ULbNlimdfaqLauSOj1cJ2jLxfBDtBMLpBW5T0UhaLFpyLVxAoYuVZiPB8.jpg?size=50x50&quality=95&crop=0,0,400,400&ava=1",
+				AvatarURL:    "https://sun1-47.userapi.com/s/v1/ig2/aby-Y8KQ-yfQPLdvO-gq-ZenU63Iiw3ULbNlimdfaqLauSOj1cJ2jLxfBDtBMLpBW5T0UhaLFpyLVxAoYuVZiPB8.jpg?size=50x50&quality=95&crop=0,0,400,400&ava=1",
 			},
 			password:       "13579246",
 			authorized:     true,
@@ -439,7 +439,7 @@ func Test_VerifyAuth(t *testing.T) {
 				require.Empty(t, authedUser.PasswordHash)
 				require.Equal(t, test.user.Name, authedUser.Name)
 				require.Equal(t, test.user.Surname, authedUser.Surname)
-				require.Equal(t, test.user.ThumbnailURL, authedUser.ThumbnailURL)
+				require.Equal(t, test.user.AvatarURL, authedUser.AvatarURL)
 			}
 		})
 	}

@@ -33,5 +33,5 @@ type IUserService interface {
 	// UpdateUser
 	// обновляет пользователя в БД
 	// или возвращает ошибку apperrors.ErrUserNotFound (409)
-	UpdateUser(context.Context, dto.UpdatedUserInfo) (*entities.User, error)
+	UpdateUser(context.Context, entities.User) (*entities.User, error)
 }

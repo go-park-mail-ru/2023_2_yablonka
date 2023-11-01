@@ -8,6 +8,7 @@ import (
 	"server/internal/pkg/entities"
 
 	sq "github.com/Masterminds/squirrel"
+	pgx "github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -91,22 +92,50 @@ func (s *PostgreSQLBoardStorage) GetBoard(ctx context.Context, board dto.Individ
 	return nil, nil
 }
 
-func (s *PostgreSQLBoardStorage) CreateBoard(ctx context.Context, board dto.NewBoardInfo) (*entities.Board, error) {
-	// TODO Нужна проверка по количеству доступных пользователю досок, это наверное поле в User
+func (s *PostgreSQLBoardStorage) Create(ctx context.Context, info dto.NewBoardInfo) (*entities.Board, error) {
+	query1, args, err := sq.
+		Insert("public.Board").
+		Columns("id_workspace", "name", "description", "thumbnail_url").
+		Values(info.WorkspaceID, info.Name, info.Description, info.ThumbnailURL).
+		Suffix("RETURNING id").
+		ToSql()
+	if err != nil {
+		return nil, apperrors.ErrCouldntBuildQuery
+	}
 
-	// s.mu.Lock()
-	// newBoard := entities.Board{
-	// 	ID:           s.GetHighestID() + 1,
-	// 	Name:         board.Name,
-	// 	OwnerID:      board.OwnerID,
-	// 	ThumbnailURL: "",
-	// }
+	tx, err := s.db.BeginTx(ctx, pgx.TxOptions{})
+	if err != nil {
+		return nil, apperrors.ErrCouldntBuildQuery
+	}
 
-	// s.boardData[board.OwnerEmail] = append(s.boardData[board.OwnerEmail], &newBoard)
-	// s.mu.Unlock()
+	var boardID int
 
-	// return &newBoard, nil
-	return nil, nil
+	row := tx.QueryRow(ctx, query1, args...)
+	if row.Scan(&boardID) != nil {
+		tx.Rollback(ctx)
+		return nil, apperrors.ErrUserNotCreated
+	}
+
+	query2, args, err := sq.
+		Insert("public.Board_User").
+		Columns("id_board", "id_user").
+		Values(boardID, info.OwnerID).
+		ToSql()
+
+	if err != nil {
+		return nil, apperrors.ErrCouldntBuildQuery
+	}
+
+	_, err = tx.Exec(ctx, query2, args...)
+
+	if err != nil {
+		tx.Rollback(ctx)
+		return nil, apperrors.ErrUserNotCreated
+	}
+
+	tx.Commit(ctx)
+
+	return &entities.Board{}, nil
 }
 
 func (s *PostgreSQLBoardStorage) DeleteBoard(ctx context.Context, board dto.IndividualBoardInfo) error {

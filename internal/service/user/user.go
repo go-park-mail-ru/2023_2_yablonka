@@ -66,25 +66,25 @@ func (us AuthUserService) RegisterUser(ctx context.Context, info dto.SignupInfo)
 		return nil, apperrors.ErrUserAlreadyExists
 	}
 
-	return us.storage.CreateUser(ctx, info)
+	return us.storage.Create(ctx, info)
 }
 
 // UpdateUser
 // обновляет пользователя в БД
 // или возвращает ошибку apperrors.ErrUserNotFound (409)
-func (us UserService) UpdateUser(ctx context.Context, info dto.UpdatedUserInfo) (*entities.User, error) {
-	_, err := us.storage.GetUserByLogin(ctx, info.Email)
+func (us UserService) UpdateUser(ctx context.Context, updatedUser entities.User) (*entities.User, error) {
+	_, err := us.storage.GetUserByLogin(ctx, updatedUser.Email)
 
 	if err == nil {
 		return nil, apperrors.ErrUserAlreadyExists
 	}
 
-	return us.storage.UpdateUser(ctx, info)
+	return us.storage.Update(ctx, updatedUser)
 }
 
 // DeleteUser
 // удаляет данного пользователя по id
 // или возвращает ошибку apperrors.ErrUserNotFound (409)
 func (us AuthUserService) DeleteUser(ctx context.Context, uid uint64) error {
-	return us.storage.DeleteUser(ctx, uid)
+	return us.storage.Delete(ctx, uid)
 }

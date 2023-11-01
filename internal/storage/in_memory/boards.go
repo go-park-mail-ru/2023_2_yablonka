@@ -68,11 +68,11 @@ func NewBoardStorage() *LocalBoardStorage {
 // GetUserOwnedBoards
 // находит все доски, созданные пользователем
 // или возвращает ошибку apperrors.ErrUserNotFound (401)
-func (s *LocalBoardStorage) GetUserOwnedBoards(ctx context.Context, userInfo dto.VerifiedAuthInfo) (*[]entities.Board, error) {
+func (s *LocalBoardStorage) GetUserOwnedBoards(ctx context.Context, info dto.VerifiedAuthInfo) (*[]entities.Board, error) {
 	var boards []entities.Board
 	s.mu.RLock()
 	for _, board := range s.boardData {
-		if board.Owner.ID == userInfo.UserID {
+		if board.Owner.ID == info.UserID {
 			// userFound = true
 			boards = append(boards, board)
 		}
@@ -85,12 +85,12 @@ func (s *LocalBoardStorage) GetUserOwnedBoards(ctx context.Context, userInfo dto
 // GetUserGuestBoards
 // находит все доски, в которых участвует пользователь
 // или возвращает ошибку apperrors.ErrUserNotFound (401)
-func (s *LocalBoardStorage) GetUserGuestBoards(ctx context.Context, userInfo dto.VerifiedAuthInfo) (*[]entities.Board, error) {
+func (s *LocalBoardStorage) GetUserGuestBoards(ctx context.Context, info dto.VerifiedAuthInfo) (*[]entities.Board, error) {
 	var boards []entities.Board
 	s.mu.RLock()
 	for _, board := range s.boardData {
 		for _, guest := range board.Guests {
-			if guest.ID == userInfo.UserID {
+			if guest.ID == info.UserID {
 				boards = append(boards, board)
 			}
 		}
@@ -114,7 +114,7 @@ func (s *LocalBoardStorage) GetHighestID() uint64 {
 	return highest
 }
 
-func (s *LocalBoardStorage) GetBoard(ctx context.Context, board dto.IndividualBoardInfo) (*entities.Board, error) {
+func (s *LocalBoardStorage) GetById(ctx context.Context, id int) (*entities.Board, error) {
 	// TODO Implement error
 	// s.mu.RLock()
 	// userBoards, ok := s.boardData[board.OwnerEmail]
@@ -132,7 +132,7 @@ func (s *LocalBoardStorage) GetBoard(ctx context.Context, board dto.IndividualBo
 	return nil, nil
 }
 
-func (s *LocalBoardStorage) CreateBoard(ctx context.Context, board dto.NewBoardInfo) (*entities.Board, error) {
+func (s *LocalBoardStorage) Create(ctx context.Context, info dto.NewBoardInfo) (*entities.Board, error) {
 	// TODO Нужна проверка по количеству доступных пользователю досок, это наверное поле в User
 
 	// s.mu.Lock()
@@ -150,7 +150,11 @@ func (s *LocalBoardStorage) CreateBoard(ctx context.Context, board dto.NewBoardI
 	return nil, nil
 }
 
-func (s *LocalBoardStorage) DeleteBoard(ctx context.Context, board dto.IndividualBoardInfo) error {
+func (s *LocalBoardStorage) Update(ctx context.Context, id int) (*entities.Board, error) {
+	return nil, nil
+}
+
+func (s *LocalBoardStorage) Delete(ctx context.Context, id int) error {
 	// TODO Implement later
 	// s.mu.RLock()
 	// userBoards, ok := s.boardData[board.OwnerEmail]
