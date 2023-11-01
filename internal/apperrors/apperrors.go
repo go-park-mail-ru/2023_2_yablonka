@@ -33,6 +33,10 @@ var (
 	ErrUserAlreadyExists = errors.New("user with this email already exists")
 	// ErrUserNotCreated ошибка: не удалось добавить пользователя в БД
 	ErrUserNotCreated = errors.New("user couldn't be created")
+	// ErrUserNotUpdated ошибка: не удалось обновить пользователя в БД
+	ErrUserNotUpdated = errors.New("user couldn't be updated")
+	// ErrUserNotDeleted ошибка: не удалось обновить пользователя в БД
+	ErrUserNotDeleted = errors.New("user couldn't be deleted")
 )
 
 // Ошибки, связанные с AuthService

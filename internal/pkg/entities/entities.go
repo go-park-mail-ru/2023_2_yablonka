@@ -16,11 +16,11 @@ type Session struct {
 // структура для хранения пользователя
 type User struct {
 	ID           uint64 `json:"user_id"`
-	Email        string `json:"email"`
+	Email        string `json:"email" valid:"type(string),email"`
 	PasswordHash string `json:"-"`
 	Name         string `json:"name"`
 	Surname      string `json:"surname"`
-	ThumbnailURL string `json:"thumbnail_url"`
+	AvatarURL    string `json:"avatar_url"`
 }
 
 // Board

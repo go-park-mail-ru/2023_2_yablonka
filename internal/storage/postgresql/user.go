@@ -22,13 +22,9 @@ func NewUserStorage(db *pgxpool.Pool) *PostgresUserStorage {
 	}
 }
 
-func (s *PostgresUserStorage) GetHighestID() uint64 {
-	return 0
-}
-
 // GetUserByLogin
 // находит пользователя в БД по почте
-// или возвращает ошибку apperrors.ErrUserNotFound (401)
+// или возвращает ошибки ...
 func (s *PostgresUserStorage) GetUserByLogin(ctx context.Context, login string) (*entities.User, error) {
 	sql, args, err := sq.
 		Select(allUserFields...).
@@ -52,7 +48,7 @@ func (s *PostgresUserStorage) GetUserByLogin(ctx context.Context, login string) 
 
 // GetUserByID
 // находит пользователя в БД по его id
-// или возвращает ошибку apperrors.ErrUserNotFound (401)
+// или возвращает ошибки ...
 func (s *PostgresUserStorage) GetUserByID(ctx context.Context, uid uint64) (*entities.User, error) {
 	sql, args, err := sq.
 		Select(allUserFields...).
@@ -76,14 +72,14 @@ func (s *PostgresUserStorage) GetUserByID(ctx context.Context, uid uint64) (*ent
 
 // CreateUser
 // создает нового пользователя в БД по данным
-// или возвращает ошибку apperrors.ErrUserAlreadyExists (409)
-func (s *PostgresUserStorage) CreateUser(ctx context.Context, signup dto.SignupInfo) (*entities.User, error) {
+// или возвращает ошибки ...
+func (s *PostgresUserStorage) Create(ctx context.Context, info dto.SignupInfo) (*entities.User, error) {
 	sql, args, err := sq.
 		Insert("public.User").
 		Columns("email", "password_hash").
-		Values(signup.Email, signup.PasswordHash).
+		Values(info.Email, info.PasswordHash).
 		PlaceholderFormat(sq.Dollar).
-		Suffix("RETURNING id, email").
+		Suffix("RETURNING id").
 		ToSql()
 
 	if err != nil {
@@ -93,23 +89,63 @@ func (s *PostgresUserStorage) CreateUser(ctx context.Context, signup dto.SignupI
 	query := s.db.QueryRow(ctx, sql, args...)
 
 	user := entities.User{}
-	if query.Scan(&user.ID, &user.Email) != nil {
+	if query.Scan(&user.ID) != nil {
 		return nil, apperrors.ErrUserNotCreated
 	}
+
+	user.Email = info.Email
+	user.PasswordHash = info.PasswordHash
 
 	return &user, nil
 }
 
-// UpdateUser
+// Update
 // обновляет пользователя в БД
-// или возвращает ошибку apperrors.ErrUserNotFound (409)
-func (s *PostgresUserStorage) UpdateUser(ctx context.Context, updatedInfo dto.UpdatedUserInfo) (*entities.User, error) {
-	return nil, apperrors.ErrUserNotFound
+// или возвращает ошибки ...
+func (s *PostgresUserStorage) Update(ctx context.Context, updatedUser entities.User) (*entities.User, error) {
+	sql, args, err := sq.
+		Update("public.User").
+		Set("email", updatedUser.Email).
+		Set("name", updatedUser.Name).
+		Set("surname", updatedUser.Surname).
+		Set("avatar_url", updatedUser.AvatarURL).
+		Set("password_hash", updatedUser.PasswordHash).
+		Where(sq.Eq{"id": updatedUser.ID}).
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
+
+	if err != nil {
+		return nil, apperrors.ErrCouldntBuildQuery
+	}
+
+	query := s.db.QueryRow(ctx, sql, args...)
+
+	if query.Scan() != nil {
+		return nil, apperrors.ErrUserNotUpdated
+	}
+
+	return &updatedUser, nil
 }
 
-// DeleteUser
+// Delete
 // удаляет данного пользователя в БД по id
-// или возвращает ошибку apperrors.ErrUserNotFound (409)
+// или возвращает ошибки ...
 func (s *PostgresUserStorage) DeleteUser(ctx context.Context, id uint64) error {
-	return apperrors.ErrUserNotFound
+	sql, args, err := sq.
+		Delete("public.User").
+		Where(sq.Eq{"id": id}).
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
+
+	if err != nil {
+		return apperrors.ErrCouldntBuildQuery
+	}
+
+	query := s.db.QueryRow(ctx, sql, args...)
+
+	if query.Scan() != nil {
+		return apperrors.ErrUserNotDeleted
+	}
+
+	return nil
 }

@@ -46,9 +46,11 @@ type IndividualBoardInfo struct {
 // NewBoardInfo
 // DTO для новой доски
 type NewBoardInfo struct {
-	Name       string `json:"name"`
-	OwnerID    uint64 `json:"owner_id"`
-	OwnerEmail string `json:"owner_email"`
+	Name         string `json:"name"`
+	OwnerID      uint64 `json:"owner_id"`
+	WorkspaceID  uint64 `json:"workspace_id"`
+	Description  string `json:"description"`
+	ThumbnailURL string `json:"thumbnail_url"`
 }
 
 // NewWorkspaceInfo
@@ -101,9 +103,11 @@ type UserInfo struct {
 // UpdatedUserInfo
 // DTO изменённой информации о пользователе
 type UpdatedUserInfo struct {
-	Email   string `json:"email" valid:"type(string),email"`
-	Name    string `json:"name"`
-	Surname string `json:"surname"`
+	Email        string `json:"email" valid:"type(string),email"`
+	PasswordHash string `json:"-"`
+	Name         string `json:"name"`
+	Surname      string `json:"surname"`
+	AvatarURL    string `json:"avatar_url"`
 }
 
 type JSONMap map[string]interface{}
