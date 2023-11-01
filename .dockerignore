@@ -1,0 +1,9 @@
+deployments
+.env
+.git*
+coverage
+main.exe
+main
+test_commands.txt
+README.md
+.github

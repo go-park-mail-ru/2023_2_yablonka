@@ -14,7 +14,7 @@ func ErrorHandler(next http.Handler) http.Handler {
 		if ok {
 			w.WriteHeader(errorResponse.Code)
 			response := apperrors.ErrorJSON(errorResponse)
-			w.Write(response)
+			_, _ = w.Write(response)
 			r.Body.Close()
 		}
 	})
