@@ -130,7 +130,7 @@ func (s *PostgresUserStorage) Update(ctx context.Context, updatedUser entities.U
 // Delete
 // удаляет данного пользователя в БД по id
 // или возвращает ошибки ...
-func (s *PostgresUserStorage) DeleteUser(ctx context.Context, id uint64) error {
+func (s *PostgresUserStorage) Delete(ctx context.Context, id uint64) error {
 	sql, args, err := sq.
 		Delete("public.User").
 		Where(sq.Eq{"id": id}).
