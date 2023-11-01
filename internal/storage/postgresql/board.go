@@ -112,7 +112,10 @@ func (s *PostgreSQLBoardStorage) Create(ctx context.Context, info dto.NewBoardIn
 
 	row := tx.QueryRow(ctx, query1, args...)
 	if row.Scan(&boardID) != nil {
-		tx.Rollback(ctx)
+		err = tx.Rollback(ctx)
+		for err != nil {
+			err = tx.Rollback(ctx)
+		}
 		return nil, apperrors.ErrUserNotCreated
 	}
 
