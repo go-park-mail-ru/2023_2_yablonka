@@ -129,11 +129,21 @@ func (s *PostgreSQLBoardStorage) Create(ctx context.Context, info dto.NewBoardIn
 	_, err = tx.Exec(ctx, query2, args...)
 
 	if err != nil {
-		tx.Rollback(ctx)
+		err = tx.Rollback(ctx)
+		for err != nil {
+			err = tx.Rollback(ctx)
+		}
 		return nil, apperrors.ErrUserNotCreated
 	}
 
-	tx.Commit(ctx)
+	err = tx.Commit(ctx)
+	if err != nil {
+		err = tx.Rollback(ctx)
+		for err != nil {
+			err = tx.Rollback(ctx)
+		}
+		return nil, apperrors.ErrUserNotCreated
+	}
 
 	return &entities.Board{}, nil
 }
