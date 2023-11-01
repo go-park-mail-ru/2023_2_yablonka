@@ -14,8 +14,8 @@ CREATE TABLE IF NOT EXISTS public.reaction
         REFERENCES public."user" (id) MATCH SIMPLE
         ON UPDATE NO ACTION
         ON DELETE NO ACTION
-        NOT VALID
-    CONSTRAINT reaction_content_length_check CHECK (length(surname) <= 2) NOT VALID
+        NOT VALID,
+    CONSTRAINT reaction_content_length_check CHECK (length(content) <= 2) NOT VALID
 )
 
 ---- create above / drop below ----

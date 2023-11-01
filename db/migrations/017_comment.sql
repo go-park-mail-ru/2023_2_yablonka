@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS public.comment
         REFERENCES public."user" (id) MATCH SIMPLE
         ON UPDATE NO ACTION
         ON DELETE NO ACTION
-        NOT VALID
+        NOT VALID,
     CONSTRAINT content_length_check CHECK (length(content) <= 2000) NOT VALID
 )
 

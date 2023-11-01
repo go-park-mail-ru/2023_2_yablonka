@@ -5,8 +5,8 @@ CREATE TABLE IF NOT EXISTS public.tag
     color text NOT NULL DEFAULT 'FFFFFF',
     CONSTRAINT tag_pkey PRIMARY KEY (id),
     CONSTRAINT tag_name_id_name1_id1_key UNIQUE (name),
-    CONSTRAINT tag_color_check CHECK (color LIKE'%[0-9A-Fa-f]%') NOT VALID
-    CONSTRAINT tag_color_length_check CHECK (length(color) <= 6) NOT VALID
+    CONSTRAINT tag_color_check CHECK (color LIKE'%[0-9A-Fa-f]%') NOT VALID,
+    CONSTRAINT tag_color_length_check CHECK (length(color) <= 6) NOT VALID,
     CONSTRAINT tag_name_length_check CHECK (length(name) <= 35) NOT VALID
 )
 

@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS public.board
         REFERENCES public.workspace (id) MATCH SIMPLE
         ON UPDATE NO ACTION
         ON DELETE NO ACTION
-        NOT VALID
+        NOT VALID,
     CONSTRAINT board_name_length_check CHECK (length(name) <= 150) NOT VALID
 )
 

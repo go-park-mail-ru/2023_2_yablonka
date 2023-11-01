@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS public.checklist
         ON UPDATE NO ACTION
         ON DELETE NO ACTION
         NOT VALID,
-    CONSTRAINT checklist_list_position_check CHECK (list_position >= 0) NOT VALID
+    CONSTRAINT checklist_list_position_check CHECK (list_position >= 0) NOT VALID,
     CONSTRAINT checklist_name_length_check CHECK (length(name) <= 100) NOT VALID
 )
 

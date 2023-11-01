@@ -8,8 +8,8 @@ CREATE TABLE IF NOT EXISTS public.session
         REFERENCES public."user" (id) MATCH SIMPLE
         ON UPDATE NO ACTION
         ON DELETE NO ACTION
-        NOT VALID
-    CONSTRAINT session_token_length_check CHECK (length(surname) <= 64) NOT VALID
+        NOT VALID,
+    CONSTRAINT session_token_length_check CHECK (length(token) <= 64) NOT VALID
 )
 
 ---- create above / drop below ----

@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS public.list
         ON UPDATE NO ACTION
         ON DELETE NO ACTION
         NOT VALID,
-    CONSTRAINT list_list_position_check CHECK (list_position >= 0) NOT VALID
+    CONSTRAINT list_list_position_check CHECK (list_position >= 0) NOT VALID,
     CONSTRAINT column_name_length_check CHECK (length(name) <= 150) NOT VALID
 )
 
