@@ -3,7 +3,7 @@ CREATE TABLE IF NOT EXISTS public.reaction
     id serial NOT NULL,
     id_comment serial NOT NULL,
     id_user serial NOT NULL,
-    content character varying(2) NOT NULL,
+    content text NOT NULL,
     CONSTRAINT reaction_pkey PRIMARY KEY (id),
     CONSTRAINT reaction_id_comment_fkey FOREIGN KEY (id_comment)
         REFERENCES public.comment (id) MATCH SIMPLE
@@ -15,6 +15,7 @@ CREATE TABLE IF NOT EXISTS public.reaction
         ON UPDATE NO ACTION
         ON DELETE NO ACTION
         NOT VALID
+    CONSTRAINT reaction_content_length_check CHECK (length(surname) <= 2) NOT VALID
 )
 
 ---- create above / drop below ----

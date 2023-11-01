@@ -2,7 +2,7 @@ CREATE TABLE IF NOT EXISTS public.board
 (
     id serial NOT NULL,
     id_workspace serial NOT NULL,
-    name character varying(150) NOT NULL DEFAULT 'Доска',
+    name text NOT NULL DEFAULT 'Доска',
     description text,
     date_created timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
     thumbnail_url text,
@@ -12,6 +12,7 @@ CREATE TABLE IF NOT EXISTS public.board
         ON UPDATE NO ACTION
         ON DELETE NO ACTION
         NOT VALID
+    CONSTRAINT board_name_length_check CHECK (length(name) <= 150) NOT VALID
 )
 
 ---- create above / drop below ----

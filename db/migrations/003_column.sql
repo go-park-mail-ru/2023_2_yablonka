@@ -2,7 +2,7 @@ CREATE TABLE IF NOT EXISTS public.list
 (
     id serial NOT NULL,
     id_board serial NOT NULL,
-    name character varying(150) NOT NULL DEFAULT 'Столбец',
+    name text NOT NULL DEFAULT 'Столбец',
     description text,
     list_position smallint NOT NULL,
     CONSTRAINT list_pkey PRIMARY KEY (id),
@@ -12,6 +12,7 @@ CREATE TABLE IF NOT EXISTS public.list
         ON DELETE NO ACTION
         NOT VALID,
     CONSTRAINT list_list_position_check CHECK (list_position >= 0) NOT VALID
+    CONSTRAINT column_name_length_check CHECK (length(name) <= 150) NOT VALID
 )
 
 ---- create above / drop below ----

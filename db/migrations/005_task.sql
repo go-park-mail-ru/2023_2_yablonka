@@ -4,7 +4,7 @@ CREATE TABLE IF NOT EXISTS public.task
     id_list serial NOT NULL,
     date_created timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
     description text,
-    name character varying(150) NOT NULL DEFAULT 'Задача',
+    name text NOT NULL DEFAULT 'Задача',
     "start" timestamp without time zone,
     "end" timestamp without time zone,
     list_postition smallint NOT NULL,
@@ -15,6 +15,7 @@ CREATE TABLE IF NOT EXISTS public.task
         ON DELETE NO ACTION
         NOT VALID,
     CONSTRAINT task_list_postition_check CHECK (list_postition >= 0) NOT VALID
+    CONSTRAINT task_name_length_check CHECK (length(name) <= 150) NOT VALID
 )
 
 ---- create above / drop below ----

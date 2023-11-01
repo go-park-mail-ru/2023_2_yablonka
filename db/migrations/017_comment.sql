@@ -16,6 +16,7 @@ CREATE TABLE IF NOT EXISTS public.comment
         ON UPDATE NO ACTION
         ON DELETE NO ACTION
         NOT VALID
+    CONSTRAINT content_length_check CHECK (length(content) <= 2000) NOT VALID
 )
 
 ---- create above / drop below ----
