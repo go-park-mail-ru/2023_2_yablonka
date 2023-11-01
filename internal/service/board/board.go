@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"server/internal/pkg/dto"
+	"server/internal/pkg/entities"
 	"server/internal/storage"
 )
 
@@ -62,14 +63,14 @@ func (us BoardService) GetUserGuestBoards(ctx context.Context, userInfo dto.Veri
 	return boardInfo, nil
 }
 
-// func (us BoardService) GetBoard(ctx context.Context, board dto.IndividualBoardInfo) (*entities.Board, error) {
-// 	return us.storage.GetBoard(board)
-// }
+func (bs BoardService) GetBoard(ctx context.Context, board dto.IndividualBoardInfo) (*entities.Board, error) {
+	return bs.storage.GetById(ctx, board.ID)
+}
 
-// func (us BoardService) CreateBoard(ctx context.Context, board dto.NewBoardInfo) (*entities.Board, error) {
-// 	return us.storage.CreateBoard(board)
-// }
+func (us BoardService) CreateBoard(ctx context.Context, board dto.NewBoardInfo) (*entities.Board, error) {
+	return us.storage.Create(ctx, board)
+}
 
-// func (us BoardService) UpdateBoard(ctx context.Context, board dto.IndividualBoardInfo) (*entities.Board, error) {
-// 	return us.storage.UpdateBoard(board)
-// }
+func (us BoardService) UpdateBoard(ctx context.Context, board dto.IndividualBoardInfo) (*entities.Board, error) {
+	return us.storage.Update(ctx, board.ID)
+}

@@ -114,7 +114,7 @@ func (s *LocalBoardStorage) GetHighestID() uint64 {
 	return highest
 }
 
-func (s *LocalBoardStorage) GetById(ctx context.Context, id int) (*entities.Board, error) {
+func (s *LocalBoardStorage) GetById(ctx context.Context, id uint64) (*entities.Board, error) {
 	// TODO Implement error
 	// s.mu.RLock()
 	// userBoards, ok := s.boardData[board.OwnerEmail]
@@ -150,11 +150,11 @@ func (s *LocalBoardStorage) Create(ctx context.Context, info dto.NewBoardInfo) (
 	return nil, nil
 }
 
-func (s *LocalBoardStorage) Update(ctx context.Context, id int) (*entities.Board, error) {
+func (s *LocalBoardStorage) Update(ctx context.Context, id uint64) (*entities.Board, error) {
 	return nil, nil
 }
 
-func (s *LocalBoardStorage) Delete(ctx context.Context, id int) error {
+func (s *LocalBoardStorage) Delete(ctx context.Context, id uint64) error {
 	// TODO Implement later
 	// s.mu.RLock()
 	// userBoards, ok := s.boardData[board.OwnerEmail]

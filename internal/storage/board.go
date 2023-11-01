@@ -20,11 +20,11 @@ type IBoardStorage interface {
 	// GetById
 	// находит все доски, созданные пользователем
 	// или возвращает ошибки ...
-	GetById(ctx context.Context, id int) (*entities.Board, error)
+	GetById(ctx context.Context, id uint64) (*entities.Board, error)
 	// Update
 	// находит все доски, созданные пользователем
 	// или возвращает ошибки ...
-	Update(ctx context.Context, id int) (*entities.Board, error)
+	Update(ctx context.Context, id uint64) (*entities.Board, error)
 	// Create
 	// находит все доски, созданные пользователем
 	// или возвращает ошибки ...
@@ -32,5 +32,5 @@ type IBoardStorage interface {
 	// Delete
 	// находит все доски, созданные пользователем
 	// или возвращает ошибки ...
-	Delete(ctx context.Context, id int) error
+	Delete(ctx context.Context, id uint64) error
 }

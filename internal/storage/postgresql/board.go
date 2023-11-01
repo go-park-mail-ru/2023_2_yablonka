@@ -74,7 +74,7 @@ func (s *PostgreSQLBoardStorage) GetHighestID() uint64 {
 	return 0
 }
 
-func (s *PostgreSQLBoardStorage) GetBoard(ctx context.Context, board dto.IndividualBoardInfo) (*entities.Board, error) {
+func (s *PostgreSQLBoardStorage) GetById(ctx context.Context, id uint64) (*entities.Board, error) {
 	// TODO Implement error
 	// s.mu.RLock()
 	// userBoards, ok := s.boardData[board.OwnerEmail]
@@ -138,7 +138,11 @@ func (s *PostgreSQLBoardStorage) Create(ctx context.Context, info dto.NewBoardIn
 	return &entities.Board{}, nil
 }
 
-func (s *PostgreSQLBoardStorage) DeleteBoard(ctx context.Context, board dto.IndividualBoardInfo) error {
+func (s *PostgreSQLBoardStorage) Update(ctx context.Context, id uint64) (*entities.Board, error) {
+	return nil, nil
+}
+
+func (s *PostgreSQLBoardStorage) Delete(ctx context.Context, id uint64) error {
 	// TODO Implement later
 	// s.mu.RLock()
 	// userBoards, ok := s.boardData[board.OwnerEmail]
