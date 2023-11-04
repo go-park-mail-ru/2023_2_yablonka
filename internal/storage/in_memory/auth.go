@@ -2,8 +2,6 @@ package in_memory
 
 import (
 	"context"
-	"crypto/rand"
-	"math/big"
 	"server/internal/apperrors"
 	"server/internal/pkg/entities"
 	"sync"
@@ -40,20 +38,16 @@ func NewAuthStorage() *LocalAuthStorage {
 // CreateSession
 // сохраняет сессию в хранилище, возвращает ID сесссии для куки
 // или возвращает ошибку apperrors.ErrTokenNotGenerated (500)
-func (as LocalAuthStorage) CreateSession(ctx context.Context, session *entities.Session, sidLength uint) (string, error) {
+func (as LocalAuthStorage) CreateSession(ctx context.Context, session *entities.Session) error {
 	// for sessionID, storedSession := range as.authData {
 	// 	if storedSession.UserID == session.UserID {
 	// 		return "", apperrors.ErrSessionExists
 	// 	}
 	// }
-	sessionID, err := generateSessionID(sidLength)
-	if err != nil {
-		return "", apperrors.ErrTokenNotGenerated
-	}
 	as.mu.Lock()
-	as.authData[sessionID] = session
+	as.authData[session.Token] = session
 	as.mu.Unlock()
-	return sessionID, nil
+	return nil
 }
 
 // GetSession
@@ -72,31 +66,16 @@ func (as LocalAuthStorage) GetSession(ctx context.Context, token string) (*entit
 // DeleteSession
 // удаляет сессию по ID из хранилища, если она существует
 // или возвращает ошибку apperrors.ErrSessionNotFound (401)
-func (as LocalAuthStorage) DeleteSession(ctx context.Context, sid string) error {
+func (as LocalAuthStorage) DeleteSession(ctx context.Context, token string) error {
 	as.mu.RLock()
-	_, ok := as.authData[sid]
+	_, ok := as.authData[token]
 	as.mu.RUnlock()
 	if !ok {
 		return apperrors.ErrSessionNotFound
 	}
 	as.mu.Lock()
-	as.authData[sid] = nil
-	delete(as.authData, sid)
+	as.authData[token] = nil
+	delete(as.authData, token)
 	as.mu.Unlock()
 	return nil
-}
-
-// GenerateSessionID
-// возвращает alphanumeric строку, собранную криптографически безопасным PRNG
-func generateSessionID(n uint) (string, error) {
-	letterRunes := []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
-	buf := make([]rune, n)
-	for i := range buf {
-		j, err := rand.Int(rand.Reader, big.NewInt(int64(len(letterRunes))))
-		if err != nil {
-			return "", err
-		}
-		buf[i] = letterRunes[j.Int64()]
-	}
-	return string(buf), nil
 }

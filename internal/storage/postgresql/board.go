@@ -27,22 +27,38 @@ func NewBoardStorage(db *pgxpool.Pool) *PostgreSQLBoardStorage {
 // GetUserOwnedBoards
 // находит все доски, созданные пользователем
 // или возвращает ошибку apperrors.ErrUserNotFound (401)
+<<<<<<< Updated upstream
 func (s *PostgreSQLBoardStorage) GetUserOwnedBoards(ctx context.Context, userInfo dto.VerifiedAuthInfo) (*[]entities.Board, error) {
+=======
+func (s *PostgreSQLBoardStorage) GetUserOwnedBoards(ctx context.Context, userID uint64) (*[]entities.Board, error) {
+>>>>>>> Stashed changes
 	sql, args, err := sq.
 		Select(allBoardFields...).
 		From("public.Board").
 		Join("public.Board_User").
+<<<<<<< Updated upstream
 		Where(sq.Eq{"public.Board_User.id_user": userInfo.UserID}).
 		ToSql()
 
 	if err != nil {
 		return nil, apperrors.ErrCouldntBuildQuery
+=======
+		Where(sq.Eq{"public.Board_User.id_user": userID}).
+		ToSql()
+
+	if err != nil {
+		return nil, apperrors.ErrCouldNotBuildQuery
+>>>>>>> Stashed changes
 	}
 
 	rows, err := s.db.Query(ctx, sql, args...)
 
 	if err != nil {
+<<<<<<< Updated upstream
 		return nil, apperrors.ErrCouldntBuildQuery
+=======
+		return nil, apperrors.ErrCouldNotBuildQuery
+>>>>>>> Stashed changes
 	}
 
 	defer rows.Close()
@@ -66,6 +82,7 @@ func (s *PostgreSQLBoardStorage) GetUserOwnedBoards(ctx context.Context, userInf
 // GetUserGuestBoards
 // находит все доски, в которых участвует пользователь
 // или возвращает ошибку apperrors.ErrUserNotFound (401)
+<<<<<<< Updated upstream
 func (s *PostgreSQLBoardStorage) GetUserGuestBoards(ctx context.Context, userInfo dto.VerifiedAuthInfo) (*[]entities.Board, error) {
 	return nil, nil
 }
@@ -74,6 +91,12 @@ func (s *PostgreSQLBoardStorage) GetHighestID() uint64 {
 	return 0
 }
 
+=======
+func (s *PostgreSQLBoardStorage) GetUserGuestBoards(ctx context.Context, userID uint64) (*[]entities.Board, error) {
+	return nil, nil
+}
+
+>>>>>>> Stashed changes
 func (s *PostgreSQLBoardStorage) GetById(ctx context.Context, id uint64) (*entities.Board, error) {
 	// TODO Implement error
 	// s.mu.RLock()
@@ -100,12 +123,20 @@ func (s *PostgreSQLBoardStorage) Create(ctx context.Context, info dto.NewBoardIn
 		Suffix("RETURNING id").
 		ToSql()
 	if err != nil {
+<<<<<<< Updated upstream
 		return nil, apperrors.ErrCouldntBuildQuery
+=======
+		return nil, apperrors.ErrCouldNotBuildQuery
+>>>>>>> Stashed changes
 	}
 
 	tx, err := s.db.BeginTx(ctx, pgx.TxOptions{})
 	if err != nil {
+<<<<<<< Updated upstream
 		return nil, apperrors.ErrCouldntBuildQuery
+=======
+		return nil, apperrors.ErrCouldNotBuildQuery
+>>>>>>> Stashed changes
 	}
 
 	var boardID int
@@ -126,7 +157,11 @@ func (s *PostgreSQLBoardStorage) Create(ctx context.Context, info dto.NewBoardIn
 		ToSql()
 
 	if err != nil {
+<<<<<<< Updated upstream
 		return nil, apperrors.ErrCouldntBuildQuery
+=======
+		return nil, apperrors.ErrCouldNotBuildQuery
+>>>>>>> Stashed changes
 	}
 
 	_, err = tx.Exec(ctx, query2, args...)

@@ -8,6 +8,7 @@ import (
 // Session
 // структура для хранения сессии
 type Session struct {
+	Token      string
 	UserID     uint64
 	ExpiryDate time.Time
 }
@@ -32,17 +33,25 @@ type Board struct {
 	ThumbnailURL string         `json:"thumbnail_url"`
 	Guests       []dto.UserInfo `json:"guests"`
 }
+<<<<<<< Updated upstream
+=======
+<<<<<<< Updated upstream
+=======
 
 // Board
 // структура для хранения доски
 type Workspace struct {
-	ID          uint64         `json:"board_id"`
-	Name        string         `json:"name"`
-	Description string         `json:"description"`
-	DateCreated string         `json:"thumbnail_url"`
-	Guests      []dto.UserInfo `json:"guests"`
+	ID           uint64 `json:"board_id"`
+	Name         string `json:"name"`
+	Description  string `json:"description"`
+	DateCreated  string `json:"date_created"`
+	ThumbnailURL string `json:"thumbnail_url"`
+	Users        string `json:"users"`
+	Boards       string `json:"boards"`
 }
 
 func (u *User) TableName() string {
 	return "user"
 }
+>>>>>>> Stashed changes
+>>>>>>> Stashed changes

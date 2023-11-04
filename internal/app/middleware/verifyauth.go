@@ -19,13 +19,13 @@ func AuthMiddleware(as service.IAuthService, us service.IUserAuthService) func(h
 				return
 			}
 			token := cookie.Value
-			userInfo, err := as.VerifyAuth(rCtx, token)
+			userID, err := as.VerifyAuth(rCtx, token)
 			if err != nil {
 				*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.ErrorMap[err]))
 				return
 			}
 
-			userObj, err := us.GetUserByID(rCtx, userInfo.UserID)
+			userObj, err := us.GetUserByID(rCtx, userID)
 
 			if errors.Is(err, apperrors.ErrUserNotFound) {
 				*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.GenericUnauthorizedResponse))
