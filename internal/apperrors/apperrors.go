@@ -49,12 +49,36 @@ var (
 	ErrSessionExpired = errors.New("user session has expired")
 	// ErrSessionNotFound ошибка: полученной сессии нет в хранилище
 	ErrSessionNotFound = errors.New("no session found for provided session ID")
+<<<<<<< Updated upstream
+=======
+<<<<<<< Updated upstream
+=======
+	// ErrSessionNotCreated ошибка: полученной сессии нет в хранилище
+	ErrSessionNotCreated = errors.New("session couldn't be created")
+)
+
+// Ошибки, связанные с сервером
+var (
+	// ErrCouldNotBuildQuery ошибка: не удалось сформировать SQL запрос
+	ErrCouldNotBuildQuery = errors.New("error building an SQL query")
+>>>>>>> Stashed changes
+>>>>>>> Stashed changes
 )
 
 // Ошибки, связанные с BoardService
 var (
 	// ErrBoardNotFound ошибка: доски с полученным ID не существует
 	ErrBoardNotFound = errors.New("no board found for provided board ID")
+)
+
+// Ошибки, связанные с WorkspaceService
+var (
+	// ErrWorkspaceNotDeleted ошибка: не удалось создать рабочее прострнство в БД
+	ErrWorkspaceNotCreated = errors.New("workspace couldn't be created")
+	// ErrWorkspaceNotDeleted ошибка: не удалось получить рабочее прострнство в БД
+	ErrCouldNotGetWorkspace = errors.New("workspace couldn't be retreived")
+	// ErrWorkspaceNotDeleted ошибка: не удалось удалить рабочее прострнство в БД
+	ErrWorkspaceNotDeleted = errors.New("user couldn't be deleted")
 )
 
 // ErrorResponse
@@ -116,6 +140,13 @@ var ErrorMap = map[error]ErrorResponse{
 	ErrSessionIDLengthMissing: InternalServerErrorResponse,
 	ErrSessionNullIDLength:    InternalServerErrorResponse,
 	ErrSessionExpired:         GenericUnauthorizedResponse,
+<<<<<<< Updated upstream
+=======
+<<<<<<< Updated upstream
+=======
+	ErrCouldNotBuildQuery:     InternalServerErrorResponse,
+>>>>>>> Stashed changes
+>>>>>>> Stashed changes
 	ErrSessionNotFound:        GenericUnauthorizedResponse,
 }
 

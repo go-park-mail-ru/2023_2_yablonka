@@ -73,7 +73,7 @@ func (ah AuthHandler) LogIn(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	token, expiresAt, err := ah.as.AuthUser(rCtx, user)
+	token, expiresAt, err := ah.as.AuthUser(rCtx, user.ID)
 	if err != nil {
 		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.ErrorMap[err]))
 		return
@@ -155,7 +155,7 @@ func (ah AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	token, expiresAt, err := ah.as.AuthUser(rCtx, user)
+	token, expiresAt, err := ah.as.AuthUser(rCtx, user.ID)
 	if err != nil {
 		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.ErrorMap[err]))
 		return
@@ -281,12 +281,13 @@ func (ah AuthHandler) VerifyAuthEndpoint(w http.ResponseWriter, r *http.Request)
 
 	token := cookie.Value
 
-	userInfo, err := ah.as.VerifyAuth(rCtx, token)
+	userID, err := ah.as.VerifyAuth(rCtx, token)
 	if err != nil {
 		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.ErrorMap[err]))
 		return
 	}
-	userObj, err := ah.us.GetUserByID(rCtx, userInfo.UserID)
+
+	userObj, err := ah.us.GetUserByID(rCtx, userID)
 	if err == apperrors.ErrUserNotFound {
 		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.GenericUnauthorizedResponse))
 		return
