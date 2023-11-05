@@ -16,19 +16,6 @@ type WorkspaceHandler struct {
 	ws service.IWorkspaceService
 }
 
-// @Summary Вывести все доски текущего пользователя
-// @Description Выводит и созданные им доски и те, в которых он гость. Работает только для авторизированного пользователя.
-// @Tags boards
-//
-// @Accept  json
-// @Produce  json
-//
-// @Success 200  {object}  doc_structs.UserBoardsResponse "Пользователь и его доски"
-// @Failure 400  {object}  apperrors.ErrorResponse
-// @Failure 401  {object}  apperrors.ErrorResponse
-// @Failure 500  {object}  apperrors.ErrorResponse
-//
-// @Router /api/v2/user/boards/ [get]
 func (wh WorkspaceHandler) GetWorkspace(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
 
@@ -53,7 +40,6 @@ func (wh WorkspaceHandler) GetWorkspace(w http.ResponseWriter, r *http.Request) 
 
 	response := dto.JSONResponse{
 		Body: dto.JSONMap{
-			"user":      "",
 			"workspace": workspace,
 		},
 	}

@@ -144,6 +144,10 @@ var ErrorMap = map[error]ErrorResponse{
 	ErrSessionExpired:         GenericUnauthorizedResponse,
 	ErrCouldNotBuildQuery:     InternalServerErrorResponse,
 	ErrSessionNotFound:        GenericUnauthorizedResponse,
+	ErrWorkspaceNotCreated:    InternalServerErrorResponse,
+	ErrCouldNotGetWorkspace:   InternalServerErrorResponse,
+	ErrWorkspaceNotDeleted:    InternalServerErrorResponse,
+	ErrBoardNotFound:          InternalServerErrorResponse,
 }
 
 func ErrorJSON(err ErrorResponse) []byte {
