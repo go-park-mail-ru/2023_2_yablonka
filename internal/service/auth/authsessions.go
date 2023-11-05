@@ -44,26 +44,12 @@ func (a *AuthSessionService) AuthUser(ctx context.Context, id uint64) (string, t
 // VerifyAuth
 // проверяет состояние авторизации, возвращает ID авторизированного пользователя
 // или возвращает ошибки apperrors.ErrSessionNotFound (401)
-<<<<<<< Updated upstream
-func (a *AuthSessionService) VerifyAuth(ctx context.Context, sessionString string) (*dto.VerifiedAuthInfo, error) {
+func (a *AuthSessionService) VerifyAuth(ctx context.Context, sessionString string) (uint64, error) {
 	sessionObj, err := a.storage.GetSession(ctx, sessionString)
-=======
-<<<<<<< Updated upstream
-func (a *AuthSessionService) VerifyAuth(ctx context.Context, token string) (*dto.VerifiedAuthInfo, error) {
-	sessionObj, err := a.storage.GetSession(ctx, token)
-=======
-<<<<<<< Updated upstream
-func (a *AuthSessionService) VerifyAuth(ctx context.Context, sessionString string) (*dto.VerifiedAuthInfo, error) {
-	sessionObj, err := a.storage.GetSession(ctx, sessionString)
-=======
-func (a *AuthSessionService) VerifyAuth(ctx context.Context, token string) (uint64, error) {
-	sessionObj, err := a.storage.GetSession(ctx, token)
->>>>>>> Stashed changes
->>>>>>> Stashed changes
->>>>>>> Stashed changes
 	if err != nil {
 		return 0, err
 	}
+
 	if sessionObj.ExpiryDate.Before(time.Now()) {
 		return 0, apperrors.ErrSessionExpired
 	}

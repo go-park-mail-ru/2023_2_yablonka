@@ -23,7 +23,7 @@ func NewBoardService(storage storage.IBoardStorage) *BoardService {
 // находит все доски, созданные пользователем
 // или возвращает ошибку apperrors.ErrUserNotFound (401)
 func (us BoardService) GetUserOwnedBoards(ctx context.Context, userInfo dto.VerifiedAuthInfo) ([]dto.UserOwnedBoardInfo, error) {
-	boards, err := us.storage.GetUserOwnedBoards(ctx, userInfo)
+	boards, err := us.storage.GetUserOwnedBoards(ctx, userInfo.UserID)
 	if err != nil {
 		return nil, err
 	}
@@ -43,7 +43,7 @@ func (us BoardService) GetUserOwnedBoards(ctx context.Context, userInfo dto.Veri
 // находит все доски, в которых участвует пользователь
 // или возвращает ошибку apperrors.ErrUserNotFound (401)
 func (us BoardService) GetUserGuestBoards(ctx context.Context, userInfo dto.VerifiedAuthInfo) ([]dto.UserGuestBoardInfo, error) {
-	boards, err := us.storage.GetUserGuestBoards(ctx, userInfo)
+	boards, err := us.storage.GetUserGuestBoards(ctx, userInfo.UserID)
 	if err != nil {
 		return nil, err
 	}

@@ -33,12 +33,8 @@ type Board struct {
 	ThumbnailURL string         `json:"thumbnail_url"`
 	Guests       []dto.UserInfo `json:"guests"`
 }
-<<<<<<< Updated upstream
-=======
-<<<<<<< Updated upstream
-=======
 
-// Board
+// Workspace
 // структура для хранения доски
 type Workspace struct {
 	ID           uint64 `json:"board_id"`
@@ -53,5 +49,3 @@ type Workspace struct {
 func (u *User) TableName() string {
 	return "user"
 }
->>>>>>> Stashed changes
->>>>>>> Stashed changes

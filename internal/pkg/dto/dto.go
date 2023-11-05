@@ -46,16 +46,6 @@ type IndividualBoardInfo struct {
 // NewBoardInfo
 // DTO для новой доски
 type NewBoardInfo struct {
-<<<<<<< Updated upstream
-	Name       string `json:"name"`
-	OwnerID    uint64 `json:"owner_id"`
-	OwnerEmail string `json:"owner_email"`
-=======
-<<<<<<< Updated upstream
-	Name       string `json:"name"`
-	OwnerID    uint64 `json:"owner_id"`
-	OwnerEmail string `json:"owner_email"`
-=======
 	Name         string `json:"name"`
 	OwnerID      uint64 `json:"owner_id"`
 	WorkspaceID  uint64 `json:"workspace_id"`
@@ -91,8 +81,6 @@ type UpdatedWorkspaceInfo struct {
 	Description  string     `json:"description"`
 	ThumbnailURL string     `json:"thumbnail_url"`
 	Guests       []UserInfo `json:"guests"`
->>>>>>> Stashed changes
->>>>>>> Stashed changes
 }
 
 // UserOwnedBoardInfo

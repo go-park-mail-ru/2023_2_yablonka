@@ -55,10 +55,6 @@ var (
 	ErrSessionExpired = errors.New("user session has expired")
 	// ErrSessionNotFound ошибка: полученной сессии нет в хранилище
 	ErrSessionNotFound = errors.New("no session found for provided session ID")
-<<<<<<< Updated upstream
-=======
-<<<<<<< Updated upstream
-=======
 	// ErrSessionNotCreated ошибка: полученной сессии нет в хранилище
 	ErrSessionNotCreated = errors.New("session couldn't be created")
 )
@@ -67,8 +63,6 @@ var (
 var (
 	// ErrCouldNotBuildQuery ошибка: не удалось сформировать SQL запрос
 	ErrCouldNotBuildQuery = errors.New("error building an SQL query")
->>>>>>> Stashed changes
->>>>>>> Stashed changes
 )
 
 // Ошибки, связанные с BoardService
@@ -148,13 +142,7 @@ var ErrorMap = map[error]ErrorResponse{
 	ErrSessionNullIDLength:    InternalServerErrorResponse,
 	ErrSessionNotCreated:      InternalServerErrorResponse,
 	ErrSessionExpired:         GenericUnauthorizedResponse,
-<<<<<<< Updated upstream
-=======
-<<<<<<< Updated upstream
-=======
 	ErrCouldNotBuildQuery:     InternalServerErrorResponse,
->>>>>>> Stashed changes
->>>>>>> Stashed changes
 	ErrSessionNotFound:        GenericUnauthorizedResponse,
 }
 

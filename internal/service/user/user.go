@@ -72,17 +72,6 @@ func (us AuthUserService) RegisterUser(ctx context.Context, info dto.SignupInfo)
 // UpdateUser
 // обновляет пользователя в БД
 // или возвращает ошибку apperrors.ErrUserNotFound (409)
-<<<<<<< Updated upstream
-func (us UserService) UpdateUser(ctx context.Context, info dto.UpdatedUserInfo) (*entities.User, error) {
-	return us.storage.UpdateUser(ctx, info)
-=======
-<<<<<<< Updated upstream
-=======
-<<<<<<< Updated upstream
-func (us UserService) UpdateUser(ctx context.Context, info dto.UpdatedUserInfo) (*entities.User, error) {
-	return us.storage.UpdateUser(ctx, info)
-=======
->>>>>>> Stashed changes
 func (us UserService) UpdateUser(ctx context.Context, updatedUser entities.User) (*entities.User, error) {
 	_, err := us.storage.GetUserByLogin(ctx, updatedUser.Email)
 
@@ -90,13 +79,7 @@ func (us UserService) UpdateUser(ctx context.Context, updatedUser entities.User)
 		return nil, apperrors.ErrUserAlreadyExists
 	}
 
-<<<<<<< Updated upstream
-	return us.storage.Update(ctx, updatedUser)
-=======
 	return &updatedUser, us.storage.Update(ctx, updatedUser)
->>>>>>> Stashed changes
->>>>>>> Stashed changes
->>>>>>> Stashed changes
 }
 
 // DeleteUser

@@ -28,20 +28,12 @@ func NewUserStorage(db *pgxpool.Pool) *PostgresUserStorage {
 func (s *PostgresUserStorage) GetUserByLogin(ctx context.Context, login string) (*entities.User, error) {
 	sql, args, err := sq.
 		Select(allUserFields...).
-<<<<<<< Updated upstream
-		From("public.User").
-=======
 		From("public.user").
->>>>>>> Stashed changes
 		Where(sq.Eq{"login": login}).
 		ToSql()
 
 	if err != nil {
-<<<<<<< Updated upstream
-		return nil, apperrors.ErrCouldntBuildQuery
-=======
 		return nil, apperrors.ErrCouldNotBuildQuery
->>>>>>> Stashed changes
 	}
 
 	row := s.db.QueryRow(ctx, sql, args...)
@@ -60,20 +52,12 @@ func (s *PostgresUserStorage) GetUserByLogin(ctx context.Context, login string) 
 func (s *PostgresUserStorage) GetUserByID(ctx context.Context, uid uint64) (*entities.User, error) {
 	sql, args, err := sq.
 		Select(allUserFields...).
-<<<<<<< Updated upstream
-		From("public.User").
-=======
 		From("public.user").
->>>>>>> Stashed changes
 		Where(sq.Eq{"id": uid}).
 		ToSql()
 
 	if err != nil {
-<<<<<<< Updated upstream
-		return nil, apperrors.ErrCouldntBuildQuery
-=======
 		return nil, apperrors.ErrCouldNotBuildQuery
->>>>>>> Stashed changes
 	}
 
 	row := s.db.QueryRow(ctx, sql, args...)
@@ -91,11 +75,7 @@ func (s *PostgresUserStorage) GetUserByID(ctx context.Context, uid uint64) (*ent
 // или возвращает ошибки ...
 func (s *PostgresUserStorage) Create(ctx context.Context, info dto.SignupInfo) (*entities.User, error) {
 	sql, args, err := sq.
-<<<<<<< Updated upstream
-		Insert("public.User").
-=======
 		Insert("public.user").
->>>>>>> Stashed changes
 		Columns("email", "password_hash").
 		Values(info.Email, info.PasswordHash).
 		PlaceholderFormat(sq.Dollar).
@@ -103,11 +83,7 @@ func (s *PostgresUserStorage) Create(ctx context.Context, info dto.SignupInfo) (
 		ToSql()
 
 	if err != nil {
-<<<<<<< Updated upstream
-		return nil, apperrors.ErrCouldntBuildQuery
-=======
 		return nil, apperrors.ErrCouldNotBuildQuery
->>>>>>> Stashed changes
 	}
 
 	query := s.db.QueryRow(ctx, sql, args...)
@@ -126,15 +102,9 @@ func (s *PostgresUserStorage) Create(ctx context.Context, info dto.SignupInfo) (
 // Update
 // обновляет пользователя в БД
 // или возвращает ошибки ...
-<<<<<<< Updated upstream
-func (s *PostgresUserStorage) Update(ctx context.Context, updatedUser entities.User) (*entities.User, error) {
-	sql, args, err := sq.
-		Update("public.User").
-=======
 func (s *PostgresUserStorage) Update(ctx context.Context, updatedUser entities.User) error {
 	sql, args, err := sq.
 		Update("public.user").
->>>>>>> Stashed changes
 		Set("email", updatedUser.Email).
 		Set("name", updatedUser.Name).
 		Set("surname", updatedUser.Surname).
@@ -145,27 +115,16 @@ func (s *PostgresUserStorage) Update(ctx context.Context, updatedUser entities.U
 		ToSql()
 
 	if err != nil {
-<<<<<<< Updated upstream
-		return nil, apperrors.ErrCouldntBuildQuery
-=======
 		return apperrors.ErrCouldNotBuildQuery
->>>>>>> Stashed changes
 	}
 
 	query := s.db.QueryRow(ctx, sql, args...)
 
 	if query.Scan() != nil {
-<<<<<<< Updated upstream
-		return nil, apperrors.ErrUserNotUpdated
-	}
-
-	return &updatedUser, nil
-=======
 		return apperrors.ErrUserNotUpdated
 	}
 
 	return nil
->>>>>>> Stashed changes
 }
 
 // Delete
@@ -173,21 +132,13 @@ func (s *PostgresUserStorage) Update(ctx context.Context, updatedUser entities.U
 // или возвращает ошибки ...
 func (s *PostgresUserStorage) Delete(ctx context.Context, id uint64) error {
 	sql, args, err := sq.
-<<<<<<< Updated upstream
-		Delete("public.User").
-=======
 		Delete("public.user").
->>>>>>> Stashed changes
 		Where(sq.Eq{"id": id}).
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
 
 	if err != nil {
-<<<<<<< Updated upstream
-		return apperrors.ErrCouldntBuildQuery
-=======
 		return apperrors.ErrCouldNotBuildQuery
->>>>>>> Stashed changes
 	}
 
 	query := s.db.QueryRow(ctx, sql, args...)
