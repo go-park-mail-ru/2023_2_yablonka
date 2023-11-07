@@ -423,7 +423,7 @@ func (uh UserHandler) ChangeProfile(w http.ResponseWriter, r *http.Request) {
 // @Accept  json
 // @Produce  json
 //
-// @Param authData body dto.UserProfileInfo true "id пользователя, имя, фамилия, описание пользователя"
+// @Param authData body dto.AvatarChangeInfo true "id пользователя, изображение"
 //
 // @Success 204  {string} string "no content"
 // @Failure 500  {object}  apperrors.ErrorResponse

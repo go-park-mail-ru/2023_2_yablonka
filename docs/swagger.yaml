@@ -26,6 +26,24 @@ definitions:
       password:
         type: string
     type: object
+  dto.AvatarChangeInfo:
+    properties:
+      avatar:
+        items:
+          type: integer
+        type: array
+      user_id:
+        type: string
+    type: object
+  dto.PasswordChangeInfo:
+    properties:
+      new_password:
+        type: string
+      old_password:
+        type: string
+      user_id:
+        type: integer
+    type: object
   dto.UserInfo:
     properties:
       email:
@@ -33,13 +51,26 @@ definitions:
       id:
         type: integer
     type: object
+  dto.UserProfileInfo:
+    properties:
+      description:
+        type: string
+      name:
+        type: string
+      surname:
+        type: string
+      user_id:
+        type: integer
+    type: object
   entities.Board:
     properties:
       board_id:
         type: integer
-      guests:
+      description:
+        type: string
+      lists:
         items:
-          $ref: '#/definitions/dto.UserInfo'
+          $ref: '#/definitions/entities.List'
         type: array
       name:
         type: string
@@ -47,16 +78,60 @@ definitions:
         $ref: '#/definitions/dto.UserInfo'
       thumbnail_url:
         type: string
+      users:
+        items:
+          $ref: '#/definitions/entities.User'
+        type: array
+    type: object
+  entities.List:
+    properties:
+      board_id:
+        type: integer
+      description:
+        type: string
+      id:
+        type: integer
+      list_position:
+        type: integer
+      name:
+        type: string
+      tasks:
+        items:
+          $ref: '#/definitions/entities.Task'
+        type: array
+    type: object
+  entities.Task:
+    properties:
+      date_created:
+        type: string
+      description:
+        type: string
+      end:
+        type: string
+      id:
+        type: integer
+      list_id:
+        type: integer
+      list_position:
+        type: integer
+      name:
+        type: string
+      start:
+        type: string
+      users:
+        items:
+          $ref: '#/definitions/entities.User'
+        type: array
     type: object
   entities.User:
     properties:
+      avatar_url:
+        type: string
       email:
         type: string
       name:
         type: string
       surname:
-        type: string
-      thumbnail_url:
         type: string
       user_id:
         type: integer
@@ -165,6 +240,32 @@ paths:
       summary: Выйти из системы
       tags:
       - auth
+  /auth/profile/change_avatar/:
+    post:
+      consumes:
+      - application/json
+      description: В ответ шлёт ссылку на файл
+      parameters:
+      - description: id пользователя, изображение
+        in: body
+        name: authData
+        required: true
+        schema:
+          $ref: '#/definitions/dto.AvatarChangeInfo'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: no content
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+      summary: Поменять аватарку
+      tags:
+      - auth
   /auth/signup/:
     post:
       consumes:
@@ -229,6 +330,58 @@ paths:
           schema:
             $ref: '#/definitions/apperrors.ErrorResponse'
       summary: Подтвердить вход
+      tags:
+      - auth
+  /user/change_password/:
+    post:
+      consumes:
+      - application/json
+      description: Получает старый и новый пароли, а также id пользователя
+      parameters:
+      - description: id, старый и новый пароли пользователя
+        in: body
+        name: authData
+        required: true
+        schema:
+          $ref: '#/definitions/dto.PasswordChangeInfo'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: no content
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+      summary: Поменять пароль
+      tags:
+      - user
+  /user/profile/change/:
+    post:
+      consumes:
+      - application/json
+      description: В ответ ничего не шлёт
+      parameters:
+      - description: id пользователя, имя, фамилия, описание пользователя
+        in: body
+        name: authData
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UserProfileInfo'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: no content
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+      summary: Поменять данные профиля
       tags:
       - auth
 swagger: "2.0"

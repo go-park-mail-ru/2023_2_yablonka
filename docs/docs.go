@@ -157,6 +157,46 @@ const docTemplate = `{
                 }
             }
         },
+        "/auth/profile/change_avatar/": {
+            "post": {
+                "description": "В ответ шлёт ссылку на файл",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Поменять аватарку",
+                "parameters": [
+                    {
+                        "description": "id пользователя, изображение",
+                        "name": "authData",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.AvatarChangeInfo"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "no content",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/auth/signup/": {
             "post": {
                 "description": "Также вводит пользователя в систему",
@@ -255,6 +295,86 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/user/change_password/": {
+            "post": {
+                "description": "Получает старый и новый пароли, а также id пользователя",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "Поменять пароль",
+                "parameters": [
+                    {
+                        "description": "id, старый и новый пароли пользователя",
+                        "name": "authData",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.PasswordChangeInfo"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "no content",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/user/profile/change/": {
+            "post": {
+                "description": "В ответ ничего не шлёт",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Поменять данные профиля",
+                "parameters": [
+                    {
+                        "description": "id пользователя, имя, фамилия, описание пользователя",
+                        "name": "authData",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.UserProfileInfo"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "no content",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -299,6 +419,34 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.AvatarChangeInfo": {
+            "type": "object",
+            "properties": {
+                "avatar": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "user_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.PasswordChangeInfo": {
+            "type": "object",
+            "properties": {
+                "new_password": {
+                    "type": "string"
+                },
+                "old_password": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "integer"
+                }
+            }
+        },
         "dto.UserInfo": {
             "type": "object",
             "properties": {
@@ -310,16 +458,36 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.UserProfileInfo": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "surname": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "integer"
+                }
+            }
+        },
         "entities.Board": {
             "type": "object",
             "properties": {
                 "board_id": {
                     "type": "integer"
                 },
-                "guests": {
+                "description": {
+                    "type": "string"
+                },
+                "lists": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/dto.UserInfo"
+                        "$ref": "#/definitions/entities.List"
                     }
                 },
                 "name": {
@@ -330,12 +498,82 @@ const docTemplate = `{
                 },
                 "thumbnail_url": {
                     "type": "string"
+                },
+                "users": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/entities.User"
+                    }
+                }
+            }
+        },
+        "entities.List": {
+            "type": "object",
+            "properties": {
+                "board_id": {
+                    "type": "integer"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "list_position": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "tasks": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/entities.Task"
+                    }
+                }
+            }
+        },
+        "entities.Task": {
+            "type": "object",
+            "properties": {
+                "date_created": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "end": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "list_id": {
+                    "type": "integer"
+                },
+                "list_position": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "start": {
+                    "type": "string"
+                },
+                "users": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/entities.User"
+                    }
                 }
             }
         },
         "entities.User": {
             "type": "object",
             "properties": {
+                "avatar_url": {
+                    "type": "string"
+                },
                 "email": {
                     "type": "string"
                 },
@@ -343,9 +581,6 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "surname": {
-                    "type": "string"
-                },
-                "thumbnail_url": {
                     "type": "string"
                 },
                 "user_id": {
