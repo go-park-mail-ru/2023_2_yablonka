@@ -28,13 +28,13 @@ func GetChiMux(manager handlers.HandlerManager, config config.BaseServerConfig) 
 
 	mux.Route("/api/v2", func(r chi.Router) {
 		r.Route("/auth", func(r chi.Router) {
-			r.Post("/login/", manager.AuthHandler.LogIn)
-			r.Post("/signup/", manager.AuthHandler.SignUp)
-			r.Delete("/logout/", manager.AuthHandler.LogOut)
-			r.Get("/verify", manager.AuthHandler.VerifyAuthEndpoint)
+			r.Post("/login/", manager.UserHandler.LogIn)
+			r.Post("/signup/", manager.UserHandler.SignUp)
+			r.Delete("/logout/", manager.UserHandler.LogOut)
+			r.Get("/verify", manager.UserHandler.VerifyAuthEndpoint)
 		})
 		r.Route("/user", func(r chi.Router) {
-			r.Use(middleware.AuthMiddleware(manager.AuthHandler.GetAuthService(), manager.AuthHandler.GetUserAuthService()))
+			r.Use(middleware.AuthMiddleware(manager.UserHandler.GetAuthService(), manager.UserHandler.GetUserService()))
 			r.Get("/boards/", manager.BoardHandler.GetUserBoards)
 		})
 	})

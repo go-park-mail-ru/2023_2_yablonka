@@ -5,6 +5,7 @@ import (
 	"crypto/rand"
 	"math/big"
 	"server/internal/apperrors"
+	"server/internal/pkg/dto"
 	"server/internal/pkg/entities"
 	"server/internal/storage"
 	"time"
@@ -19,47 +20,47 @@ type AuthSessionService struct {
 // AuthUser
 // возвращает уникальную строку авторизации и её длительность
 // или возвращает ошибки apperrors.ErrTokenNotGenerated (500)
-func (a *AuthSessionService) AuthUser(ctx context.Context, id uint64) (string, time.Time, error) {
+func (a *AuthSessionService) AuthUser(ctx context.Context, id dto.UserID) (dto.SessionToken, time.Time, error) {
 	expiresAt := time.Now().Add(a.sessionDuration)
 
 	token, err := generateSessionID(a.sessionIDLength)
 	if err != nil {
-		return "", time.Time{}, apperrors.ErrTokenNotGenerated
+		return dto.SessionToken{}, time.Time{}, apperrors.ErrTokenNotGenerated
 	}
 
 	session := &entities.Session{
 		Token:      token,
-		UserID:     id,
+		UserID:     id.Value,
 		ExpiryDate: expiresAt,
 	}
 
 	err = a.storage.CreateSession(ctx, session)
 	if err != nil {
-		return "", time.Time{}, err
+		return dto.SessionToken{}, time.Time{}, err
 	}
 
-	return token, expiresAt, nil
+	return dto.SessionToken{Value: token}, expiresAt, nil
 }
 
 // VerifyAuth
 // проверяет состояние авторизации, возвращает ID авторизированного пользователя
 // или возвращает ошибки apperrors.ErrSessionNotFound (401)
-func (a *AuthSessionService) VerifyAuth(ctx context.Context, sessionString string) (uint64, error) {
-	sessionObj, err := a.storage.GetSession(ctx, sessionString)
+func (a *AuthSessionService) VerifyAuth(ctx context.Context, token dto.SessionToken) (dto.UserID, error) {
+	sessionObj, err := a.storage.GetSession(ctx, token)
 	if err != nil {
-		return 0, err
+		return dto.UserID{}, err
 	}
 
 	if sessionObj.ExpiryDate.Before(time.Now()) {
-		return 0, apperrors.ErrSessionExpired
+		return dto.UserID{}, apperrors.ErrSessionExpired
 	}
-	return sessionObj.UserID, nil
+	return dto.UserID{Value: sessionObj.UserID}, nil
 }
 
 // LogOut
 // удаляет текущую сессию
 // или возвращает ошибку apperrors.ErrSessionNotFound (401)
-func (a *AuthSessionService) LogOut(ctx context.Context, token string) error {
+func (a *AuthSessionService) LogOut(ctx context.Context, token dto.SessionToken) error {
 	return a.storage.DeleteSession(ctx, token)
 }
 

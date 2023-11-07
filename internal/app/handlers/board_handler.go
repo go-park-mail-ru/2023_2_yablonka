@@ -9,6 +9,8 @@ import (
 	"server/internal/pkg/dto"
 	"server/internal/pkg/entities"
 	"server/internal/service"
+
+	"github.com/asaskevich/govalidator"
 )
 
 type BoardHandler struct {
@@ -39,30 +41,28 @@ func (bh BoardHandler) GetUserBoards(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userInfo := dto.VerifiedAuthInfo{
-		UserID: user.ID,
+	userId := dto.UserID{
+		Value: user.ID,
 	}
 
-	ownedBoards, err := bh.bs.GetUserOwnedBoards(rCtx, userInfo)
+	ownedBoards, err := bh.bs.GetUserOwnedBoards(rCtx, userId)
 	if err != nil {
 		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.ErrorMap[err]))
 		return
 	}
-	guestBoards, err := bh.bs.GetUserGuestBoards(rCtx, userInfo)
+	guestBoards, err := bh.bs.GetUserGuestBoards(rCtx, userId)
 	if err != nil {
 		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.ErrorMap[err]))
 		return
 	}
 
-	userBoards := dto.UserTotalBoardInfo{
-		OwnedBoards: ownedBoards,
-		GuestBoards: guestBoards,
-	}
-	userObj := rCtx.Value(dto.UserObjKey).(*entities.User)
 	response := dto.JSONResponse{
 		Body: dto.JSONMap{
-			"user":   userObj,
-			"boards": userBoards,
+			"user": rCtx.Value(dto.UserObjKey).(*entities.User),
+			"boards": dto.UserTotalBoardInfo{
+				OwnedBoards: ownedBoards,
+				GuestBoards: guestBoards,
+			},
 		},
 	}
 	jsonResponse, err = json.Marshal(response)
@@ -76,5 +76,48 @@ func (bh BoardHandler) GetUserBoards(w http.ResponseWriter, r *http.Request) {
 		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.InternalServerErrorResponse))
 		return
 	}
+	r.Body.Close()
+}
+
+func (bh BoardHandler) GetFullBoard(w http.ResponseWriter, r *http.Request) {
+	rCtx := r.Context()
+
+	var boardRequest dto.IndividualBoardRequest
+	err := json.NewDecoder(r.Body).Decode(&boardRequest)
+	if err != nil {
+		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.BadRequestResponse))
+		return
+	}
+
+	_, err = govalidator.ValidateStruct(boardRequest)
+	if err != nil {
+		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.BadRequestResponse))
+		return
+	}
+
+	board, err := bh.bs.GetBoardWithListsAndTasks(rCtx, dto.BoardID{Value: boardRequest.BoardID})
+	if err != nil {
+		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.ErrorMap[err]))
+		return
+	}
+
+	response := dto.JSONResponse{
+		Body: dto.JSONMap{
+			"board": board,
+		},
+	}
+
+	jsonResponse, err := json.Marshal(response)
+	if err != nil {
+		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.InternalServerErrorResponse))
+		return
+	}
+
+	_, err = w.Write(jsonResponse)
+	if err != nil {
+		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.InternalServerErrorResponse))
+		return
+	}
+
 	r.Body.Close()
 }

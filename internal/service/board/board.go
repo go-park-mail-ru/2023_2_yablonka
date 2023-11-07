@@ -22,8 +22,8 @@ func NewBoardService(storage storage.IBoardStorage) *BoardService {
 // GetUserOwnedBoards
 // находит все доски, созданные пользователем
 // или возвращает ошибку apperrors.ErrUserNotFound (401)
-func (us BoardService) GetUserOwnedBoards(ctx context.Context, userInfo dto.VerifiedAuthInfo) ([]dto.UserOwnedBoardInfo, error) {
-	boards, err := us.storage.GetUserOwnedBoards(ctx, userInfo.UserID)
+func (us BoardService) GetUserOwnedBoards(ctx context.Context, id dto.UserID) ([]dto.UserOwnedBoardInfo, error) {
+	boards, err := us.storage.GetUserOwnedBoards(ctx, id)
 	if err != nil {
 		return nil, err
 	}
@@ -42,8 +42,8 @@ func (us BoardService) GetUserOwnedBoards(ctx context.Context, userInfo dto.Veri
 // GetUserGuestBoards
 // находит все доски, в которых участвует пользователь
 // или возвращает ошибку apperrors.ErrUserNotFound (401)
-func (us BoardService) GetUserGuestBoards(ctx context.Context, userInfo dto.VerifiedAuthInfo) ([]dto.UserGuestBoardInfo, error) {
-	boards, err := us.storage.GetUserGuestBoards(ctx, userInfo.UserID)
+func (us BoardService) GetUserGuestBoards(ctx context.Context, id dto.UserID) ([]dto.UserGuestBoardInfo, error) {
+	boards, err := us.storage.GetUserGuestBoards(ctx, id)
 	if err != nil {
 		return nil, err
 	}
@@ -63,8 +63,8 @@ func (us BoardService) GetUserGuestBoards(ctx context.Context, userInfo dto.Veri
 	return boardInfo, nil
 }
 
-func (bs BoardService) GetBoard(ctx context.Context, board dto.IndividualBoardInfo) (*entities.Board, error) {
-	return bs.storage.GetById(ctx, board.ID)
+func (bs BoardService) GetBoardWithListsAndTasks(ctx context.Context, board dto.BoardID) (*entities.Board, error) {
+	return bs.storage.GetById(ctx, board)
 }
 
 func (us BoardService) CreateBoard(ctx context.Context, board dto.NewBoardInfo) (*entities.Board, error) {
@@ -72,5 +72,5 @@ func (us BoardService) CreateBoard(ctx context.Context, board dto.NewBoardInfo) 
 }
 
 func (us BoardService) UpdateBoard(ctx context.Context, board dto.IndividualBoardInfo) (*entities.Board, error) {
-	return us.storage.Update(ctx, board.ID)
+	return us.storage.Update(ctx, board)
 }

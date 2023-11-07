@@ -27,12 +27,12 @@ func NewBoardStorage(db *pgxpool.Pool) *PostgreSQLBoardStorage {
 // GetUserOwnedBoards
 // находит все доски, созданные пользователем
 // или возвращает ошибку apperrors.ErrUserNotFound (401)
-func (s *PostgreSQLBoardStorage) GetUserOwnedBoards(ctx context.Context, userID uint64) (*[]entities.Board, error) {
+func (s *PostgreSQLBoardStorage) GetUserOwnedBoards(ctx context.Context, userID dto.UserID) (*[]entities.Board, error) {
 	sql, args, err := sq.
 		Select(allBoardFields...).
-		From("public.Board").
-		Join("public.Board_User").
-		Where(sq.Eq{"public.Board_User.id_user": userID}).
+		From("public.board").
+		Join("public.board_user ON public.board.id = public.board_user.id_board").
+		Where(sq.Eq{"public.Board_User.id_user": userID.Value}).
 		ToSql()
 
 	if err != nil {
@@ -50,7 +50,7 @@ func (s *PostgreSQLBoardStorage) GetUserOwnedBoards(ctx context.Context, userID 
 	var boards []entities.Board
 	for rows.Next() {
 		var board entities.Board
-		err := rows.Scan(&board.ID, &board.Name, &board.Owner, &board.ThumbnailURL, &board.Guests)
+		err := rows.Scan(&board.ID, &board.Name, &board.Owner, &board.ThumbnailURL, &board.Users)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -66,26 +66,71 @@ func (s *PostgreSQLBoardStorage) GetUserOwnedBoards(ctx context.Context, userID 
 // GetUserGuestBoards
 // находит все доски, в которых участвует пользователь
 // или возвращает ошибку apperrors.ErrUserNotFound (401)
-func (s *PostgreSQLBoardStorage) GetUserGuestBoards(ctx context.Context, userID uint64) (*[]entities.Board, error) {
+func (s *PostgreSQLBoardStorage) GetUserGuestBoards(ctx context.Context, userID dto.UserID) (*[]entities.Board, error) {
 	return nil, nil
 }
 
-func (s *PostgreSQLBoardStorage) GetById(ctx context.Context, id uint64) (*entities.Board, error) {
-	// TODO Implement error
-	// s.mu.RLock()
-	// userBoards, ok := s.boardData[board.OwnerEmail]
-	// s.mu.RUnlock()
+// TODO Ограничить количество всего за раз
+// GetById
+// находит доску и связанные с ней списки и задания по id
+// или возвращает ошибки ...
+func (s *PostgreSQLBoardStorage) GetById(ctx context.Context, id dto.BoardID) (*entities.Board, error) {
+	sql, args, err := sq.Select("public.board.*", "public.list.*", "public.task.*").
+		From("public.board").
+		Join("public.list ON public.board.id = public.list.board_id").
+		Join("public.task ON public.list.id = public.task.list_id").
+		Where(sq.Eq{"public.board.id": id}).
+		ToSql()
+	if err != nil {
+		return nil, err
+	}
 
-	// if !ok {
-	// 	return nil, apperrors.ErrUserNotFound
-	// }
+	rows, err := s.db.Query(context.Background(), sql, args...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
 
-	// for i, b := range userBoards {
-	// 	if b.ID == board.ID {
-	// 		return userBoards[i], nil
-	// 	}
-	// }
-	return nil, nil
+	var board entities.Board
+	for rows.Next() {
+		var list entities.List
+
+		err = rows.Scan(
+			&board.ID,
+			&board.Name,
+			&board.Description,
+			&list.ID,
+			&list.Name,
+			&list.Description,
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		for rows.Next() {
+			var task entities.Task
+
+			err = rows.Scan(
+				&board.ID,
+				&board.Name,
+				&board.Description,
+				&list.ID,
+				&list.Name,
+				&list.Description,
+				&task.ID,
+				&task.Name,
+				&task.Description,
+			)
+			if err != nil {
+				return nil, err
+			}
+			list.Tasks = append(list.Tasks, task)
+		}
+
+		board.Lists = append(board.Lists, list)
+	}
+
+	return &board, nil
 }
 
 func (s *PostgreSQLBoardStorage) Create(ctx context.Context, info dto.NewBoardInfo) (*entities.Board, error) {
@@ -147,11 +192,11 @@ func (s *PostgreSQLBoardStorage) Create(ctx context.Context, info dto.NewBoardIn
 	return &entities.Board{}, nil
 }
 
-func (s *PostgreSQLBoardStorage) Update(ctx context.Context, id uint64) (*entities.Board, error) {
+func (s *PostgreSQLBoardStorage) Update(ctx context.Context, id dto.IndividualBoardInfo) (*entities.Board, error) {
 	return nil, nil
 }
 
-func (s *PostgreSQLBoardStorage) Delete(ctx context.Context, id uint64) error {
+func (s *PostgreSQLBoardStorage) Delete(ctx context.Context, id dto.BoardID) error {
 	// TODO Implement later
 	// s.mu.RLock()
 	// userBoards, ok := s.boardData[board.OwnerEmail]

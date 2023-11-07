@@ -12,6 +12,64 @@ type UserEmail struct {
 	Email string `json:"email" valid:"type(string),email"`
 }
 
+// UserPasswordHash
+// структура для хранения хэша пароля
+type UserPasswordHash struct {
+	Value string
+}
+
+// UserInWorkspace
+// структура для хранения общих данных о пользователе
+type UserInWorkspace struct {
+	ID        uint64 `json:"user_id"`
+	Email     string `json:"email" valid:"type(string),email"`
+	Name      string `json:"name"`
+	Surname   string `json:"surname"`
+	AvatarURL string `json:"avatar_url"`
+	RoleID    uint64 `json:"role_id"`
+}
+
+// RoleInWorkspace
+// структура для хранения общих данных о роли
+type RoleInWorkspace struct {
+	ID   uint64 `json:"user_id"`
+	Name string `json:"name"`
+}
+
+// IndividualBoardRequest
+// структура для запроса данных доски
+type IndividualBoardRequest struct {
+	BoardID uint64 `json:"board_id"`
+	UserID  string `json:"user_id"`
+}
+
+// AvatarChangeInfo
+// структура для изменения аватарки
+type AvatarChangeInfo struct {
+	UserID string `json:"user_id"`
+	Avatar []byte `json:"avatar"`
+}
+
+// ImageRequest
+// структура для изменения аватарки
+type AvatarUrlInfo struct {
+	UserID string `json:"user_id"`
+	Url    string `json:"avatar_url"`
+}
+
+// ImageRequest
+// структура для изменения аватарки
+type UrlObj struct {
+	Value string `json:"url"`
+}
+
+// UsersAndRoles
+// структура для хранения пользователей и их ролей
+type UsersAndRoles struct {
+	Users []UserInWorkspace `json:"users"`
+	Roles []RoleInWorkspace `json:"roles"`
+}
+
 // AuthInfo
 // DTO для обработки данных, полученных при входе
 type AuthInfo struct {
@@ -19,16 +77,46 @@ type AuthInfo struct {
 	Password string `json:"password" valid:"type(string),stringlength(8|32)"`
 }
 
-// LoginInfo
+// PasswordChangeInfo
+// DTO для смены пароля
+type PasswordChangeInfo struct {
+	UserID      uint64 `json:"user_id"`
+	OldPassword string `json:"old_password" valid:"type(string),stringlength(8|32)"`
+	NewPassword string `json:"new_password" valid:"type(string),stringlength(8|32)"`
+}
+
+// UserProfileInfo
+// DTO для изменения профиля
+type UserProfileInfo struct {
+	UserID      uint64 `json:"user_id"`
+	Name        string `json:"name"`
+	Surname     string `json:"surname"`
+	Description string `json:"description"`
+}
+
+// PasswordChangeInfo
+// DTO для обработки данных, полученных при входе
+type PasswordHashesInfo struct {
+	UserID          uint64
+	NewPasswordHash string
+}
+
+// UserLogin
 // DTO для обработки входных данных, идентифицирующих пользователя
-type LoginInfo struct {
-	Email        string `json:"email" valid:"type(string),email"`
-	PasswordHash string `json:"-" valid:"type(string)"`
+type UserLogin struct {
+	Value string
 }
 
 // SignupInfo
 // DTO для обработки данных, полученных при регистрации
 type SignupInfo struct {
+	Email        string `json:"email" valid:"type(string),email"`
+	PasswordHash string `json:"-" valid:"type(string)"`
+}
+
+// LoginInfo
+// DTO для обработки данных, полученных при входе
+type LoginInfo struct {
 	Email        string `json:"email" valid:"type(string),email"`
 	PasswordHash string `json:"-" valid:"type(string)"`
 }
@@ -59,10 +147,22 @@ type WorkspaceID struct {
 	Value uint64 `json:"workspace_id"`
 }
 
+// BoardID
+// DTO для id доски
+type BoardID struct {
+	Value uint64 `json:"board_id"`
+}
+
 // WorkspaceID
 // DTO для id пользователя
 type UserID struct {
 	Value uint64 `json:"user_id"`
+}
+
+// SessionToken
+// DTO для токена сессии
+type SessionToken struct {
+	Value string `json:"session_token"`
 }
 
 // NewWorkspaceInfo

@@ -3,6 +3,7 @@ package postgresql
 import (
 	"context"
 	"server/internal/apperrors"
+	"server/internal/pkg/dto"
 	"server/internal/pkg/entities"
 
 	sq "github.com/Masterminds/squirrel"
@@ -28,7 +29,7 @@ func NewAuthStorage(db *pgxpool.Pool) *PostgresAuthStorage {
 // или возвращает ошибку ErrTokenNotGenerated (500), ErrCouldntBuildQuery (500), ErrSessionNotCreated(500)
 func (s PostgresAuthStorage) CreateSession(ctx context.Context, session *entities.Session) error {
 	sql, args, err := sq.
-		Insert("public.Session").
+		Insert("public.session").
 		Columns("id_user", "expiration_date", "token").
 		Values(session.UserID, session.ExpiryDate, session.Token).
 		PlaceholderFormat(sq.Dollar).
@@ -50,11 +51,11 @@ func (s PostgresAuthStorage) CreateSession(ctx context.Context, session *entitie
 // GetSession
 // находит сессию по строке-токену
 // или возвращает ошибку apperrors.ErrSessionNotFound (401), ErrCouldntBuildQuery(500)
-func (s PostgresAuthStorage) GetSession(ctx context.Context, token string) (*entities.Session, error) {
+func (s PostgresAuthStorage) GetSession(ctx context.Context, token dto.SessionToken) (*entities.Session, error) {
 	sql, args, err := sq.
 		Select(allSessionFields...).
-		From("Session").
-		Where(sq.Eq{"token": token}).
+		From("public.session").
+		Where(sq.Eq{"token": token.Value}).
 		ToSql()
 
 	if err != nil {
@@ -74,10 +75,10 @@ func (s PostgresAuthStorage) GetSession(ctx context.Context, token string) (*ent
 // DeleteSession
 // удаляет сессию по ID из хранилища, если она существует
 // или возвращает ошибку apperrors.ErrSessionNotFound (401)
-func (s PostgresAuthStorage) DeleteSession(ctx context.Context, token string) error {
+func (s PostgresAuthStorage) DeleteSession(ctx context.Context, token dto.SessionToken) error {
 	sql, args, err := sq.
-		Delete("Session").
-		Where(sq.Eq{"token": token}).
+		Delete("public.session").
+		Where(sq.Eq{"token": token.Value}).
 		ToSql()
 
 	if err != nil {

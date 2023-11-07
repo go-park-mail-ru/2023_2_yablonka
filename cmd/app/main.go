@@ -9,9 +9,6 @@ import (
 	"server/internal/app"
 	"server/internal/app/handlers"
 	config "server/internal/config/session"
-	auth "server/internal/service/auth"
-	board "server/internal/service/board"
-	user "server/internal/service/user"
 	"server/internal/storage/postgresql"
 
 	"github.com/asaskevich/govalidator"
@@ -49,23 +46,10 @@ func main() {
 	defer dbConnection.Close()
 	log.Println("database connected")
 
-	userStorage := postgresql.NewUserStorage(dbConnection)
-	authStorage := postgresql.NewAuthStorage(dbConnection)
-	boardStorage := postgresql.NewBoardStorage(dbConnection)
-	log.Println("storages configured")
+	handlerManager := handlers.NewHandlerManager(dbConnection, config)
+	log.Println("handlers configured")
 
-	userAuthService := user.NewAuthUserService(userStorage)
-	authService := auth.NewAuthSessionService(*config, authStorage)
-	boardService := board.NewBoardService(boardStorage)
-	log.Println("services configured")
-
-	mux, err := app.GetChiMux(*handlers.NewHandlerManager(
-		authService,
-		userAuthService,
-		//user.NewUserService(userStorage),
-		boardService),
-		config.Base,
-	)
+	mux, err := app.GetChiMux(*handlerManager, config.Base)
 	if err != nil {
 		log.Fatal(err.Error())
 	}

@@ -12,25 +12,25 @@ type IBoardStorage interface {
 	// GetUserOwnedBoards
 	// находит все доски, созданные пользователем
 	// или возвращает ошибку apperrors.ErrUserNotFound (401)
-	GetUserOwnedBoards(ctx context.Context, userID uint64) (*[]entities.Board, error)
+	GetUserOwnedBoards(context.Context, dto.UserID) (*[]entities.Board, error)
 	// GetUserGuestBoards
 	// находит все доски, в которых участвует пользователь
 	// или возвращает ошибку apperrors.ErrUserNotFound (401)
-	GetUserGuestBoards(ctx context.Context, userID uint64) (*[]entities.Board, error)
+	GetUserGuestBoards(context.Context, dto.UserID) (*[]entities.Board, error)
 	// GetById
-	// находит все доски, созданные пользователем
+	// находит доску и связанные с ней списки и задания по id
 	// или возвращает ошибки ...
-	GetById(ctx context.Context, id uint64) (*entities.Board, error)
+	GetById(context.Context, dto.BoardID) (*entities.Board, error)
 	// Update
 	// находит все доски, созданные пользователем
 	// или возвращает ошибки ...
-	Update(ctx context.Context, id uint64) (*entities.Board, error)
+	Update(context.Context, dto.IndividualBoardInfo) (*entities.Board, error)
 	// Create
 	// находит все доски, созданные пользователем
 	// или возвращает ошибки ...
-	Create(ctx context.Context, info dto.NewBoardInfo) (*entities.Board, error)
+	Create(context.Context, dto.NewBoardInfo) (*entities.Board, error)
 	// Delete
 	// находит все доски, созданные пользователем
 	// или возвращает ошибки ...
-	Delete(ctx context.Context, id uint64) error
+	Delete(context.Context, dto.BoardID) error
 }
