@@ -8,15 +8,15 @@ import (
 
 type IListService interface {
 	// Create
-	// создает новый список задач в БД по данным
+	// создает новый список
 	// или возвращает ошибки ...
 	Create(context.Context, dto.NewListInfo) (*entities.List, error)
 	// Update
-	// обновляет списсок задач в БД
+	// обновляет список
 	// или возвращает ошибки ...
 	Update(context.Context, dto.UpdatedListInfo) error
 	// Delete
-	// удаляет списсок задач в БД
+	// удаляет список по id
 	// или возвращает ошибки ...
 	Delete(context.Context, dto.ListID) error
 }

@@ -20,22 +20,22 @@ func NewListService(storage storage.IListStorage) *ListService {
 }
 
 // Create
-// создает новоt рабочее пространство в БД по данным
+// создает новый список
 // или возвращает ошибки ...
 func (ls ListService) Create(ctx context.Context, info dto.NewListInfo) (*entities.List, error) {
-	return nil, nil
+	return ls.storage.Create(ctx, info)
 }
 
 // Update
-// обновляет рабочее пространство в БД
+// обновляет список
 // или возвращает ошибки ...
 func (ls ListService) Update(ctx context.Context, info dto.UpdatedListInfo) error {
-	return nil
+	return ls.storage.Update(ctx, info)
 }
 
 // Delete
-// удаляет рабочее пространство в БД по id
+// удаляет список по id
 // или возвращает ошибки ...
 func (ls ListService) Delete(ctx context.Context, id dto.ListID) error {
-	return nil
+	return ls.storage.Delete(ctx, id)
 }

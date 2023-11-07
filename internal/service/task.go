@@ -8,15 +8,15 @@ import (
 
 type ITaskService interface {
 	// Create
-	// создает новую задачу по данным
+	// создает новое задание
 	// или возвращает ошибки ...
 	Create(context.Context, dto.NewTaskInfo) (*entities.Task, error)
 	// Update
-	// обновляет задачу
+	// обновляет задание
 	// или возвращает ошибки ...
 	Update(context.Context, dto.UpdatedTaskInfo) error
 	// Delete
-	// удаляет задачу
+	// удаляет задание
 	// или возвращает ошибки ...
 	Delete(context.Context, dto.TaskID) error
 }

@@ -20,21 +20,21 @@ func NewTaskService(storage storage.ITaskStorage) *TaskService {
 }
 
 // Create
-// создает новоt рабочее пространство в БД по данным
+// создает новое задание
 // или возвращает ошибки ...
 func (ts TaskService) Create(ctx context.Context, info dto.NewTaskInfo) (*entities.Task, error) {
 	return nil, nil
 }
 
 // Update
-// обновляет рабочее пространство в БД
+// обновляет задание
 // или возвращает ошибки ...
 func (ts TaskService) Update(ctx context.Context, info dto.UpdatedTaskInfo) error {
 	return nil
 }
 
 // Delete
-// удаляет рабочее пространство в БД по id
+// удаляет задание
 // или возвращает ошибки ...
 func (ts TaskService) Delete(ctx context.Context, id dto.TaskID) error {
 	return nil
