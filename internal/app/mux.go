@@ -35,7 +35,10 @@ func GetChiMux(manager handlers.HandlerManager, config config.BaseServerConfig) 
 		})
 		r.Route("/user", func(r chi.Router) {
 			r.Use(middleware.AuthMiddleware(manager.UserHandler.GetAuthService(), manager.UserHandler.GetUserService()))
-			r.Get("/boards/", manager.BoardHandler.GetUserBoards)
+			r.Get("/workspaces/", manager.BoardHandler.GetUserBoards)
+			r.Post("/edit", manager.UserHandler.ChangeProfile)
+			r.Post("/edit/change_password/", manager.UserHandler.ChangePassword)
+			r.Post("/edit/change_avatar", manager.UserHandler.ChangeAvatar)
 		})
 	})
 	mux.Route("/swagger/", func(r chi.Router) {
