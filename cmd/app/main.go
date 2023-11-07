@@ -9,10 +9,7 @@ import (
 	"server/internal/app"
 	"server/internal/app/handlers"
 	config "server/internal/config/session"
-	auth "server/internal/service/auth"
-	board "server/internal/service/board"
-	user "server/internal/service/user"
-	"server/internal/storage/in_memory"
+	"server/internal/storage/postgresql"
 
 	"github.com/asaskevich/govalidator"
 )
@@ -42,23 +39,17 @@ func main() {
 	}
 	log.Println("config generated")
 
-	userStorage := in_memory.NewUserStorage()
-	authStorage := in_memory.NewAuthStorage()
-	boardStorage := in_memory.NewBoardStorage()
-	log.Println("storages configured")
+	dbConnection, err := postgresql.GetDBConnection(config)
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+	defer dbConnection.Close()
+	log.Println("database connected")
 
-	userAuthService := user.NewAuthUserService(userStorage)
-	authService := auth.NewAuthSessionService(*config, authStorage)
-	boardService := board.NewBoardService(boardStorage)
-	log.Println("services configured")
+	handlerManager := handlers.NewHandlerManager(dbConnection, config)
+	log.Println("handlers configured")
 
-	mux, err := app.GetChiMux(*handlers.NewHandlerManager(
-		authService,
-		userAuthService,
-		//user.NewUserService(userStorage),
-		boardService),
-		config.Base,
-	)
+	mux, err := app.GetChiMux(*handlerManager, config.Base)
 	if err != nil {
 		log.Fatal(err.Error())
 	}
@@ -69,7 +60,7 @@ func main() {
 		Handler: mux,
 	}
 
-	log.Println("server configured")
+	log.Println("server is running")
 
 	idleConnsClosed := make(chan struct{})
 	go func() {

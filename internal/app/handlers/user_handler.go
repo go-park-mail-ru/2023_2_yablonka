@@ -2,9 +2,7 @@ package handlers
 
 import (
 	"context"
-	"crypto/sha256"
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 	"time"
@@ -17,17 +15,17 @@ import (
 	"github.com/asaskevich/govalidator"
 )
 
-type AuthHandler struct {
+type UserHandler struct {
 	as service.IAuthService
-	us service.IUserAuthService
+	us service.IUserService
 }
 
-func (ah AuthHandler) GetAuthService() service.IAuthService {
-	return ah.as
+func (uh UserHandler) GetAuthService() service.IAuthService {
+	return uh.as
 }
 
-func (ah AuthHandler) GetUserAuthService() service.IUserAuthService {
-	return ah.us
+func (uh UserHandler) GetUserService() service.IUserService {
+	return uh.us
 }
 
 // @Summary Войти в систему
@@ -45,35 +43,30 @@ func (ah AuthHandler) GetUserAuthService() service.IUserAuthService {
 // @Failure 500  {object}  apperrors.ErrorResponse
 //
 // @Router /auth/login/ [post]
-func (ah AuthHandler) LogIn(w http.ResponseWriter, r *http.Request) {
+func (uh UserHandler) LogIn(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
 
-	var login dto.AuthInfo
+	var authInfo dto.AuthInfo
 
-	err := json.NewDecoder(r.Body).Decode(&login)
+	err := json.NewDecoder(r.Body).Decode(&authInfo)
 	if err != nil {
 		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.BadRequestResponse))
 		return
 	}
 
-	_, err = govalidator.ValidateStruct(login)
+	_, err = govalidator.ValidateStruct(authInfo)
 	if err != nil {
 		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.GenericUnauthorizedResponse))
 		return
 	}
 
-	incomingAuth := dto.LoginInfo{
-		Email:        login.Email,
-		PasswordHash: hashFromAuthInfo(login),
-	}
-
-	user, err := ah.us.GetUser(rCtx, incomingAuth)
+	user, err := uh.us.CheckPassword(rCtx, authInfo)
 	if err != nil {
 		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.ErrorMap[err]))
 		return
 	}
 
-	token, expiresAt, err := ah.as.AuthUser(rCtx, user)
+	token, expiresAt, err := uh.as.AuthUser(rCtx, dto.UserID{Value: user.ID})
 	if err != nil {
 		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.ErrorMap[err]))
 		return
@@ -81,14 +74,12 @@ func (ah AuthHandler) LogIn(w http.ResponseWriter, r *http.Request) {
 
 	cookie := &http.Cookie{
 		Name:     "tabula_user",
-		Value:    token,
+		Value:    token.Value,
 		HttpOnly: true,
 		SameSite: http.SameSiteLaxMode,
 		Expires:  expiresAt,
 		Path:     "/api/v2/",
 	}
-
-	fmt.Println(token)
 
 	http.SetCookie(w, cookie)
 
@@ -102,13 +93,13 @@ func (ah AuthHandler) LogIn(w http.ResponseWriter, r *http.Request) {
 		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.InternalServerErrorResponse))
 		return
 	}
-
-	r.Body.Close()
 	_, err = w.Write(jsonResponse)
 	if err != nil {
 		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.InternalServerErrorResponse))
 		return
 	}
+
+	r.Body.Close()
 }
 
 // @Summary Зарегистрировать нового пользователя
@@ -127,7 +118,7 @@ func (ah AuthHandler) LogIn(w http.ResponseWriter, r *http.Request) {
 // @Failure 500  {object}  apperrors.ErrorResponse
 //
 // @Router /auth/signup/ [post]
-func (ah AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
+func (uh UserHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
 
 	var signup dto.AuthInfo
@@ -143,19 +134,13 @@ func (ah AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	passwordHash := hashFromAuthInfo(signup)
-	incomingAuth := dto.SignupInfo{
-		Email:        signup.Email,
-		PasswordHash: passwordHash,
-	}
-
-	user, err := ah.us.CreateUser(rCtx, incomingAuth)
+	user, err := uh.us.RegisterUser(rCtx, signup)
 	if err != nil {
 		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.ErrorMap[err]))
 		return
 	}
 
-	token, expiresAt, err := ah.as.AuthUser(rCtx, user)
+	token, expiresAt, err := uh.as.AuthUser(rCtx, dto.UserID{Value: user.ID})
 	if err != nil {
 		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.ErrorMap[err]))
 		return
@@ -163,7 +148,7 @@ func (ah AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 
 	cookie := &http.Cookie{
 		Name:     "tabula_user",
-		Value:    token,
+		Value:    token.Value,
 		HttpOnly: true,
 		SameSite: http.SameSiteLaxMode,
 		Expires:  expiresAt,
@@ -188,6 +173,7 @@ func (ah AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.InternalServerErrorResponse))
 		return
 	}
+
 	r.Body.Close()
 }
 
@@ -198,13 +184,13 @@ func (ah AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 // @Accept  json
 // @Produce  json
 //
-// @Success 204 {string} string "no content"
+// @Success 204  {string} string "no content"
 // @Failure 400  {object}  apperrors.ErrorResponse
 // @Failure 401  {object}  apperrors.ErrorResponse
 // @Failure 500  {object}  apperrors.ErrorResponse
 //
 // @Router /auth/logout/ [delete]
-func (ah AuthHandler) LogOut(w http.ResponseWriter, r *http.Request) {
+func (uh UserHandler) LogOut(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
 
 	cookie, err := r.Cookie("tabula_user")
@@ -213,15 +199,17 @@ func (ah AuthHandler) LogOut(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	token := cookie.Value
+	token := dto.SessionToken{
+		Value: cookie.Value,
+	}
 
-	_, err = ah.as.VerifyAuth(rCtx, token)
+	_, err = uh.as.VerifyAuth(rCtx, token)
 	if err != nil {
 		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.ErrorMap[err]))
 		return
 	}
 
-	err = ah.as.LogOut(rCtx, token)
+	err = uh.as.LogOut(rCtx, token)
 	if err != nil {
 		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.ErrorMap[err]))
 		return
@@ -267,7 +255,7 @@ func (ah AuthHandler) LogOut(w http.ResponseWriter, r *http.Request) {
 // @Failure 500  {object}  apperrors.ErrorResponse
 //
 // @Router /auth/verify [get]
-func (ah AuthHandler) VerifyAuthEndpoint(w http.ResponseWriter, r *http.Request) {
+func (uh UserHandler) VerifyAuthEndpoint(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
 	log.Println(r.Cookies())
 
@@ -279,14 +267,17 @@ func (ah AuthHandler) VerifyAuthEndpoint(w http.ResponseWriter, r *http.Request)
 	}
 	log.Println(cookie.Value)
 
-	token := cookie.Value
+	token := dto.SessionToken{
+		Value: cookie.Value,
+	}
 
-	userInfo, err := ah.as.VerifyAuth(rCtx, token)
+	userID, err := uh.as.VerifyAuth(rCtx, token)
 	if err != nil {
 		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.ErrorMap[err]))
 		return
 	}
-	userObj, err := ah.us.GetUserByID(rCtx, userInfo.UserID)
+
+	userObj, err := uh.us.GetWithID(rCtx, userID)
 	if err == apperrors.ErrUserNotFound {
 		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.GenericUnauthorizedResponse))
 		return
@@ -314,9 +305,170 @@ func (ah AuthHandler) VerifyAuthEndpoint(w http.ResponseWriter, r *http.Request)
 	r.Body.Close()
 }
 
-// TODO salt
-func hashFromAuthInfo(info dto.AuthInfo) string {
-	hasher := sha256.New()
-	hasher.Write([]byte(info.Email + info.Password))
-	return fmt.Sprintf("%x", hasher.Sum(nil))
+// @Summary Поменять пароль
+// @Description Получает старый и новый пароли, а также id пользователя
+// @Tags user
+//
+// @Accept  json
+// @Produce  json
+//
+// @Param authData body dto.PasswordChangeInfo true "id, старый и новый пароли пользователя"
+//
+// @Success 200  {string} string "no content"
+// @Failure 500  {object}  apperrors.ErrorResponse
+//
+// @Router /user/edit/change_password/ [post]
+func (uh UserHandler) ChangePassword(w http.ResponseWriter, r *http.Request) {
+	rCtx := r.Context()
+
+	var passwords dto.PasswordChangeInfo
+
+	err := json.NewDecoder(r.Body).Decode(&passwords)
+	if err != nil {
+		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.BadRequestResponse))
+		return
+	}
+
+	_, err = govalidator.ValidateStruct(passwords)
+	if err != nil {
+		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.GenericUnauthorizedResponse))
+		return
+	}
+
+	err = uh.us.UpdatePassword(rCtx, passwords)
+	if err != nil {
+		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.ErrorMap[err]))
+		return
+	}
+
+	response := dto.JSONResponse{
+		Body: dto.JSONMap{},
+	}
+
+	jsonResponse, err := json.Marshal(response)
+	if err != nil {
+		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.InternalServerErrorResponse))
+		return
+	}
+
+	_, err = w.Write(jsonResponse)
+	if err != nil {
+		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.InternalServerErrorResponse))
+		return
+	}
+
+	r.Body.Close()
+}
+
+// @Summary Поменять данные профиля
+// @Description В ответ ничего не шлёт
+// @Tags auth
+//
+// @Accept  json
+// @Produce  json
+//
+// @Param authData body dto.UserProfileInfo true "id пользователя, имя, фамилия, описание пользователя"
+//
+// @Success 200  {string} string "no content"
+// @Failure 500  {object}  apperrors.ErrorResponse
+//
+// @Router /user/edit/ [post]
+func (uh UserHandler) ChangeProfile(w http.ResponseWriter, r *http.Request) {
+	rCtx := r.Context()
+
+	var newProfileInfo dto.UserProfileInfo
+
+	err := json.NewDecoder(r.Body).Decode(&newProfileInfo)
+	if err != nil {
+		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.BadRequestResponse))
+		return
+	}
+
+	_, err = govalidator.ValidateStruct(newProfileInfo)
+	if err != nil {
+		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.GenericUnauthorizedResponse))
+		return
+	}
+
+	err = uh.us.UpdateProfile(rCtx, newProfileInfo)
+	if err != nil {
+		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.ErrorMap[err]))
+		return
+	}
+
+	response := dto.JSONResponse{
+		Body: dto.JSONMap{},
+	}
+
+	jsonResponse, err := json.Marshal(response)
+	if err != nil {
+		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.InternalServerErrorResponse))
+		return
+	}
+
+	_, err = w.Write(jsonResponse)
+	if err != nil {
+		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.InternalServerErrorResponse))
+		return
+	}
+
+	r.Body.Close()
+}
+
+// TODO Fix
+// @Summary Поменять аватарку
+// @Description В ответ шлёт ссылку на файл
+// @Tags auth
+//
+// @Accept  json
+// @Produce  json
+//
+// @Param authData body dto.AvatarChangeInfo true "id пользователя, изображение"
+//
+// @Success 204  {string} string "no content"
+// @Failure 500  {object}  apperrors.ErrorResponse
+//
+// @Router /user/edit/change_password/ [post]
+func (uh UserHandler) ChangeAvatar(w http.ResponseWriter, r *http.Request) {
+	rCtx := r.Context()
+
+	var avatarChangeInfo dto.AvatarChangeInfo
+
+	err := json.NewDecoder(r.Body).Decode(&avatarChangeInfo)
+	if err != nil {
+		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.BadRequestResponse))
+		return
+	}
+
+	_, err = govalidator.ValidateStruct(avatarChangeInfo)
+	if err != nil {
+		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.GenericUnauthorizedResponse))
+		return
+	}
+
+	url, err := uh.us.UpdateAvatar(rCtx, avatarChangeInfo)
+	if err != nil {
+		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.ErrorMap[err]))
+		return
+	}
+
+	response := dto.JSONResponse{
+		Body: dto.JSONMap{
+			"avatar_url": url,
+		},
+	}
+
+	jsonResponse, err := json.Marshal(response)
+	if err != nil {
+		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.InternalServerErrorResponse))
+		return
+	}
+
+	_, err = w.Write(jsonResponse)
+	if err != nil {
+		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.InternalServerErrorResponse))
+		return
+	}
+
+	r.Body.Close()
 }
