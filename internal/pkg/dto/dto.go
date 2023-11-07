@@ -177,6 +177,7 @@ type NewWorkspaceInfo struct {
 // NewWorkspaceInfo
 // DTO для нового рабочего пространства
 type UpdatedWorkspaceInfo struct {
+	ID           string     `json:"id"`
 	Name         string     `json:"name"`
 	Description  string     `json:"description"`
 	ThumbnailURL string     `json:"thumbnail_url"`
