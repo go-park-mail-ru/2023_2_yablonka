@@ -23,19 +23,19 @@ func NewTaskService(storage storage.ITaskStorage) *TaskService {
 // создает новое задание
 // или возвращает ошибки ...
 func (ts TaskService) Create(ctx context.Context, info dto.NewTaskInfo) (*entities.Task, error) {
-	return nil, nil
+	return ts.storage.Create(ctx, info)
 }
 
 // Update
 // обновляет задание
 // или возвращает ошибки ...
 func (ts TaskService) Update(ctx context.Context, info dto.UpdatedTaskInfo) error {
-	return nil
+	return ts.storage.Update(ctx, info)
 }
 
 // Delete
 // удаляет задание
 // или возвращает ошибки ...
 func (ts TaskService) Delete(ctx context.Context, id dto.TaskID) error {
-	return nil
+	return ts.storage.Delete(ctx, id)
 }
