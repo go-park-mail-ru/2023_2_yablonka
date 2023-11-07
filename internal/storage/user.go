@@ -7,24 +7,36 @@ import (
 )
 
 type IUserStorage interface {
-	// GetUserByLogin
+	// GetWithLogin
 	// находит пользователя в БД по почте
 	// или возвращает ошибки ...
-	GetUserByLogin(ctx context.Context, login string) (*entities.User, error)
-	// GetUserByID
+	GetWithLogin(context.Context, dto.UserLogin) (*entities.User, error)
+	// GetWithID
 	// находит пользователя в БД по его id
 	// или возвращает ошибки ...
-	GetUserByID(ctx context.Context, id uint64) (*entities.User, error)
+	GetWithID(context.Context, dto.UserID) (*entities.User, error)
+	// GetLoginInfoWithID
+	// находит данные логина пользователя в БД по id
+	// или возвращает ошибки ...
+	GetLoginInfoWithID(context.Context, dto.UserID) (*dto.LoginInfo, error)
 	// Create
 	// создает нового пользователя в БД по данным
 	// или возвращает ошибки ...
-	Create(ctx context.Context, info dto.SignupInfo) (*entities.User, error)
-	// Update
-	// обновляет пользователя в БД
+	Create(context.Context, dto.SignupInfo) (*entities.User, error)
+	// UpdatePassword
+	// обновляет пароль пользователя в БД
 	// или возвращает ошибки ...
-	Update(ctx context.Context, updatedUser entities.User) error
+	UpdatePassword(context.Context, dto.PasswordHashesInfo) error
+	// UpdateProfile
+	// обновляет профиль пользователя в БД
+	// или возвращает ошибки ...
+	UpdateProfile(context.Context, dto.UserProfileInfo) error
+	// UpdateAvatar
+	// обновляет аватарку пользователя в БД
+	// или возвращает ошибки ...
+	UpdateAvatarUrl(context.Context, dto.AvatarUrlInfo) error
 	// Delete
 	// удаляет данного пользователя в БД по id
 	// или возвращает ошибки ...
-	Delete(ctx context.Context, id uint64) error
+	Delete(context.Context, dto.UserID) error
 }

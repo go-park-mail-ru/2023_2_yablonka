@@ -30,7 +30,7 @@ func NewWorkspaceStorage(db *pgxpool.Pool) *PostgresWorkspaceStorage {
 // или возвращает ошибки ...
 func (s PostgresWorkspaceStorage) Create(ctx context.Context, info dto.NewWorkspaceInfo) (*entities.Workspace, error) {
 	query1, args, err := sq.
-		Insert("public.workspace").
+		Insert("workspace").
 		Columns("name", "thumbnail_url", "description").
 		Values(info.Name, info.ThumbnailURL, info.Description).
 		PlaceholderFormat(sq.Dollar).
@@ -61,9 +61,9 @@ func (s PostgresWorkspaceStorage) Create(ctx context.Context, info dto.NewWorksp
 	}
 
 	query2, args, err := sq.
-		Insert("public.workspace_user").
-		Columns("id_workspace", "id_user").
-		Values(workspace.ID, info.OwnerID).
+		Insert("workspace_user").
+		Columns("id_workspace", "id_user", "id_role").
+		Values(workspace.ID, info.OwnerID, 1).
 		ToSql()
 
 	if err != nil {
@@ -95,22 +95,58 @@ func (s PostgresWorkspaceStorage) Create(ctx context.Context, info dto.NewWorksp
 // GetUserWorkspaces
 // находит пользователя в БД по почте
 // или возвращает ошибки ...
-func (s PostgresWorkspaceStorage) GetUserWorkspaces(ctx context.Context, userID uint64) (*[]entities.Workspace, error) {
+func (s PostgresWorkspaceStorage) GetUserWorkspaces(ctx context.Context, userID dto.UserID) (*[]entities.Workspace, error) {
+	// sql, args, err := sq.
+	// 	Select("workspace.*", "user.id", "user.email", "role.*").
+	// 	From("workspace").
+	// 	Join("user_workspace ON user_workspace.id_workspace = workspace.id").
+	// 	Join("user ON user_workspace.id_user = user.id").
+	// 	Join("role ON user_workspace.id_role = role.id").
+	// 	Where(sq.Eq{"user_workspace.id_user": userID.Value}).
+	// 	ToSql()
+	// if err != nil {
+	// 	return nil, apperrors.ErrCouldNotBuildQuery
+	// }
+
+	// rows, err := s.db.Query(context.Background(), sql, args...)
+	// if err != nil {
+	// 	return nil, err
+	// }
+	// defer rows.Close()
+
+	// var usersWithRoles dto.UsersAndRoles
+	// for rows.Next() {
+	// 	var user dto.UserInWorkspace
+	// 	var role dto.RoleInWorkspace
+
+	// 	err = rows.Scan(
+	// 		&user,
+	// 		&role,
+	// 	)
+	// 	if err != nil {
+	// 		return nil, err
+	// 	}
+
+	// 	usersWithRoles.Users = append(usersWithRoles.Users, user)
+	// 	usersWithRoles.Roles = append(usersWithRoles.Roles, role)
+	// }
+
+	// if err = rows.Err(); err != nil {
+	// 	return nil, err
+	// }
+
 	return nil, nil
 }
 
-// GetByID
-// находит рабочее пространство в БД по его id
+// GetWithBoards
+// находит рабочее пространство и связанные доски в БД по его id
 // или возвращает ошибки ...
-func (s PostgresWorkspaceStorage) GetByID(ctx context.Context, id uint64) (*entities.Workspace, error) {
-	sql, args, err := sq.Select("workspaces.*", "boards.*", "lists.*", "tasks.*", "users.*").
-		From("workspaces").
-		Join("boards ON workspaces.id = boards.workspace_id").
-		Join("lists ON boards.id = lists.board_id").
-		Join("tasks ON lists.id = tasks.list_id").
-		Join("user_workspace ON workspaces.id = user_workspace.workspace_id").
-		Join("users ON user_workspace.user_id = users.id").
-		Where(sq.Eq{"workspaces.id": id}).
+func (s PostgresWorkspaceStorage) GetWithBoards(ctx context.Context, id dto.WorkspaceID) (*entities.Workspace, error) {
+	sql, args, err := sq.
+		Select(allWorkspaceAndBoardFields...).
+		From("workspace").
+		Join("board ON workspace.id = board.workspace_id").
+		Where(sq.Eq{"workspace.id": id.Value}).
 		ToSql()
 	if err != nil {
 		return nil, err
@@ -124,13 +160,68 @@ func (s PostgresWorkspaceStorage) GetByID(ctx context.Context, id uint64) (*enti
 
 	var workspace entities.Workspace
 	for rows.Next() {
-		err = rows.Scan(&workspace.ID, &workspace.Name, &workspace.Description, &workspace.ThumbnailURL, &workspace.DateCreated, &workspace.Boards, &workspace.Users)
+		var board entities.Board
+
+		err = rows.Scan(
+			&workspace,
+			&board)
 		if err != nil {
 			return nil, err
 		}
+
+		workspace.Boards = append(workspace.Boards, board)
+	}
+
+	if rows.Err() != nil {
+		return nil, err
 	}
 
 	return &workspace, nil
+}
+
+// GetUsersInWorkspace
+// находит всех пользователей и их роли в БД по его id рабочего пространства
+// или возвращает ошибки ...
+func (s PostgresWorkspaceStorage) GetUsersInWorkspace(ctx context.Context, id dto.WorkspaceID) (*dto.UsersAndRoles, error) {
+	sql, args, err := sq.
+		Select("user.*", "role.*").
+		From("user_workspace").
+		Join("user ON user_workspace.id_user = user.id").
+		Join("role ON user_workspace.id_role = role.id").
+		Where(sq.Eq{"user_workspace.id_workspace": id.Value}).
+		ToSql()
+	if err != nil {
+		return nil, apperrors.ErrCouldNotBuildQuery
+	}
+
+	rows, err := s.db.Query(context.Background(), sql, args...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var usersWithRoles dto.UsersAndRoles
+	for rows.Next() {
+		var user dto.UserInWorkspace
+		var role dto.RoleInWorkspace
+
+		err = rows.Scan(
+			&user,
+			&role,
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		usersWithRoles.Users = append(usersWithRoles.Users, user)
+		usersWithRoles.Roles = append(usersWithRoles.Roles, role)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return &usersWithRoles, nil
 }
 
 // Update
@@ -138,7 +229,7 @@ func (s PostgresWorkspaceStorage) GetByID(ctx context.Context, id uint64) (*enti
 // или возвращает ошибки ...
 func (s PostgresWorkspaceStorage) Update(ctx context.Context, info dto.UpdatedWorkspaceInfo) error {
 	sql, args, err := sq.
-		Update("public.workspace").
+		Update("workspace").
 		Set("name", info.Name).
 		Set("description", info.Description).
 		Set("thumbnail_url", info.ThumbnailURL).
@@ -161,10 +252,10 @@ func (s PostgresWorkspaceStorage) Update(ctx context.Context, info dto.UpdatedWo
 // Delete
 // удаляет данногt рабочее пространство в БД по id
 // или возвращает ошибки ...
-func (s PostgresWorkspaceStorage) Delete(ctx context.Context, id uint64) error {
+func (s PostgresWorkspaceStorage) Delete(ctx context.Context, id dto.WorkspaceID) error {
 	sql, args, err := sq.
-		Delete("public.workspace").
-		Where(sq.Eq{"id": id}).
+		Delete("workspace").
+		Where(sq.Eq{"id": id.Value}).
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
 

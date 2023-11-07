@@ -25,11 +25,11 @@ func NewUserStorage(db *pgxpool.Pool) *PostgresUserStorage {
 // GetUserByLogin
 // находит пользователя в БД по почте
 // или возвращает ошибки ...
-func (s *PostgresUserStorage) GetUserByLogin(ctx context.Context, login string) (*entities.User, error) {
+func (s *PostgresUserStorage) GetWithLogin(ctx context.Context, login dto.UserLogin) (*entities.User, error) {
 	sql, args, err := sq.
 		Select(allUserFields...).
 		From("public.user").
-		Where(sq.Eq{"login": login}).
+		Where(sq.Eq{"login": login.Value}).
 		ToSql()
 
 	if err != nil {
@@ -49,11 +49,11 @@ func (s *PostgresUserStorage) GetUserByLogin(ctx context.Context, login string) 
 // GetUserByID
 // находит пользователя в БД по его id
 // или возвращает ошибки ...
-func (s *PostgresUserStorage) GetUserByID(ctx context.Context, uid uint64) (*entities.User, error) {
+func (s *PostgresUserStorage) GetWithID(ctx context.Context, id dto.UserID) (*entities.User, error) {
 	sql, args, err := sq.
 		Select(allUserFields...).
 		From("public.user").
-		Where(sq.Eq{"id": uid}).
+		Where(sq.Eq{"id": id.Value}).
 		ToSql()
 
 	if err != nil {
@@ -70,7 +70,31 @@ func (s *PostgresUserStorage) GetUserByID(ctx context.Context, uid uint64) (*ent
 	return &user, nil
 }
 
-// CreateUser
+// GetLoginInfoWithID
+// находит данные логина пользователя в БД по id
+// или возвращает ошибки ...
+func (s *PostgresUserStorage) GetLoginInfoWithID(ctx context.Context, id dto.UserID) (*dto.LoginInfo, error) {
+	sql, args, err := sq.
+		Select("email", "password_hash").
+		From("public.user").
+		Where(sq.Eq{"id": id.Value}).
+		ToSql()
+
+	if err != nil {
+		return nil, apperrors.ErrCouldNotBuildQuery
+	}
+
+	row := s.db.QueryRow(ctx, sql, args...)
+
+	loginInfo := dto.LoginInfo{}
+	if row.Scan(&loginInfo) != nil {
+		return nil, apperrors.ErrUserNotFound
+	}
+
+	return &loginInfo, nil
+}
+
+// Create
 // создает нового пользователя в БД по данным
 // или возвращает ошибки ...
 func (s *PostgresUserStorage) Create(ctx context.Context, info dto.SignupInfo) (*entities.User, error) {
@@ -86,31 +110,77 @@ func (s *PostgresUserStorage) Create(ctx context.Context, info dto.SignupInfo) (
 		return nil, apperrors.ErrCouldNotBuildQuery
 	}
 
-	query := s.db.QueryRow(ctx, sql, args...)
+	user := entities.User{
+		Email:        info.Email,
+		PasswordHash: info.PasswordHash,
+	}
 
-	user := entities.User{}
+	query := s.db.QueryRow(ctx, sql, args...)
 	if query.Scan(&user.ID) != nil {
 		return nil, apperrors.ErrUserNotCreated
 	}
 
-	user.Email = info.Email
-	user.PasswordHash = info.PasswordHash
-
 	return &user, nil
 }
 
-// Update
-// обновляет пользователя в БД
+// UpdatePassword
+// обновляет пароль пользователя в БД
 // или возвращает ошибки ...
-func (s *PostgresUserStorage) Update(ctx context.Context, updatedUser entities.User) error {
+func (s *PostgresUserStorage) UpdatePassword(ctx context.Context, info dto.PasswordHashesInfo) error {
 	sql, args, err := sq.
 		Update("public.user").
-		Set("email", updatedUser.Email).
-		Set("name", updatedUser.Name).
-		Set("surname", updatedUser.Surname).
-		Set("avatar_url", updatedUser.AvatarURL).
-		Set("password_hash", updatedUser.PasswordHash).
-		Where(sq.Eq{"id": updatedUser.ID}).
+		Set("password_hash", info.NewPasswordHash).
+		Where(sq.Eq{"id": info.UserID}).
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
+
+	if err != nil {
+		return apperrors.ErrCouldNotBuildQuery
+	}
+
+	query := s.db.QueryRow(ctx, sql, args...)
+
+	if query.Scan() != nil {
+		return apperrors.ErrUserNotUpdated
+	}
+
+	return nil
+}
+
+// UpdateProfile
+// обновляет профиль пользователя в БД
+// или возвращает ошибки ...
+func (s *PostgresUserStorage) UpdateProfile(ctx context.Context, info dto.UserProfileInfo) error {
+	sql, args, err := sq.
+		Update("public.user").
+		Set("name", info.Name).
+		Set("surname", info.Surname).
+		Set("description", info.Description).
+		Where(sq.Eq{"id": info.UserID}).
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
+
+	if err != nil {
+		return apperrors.ErrCouldNotBuildQuery
+	}
+
+	query := s.db.QueryRow(ctx, sql, args...)
+
+	if query.Scan() != nil {
+		return apperrors.ErrUserNotUpdated
+	}
+
+	return nil
+}
+
+// UpdateAvatarUrl
+// обновляет аватарку пользователя в БД
+// или возвращает ошибки ...
+func (s *PostgresUserStorage) UpdateAvatarUrl(ctx context.Context, info dto.AvatarUrlInfo) error {
+	sql, args, err := sq.
+		Update("public.user").
+		Set("avatar_url", info.Url).
+		Where(sq.Eq{"id": info.UserID}).
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
 
@@ -130,10 +200,10 @@ func (s *PostgresUserStorage) Update(ctx context.Context, updatedUser entities.U
 // Delete
 // удаляет данного пользователя в БД по id
 // или возвращает ошибки ...
-func (s *PostgresUserStorage) Delete(ctx context.Context, id uint64) error {
+func (s *PostgresUserStorage) Delete(ctx context.Context, id dto.UserID) error {
 	sql, args, err := sq.
 		Delete("public.user").
-		Where(sq.Eq{"id": id}).
+		Where(sq.Eq{"id": id.Value}).
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
 
