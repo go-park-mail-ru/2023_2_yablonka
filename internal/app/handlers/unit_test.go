@@ -16,6 +16,7 @@ import (
 	"server/internal/pkg/entities"
 	"server/mocks/mock_service"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
@@ -57,7 +58,7 @@ func createConfig(envPath string) (*config.BaseServerConfig, error) {
 	return config, nil
 }
 
-func Test_ULogin(t *testing.T) {
+func TestAuthHandler_LogIn(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
@@ -119,16 +120,14 @@ func Test_ULogin(t *testing.T) {
 			}
 			mockUA := mockUserAuthService.EXPECT().Login(gomock.Any(), loginInfo)
 			if test.successful {
-				mockUA.
-					Return(
-						&entities.User{
-							ID:           test.userID,
-							Email:        test.email,
-							PasswordHash: test.password,
-						},
-						nil,
-					).
-					AnyTimes()
+				mockUA.Return(
+					&entities.User{
+						ID:           test.userID,
+						Email:        test.email,
+						PasswordHash: test.password,
+					},
+					nil,
+				)
 				mockAuthService.
 					EXPECT().
 					AuthUser(gomock.Any(), test.userID)
@@ -137,9 +136,7 @@ func Test_ULogin(t *testing.T) {
 					VerifyAuth(gomock.Any(), gomock.Any()).
 					Return(test.userID, nil)
 			} else {
-				mockUA.
-					Return(nil, test.expectedError).
-					AnyTimes()
+				mockUA.Return(nil, test.expectedError)
 			}
 
 			mux, _ := app.GetChiMux(*handlers.NewHandlerManager(
@@ -183,7 +180,7 @@ func Test_ULogin(t *testing.T) {
 	}
 }
 
-func Test_USign(t *testing.T) {
+func TestAuthHandler_SignUp(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
@@ -236,16 +233,14 @@ func Test_USign(t *testing.T) {
 			}
 			mockUA := mockUserAuthService.EXPECT().RegisterUser(gomock.Any(), signupInfo)
 			if test.successful {
-				mockUA.
-					Return(
-						&entities.User{
-							ID:           uint64(1),
-							Email:        test.email,
-							PasswordHash: test.password,
-						},
-						nil,
-					).
-					AnyTimes()
+				mockUA.Return(
+					&entities.User{
+						ID:           uint64(1),
+						Email:        test.email,
+						PasswordHash: test.password,
+					},
+					nil,
+				)
 				mockAuthService.
 					EXPECT().
 					AuthUser(gomock.Any(), uint64(1))
@@ -254,9 +249,7 @@ func Test_USign(t *testing.T) {
 					VerifyAuth(gomock.Any(), gomock.Any()).
 					Return(uint64(1), nil)
 			} else {
-				mockUA.
-					Return(nil, test.expectedError).
-					AnyTimes()
+				mockUA.Return(nil, test.expectedError)
 			}
 
 			mux, _ := app.GetChiMux(*handlers.NewHandlerManager(
@@ -298,6 +291,135 @@ func Test_USign(t *testing.T) {
 			} else {
 				require.Empty(t, w.Result().Cookies(), "Cookie was set despite unsuccessful registration")
 			}
+		})
+	}
+}
+
+func TestAuthHandler_LogOut(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name           string
+		token          string
+		password       string
+		successful     bool
+		hasCookie      bool
+		expiredCookie  bool
+		expectedStatus int
+		expectedError  error
+	}{
+		{
+			name:           "Successful logout",
+			token:          "existing session",
+			successful:     true,
+			expectedStatus: http.StatusOK,
+		},
+		{
+			name:           "No cookie",
+			successful:     false,
+			hasCookie:      false,
+			expectedStatus: http.StatusUnauthorized,
+		},
+		{
+			name:           "Empty cookie",
+			successful:     false,
+			hasCookie:      true,
+			expectedStatus: http.StatusUnauthorized,
+			expectedError:  apperrors.ErrSessionNotFound,
+		},
+		{
+			name:           "Expired cookie",
+			successful:     false,
+			hasCookie:      true,
+			expiredCookie:  true,
+			expectedStatus: http.StatusUnauthorized,
+			expectedError:  apperrors.ErrSessionExpired,
+		},
+	}
+
+	for _, test := range tests {
+		test := test
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+
+			ctrl := gomock.NewController(t)
+
+			cfg, err := createConfig(envPath)
+			require.Equal(t, nil, err)
+
+			mockAuthService := mock_service.NewMockIAuthService(ctrl)
+			mockUserAuthService := mock_service.NewMockIUserAuthService(ctrl)
+			mockBoardService := mock_service.NewMockIBoardService(ctrl)
+
+			body := bytes.NewReader([]byte(""))
+
+			r := httptest.NewRequest("DELETE", "/api/v2/auth/logout/", body)
+			r.Header.Add("Access-Control-Request-Headers", "content-type")
+			r.Header.Add("Origin", "localhost:8081")
+			w := httptest.NewRecorder()
+
+			if test.successful {
+				cookie := &http.Cookie{
+					Name:     "tabula_user",
+					Value:    test.token,
+					HttpOnly: true,
+					SameSite: http.SameSiteLaxMode,
+					Expires:  time.Now().Add(time.Duration(time.Hour)),
+					Path:     "/api/v2/",
+				}
+
+				r.AddCookie(cookie)
+
+				mockAuthService.
+					EXPECT().
+					VerifyAuth(gomock.Any(), test.token).
+					Return(uint64(1), nil)
+
+				mockAuthService.
+					EXPECT().
+					LogOut(gomock.Any(), test.token).
+					Return(nil)
+			} else if test.hasCookie {
+				var duration time.Duration
+				mockAuthService.
+					EXPECT().
+					VerifyAuth(gomock.Any(), test.token).
+					Return(uint64(0), test.expectedError)
+
+				if test.expiredCookie {
+					duration = 0 * time.Hour
+				} else {
+					duration = 1 * time.Hour
+				}
+
+				cookie := &http.Cookie{
+					Name:     "tabula_user",
+					Value:    test.token,
+					HttpOnly: true,
+					SameSite: http.SameSiteLaxMode,
+					Expires:  time.Now().Add(duration),
+					Path:     "/api/v2/",
+				}
+
+				r.AddCookie(cookie)
+			}
+
+			mux, _ := app.GetChiMux(*handlers.NewHandlerManager(
+				mockAuthService,
+				mockUserAuthService,
+				mockBoardService,
+			),
+				*cfg,
+			)
+
+			mux.ServeHTTP(w, r)
+
+			status := w.Result().StatusCode
+
+			require.EqualValuesf(t, test.expectedStatus, status,
+				"Expected code %d (%s), received code %d (%s)",
+				test.expectedStatus, http.StatusText(test.expectedStatus),
+				w.Code, http.StatusText(w.Code))
 		})
 	}
 }
