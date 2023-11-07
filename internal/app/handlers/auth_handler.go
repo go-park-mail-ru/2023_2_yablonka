@@ -88,8 +88,6 @@ func (ah AuthHandler) LogIn(w http.ResponseWriter, r *http.Request) {
 		Path:     "/api/v2/",
 	}
 
-	fmt.Println(token)
-
 	http.SetCookie(w, cookie)
 
 	response := dto.JSONResponse{
