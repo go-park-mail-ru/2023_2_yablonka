@@ -34,7 +34,7 @@ type IUserStorage interface {
 	// UpdateAvatar
 	// обновляет аватарку пользователя в БД
 	// или возвращает ошибки ...
-	UpdateAvatarUrl(context.Context, dto.AvatarUrlInfo) error
+	UpdateAvatarUrl(context.Context, dto.ImageUrlInfo) error
 	// Delete
 	// удаляет данного пользователя в БД по id
 	// или возвращает ошибки ...

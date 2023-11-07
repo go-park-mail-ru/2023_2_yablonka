@@ -10,11 +10,11 @@ type IWorkspaceStorage interface {
 	// GetUserOwnedWorkspaces
 	// находит все рабочие пространства, связанные с пользователем, группированные по ролям
 	// или возвращает ошибку apperrors.ErrUserNotFound (401)
-	GetUserWorkspaces(context.Context, dto.UserID) (*[]entities.Workspace, error)
-	// GetByID
+	GetUserWorkspaces(context.Context, dto.UserID) (*dto.AllWorkspaces, error)
+	// GetWorkspace
 	// находит рабочее пространство в БД по его id
 	// или возвращает ошибки ...
-	GetWithBoards(context.Context, dto.WorkspaceID) (*entities.Workspace, error)
+	GetWorkspace(context.Context, dto.WorkspaceID) (*entities.Workspace, error)
 	// Create
 	// создает новоt рабочее пространство в БД по данным
 	// или возвращает ошибки ...
@@ -22,10 +22,13 @@ type IWorkspaceStorage interface {
 	// Update
 	// обновляет рабочее пространство в БД
 	// или возвращает ошибки ...
-	Update(context.Context, dto.UpdatedWorkspaceInfo) error
+	UpdateData(context.Context, dto.UpdatedWorkspaceInfo) error
+	// UpdateThumbnail
+	// обновляет ссылку на картину рабочего пространства в БД
+	// или возвращает ошибки ...
+	UpdateThumbnailUrl(context.Context, dto.ImageUrlInfo) error
 	// Delete
 	// удаляет данногt рабочее пространство в БД по id
 	// или возвращает ошибки ...
 	Delete(context.Context, dto.WorkspaceID) error
-	GetUsersInWorkspace(context.Context, dto.WorkspaceID) (*dto.UsersAndRoles, error)
 }

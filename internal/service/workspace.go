@@ -8,23 +8,31 @@ import (
 
 type IWorkspaceService interface {
 	// GetUserWorkspaces
-	// находит пользователя в БД по почте
+	// находит пользователя по почте
 	// или возвращает ошибки ...
-	GetUserWorkspaces(context.Context, dto.UserID) (*entities.Workspace, error)
+	GetUserWorkspaces(context.Context, dto.UserID) (*dto.AllWorkspaces, error)
 	// GetByID
-	// находит рабочее пространство в БД по его id
+	// находит рабочее пространство по его id
 	// или возвращает ошибки ...
 	GetWorkspace(context.Context, dto.WorkspaceID) (*entities.Workspace, error)
 	// Create
-	// создает новоt рабочее пространство в БД по данным
+	// создает новоt рабочее пространство по данным
 	// или возвращает ошибки ...
 	Create(context.Context, dto.NewWorkspaceInfo) (*entities.Workspace, error)
-	// Update
-	// обновляет рабочее пространство в БД
+	// UpdateData
+	// обновляет рабочее пространство
 	// или возвращает ошибки ...
-	Update(context.Context, dto.UpdatedWorkspaceInfo) error
+	UpdateData(context.Context, dto.UpdatedWorkspaceInfo) error
+	// UpdateThumbnail
+	// обновляет картинку рабочего пространства
+	// или возвращает ошибки ...
+	UpdateThumbnail(context.Context, dto.ChangeWorkspaceThumbnailInfo) (*dto.UrlObj, error)
+	// UpdateUsers
+	// обновляет список пользователей рабочего пространства
+	// или возвращает ошибки ...
+	UpdateUsers(context.Context, dto.ChangeWorkspaceGuestsInfo) error
 	// Delete
-	// удаляет рабочее пространство в БД по id
+	// удаляет рабочее пространство по id
 	// или возвращает ошибки ...
 	Delete(context.Context, dto.WorkspaceID) error
 }

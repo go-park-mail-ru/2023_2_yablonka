@@ -54,7 +54,7 @@ type AvatarChangeInfo struct {
 
 // ImageRequest
 // структура для изменения аватарки
-type AvatarUrlInfo struct {
+type ImageUrlInfo struct {
 	UserID string `json:"user_id"`
 	Url    string `json:"avatar_url"`
 }
@@ -228,14 +228,26 @@ type UpdatedListInfo struct {
 	ListPosition string `json:"list_position"`
 }
 
-// NewWorkspaceInfo
-// DTO для нового рабочего пространства
+// UpdatedWorkspaceInfo
+// DTO для обновления данных рабочего пространства
 type UpdatedWorkspaceInfo struct {
-	ID           string     `json:"id"`
-	Name         string     `json:"name"`
-	Description  string     `json:"description"`
-	ThumbnailURL string     `json:"thumbnail_url"`
-	Guests       []UserInfo `json:"guests"`
+	ID          string `json:"id"`
+	Name        string `json:"name"`
+	Description string `json:"description"`
+}
+
+// AddWorkspaceGuestsInfo
+// DTO для изменения списка гостей рабочего пространства
+type ChangeWorkspaceGuestsInfo struct {
+	ID     string   `json:"id"`
+	Guests []UserID `json:"guests"`
+}
+
+// ChangeWorkspaceThumbnailInfo
+// DTO для изменения картинки рабочего пространства
+type ChangeWorkspaceThumbnailInfo struct {
+	ID        string `json:"id"`
+	Thumbnail []byte `json:"thumbnail"`
 }
 
 // UserOwnedBoardInfo
@@ -254,11 +266,11 @@ type UserGuestBoardInfo struct {
 	BoardInfo  UserOwnedBoardInfo `json:"board_info"`
 }
 
-// UserTotalBoardInfo
+// AllWorkspaces
 // DTO, собирающие все доски отдельно взятого пользователя
-type UserTotalBoardInfo struct {
-	OwnedBoards []UserOwnedBoardInfo `json:"user_owned_boards"`
-	GuestBoards []UserGuestBoardInfo `json:"user_guest_boards"`
+type AllWorkspaces struct {
+	OwnedWorkspaces []UserOwnedBoardInfo `json:"user_owned_boards"`
+	GuestWorkspaces []UserGuestBoardInfo `json:"user_guest_boards"`
 }
 
 // UserInfo
