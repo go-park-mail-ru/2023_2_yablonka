@@ -1,5 +1,7 @@
 package dto
 
+import "time"
+
 // VerifiedAuthInfo
 // DTO, подтверждающее личность на основе сессии, полученных при регистрации
 type VerifiedAuthInfo struct {
@@ -97,14 +99,14 @@ type UserProfileInfo struct {
 // PasswordChangeInfo
 // DTO для обработки данных, полученных при входе
 type PasswordHashesInfo struct {
-	UserID          uint64
+	UserID          uint64 `json:"user_id"`
 	NewPasswordHash string
 }
 
 // UserLogin
 // DTO для обработки входных данных, идентифицирующих пользователя
 type UserLogin struct {
-	Value string
+	Value string `json:"email" valid:"type(string),email"`
 }
 
 // SignupInfo
@@ -172,6 +174,58 @@ type NewWorkspaceInfo struct {
 	Description  string `json:"description"`
 	ThumbnailURL string `json:"thumbnail_url"`
 	OwnerID      uint64 `json:"owner_id"`
+}
+
+// ListID
+// DTO для id списка задач
+type ListID struct {
+	Value string `json:"id"`
+}
+
+// TaskID
+// DTO для id задач
+type TaskID struct {
+	Value string `json:"id"`
+}
+
+// NewListInfo
+// DTO для нового списка задач
+type NewListInfo struct {
+	ID           string `json:"id"`
+	Name         string `json:"name"`
+	Description  string `json:"description"`
+	ListPosition string `json:"list_position"`
+}
+
+// NewTaskInfo
+// DTO для новой задачи
+type NewTaskInfo struct {
+	ID           string    `json:"id"`
+	Name         string    `json:"name"`
+	Description  string    `json:"description"`
+	Start        time.Time `json:"start"`
+	End          time.Time `json:"end"`
+	ListPosition string    `json:"list_position"`
+}
+
+// UpdatedTaskInfo
+// DTO для обновленной задачи
+type UpdatedTaskInfo struct {
+	ID           string    `json:"id"`
+	Name         string    `json:"name"`
+	Description  string    `json:"description"`
+	Start        time.Time `json:"start"`
+	End          time.Time `json:"end"`
+	ListPosition string    `json:"list_position"`
+}
+
+// UpdatedListInfo
+// DTO для обновленного списка задач
+type UpdatedListInfo struct {
+	ID           string `json:"id"`
+	Name         string `json:"name"`
+	Description  string `json:"description"`
+	ListPosition string `json:"list_position"`
 }
 
 // NewWorkspaceInfo
