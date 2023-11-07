@@ -13,6 +13,7 @@ require (
 	github.com/stretchr/testify v1.8.4
 	github.com/swaggo/http-swagger/v2 v2.0.2
 	github.com/swaggo/swag v1.16.2
+	go.uber.org/mock v0.3.0
 )
 
 require (
