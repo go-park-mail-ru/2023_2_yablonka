@@ -28,7 +28,7 @@ func NewWorkspaceStorage(db *pgxpool.Pool) *PostgresWorkspaceStorage {
 // GetUserWorkspaces
 // находит пользователя в БД по почте
 // или возвращает ошибки ...
-func (s PostgresWorkspaceStorage) GetUserWorkspaces(ctx context.Context, userID dto.UserID) (*[]entities.Workspace, error) {
+func (s PostgresWorkspaceStorage) GetUserWorkspaces(ctx context.Context, userID dto.UserID) (*dto.AllWorkspaces, error) {
 	// sql, args, err := sq.
 	// 	Select("workspace.*", "user.id", "user.email", "role.*").
 	// 	From("workspace").
@@ -187,6 +187,30 @@ func (s PostgresWorkspaceStorage) UpdateData(ctx context.Context, info dto.Updat
 		Update("workspace").
 		Set("name", info.Name).
 		Set("description", info.Description).
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
+
+	if err != nil {
+		return apperrors.ErrCouldNotBuildQuery
+	}
+
+	query := s.db.QueryRow(ctx, sql, args...)
+
+	if query.Scan() != nil {
+		return apperrors.ErrUserNotUpdated
+	}
+
+	return nil
+}
+
+// UpdateAvatarUrl
+// обновляет аватарку пользователя в БД
+// или возвращает ошибки ...
+func (s *PostgresWorkspaceStorage) UpdateThumbnailUrl(ctx context.Context, info dto.ImageUrlInfo) error {
+	sql, args, err := sq.
+		Update("public.workspace").
+		Set("thumbnail_url", info.Url).
+		Where(sq.Eq{"id": info.ID}).
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
 

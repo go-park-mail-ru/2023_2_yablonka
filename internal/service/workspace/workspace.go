@@ -53,8 +53,8 @@ func (ws WorkspaceService) UpdateData(ctx context.Context, info dto.UpdatedWorks
 // или возвращает ошибки ...
 func (ws WorkspaceService) UpdateThumbnail(ctx context.Context, info dto.ChangeWorkspaceThumbnailInfo) (*dto.UrlObj, error) {
 	thumbnailUrlInfo := dto.ImageUrlInfo{
-		UserID: info.ID,
-		Url:    "images/" + info.ID + ".png",
+		ID:  info.ID,
+		Url: "images/" + info.ID + ".png",
 	}
 	f, err := os.Create(thumbnailUrlInfo.Url)
 	if err != nil {

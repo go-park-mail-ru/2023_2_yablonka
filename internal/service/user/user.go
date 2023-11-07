@@ -93,8 +93,8 @@ func (us UserService) UpdateProfile(ctx context.Context, info dto.UserProfileInf
 // или возвращает ошибку apperrors.ErrUserNotFound (409)
 func (us UserService) UpdateAvatar(ctx context.Context, info dto.AvatarChangeInfo) (*dto.UrlObj, error) {
 	avatarUrlInfo := dto.ImageUrlInfo{
-		UserID: info.UserID,
-		Url:    "images/" + info.UserID + ".png",
+		ID:  info.UserID,
+		Url: "images/" + info.UserID + ".png",
 	}
 	f, err := os.Create(avatarUrlInfo.Url)
 	if err != nil {

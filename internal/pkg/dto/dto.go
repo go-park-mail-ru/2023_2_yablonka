@@ -55,8 +55,8 @@ type AvatarChangeInfo struct {
 // ImageRequest
 // структура для изменения аватарки
 type ImageUrlInfo struct {
-	UserID string `json:"user_id"`
-	Url    string `json:"avatar_url"`
+	ID  string `json:"user_id"`
+	Url string `json:"avatar_url"`
 }
 
 // ImageRequest

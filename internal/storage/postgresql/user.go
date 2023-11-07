@@ -180,7 +180,7 @@ func (s *PostgresUserStorage) UpdateAvatarUrl(ctx context.Context, info dto.Imag
 	sql, args, err := sq.
 		Update("public.user").
 		Set("avatar_url", info.Url).
-		Where(sq.Eq{"id": info.UserID}).
+		Where(sq.Eq{"id": info.ID}).
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
 
