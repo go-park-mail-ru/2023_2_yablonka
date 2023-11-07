@@ -185,7 +185,8 @@ func (th TaskHandler) Read(w http.ResponseWriter, r *http.Request) {
 	r.Body.Close()
 }
 
-func (lh TaskHandler) ReadListsInBoard(w http.ResponseWriter, r *http.Request) {
+f
+// @Produce  jsonunc (lh TaskHandler) ReadListsInBoard(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
 
 	var boardID dto.BoardID

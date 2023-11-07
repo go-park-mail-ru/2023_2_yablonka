@@ -317,7 +317,7 @@ func (uh UserHandler) VerifyAuthEndpoint(w http.ResponseWriter, r *http.Request)
 // @Success 200  {string} string "no content"
 // @Failure 500  {object}  apperrors.ErrorResponse
 //
-// @Router /user/change_password/ [post]
+// @Router /user/edit/change_password/ [post]
 func (uh UserHandler) ChangePassword(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
 
@@ -372,7 +372,7 @@ func (uh UserHandler) ChangePassword(w http.ResponseWriter, r *http.Request) {
 // @Success 200  {string} string "no content"
 // @Failure 500  {object}  apperrors.ErrorResponse
 //
-// @Router /user/profile/change/ [post]
+// @Router /user/edit/ [post]
 func (uh UserHandler) ChangeProfile(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
 
@@ -428,7 +428,7 @@ func (uh UserHandler) ChangeProfile(w http.ResponseWriter, r *http.Request) {
 // @Success 204  {string} string "no content"
 // @Failure 500  {object}  apperrors.ErrorResponse
 //
-// @Router /auth/profile/change_avatar/ [post]
+// @Router /user/edit/change_password/ [post]
 func (uh UserHandler) ChangeAvatar(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
 

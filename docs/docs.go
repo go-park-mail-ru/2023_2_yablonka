@@ -157,46 +157,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/auth/profile/change_avatar/": {
-            "post": {
-                "description": "В ответ шлёт ссылку на файл",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "auth"
-                ],
-                "summary": "Поменять аватарку",
-                "parameters": [
-                    {
-                        "description": "id пользователя, изображение",
-                        "name": "authData",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/dto.AvatarChangeInfo"
-                        }
-                    }
-                ],
-                "responses": {
-                    "204": {
-                        "description": "no content",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/apperrors.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
         "/auth/signup/": {
             "post": {
                 "description": "Также вводит пользователя в систему",
@@ -296,47 +256,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/user/change_password/": {
-            "post": {
-                "description": "Получает старый и новый пароли, а также id пользователя",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "user"
-                ],
-                "summary": "Поменять пароль",
-                "parameters": [
-                    {
-                        "description": "id, старый и новый пароли пользователя",
-                        "name": "authData",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/dto.PasswordChangeInfo"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "no content",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/apperrors.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/user/profile/change/": {
+        "/user/edit/": {
             "post": {
                 "description": "В ответ ничего не шлёт",
                 "consumes": [
@@ -362,6 +282,46 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
+                        "description": "no content",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/user/edit/change_password/": {
+            "post": {
+                "description": "В ответ шлёт ссылку на файл",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Поменять аватарку",
+                "parameters": [
+                    {
+                        "description": "id пользователя, изображение",
+                        "name": "authData",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.AvatarChangeInfo"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
                         "description": "no content",
                         "schema": {
                             "type": "string"

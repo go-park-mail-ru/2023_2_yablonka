@@ -240,32 +240,6 @@ paths:
       summary: Выйти из системы
       tags:
       - auth
-  /auth/profile/change_avatar/:
-    post:
-      consumes:
-      - application/json
-      description: В ответ шлёт ссылку на файл
-      parameters:
-      - description: id пользователя, изображение
-        in: body
-        name: authData
-        required: true
-        schema:
-          $ref: '#/definitions/dto.AvatarChangeInfo'
-      produces:
-      - application/json
-      responses:
-        "204":
-          description: no content
-          schema:
-            type: string
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/apperrors.ErrorResponse'
-      summary: Поменять аватарку
-      tags:
-      - auth
   /auth/signup/:
     post:
       consumes:
@@ -332,33 +306,7 @@ paths:
       summary: Подтвердить вход
       tags:
       - auth
-  /user/change_password/:
-    post:
-      consumes:
-      - application/json
-      description: Получает старый и новый пароли, а также id пользователя
-      parameters:
-      - description: id, старый и новый пароли пользователя
-        in: body
-        name: authData
-        required: true
-        schema:
-          $ref: '#/definitions/dto.PasswordChangeInfo'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: no content
-          schema:
-            type: string
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/apperrors.ErrorResponse'
-      summary: Поменять пароль
-      tags:
-      - user
-  /user/profile/change/:
+  /user/edit/:
     post:
       consumes:
       - application/json
@@ -382,6 +330,32 @@ paths:
           schema:
             $ref: '#/definitions/apperrors.ErrorResponse'
       summary: Поменять данные профиля
+      tags:
+      - auth
+  /user/edit/change_password/:
+    post:
+      consumes:
+      - application/json
+      description: В ответ шлёт ссылку на файл
+      parameters:
+      - description: id пользователя, изображение
+        in: body
+        name: authData
+        required: true
+        schema:
+          $ref: '#/definitions/dto.AvatarChangeInfo'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: no content
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+      summary: Поменять аватарку
       tags:
       - auth
 swagger: "2.0"
