@@ -5,19 +5,33 @@ definitions:
       error_response:
         type: string
     type: object
-  doc_structs.UserBoardsResponse:
+  doc_structs.AllWorkspacesResponse:
     properties:
-      boards:
-        items:
-          $ref: '#/definitions/entities.Board'
-        type: array
       user:
         $ref: '#/definitions/entities.User'
+      workspaces:
+        $ref: '#/definitions/dto.AllWorkspaces'
+    type: object
+  doc_structs.ThumbnailUploadResponse:
+    properties:
+      thumbnail_url:
+        $ref: '#/definitions/dto.AllWorkspaces'
     type: object
   doc_structs.UserResponse:
     properties:
       user:
         $ref: '#/definitions/entities.User'
+    type: object
+  dto.AllWorkspaces:
+    properties:
+      user_guest_boards:
+        items:
+          $ref: '#/definitions/dto.UserGuestBoardInfo'
+        type: array
+      user_owned_boards:
+        items:
+          $ref: '#/definitions/dto.UserOwnedBoardInfo'
+        type: array
     type: object
   dto.AuthInfo:
     properties:
@@ -35,6 +49,26 @@ definitions:
       user_id:
         type: string
     type: object
+  dto.ChangeWorkspaceThumbnailInfo:
+    properties:
+      id:
+        type: string
+      thumbnail:
+        items:
+          type: integer
+        type: array
+    type: object
+  dto.NewWorkspaceInfo:
+    properties:
+      description:
+        type: string
+      name:
+        type: string
+      owner_id:
+        type: integer
+      thumbnail_url:
+        type: string
+    type: object
   dto.PasswordChangeInfo:
     properties:
       new_password:
@@ -44,12 +78,32 @@ definitions:
       user_id:
         type: integer
     type: object
-  dto.UserInfo:
+  dto.UpdatedWorkspaceInfo:
     properties:
-      email:
+      description:
         type: string
       id:
+        type: string
+      name:
+        type: string
+    type: object
+  dto.UserGuestBoardInfo:
+    properties:
+      board_info:
+        $ref: '#/definitions/dto.UserOwnedBoardInfo'
+      owner_email:
+        type: string
+      owner_id:
         type: integer
+    type: object
+  dto.UserOwnedBoardInfo:
+    properties:
+      board_id:
+        type: integer
+      board_name:
+        type: string
+      thumbnail_url:
+        type: string
     type: object
   dto.UserProfileInfo:
     properties:
@@ -62,66 +116,10 @@ definitions:
       user_id:
         type: integer
     type: object
-  entities.Board:
+  dto.WorkspaceID:
     properties:
-      board_id:
+      workspace_id:
         type: integer
-      description:
-        type: string
-      lists:
-        items:
-          $ref: '#/definitions/entities.List'
-        type: array
-      name:
-        type: string
-      owner:
-        $ref: '#/definitions/dto.UserInfo'
-      thumbnail_url:
-        type: string
-      users:
-        items:
-          $ref: '#/definitions/entities.User'
-        type: array
-    type: object
-  entities.List:
-    properties:
-      board_id:
-        type: integer
-      description:
-        type: string
-      id:
-        type: integer
-      list_position:
-        type: integer
-      name:
-        type: string
-      tasks:
-        items:
-          $ref: '#/definitions/entities.Task'
-        type: array
-    type: object
-  entities.Task:
-    properties:
-      date_created:
-        type: string
-      description:
-        type: string
-      end:
-        type: string
-      id:
-        type: integer
-      list_id:
-        type: integer
-      list_position:
-        type: integer
-      name:
-        type: string
-      start:
-        type: string
-      users:
-        items:
-          $ref: '#/definitions/entities.User'
-        type: array
     type: object
   entities.User:
     properties:
@@ -149,34 +147,6 @@ info:
   title: LA TABULA API
   version: "2.0"
 paths:
-  /api/v2/user/boards/:
-    get:
-      consumes:
-      - application/json
-      description: Выводит и созданные им доски и те, в которых он гость. Работает
-        только для авторизированного пользователя.
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Пользователь и его доски
-          schema:
-            $ref: '#/definitions/doc_structs.UserBoardsResponse'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/apperrors.ErrorResponse'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/apperrors.ErrorResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/apperrors.ErrorResponse'
-      summary: Вывести все доски текущего пользователя
-      tags:
-      - boards
   /auth/login/:
     post:
       consumes:
@@ -358,4 +328,202 @@ paths:
       summary: Поменять аватарку
       tags:
       - auth
+  /user/workspaces/:
+    get:
+      consumes:
+      - application/json
+      description: Выводит и созданные им рабочие пространства и те, в которых он
+        гость. Работает только для авторизированного пользователя.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Пользователь и его рабочие пространства
+          schema:
+            $ref: '#/definitions/doc_structs.AllWorkspacesResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+      summary: Вывести все рабочие пространства и доски текущего пользователя
+      tags:
+      - workspaces
+  /workspace/create/:
+    get:
+      consumes:
+      - application/json
+      description: Создать рабочее пространство
+      parameters:
+      - description: данные нового рабочего пространства
+        in: body
+        name: newWorkspaceInfo
+        required: true
+        schema:
+          $ref: '#/definitions/dto.NewWorkspaceInfo'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: no content
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+      summary: Создать рабочее пространство
+      tags:
+      - workspaces
+  /workspace/delete/:
+    delete:
+      consumes:
+      - application/json
+      description: Удалить рабочее пространство
+      parameters:
+      - description: id рабочего пространства
+        in: body
+        name: workspaceID
+        required: true
+        schema:
+          $ref: '#/definitions/dto.WorkspaceID'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: no content
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+      summary: Удалить рабочее пространство
+      tags:
+      - workspaces
+  /workspace/update/:
+    post:
+      consumes:
+      - application/json
+      description: Обновить рабочее пространство
+      parameters:
+      - description: обновленные данные рабочего пространства
+        in: body
+        name: workspaceInfo
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdatedWorkspaceInfo'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: no content
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+      summary: Обновить рабочее пространство
+      tags:
+      - workspaces
+  /workspace/update/change_thumbnail:
+    post:
+      consumes:
+      - application/json
+      description: Обновить картинку рабочего пространства
+      parameters:
+      - description: обновленные данные рабочего пространства
+        in: body
+        name: thumbnailInfo
+        required: true
+        schema:
+          $ref: '#/definitions/dto.ChangeWorkspaceThumbnailInfo'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Ссылка на новую картинку
+          schema:
+            $ref: '#/definitions/doc_structs.ThumbnailUploadResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+      summary: Обновить картинку рабочего пространства
+      tags:
+      - workspaces
+  /workspace/update/change_users/:
+    post:
+      consumes:
+      - application/json
+      description: Обновить гостей рабочего пространства
+      parameters:
+      - description: обновленный список пользователей
+        in: body
+        name: authData
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdatedWorkspaceInfo'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: no content
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+      summary: Обновить гостей рабочего пространства
+      tags:
+      - workspaces
 swagger: "2.0"

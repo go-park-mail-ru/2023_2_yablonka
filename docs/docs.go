@@ -23,47 +23,6 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/api/v2/user/boards/": {
-            "get": {
-                "description": "Выводит и созданные им доски и те, в которых он гость. Работает только для авторизированного пользователя.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "boards"
-                ],
-                "summary": "Вывести все доски текущего пользователя",
-                "responses": {
-                    "200": {
-                        "description": "Пользователь и его доски",
-                        "schema": {
-                            "$ref": "#/definitions/doc_structs.UserBoardsResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/apperrors.ErrorResponse"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/apperrors.ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/apperrors.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
         "/auth/login/": {
             "post": {
                 "description": "Для этого использует сессии",
@@ -335,6 +294,307 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/user/workspaces/": {
+            "get": {
+                "description": "Выводит и созданные им рабочие пространства и те, в которых он гость. Работает только для авторизированного пользователя.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "workspaces"
+                ],
+                "summary": "Вывести все рабочие пространства и доски текущего пользователя",
+                "responses": {
+                    "200": {
+                        "description": "Пользователь и его рабочие пространства",
+                        "schema": {
+                            "$ref": "#/definitions/doc_structs.AllWorkspacesResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/workspace/create/": {
+            "get": {
+                "description": "Создать рабочее пространство",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "workspaces"
+                ],
+                "summary": "Создать рабочее пространство",
+                "parameters": [
+                    {
+                        "description": "данные нового рабочего пространства",
+                        "name": "newWorkspaceInfo",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.NewWorkspaceInfo"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "no content",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/workspace/delete/": {
+            "delete": {
+                "description": "Удалить рабочее пространство",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "workspaces"
+                ],
+                "summary": "Удалить рабочее пространство",
+                "parameters": [
+                    {
+                        "description": "id рабочего пространства",
+                        "name": "workspaceID",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.WorkspaceID"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "no content",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/workspace/update/": {
+            "post": {
+                "description": "Обновить рабочее пространство",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "workspaces"
+                ],
+                "summary": "Обновить рабочее пространство",
+                "parameters": [
+                    {
+                        "description": "обновленные данные рабочего пространства",
+                        "name": "workspaceInfo",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.UpdatedWorkspaceInfo"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "no content",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/workspace/update/change_thumbnail": {
+            "post": {
+                "description": "Обновить картинку рабочего пространства",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "workspaces"
+                ],
+                "summary": "Обновить картинку рабочего пространства",
+                "parameters": [
+                    {
+                        "description": "обновленные данные рабочего пространства",
+                        "name": "thumbnailInfo",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.ChangeWorkspaceThumbnailInfo"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Ссылка на новую картинку",
+                        "schema": {
+                            "$ref": "#/definitions/doc_structs.ThumbnailUploadResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/workspace/update/change_users/": {
+            "post": {
+                "description": "Обновить гостей рабочего пространства",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "workspaces"
+                ],
+                "summary": "Обновить гостей рабочего пространства",
+                "parameters": [
+                    {
+                        "description": "обновленный список пользователей",
+                        "name": "authData",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.UpdatedWorkspaceInfo"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "no content",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -346,17 +606,22 @@ const docTemplate = `{
                 }
             }
         },
-        "doc_structs.UserBoardsResponse": {
+        "doc_structs.AllWorkspacesResponse": {
             "type": "object",
             "properties": {
-                "boards": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/entities.Board"
-                    }
-                },
                 "user": {
                     "$ref": "#/definitions/entities.User"
+                },
+                "workspaces": {
+                    "$ref": "#/definitions/dto.AllWorkspaces"
+                }
+            }
+        },
+        "doc_structs.ThumbnailUploadResponse": {
+            "type": "object",
+            "properties": {
+                "thumbnail_url": {
+                    "$ref": "#/definitions/dto.AllWorkspaces"
                 }
             }
         },
@@ -365,6 +630,23 @@ const docTemplate = `{
             "properties": {
                 "user": {
                     "$ref": "#/definitions/entities.User"
+                }
+            }
+        },
+        "dto.AllWorkspaces": {
+            "type": "object",
+            "properties": {
+                "user_guest_boards": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.UserGuestBoardInfo"
+                    }
+                },
+                "user_owned_boards": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.UserOwnedBoardInfo"
+                    }
                 }
             }
         },
@@ -393,6 +675,37 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.ChangeWorkspaceThumbnailInfo": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "thumbnail": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                }
+            }
+        },
+        "dto.NewWorkspaceInfo": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "owner_id": {
+                    "type": "integer"
+                },
+                "thumbnail_url": {
+                    "type": "string"
+                }
+            }
+        },
         "dto.PasswordChangeInfo": {
             "type": "object",
             "properties": {
@@ -407,14 +720,45 @@ const docTemplate = `{
                 }
             }
         },
-        "dto.UserInfo": {
+        "dto.UpdatedWorkspaceInfo": {
             "type": "object",
             "properties": {
-                "email": {
+                "description": {
                     "type": "string"
                 },
                 "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.UserGuestBoardInfo": {
+            "type": "object",
+            "properties": {
+                "board_info": {
+                    "$ref": "#/definitions/dto.UserOwnedBoardInfo"
+                },
+                "owner_email": {
+                    "type": "string"
+                },
+                "owner_id": {
                     "type": "integer"
+                }
+            }
+        },
+        "dto.UserOwnedBoardInfo": {
+            "type": "object",
+            "properties": {
+                "board_id": {
+                    "type": "integer"
+                },
+                "board_name": {
+                    "type": "string"
+                },
+                "thumbnail_url": {
+                    "type": "string"
                 }
             }
         },
@@ -435,96 +779,11 @@ const docTemplate = `{
                 }
             }
         },
-        "entities.Board": {
+        "dto.WorkspaceID": {
             "type": "object",
             "properties": {
-                "board_id": {
+                "workspace_id": {
                     "type": "integer"
-                },
-                "description": {
-                    "type": "string"
-                },
-                "lists": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/entities.List"
-                    }
-                },
-                "name": {
-                    "type": "string"
-                },
-                "owner": {
-                    "$ref": "#/definitions/dto.UserInfo"
-                },
-                "thumbnail_url": {
-                    "type": "string"
-                },
-                "users": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/entities.User"
-                    }
-                }
-            }
-        },
-        "entities.List": {
-            "type": "object",
-            "properties": {
-                "board_id": {
-                    "type": "integer"
-                },
-                "description": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "integer"
-                },
-                "list_position": {
-                    "type": "integer"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "tasks": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/entities.Task"
-                    }
-                }
-            }
-        },
-        "entities.Task": {
-            "type": "object",
-            "properties": {
-                "date_created": {
-                    "type": "string"
-                },
-                "description": {
-                    "type": "string"
-                },
-                "end": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "integer"
-                },
-                "list_id": {
-                    "type": "integer"
-                },
-                "list_position": {
-                    "type": "integer"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "start": {
-                    "type": "string"
-                },
-                "users": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/entities.User"
-                    }
                 }
             }
         },
