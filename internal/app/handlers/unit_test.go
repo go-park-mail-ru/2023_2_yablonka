@@ -58,12 +58,32 @@ func createConfig(envPath string) (*config.BaseServerConfig, error) {
 	return config, nil
 }
 
-func TestAuthHandler_LogIn(t *testing.T) {
+func createMux(mockAuthService *mock_service.MockIAuthService,
+	mockUserService *mock_service.MockIUserService,
+	mockBoardService *mock_service.MockIBoardService,
+	mockWorkspaceService *mock_service.MockIWorkspaceService) (http.Handler, error) {
+
+	mockHandlerManager := handlers.HandlerManager{
+		UserHandler:      *handlers.NewUserHandler(mockAuthService, mockUserService),
+		WorkspaceHandler: *handlers.NewWorkspaceHandler(mockWorkspaceService),
+		BoardHandler:     *handlers.NewBoardHandler(mockAuthService, mockBoardService),
+	}
+
+	cfg, err := createConfig(envPath)
+	if err != nil {
+		return nil, err
+	}
+
+	mux, _ := app.GetChiMux(mockHandlerManager, *cfg)
+	return mux, nil
+}
+
+func TestUserHandler_LogIn(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
 		name           string
-		userID         uint64
+		userID         dto.UserID
 		email          string
 		password       string
 		successful     bool
@@ -72,7 +92,7 @@ func TestAuthHandler_LogIn(t *testing.T) {
 	}{
 		{
 			name:           "Successful login",
-			userID:         1,
+			userID:         dto.UserID{Value: uint64(1)},
 			email:          "test@email.com",
 			password:       "a1234567",
 			successful:     true,
@@ -102,29 +122,23 @@ func TestAuthHandler_LogIn(t *testing.T) {
 			t.Parallel()
 			ctrl := gomock.NewController(t)
 
-			cfg, err := createConfig(envPath)
-			require.Equal(t, nil, err)
-
 			mockAuthService := mock_service.NewMockIAuthService(ctrl)
-			mockUserAuthService := mock_service.NewMockIUserAuthService(ctrl)
+			mockUserService := mock_service.NewMockIUserService(ctrl)
 			mockBoardService := mock_service.NewMockIBoardService(ctrl)
+			mockWorkspaceService := mock_service.NewMockIWorkspaceService(ctrl)
 
 			authInfo := dto.AuthInfo{
 				Email:    test.email,
 				Password: test.password,
 			}
 
-			loginInfo := dto.LoginInfo{
-				Email:        test.email,
-				PasswordHash: hashFromAuthInfo(authInfo),
-			}
-			mockUA := mockUserAuthService.EXPECT().Login(gomock.Any(), loginInfo)
+			mockCheckPassword := mockUserService.EXPECT().CheckPassword(gomock.Any(), authInfo)
 			if test.successful {
-				mockUA.Return(
+				mockCheckPassword.Return(
 					&entities.User{
-						ID:           test.userID,
+						ID:           test.userID.Value,
 						Email:        test.email,
-						PasswordHash: test.password,
+						PasswordHash: hashFromAuthInfo(authInfo),
 					},
 					nil,
 				)
@@ -136,16 +150,11 @@ func TestAuthHandler_LogIn(t *testing.T) {
 					VerifyAuth(gomock.Any(), gomock.Any()).
 					Return(test.userID, nil)
 			} else {
-				mockUA.Return(nil, test.expectedError)
+				mockCheckPassword.Return(nil, test.expectedError)
 			}
 
-			mux, _ := app.GetChiMux(*handlers.NewHandlerManager(
-				mockAuthService,
-				mockUserAuthService,
-				mockBoardService,
-			),
-				*cfg,
-			)
+			mux, err := createMux(mockAuthService, mockUserService, mockBoardService, mockWorkspaceService)
+			require.Equal(t, nil, err)
 
 			body := bytes.NewReader([]byte(
 				fmt.Sprintf(`{"email":"%s", "password":"%s"}`, test.email, test.password),
@@ -169,7 +178,7 @@ func TestAuthHandler_LogIn(t *testing.T) {
 				generatedCookie := w.Result().Cookies()[0].Value
 
 				ctx := context.Background()
-				userID, err := mockAuthService.VerifyAuth(ctx, generatedCookie)
+				userID, err := mockAuthService.VerifyAuth(ctx, dto.SessionToken{Value: generatedCookie})
 
 				require.NoError(t, err)
 				require.Equal(t, test.userID, userID, "Expected cookie wasn't found")
@@ -180,7 +189,7 @@ func TestAuthHandler_LogIn(t *testing.T) {
 	}
 }
 
-func TestAuthHandler_SignUp(t *testing.T) {
+func TestUserHandler_SignUp(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
@@ -188,6 +197,7 @@ func TestAuthHandler_SignUp(t *testing.T) {
 		email          string
 		password       string
 		successful     bool
+		newUserID      dto.UserID
 		expectedStatus int
 		expectedError  error
 	}{
@@ -197,6 +207,7 @@ func TestAuthHandler_SignUp(t *testing.T) {
 			password:       "100500600",
 			successful:     true,
 			expectedStatus: http.StatusOK,
+			newUserID:      dto.UserID{Value: uint64(1)},
 		},
 		{
 			name:           "User already exists",
@@ -215,27 +226,21 @@ func TestAuthHandler_SignUp(t *testing.T) {
 
 			ctrl := gomock.NewController(t)
 
-			cfg, err := createConfig(envPath)
-			require.Equal(t, nil, err)
-
 			mockAuthService := mock_service.NewMockIAuthService(ctrl)
-			mockUserAuthService := mock_service.NewMockIUserAuthService(ctrl)
+			mockUserService := mock_service.NewMockIUserService(ctrl)
 			mockBoardService := mock_service.NewMockIBoardService(ctrl)
+			mockWorkspaceService := mock_service.NewMockIWorkspaceService(ctrl)
 
 			authInfo := dto.AuthInfo{
 				Email:    test.email,
 				Password: test.password,
 			}
 
-			signupInfo := dto.SignupInfo{
-				Email:        test.email,
-				PasswordHash: hashFromAuthInfo(authInfo),
-			}
-			mockUA := mockUserAuthService.EXPECT().RegisterUser(gomock.Any(), signupInfo)
+			mockRegister := mockUserService.EXPECT().RegisterUser(gomock.Any(), authInfo)
 			if test.successful {
-				mockUA.Return(
+				mockRegister.Return(
 					&entities.User{
-						ID:           uint64(1),
+						ID:           test.newUserID.Value,
 						Email:        test.email,
 						PasswordHash: test.password,
 					},
@@ -243,22 +248,17 @@ func TestAuthHandler_SignUp(t *testing.T) {
 				)
 				mockAuthService.
 					EXPECT().
-					AuthUser(gomock.Any(), uint64(1))
+					AuthUser(gomock.Any(), test.newUserID)
 				mockAuthService.
 					EXPECT().
 					VerifyAuth(gomock.Any(), gomock.Any()).
-					Return(uint64(1), nil)
+					Return(test.newUserID, nil)
 			} else {
-				mockUA.Return(nil, test.expectedError)
+				mockRegister.Return(nil, test.expectedError)
 			}
 
-			mux, _ := app.GetChiMux(*handlers.NewHandlerManager(
-				mockAuthService,
-				mockUserAuthService,
-				mockBoardService,
-			),
-				*cfg,
-			)
+			mux, err := createMux(mockAuthService, mockUserService, mockBoardService, mockWorkspaceService)
+			require.Equal(t, nil, err)
 
 			body := bytes.NewReader([]byte(
 				fmt.Sprintf(`{"email":"%s", "password":"%s"}`, test.email, test.password),
@@ -283,11 +283,11 @@ func TestAuthHandler_SignUp(t *testing.T) {
 				generatedCookie := w.Result().Cookies()[0].Value
 
 				ctx := context.Background()
-				verifiedAuth, err := mockAuthService.VerifyAuth(ctx, generatedCookie)
+				verifiedAuth, err := mockAuthService.VerifyAuth(ctx, dto.SessionToken{Value: generatedCookie})
 
 				require.NoError(t, err)
 
-				require.Equal(t, uint64(1), verifiedAuth, "User wasn't saved correctly")
+				require.Equal(t, test.newUserID, verifiedAuth, "User wasn't saved correctly")
 			} else {
 				require.Empty(t, w.Result().Cookies(), "Cookie was set despite unsuccessful registration")
 			}
@@ -295,7 +295,7 @@ func TestAuthHandler_SignUp(t *testing.T) {
 	}
 }
 
-func TestAuthHandler_LogOut(t *testing.T) {
+func TestUserHandler_LogOut(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
@@ -344,12 +344,10 @@ func TestAuthHandler_LogOut(t *testing.T) {
 
 			ctrl := gomock.NewController(t)
 
-			cfg, err := createConfig(envPath)
-			require.Equal(t, nil, err)
-
 			mockAuthService := mock_service.NewMockIAuthService(ctrl)
-			mockUserAuthService := mock_service.NewMockIUserAuthService(ctrl)
+			mockUserService := mock_service.NewMockIUserService(ctrl)
 			mockBoardService := mock_service.NewMockIBoardService(ctrl)
+			mockWorkspaceService := mock_service.NewMockIWorkspaceService(ctrl)
 
 			body := bytes.NewReader([]byte(""))
 
@@ -372,19 +370,19 @@ func TestAuthHandler_LogOut(t *testing.T) {
 
 				mockAuthService.
 					EXPECT().
-					VerifyAuth(gomock.Any(), test.token).
-					Return(uint64(1), nil)
+					VerifyAuth(gomock.Any(), dto.SessionToken{Value: test.token}).
+					Return(dto.UserID{Value: uint64(1)}, nil)
 
 				mockAuthService.
 					EXPECT().
-					LogOut(gomock.Any(), test.token).
+					LogOut(gomock.Any(), dto.SessionToken{Value: test.token}).
 					Return(nil)
 			} else if test.hasCookie {
 				var duration time.Duration
 				mockAuthService.
 					EXPECT().
-					VerifyAuth(gomock.Any(), test.token).
-					Return(uint64(0), test.expectedError)
+					VerifyAuth(gomock.Any(), dto.SessionToken{Value: test.token}).
+					Return(dto.UserID{Value: uint64(0)}, test.expectedError)
 
 				if test.expiredCookie {
 					duration = 0 * time.Hour
@@ -404,13 +402,8 @@ func TestAuthHandler_LogOut(t *testing.T) {
 				r.AddCookie(cookie)
 			}
 
-			mux, _ := app.GetChiMux(*handlers.NewHandlerManager(
-				mockAuthService,
-				mockUserAuthService,
-				mockBoardService,
-			),
-				*cfg,
-			)
+			mux, err := createMux(mockAuthService, mockUserService, mockBoardService, mockWorkspaceService)
+			require.Equal(t, nil, err)
 
 			mux.ServeHTTP(w, r)
 
@@ -422,4 +415,16 @@ func TestAuthHandler_LogOut(t *testing.T) {
 				w.Code, http.StatusText(w.Code))
 		})
 	}
+}
+
+func TestUserHandler_ChangePassword(t *testing.T) {
+	t.Parallel()
+}
+
+func TestUserHandler_ChangeProfile(t *testing.T) {
+	t.Parallel()
+}
+
+func TestUserHandler_ChangeAvatar(t *testing.T) {
+	t.Parallel()
 }
