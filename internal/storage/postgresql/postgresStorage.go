@@ -21,7 +21,7 @@ func GetDBConnection(conf config.ServerConfig) (*pgxpool.Pool, error) {
 	)
 
 	dbURL := fmt.Sprintf(
-		"postgres://%s:%s@%s:%s/%s?application_name=%s&search_path=%s&connect_timeout=%s",
+		"postgres://%s:%s@%s:%s/%s?application_name=%s&search_path=%s&connect_timeout=%d",
 		user, password, host, port, dbname, appName, schema, connectTimeout,
 	)
 
