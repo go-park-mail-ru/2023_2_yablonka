@@ -7,24 +7,36 @@ import (
 )
 
 type IUserStorage interface {
-	// GetUser
+	// GetWithLogin
 	// находит пользователя в БД по почте
-	// или возвращает ошибку apperrors.ErrUserNotFound (401)
-	GetUser(context.Context, dto.LoginInfo) (*entities.User, error)
-	// GetUserByID
+	// или возвращает ошибки ...
+	GetWithLogin(context.Context, dto.UserLogin) (*entities.User, error)
+	// GetWithID
 	// находит пользователя в БД по его id
-	// или возвращает ошибку apperrors.ErrUserNotFound (401)
-	GetUserByID(context.Context, uint64) (*entities.User, error)
-	// CreateUser
+	// или возвращает ошибки ...
+	GetWithID(context.Context, dto.UserID) (*entities.User, error)
+	// GetLoginInfoWithID
+	// находит данные логина пользователя в БД по id
+	// или возвращает ошибки ...
+	GetLoginInfoWithID(context.Context, dto.UserID) (*dto.LoginInfo, error)
+	// Create
 	// создает нового пользователя в БД по данным
-	// или возвращает ошибку apperrors.ErrUserAlreadyExists (409)
-	CreateUser(context.Context, dto.SignupInfo) (*entities.User, error)
-	// UpdateUser
-	// обновляет пользователя в БД
-	// или возвращает ошибку apperrors.ErrUserNotFound (409)
-	UpdateUser(context.Context, dto.UpdatedUserInfo) (*entities.User, error)
-	// DeleteUser
+	// или возвращает ошибки ...
+	Create(context.Context, dto.SignupInfo) (*entities.User, error)
+	// UpdatePassword
+	// обновляет пароль пользователя в БД
+	// или возвращает ошибки ...
+	UpdatePassword(context.Context, dto.PasswordHashesInfo) error
+	// UpdateProfile
+	// обновляет профиль пользователя в БД
+	// или возвращает ошибки ...
+	UpdateProfile(context.Context, dto.UserProfileInfo) error
+	// UpdateAvatar
+	// обновляет аватарку пользователя в БД
+	// или возвращает ошибки ...
+	UpdateAvatarUrl(context.Context, dto.AvatarUrlInfo) error
+	// Delete
 	// удаляет данного пользователя в БД по id
-	// или возвращает ошибку apperrors.ErrUserNotFound (409)
-	DeleteUser(context.Context, uint64) error
+	// или возвращает ошибки ...
+	Delete(context.Context, dto.UserID) error
 }

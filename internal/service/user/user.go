@@ -2,27 +2,17 @@ package service
 
 import (
 	"context"
+	"crypto/sha256"
+	"fmt"
+	"os"
 	"server/internal/apperrors"
 	"server/internal/pkg/dto"
 	"server/internal/pkg/entities"
 	"server/internal/storage"
 )
 
-type AuthUserService struct {
-	storage storage.IUserStorage
-}
-
 type UserService struct {
 	storage storage.IUserStorage
-}
-
-// NewAuthUserService
-// возвращает AuthUserService с инициализированным хранилищем пользователей
-// который имплементирует авторизационные методы, привязанные к UserStorage
-func NewAuthUserService(storage storage.IUserStorage) *AuthUserService {
-	return &AuthUserService{
-		storage: storage,
-	}
 }
 
 // NewUserService
@@ -33,46 +23,107 @@ func NewUserService(storage storage.IUserStorage) *UserService {
 	}
 }
 
-// GetUser
-// находит пользователя по почте
+// RegisterUser
+// создает нового пользователя по данным
+// или возвращает ошибку apperrors.ErrUserAlreadyExists (409)
+func (us UserService) RegisterUser(ctx context.Context, info dto.AuthInfo) (*entities.User, error) {
+	_, err := us.storage.GetWithLogin(ctx, dto.UserLogin{Value: info.Email})
+
+	if err == nil {
+		return nil, apperrors.ErrUserAlreadyExists
+	}
+
+	return us.storage.Create(ctx, dto.SignupInfo{
+		Email:        info.Email,
+		PasswordHash: hashFromAuthInfo(info.Email, info.Password),
+	})
+}
+
+// CheckPassword
+// проверяет пароль пользователя по почте
 // или возвращает ошибки apperrors.ErrUserNotFound (401), apperrors.ErrWrongPassword (401)
-func (us AuthUserService) GetUser(ctx context.Context, info dto.LoginInfo) (*entities.User, error) {
-	user, err := us.storage.GetUser(ctx, info)
+func (us UserService) CheckPassword(ctx context.Context, info dto.AuthInfo) (*entities.User, error) {
+	user, err := us.storage.GetWithLogin(ctx, dto.UserLogin{Value: info.Email})
 	if err != nil {
 		return nil, err
 	}
 
-	if user.PasswordHash != info.PasswordHash {
+	if user.PasswordHash != hashFromAuthInfo(info.Email, info.Password) {
 		return nil, apperrors.ErrWrongPassword
 	}
 
 	return user, nil
 }
 
-// GetUserByID
+// GetWithID
 // находит пользователя по его id
 // или возвращает ошибку apperrors.ErrUserNotFound (401)
-func (us AuthUserService) GetUserByID(ctx context.Context, uid uint64) (*entities.User, error) {
-	return us.storage.GetUserByID(ctx, uid)
+func (us UserService) GetWithID(ctx context.Context, id dto.UserID) (*entities.User, error) {
+	return us.storage.GetWithID(ctx, id)
 }
 
-// CreateUser
-// создает нового пользователя по данным
-// или возвращает ошибку apperrors.ErrUserAlreadyExists (409)
-func (us AuthUserService) CreateUser(ctx context.Context, info dto.SignupInfo) (*entities.User, error) {
-	return us.storage.CreateUser(ctx, info)
-}
-
-// UpdateUser
-// обновляет пользователя в БД
+// UpdatePassword
+// меняет пароль пользователя
 // или возвращает ошибку apperrors.ErrUserNotFound (409)
-func (us UserService) UpdateUser(ctx context.Context, info dto.UpdatedUserInfo) (*entities.User, error) {
-	return us.storage.UpdateUser(ctx, info)
+func (us UserService) UpdatePassword(ctx context.Context, info dto.PasswordChangeInfo) error {
+	oldLoginInfo, err := us.storage.GetLoginInfoWithID(ctx, dto.UserID{Value: info.UserID})
+	if err == nil {
+		return apperrors.ErrUserNotFound
+	}
+
+	if oldLoginInfo.PasswordHash != hashFromAuthInfo(oldLoginInfo.Email, info.OldPassword) {
+		return apperrors.ErrWrongPassword
+	}
+
+	return us.storage.UpdatePassword(ctx, dto.PasswordHashesInfo{
+		UserID:          info.UserID,
+		NewPasswordHash: hashFromAuthInfo(oldLoginInfo.Email, info.NewPassword),
+	})
+}
+
+// UpdateProfile
+// обновляет профиль пользователя
+// или возвращает ошибку apperrors.ErrUserNotFound (409)
+func (us UserService) UpdateProfile(ctx context.Context, info dto.UserProfileInfo) error {
+	return us.storage.UpdateProfile(ctx, info)
+}
+
+// UpdateProfile
+// обновляет аватарку пользователя
+// или возвращает ошибку apperrors.ErrUserNotFound (409)
+func (us UserService) UpdateAvatar(ctx context.Context, info dto.AvatarChangeInfo) (*dto.UrlObj, error) {
+	avatarUrlInfo := dto.AvatarUrlInfo{
+		UserID: info.UserID,
+		Url:    "images/" + info.UserID + ".png",
+	}
+	f, err := os.Create(avatarUrlInfo.Url)
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+
+	err = us.storage.UpdateAvatarUrl(ctx, avatarUrlInfo)
+	if err != nil {
+		errDelete := os.Remove(avatarUrlInfo.Url)
+		for errDelete != nil {
+			errDelete = os.Remove(avatarUrlInfo.Url)
+		}
+		return nil, err
+	}
+
+	return &dto.UrlObj{Value: avatarUrlInfo.Url}, nil
 }
 
 // DeleteUser
 // удаляет данного пользователя по id
 // или возвращает ошибку apperrors.ErrUserNotFound (409)
-func (us AuthUserService) DeleteUser(ctx context.Context, uid uint64) error {
-	return us.storage.DeleteUser(ctx, uid)
+func (us UserService) DeleteUser(ctx context.Context, id dto.UserID) error {
+	return us.storage.Delete(ctx, id)
+}
+
+// TODO salt
+func hashFromAuthInfo(email string, password string) string {
+	hasher := sha256.New()
+	hasher.Write([]byte(email + password))
+	return fmt.Sprintf("%x", hasher.Sum(nil))
 }

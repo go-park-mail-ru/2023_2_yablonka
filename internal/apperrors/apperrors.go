@@ -31,6 +31,12 @@ var (
 	ErrWrongPassword = errors.New("wrong password")
 	// ErrUserAlreadyExists ошибка: пользователь с таким адресом почты уже существует
 	ErrUserAlreadyExists = errors.New("user with this email already exists")
+	// ErrUserNotCreated ошибка: не удалось добавить пользователя в БД
+	ErrUserNotCreated = errors.New("user couldn't be created")
+	// ErrUserNotUpdated ошибка: не удалось обновить пользователя в БД
+	ErrUserNotUpdated = errors.New("user couldn't be updated")
+	// ErrUserNotDeleted ошибка: не удалось обновить пользователя в БД
+	ErrUserNotDeleted = errors.New("user couldn't be deleted")
 )
 
 // Ошибки, связанные с AuthService
@@ -49,12 +55,50 @@ var (
 	ErrSessionExpired = errors.New("user session has expired")
 	// ErrSessionNotFound ошибка: полученной сессии нет в хранилище
 	ErrSessionNotFound = errors.New("no session found for provided session ID")
+	// ErrSessionNotCreated ошибка: полученной сессии нет в хранилище
+	ErrSessionNotCreated = errors.New("session couldn't be created")
+)
+
+// Ошибки, связанные с сервером
+var (
+	// ErrCouldNotBuildQuery ошибка: не удалось сформировать SQL запрос
+	ErrCouldNotBuildQuery = errors.New("error building an SQL query")
 )
 
 // Ошибки, связанные с BoardService
 var (
 	// ErrBoardNotFound ошибка: доски с полученным ID не существует
 	ErrBoardNotFound = errors.New("no board found for provided board ID")
+)
+
+// Ошибки, связанные с WorkspaceService
+var (
+	// ErrWorkspaceNotDeleted ошибка: не удалось создать рабочее прострнство в БД
+	ErrWorkspaceNotCreated = errors.New("workspace couldn't be created")
+	// ErrWorkspaceNotDeleted ошибка: не удалось получить рабочее прострнство в БД
+	ErrCouldNotGetWorkspace = errors.New("workspace couldn't be retreived")
+	// ErrWorkspaceNotDeleted ошибка: не удалось удалить рабочее прострнство в БД
+	ErrWorkspaceNotDeleted = errors.New("user couldn't be deleted")
+)
+
+// Ошибки, связанные с ListService
+var (
+	// ErrListNotCreated ошибка: не удалось создать список в БД
+	ErrListNotCreated = errors.New("list couldn't be created")
+	// ErrListNotUpdated ошибка: не удалось получить список в БД
+	ErrListNotUpdated = errors.New("list couldn't be updated")
+	// ErrListNotDeleted ошибка: не удалось удалить список в БД
+	ErrListNotDeleted = errors.New("list couldn't be deleted")
+)
+
+// Ошибки, связанные с TaskService
+var (
+	// ErrTaskNotCreated ошибка: не удалось создать задание в БД
+	ErrTaskNotCreated = errors.New("task couldn't be created")
+	// ErrTaskNotUpdated ошибка: не удалось получить задание в БД
+	ErrTaskNotUpdated = errors.New("task couldn't be updated")
+	// ErrTaskNotDeleted ошибка: не удалось удалить задание в БД
+	ErrTaskNotDeleted = errors.New("task couldn't be deleted")
 )
 
 // ErrorResponse
@@ -105,6 +149,7 @@ var ErrorMap = map[error]ErrorResponse{
 	ErrUserNotFound:           WrongLoginResponse,
 	ErrWrongPassword:          WrongLoginResponse,
 	ErrUserAlreadyExists:      StatusConflictResponse,
+	ErrUserNotCreated:         InternalServerErrorResponse,
 	ErrJWTSecretMissing:       InternalServerErrorResponse,
 	ErrTokenNotGenerated:      InternalServerErrorResponse,
 	ErrJWTWrongMethod:         GenericUnauthorizedResponse,
@@ -115,8 +160,14 @@ var ErrorMap = map[error]ErrorResponse{
 	ErrSessionNullDuration:    InternalServerErrorResponse,
 	ErrSessionIDLengthMissing: InternalServerErrorResponse,
 	ErrSessionNullIDLength:    InternalServerErrorResponse,
+	ErrSessionNotCreated:      InternalServerErrorResponse,
 	ErrSessionExpired:         GenericUnauthorizedResponse,
+	ErrCouldNotBuildQuery:     InternalServerErrorResponse,
 	ErrSessionNotFound:        GenericUnauthorizedResponse,
+	ErrWorkspaceNotCreated:    InternalServerErrorResponse,
+	ErrCouldNotGetWorkspace:   InternalServerErrorResponse,
+	ErrWorkspaceNotDeleted:    InternalServerErrorResponse,
+	ErrBoardNotFound:          InternalServerErrorResponse,
 }
 
 func ErrorJSON(err ErrorResponse) []byte {

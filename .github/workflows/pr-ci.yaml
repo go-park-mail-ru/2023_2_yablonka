@@ -17,9 +17,8 @@ jobs:
       - name: Install Go
         uses: actions/setup-go@v4
         with:
-          go-version-file: go.mod
-          cache-dependency-path: go.sum
-        
+          cache: false
+      
       - name: Run linter
         uses: golangci/golangci-lint-action@v3
         with:
@@ -38,11 +37,17 @@ jobs:
       - name: Build the binary
         run: go build -o yablonka-backend ./cmd/app/main.go
         
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false # otherwise, the token used is the GITHUB_TOKEN, instead of your personal access token.
+          fetch-depth: 0 # otherwise, there would be errors pushing refs to the destination repository.
+
       - name: Run Test
         run: |
           go test -v ./... -covermode=count -coverprofile=coverage.out
           go tool cover -func=coverage.out -o=coverage.out
-        
+
       - name: Go Coverage Badge  # Pass the `coverage.out` output to this action
         uses: tj-actions/coverage-badge-go@v2
         with:
@@ -61,7 +66,7 @@ jobs:
           git config --local user.name "GitHub Action"
           git add README.md
           git commit -m "chore: Updated coverage badge."
-  
+
       - name: Push changes
         if: steps.verify-changed-files.outputs.files_changed == 'true'
         uses: ad-m/github-push-action@master

@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"server/internal/pkg/dto"
+	"server/internal/pkg/entities"
 	"server/internal/storage"
 )
 
@@ -21,8 +22,8 @@ func NewBoardService(storage storage.IBoardStorage) *BoardService {
 // GetUserOwnedBoards
 // находит все доски, созданные пользователем
 // или возвращает ошибку apperrors.ErrUserNotFound (401)
-func (us BoardService) GetUserOwnedBoards(ctx context.Context, userInfo dto.VerifiedAuthInfo) ([]dto.UserOwnedBoardInfo, error) {
-	boards, err := us.storage.GetUserOwnedBoards(ctx, userInfo)
+func (us BoardService) GetUserOwnedBoards(ctx context.Context, id dto.UserID) ([]dto.UserOwnedBoardInfo, error) {
+	boards, err := us.storage.GetUserOwnedBoards(ctx, id)
 	if err != nil {
 		return nil, err
 	}
@@ -41,8 +42,8 @@ func (us BoardService) GetUserOwnedBoards(ctx context.Context, userInfo dto.Veri
 // GetUserGuestBoards
 // находит все доски, в которых участвует пользователь
 // или возвращает ошибку apperrors.ErrUserNotFound (401)
-func (us BoardService) GetUserGuestBoards(ctx context.Context, userInfo dto.VerifiedAuthInfo) ([]dto.UserGuestBoardInfo, error) {
-	boards, err := us.storage.GetUserGuestBoards(ctx, userInfo)
+func (us BoardService) GetUserGuestBoards(ctx context.Context, id dto.UserID) ([]dto.UserGuestBoardInfo, error) {
+	boards, err := us.storage.GetUserGuestBoards(ctx, id)
 	if err != nil {
 		return nil, err
 	}
@@ -62,14 +63,14 @@ func (us BoardService) GetUserGuestBoards(ctx context.Context, userInfo dto.Veri
 	return boardInfo, nil
 }
 
-// func (us BoardService) GetBoard(ctx context.Context, board dto.IndividualBoardInfo) (*entities.Board, error) {
-// 	return us.storage.GetBoard(board)
-// }
+func (bs BoardService) GetBoardWithListsAndTasks(ctx context.Context, board dto.BoardID) (*entities.Board, error) {
+	return bs.storage.GetById(ctx, board)
+}
 
-// func (us BoardService) CreateBoard(ctx context.Context, board dto.NewBoardInfo) (*entities.Board, error) {
-// 	return us.storage.CreateBoard(board)
-// }
+func (us BoardService) CreateBoard(ctx context.Context, board dto.NewBoardInfo) (*entities.Board, error) {
+	return us.storage.Create(ctx, board)
+}
 
-// func (us BoardService) UpdateBoard(ctx context.Context, board dto.IndividualBoardInfo) (*entities.Board, error) {
-// 	return us.storage.UpdateBoard(board)
-// }
+func (us BoardService) UpdateBoard(ctx context.Context, board dto.IndividualBoardInfo) (*entities.Board, error) {
+	return us.storage.Update(ctx, board)
+}
