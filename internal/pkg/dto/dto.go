@@ -191,21 +191,21 @@ type TaskID struct {
 // NewListInfo
 // DTO для нового списка задач
 type NewListInfo struct {
-	ID           string `json:"id"`
+	BoardID      uint64 `json:"board_id"`
 	Name         string `json:"name"`
 	Description  string `json:"description"`
-	ListPosition string `json:"list_position"`
+	ListPosition uint64 `json:"list_position"`
 }
 
 // NewTaskInfo
 // DTO для новой задачи
 type NewTaskInfo struct {
-	ID           string    `json:"id"`
+	ListID       uint64    `json:"list_id"`
 	Name         string    `json:"name"`
 	Description  string    `json:"description"`
 	Start        time.Time `json:"start"`
 	End          time.Time `json:"end"`
-	ListPosition string    `json:"list_position"`
+	ListPosition uint64    `json:"list_position"`
 }
 
 // UpdatedTaskInfo

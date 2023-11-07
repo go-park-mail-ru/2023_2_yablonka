@@ -1,4 +1,4 @@
-package service
+package storage
 
 import (
 	"context"
@@ -6,7 +6,7 @@ import (
 	"server/internal/pkg/entities"
 )
 
-type IListService interface {
+type IListStorage interface {
 	// Create
 	// создает новый список задач в БД по данным
 	// или возвращает ошибки ...

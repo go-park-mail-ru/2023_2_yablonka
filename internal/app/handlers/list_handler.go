@@ -13,7 +13,7 @@ import (
 )
 
 type ListHandler struct {
-	ws service.IListService
+	ls service.IListService
 }
 
 func (lh ListHandler) Create(w http.ResponseWriter, r *http.Request) {
@@ -32,7 +32,7 @@ func (lh ListHandler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	list, err := lh.ws.Create(rCtx, newListInfo)
+	list, err := lh.ls.Create(rCtx, newListInfo)
 	if err != nil {
 		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.ErrorMap[err]))
 		return
@@ -75,7 +75,7 @@ func (lh ListHandler) Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = lh.ws.Update(rCtx, listInfo)
+	err = lh.ls.Update(rCtx, listInfo)
 	if err != nil {
 		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.ErrorMap[err]))
 		return
@@ -116,7 +116,7 @@ func (lh ListHandler) Delete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = lh.ws.Delete(rCtx, listID)
+	err = lh.ls.Delete(rCtx, listID)
 	if err != nil {
 		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.ErrorMap[err]))
 		return

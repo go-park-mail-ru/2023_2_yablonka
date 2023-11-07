@@ -81,6 +81,26 @@ var (
 	ErrWorkspaceNotDeleted = errors.New("user couldn't be deleted")
 )
 
+// Ошибки, связанные с ListService
+var (
+	// ErrListNotCreated ошибка: не удалось создать список в БД
+	ErrListNotCreated = errors.New("list couldn't be created")
+	// ErrListNotUpdated ошибка: не удалось получить список в БД
+	ErrListNotUpdated = errors.New("list couldn't be updated")
+	// ErrListNotDeleted ошибка: не удалось удалить список в БД
+	ErrListNotDeleted = errors.New("list couldn't be deleted")
+)
+
+// Ошибки, связанные с TaskService
+var (
+	// ErrTaskNotCreated ошибка: не удалось создать задание в БД
+	ErrTaskNotCreated = errors.New("task couldn't be created")
+	// ErrTaskNotUpdated ошибка: не удалось получить задание в БД
+	ErrTaskNotUpdated = errors.New("task couldn't be updated")
+	// ErrTaskNotDeleted ошибка: не удалось удалить задание в БД
+	ErrTaskNotDeleted = errors.New("task couldn't be deleted")
+)
+
 // ErrorResponse
 // структура для обёртки ошибок приложения в ответ бэкэнд-сервера со статусом
 type ErrorResponse struct {

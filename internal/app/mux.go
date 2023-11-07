@@ -40,6 +40,31 @@ func GetChiMux(manager handlers.HandlerManager, config config.BaseServerConfig) 
 			r.Post("/edit/change_password/", manager.UserHandler.ChangePassword)
 			r.Post("/edit/change_avatar", manager.UserHandler.ChangeAvatar)
 		})
+		r.Route("/workspace", func(r chi.Router) {
+			r.Use(middleware.AuthMiddleware(manager.UserHandler.GetAuthService(), manager.UserHandler.GetUserService()))
+			r.Get("/", manager.WorkspaceHandler.Read)
+			r.Get("/create", manager.WorkspaceHandler.Create)
+			r.Get("/edit", manager.WorkspaceHandler.Update)
+			r.Get("/delete", manager.WorkspaceHandler.Delete)
+		})
+		r.Route("/board", func(r chi.Router) {
+			r.Use(middleware.AuthMiddleware(manager.UserHandler.GetAuthService(), manager.UserHandler.GetUserService()))
+			r.Get("/", manager.BoardHandler.GetFullBoard)
+		})
+		r.Route("/list", func(r chi.Router) {
+			r.Use(middleware.AuthMiddleware(manager.UserHandler.GetAuthService(), manager.UserHandler.GetUserService()))
+			r.Get("/", manager.WorkspaceHandler.Read)
+			r.Get("/create", manager.WorkspaceHandler.Create)
+			r.Get("/edit", manager.WorkspaceHandler.Update)
+			r.Get("/delete", manager.WorkspaceHandler.Delete)
+		})
+		r.Route("/task", func(r chi.Router) {
+			r.Use(middleware.AuthMiddleware(manager.UserHandler.GetAuthService(), manager.UserHandler.GetUserService()))
+			r.Get("/", manager.WorkspaceHandler.Read)
+			r.Get("/create", manager.WorkspaceHandler.Create)
+			r.Get("/edit", manager.WorkspaceHandler.Update)
+			r.Get("/delete", manager.WorkspaceHandler.Delete)
+		})
 	})
 	mux.Route("/swagger/", func(r chi.Router) {
 		r.Get("/*", httpSwagger.Handler(
