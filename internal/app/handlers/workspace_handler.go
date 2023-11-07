@@ -84,7 +84,7 @@ func (wh WorkspaceHandler) GetUserWorkspaces(w http.ResponseWriter, r *http.Requ
 // @Failure 401  {object}  apperrors.ErrorResponse
 // @Failure 500  {object}  apperrors.ErrorResponse
 //
-// @Router /workspace/create/ [get]
+// @Router /workspace/create/ [post]
 func (wh WorkspaceHandler) Create(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
 

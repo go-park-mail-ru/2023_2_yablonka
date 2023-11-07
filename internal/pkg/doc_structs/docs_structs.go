@@ -24,3 +24,11 @@ type AllWorkspacesResponse struct {
 type ThumbnailUploadResponse struct {
 	ThumbnailUrl dto.AllWorkspaces `json:"thumbnail_url"`
 }
+
+type TaskResponse struct {
+	Task entities.Task `json:"task"`
+}
+
+type ListResponse struct {
+	Task entities.List `json:"list"`
+}

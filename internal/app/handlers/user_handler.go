@@ -109,7 +109,7 @@ func (uh UserHandler) LogIn(w http.ResponseWriter, r *http.Request) {
 // @Accept  json
 // @Produce  json
 //
-// @Param authData body dto.AuthInfo true "Эл. почта и логин пользователя"
+// @Param signup body dto.AuthInfo true "Эл. почта и логин пользователя"
 //
 // @Success 200  {object}  doc_structs.UserResponse "Объект пользователя"
 // @Failure 400  {object}  apperrors.ErrorResponse
@@ -312,7 +312,7 @@ func (uh UserHandler) VerifyAuthEndpoint(w http.ResponseWriter, r *http.Request)
 // @Accept  json
 // @Produce  json
 //
-// @Param authData body dto.PasswordChangeInfo true "id, старый и новый пароли пользователя"
+// @Param passwords body dto.PasswordChangeInfo true "id, старый и новый пароли пользователя"
 //
 // @Success 200  {string} string "no content"
 // @Failure 500  {object}  apperrors.ErrorResponse
@@ -367,7 +367,7 @@ func (uh UserHandler) ChangePassword(w http.ResponseWriter, r *http.Request) {
 // @Accept  json
 // @Produce  json
 //
-// @Param authData body dto.UserProfileInfo true "id пользователя, имя, фамилия, описание пользователя"
+// @Param newProfileInfo body dto.UserProfileInfo true "id пользователя, имя, фамилия, описание пользователя"
 //
 // @Success 200  {string} string "no content"
 // @Failure 500  {object}  apperrors.ErrorResponse
@@ -423,7 +423,7 @@ func (uh UserHandler) ChangeProfile(w http.ResponseWriter, r *http.Request) {
 // @Accept  json
 // @Produce  json
 //
-// @Param authData body dto.AvatarChangeInfo true "id пользователя, изображение"
+// @Param avatarChangeInfo body dto.AvatarChangeInfo true "id пользователя, изображение"
 //
 // @Success 204  {string} string "no content"
 // @Failure 500  {object}  apperrors.ErrorResponse

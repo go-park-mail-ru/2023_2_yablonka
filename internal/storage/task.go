@@ -11,6 +11,10 @@ type ITaskStorage interface {
 	// создает новую задачу по данным
 	// или возвращает ошибки ...
 	Create(context.Context, dto.NewTaskInfo) (*entities.Task, error)
+	// Read
+	// возвращает заание с привязанными пользователями
+	// или возвращает ошибки ...
+	Read(context.Context, dto.TaskID) (*entities.Task, error)
 	// Update
 	// обновляет задачу
 	// или возвращает ошибки ...

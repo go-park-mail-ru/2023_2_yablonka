@@ -57,6 +57,44 @@ func (s PostgresTaskStorage) Create(ctx context.Context, info dto.NewTaskInfo) (
 	return &list, nil
 }
 
+// Read
+// находит задание в БД по его id
+// или возвращает ошибки ...
+func (s *PostgresTaskStorage) Read(ctx context.Context, id dto.TaskID) (*entities.Task, error) {
+	sql, args, err := sq.
+		Select(append(allTaskFields, allUserFields...)...).
+		From("public.task").
+		Where(sq.Eq{"id": id.Value}).
+		ToSql()
+
+	if err != nil {
+		return nil, apperrors.ErrCouldNotBuildQuery
+	}
+
+	rows, err := s.db.Query(context.Background(), sql, args...)
+	if err != nil {
+		return nil, apperrors.CouldNotGetTask
+	}
+	defer rows.Close()
+
+	var task entities.Task
+	for rows.Next() {
+		var user entities.User
+
+		err = rows.Scan(
+			&task,
+			&user,
+		)
+		if err != nil {
+			return nil, apperrors.CouldNotGetTask
+		}
+
+		task.Users = append(task.Users, user)
+	}
+
+	return &task, nil
+}
+
 // Update
 // обновляет задание в БД
 // или возвращает ошибки ...

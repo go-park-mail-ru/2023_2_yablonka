@@ -16,6 +16,21 @@ type ListHandler struct {
 	ls service.IListService
 }
 
+// @Summary Создать список
+// @Description Создать список
+// @Tags lists
+//
+// @Accept  json
+// @Produce  json
+//
+// @Param newListInfo body dto.NewListInfo true "данные нового списка"
+//
+// @Success 200  {object}  doc_structs.ListResponse "объект списка"
+// @Failure 400  {object}  apperrors.ErrorResponse
+// @Failure 401  {object}  apperrors.ErrorResponse
+// @Failure 500  {object}  apperrors.ErrorResponse
+//
+// @Router /list/create/ [post]
 func (lh ListHandler) Create(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
 
@@ -59,6 +74,21 @@ func (lh ListHandler) Create(w http.ResponseWriter, r *http.Request) {
 	r.Body.Close()
 }
 
+// @Summary Обновить список
+// @Description Обновить список
+// @Tags lists
+//
+// @Accept  json
+// @Produce  json
+//
+// @Param listInfo body dto.UpdatedListInfo true "обновленные данные списка"
+//
+// @Success 204  {string}  string "no content"
+// @Failure 400  {object}  apperrors.ErrorResponse
+// @Failure 401  {object}  apperrors.ErrorResponse
+// @Failure 500  {object}  apperrors.ErrorResponse
+//
+// @Router /list/update/ [post]
 func (lh ListHandler) Update(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
 
@@ -100,6 +130,21 @@ func (lh ListHandler) Update(w http.ResponseWriter, r *http.Request) {
 	r.Body.Close()
 }
 
+// @Summary Удалить список
+// @Description Удалить список
+// @Tags lists
+//
+// @Accept  json
+// @Produce  json
+//
+// @Param listID body dto.ListID true "id списка"
+//
+// @Success 204  {string}  string "no content"
+// @Failure 400  {object}  apperrors.ErrorResponse
+// @Failure 401  {object}  apperrors.ErrorResponse
+// @Failure 500  {object}  apperrors.ErrorResponse
+//
+// @Router /list/delete/ [delete]
 func (lh ListHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
 

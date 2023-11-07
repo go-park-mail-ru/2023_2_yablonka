@@ -99,6 +99,8 @@ var (
 	ErrTaskNotUpdated = errors.New("task couldn't be updated")
 	// ErrTaskNotDeleted ошибка: не удалось удалить задание в БД
 	ErrTaskNotDeleted = errors.New("task couldn't be deleted")
+	// CouldNotGetTask ошибка: не удалось получить задание в БД
+	CouldNotGetTask = errors.New("couldn't get task")
 )
 
 // ErrorResponse

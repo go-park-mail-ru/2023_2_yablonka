@@ -6,6 +6,7 @@ const (
 
 var (
 	allUserFields              = []string{"id", "email", "password_hash", "name", "surname", "avatar_url", "description"}
+	allTaskFields              = []string{"id", "id_list", "date_created", "name", "description", "list_position", "start", "end"}
 	allSessionFields           = []string{"id_user", "duration"}
 	allBoardFields             = []string{"id", "id_workspace", "name", "description", "date_created", "thumbnail_url"}
 	allWorkspaceAndBoardFields = []string{
