@@ -59,6 +59,7 @@ func GetChiMux(manager handlers.HandlerManager, config config.BaseServerConfig) 
 		})
 		r.Route("/task", func(r chi.Router) {
 			r.Use(middleware.AuthMiddleware(manager.UserHandler.GetAuthService(), manager.UserHandler.GetUserService()))
+			//r.Get("/", manager.TaskHandler.Read)
 			r.Get("/create", manager.TaskHandler.Create)
 			r.Get("/edit", manager.TaskHandler.Update)
 			r.Get("/delete", manager.TaskHandler.Delete)

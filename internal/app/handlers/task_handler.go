@@ -142,6 +142,49 @@ func (th TaskHandler) Delete(w http.ResponseWriter, r *http.Request) {
 }
 
 /*
+func (th TaskHandler) Read(w http.ResponseWriter, r *http.Request) {
+	rCtx := r.Context()
+
+	var taskID dto.TaskID
+	err := json.NewDecoder(r.Body).Decode(&taskID)
+	if err != nil {
+		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.BadRequestResponse))
+		return
+	}
+
+	_, err = govalidator.ValidateStruct(taskID)
+	if err != nil {
+		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.BadRequestResponse))
+		return
+	}
+
+	task, err := th.ts.ReadWithUsers(rCtx, taskID)
+	if err != nil {
+		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.ErrorMap[err]))
+		return
+	}
+
+	response := dto.JSONResponse{
+		Body: dto.JSONMap{
+			"board": board,
+		},
+	}
+
+	jsonResponse, err := json.Marshal(response)
+	if err != nil {
+		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.InternalServerErrorResponse))
+		return
+	}
+
+	_, err = w.Write(jsonResponse)
+	if err != nil {
+		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.InternalServerErrorResponse))
+		return
+	}
+
+	r.Body.Close()
+}
+
 func (lh TaskHandler) ReadListsInBoard(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
 

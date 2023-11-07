@@ -22,6 +22,13 @@ func NewTaskService(storage storage.ITaskStorage) *TaskService {
 // Create
 // создает новое задание
 // или возвращает ошибки ...
+func (ts TaskService) ReadWithUsers(ctx context.Context, info dto.TaskID) (*entities.Task, error) {
+	return nil, nil
+}
+
+// Create
+// создает новое задание
+// или возвращает ошибки ...
 func (ts TaskService) Create(ctx context.Context, info dto.NewTaskInfo) (*entities.Task, error) {
 	return ts.storage.Create(ctx, info)
 }

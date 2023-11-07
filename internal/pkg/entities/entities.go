@@ -39,13 +39,13 @@ type Workspace struct {
 // Board
 // структура для хранения доски
 type Board struct {
-	ID           uint64         `json:"board_id"`
-	Name         string         `json:"name"`
-	Owner        dto.UserInfo   `json:"owner"`
-	Description  string         `json:"description"`
-	ThumbnailURL string         `json:"thumbnail_url"`
-	Users        []dto.UserInfo `json:"user"`
-	Lists        []List         `json:"lists"`
+	ID           uint64       `json:"board_id"`
+	Name         string       `json:"name"`
+	Owner        dto.UserInfo `json:"owner"`
+	Description  string       `json:"description"`
+	ThumbnailURL string       `json:"thumbnail_url"`
+	Users        []User       `json:"users"`
+	Lists        []List       `json:"lists"`
 }
 
 // List
@@ -78,6 +78,7 @@ type Task struct {
 	ListPosition uint64    `json:"list_position"`
 	Start        time.Time `json:"start"`
 	End          time.Time `json:"end"`
+	Users        []User    `json:"users"`
 }
 
 func (u *User) TableName() string {

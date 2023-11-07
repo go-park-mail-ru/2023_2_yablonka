@@ -11,6 +11,10 @@ type ITaskService interface {
 	// создает новое задание
 	// или возвращает ошибки ...
 	Create(context.Context, dto.NewTaskInfo) (*entities.Task, error)
+	// ReadWithUsers
+	// возвращает заание с привязанными пользователями
+	// или возвращает ошибки ...
+	ReadWithUsers(context.Context, dto.TaskID) (*entities.Task, error)
 	// Update
 	// обновляет задание
 	// или возвращает ошибки ...
