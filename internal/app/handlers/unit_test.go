@@ -30,6 +30,33 @@ func hashFromAuthInfo(info dto.AuthInfo) string {
 	return fmt.Sprintf("%x", hasher.Sum(nil))
 }
 
+func createConfig(envPath string) (*config.BaseServerConfig, error) {
+	cfgFile, err := os.Create(envPath + ".env")
+	if err != nil {
+		return nil, err
+	}
+	defer cfgFile.Close()
+
+	_, err = fmt.Fprint(cfgFile,
+		"JWT_SECRET='test secret'"+"\n"+
+			"SESSION_DURATION_DAYS=14"+"\n"+
+			"SESSION_DURATION_HOURS=0"+"\n"+
+			"SESSION_DURATION_MINUTES=0"+"\n"+
+			"SESSION_DURATION_SECONDS=0"+"\n"+
+			"SESSION_ID_LENGTH=32"+"\n",
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	config, err := config.NewBaseEnvConfig(envPath, configPath)
+	if err != nil {
+		return nil, err
+	}
+
+	return config, nil
+}
+
 func Test_ULogin(t *testing.T) {
 	t.Parallel()
 
@@ -74,31 +101,8 @@ func Test_ULogin(t *testing.T) {
 			t.Parallel()
 			ctrl := gomock.NewController(t)
 
-			cfgFile, err := os.Create(envPath + ".env")
-			require.NoError(t, err)
-			defer cfgFile.Close()
-
-			_, err = fmt.Fprint(cfgFile,
-				"JWT_SECRET='test secret'"+"\n"+
-					"SESSION_DURATION_DAYS=14"+"\n"+
-					"SESSION_DURATION_HOURS=0"+"\n"+
-					"SESSION_DURATION_MINUTES=0"+"\n"+
-					"SESSION_DURATION_SECONDS=0"+"\n"+
-					"SESSION_ID_LENGTH=32"+"\n",
-			)
-			require.NoError(t, err)
-
-			config, err := config.NewBaseEnvConfig(envPath, configPath)
+			cfg, err := createConfig(envPath)
 			require.Equal(t, nil, err)
-
-			body := bytes.NewReader([]byte(
-				fmt.Sprintf(`{"email":"%s", "password":"%s"}`, test.email, test.password),
-			))
-
-			r := httptest.NewRequest("POST", "/api/v2/auth/login/", body)
-			r.Header.Add("Access-Control-Request-Headers", "content-type")
-			r.Header.Add("Origin", "localhost:8081")
-			w := httptest.NewRecorder()
 
 			mockAuthService := mock_service.NewMockIAuthService(ctrl)
 			mockUserAuthService := mock_service.NewMockIUserAuthService(ctrl)
@@ -143,8 +147,17 @@ func Test_ULogin(t *testing.T) {
 				mockUserAuthService,
 				mockBoardService,
 			),
-				*config,
+				*cfg,
 			)
+
+			body := bytes.NewReader([]byte(
+				fmt.Sprintf(`{"email":"%s", "password":"%s"}`, test.email, test.password),
+			))
+
+			r := httptest.NewRequest("POST", "/api/v2/auth/login/", body)
+			r.Header.Add("Access-Control-Request-Headers", "content-type")
+			r.Header.Add("Origin", "localhost:8081")
+			w := httptest.NewRecorder()
 
 			mux.ServeHTTP(w, r)
 
@@ -165,6 +178,125 @@ func Test_ULogin(t *testing.T) {
 				require.Equal(t, test.userID, userID, "Expected cookie wasn't found")
 			} else {
 				require.Empty(t, w.Result().Cookies(), "Cookie was set despite unsuccessful authentication")
+			}
+		})
+	}
+}
+
+func Test_USign(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name           string
+		email          string
+		password       string
+		successful     bool
+		expectedStatus int
+		expectedError  error
+	}{
+		{
+			name:           "New user",
+			email:          "newuser@email.com",
+			password:       "100500600",
+			successful:     true,
+			expectedStatus: http.StatusOK,
+		},
+		{
+			name:           "User already exists",
+			email:          "test@email.com",
+			password:       "coolpassword",
+			successful:     false,
+			expectedStatus: http.StatusConflict,
+			expectedError:  apperrors.ErrUserAlreadyExists,
+		},
+	}
+
+	for _, test := range tests {
+		test := test
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+
+			ctrl := gomock.NewController(t)
+
+			cfg, err := createConfig(envPath)
+			require.Equal(t, nil, err)
+
+			mockAuthService := mock_service.NewMockIAuthService(ctrl)
+			mockUserAuthService := mock_service.NewMockIUserAuthService(ctrl)
+			mockBoardService := mock_service.NewMockIBoardService(ctrl)
+
+			authInfo := dto.AuthInfo{
+				Email:    test.email,
+				Password: test.password,
+			}
+
+			signupInfo := dto.SignupInfo{
+				Email:        test.email,
+				PasswordHash: hashFromAuthInfo(authInfo),
+			}
+			mockUA := mockUserAuthService.EXPECT().RegisterUser(gomock.Any(), signupInfo)
+			if test.successful {
+				mockUA.
+					Return(
+						&entities.User{
+							ID:           uint64(1),
+							Email:        test.email,
+							PasswordHash: test.password,
+						},
+						nil,
+					).
+					AnyTimes()
+				mockAuthService.
+					EXPECT().
+					AuthUser(gomock.Any(), uint64(1))
+				mockAuthService.
+					EXPECT().
+					VerifyAuth(gomock.Any(), gomock.Any()).
+					Return(uint64(1), nil)
+			} else {
+				mockUA.
+					Return(nil, test.expectedError).
+					AnyTimes()
+			}
+
+			mux, _ := app.GetChiMux(*handlers.NewHandlerManager(
+				mockAuthService,
+				mockUserAuthService,
+				mockBoardService,
+			),
+				*cfg,
+			)
+
+			body := bytes.NewReader([]byte(
+				fmt.Sprintf(`{"email":"%s", "password":"%s"}`, test.email, test.password),
+			))
+
+			r := httptest.NewRequest("POST", "/api/v2/auth/signup/", body)
+			r.Header.Add("Access-Control-Request-Headers", "content-type")
+			r.Header.Add("Origin", "localhost:8081")
+			w := httptest.NewRecorder()
+
+			mux.ServeHTTP(w, r)
+
+			status := w.Result().StatusCode
+
+			require.EqualValuesf(t, test.expectedStatus, status,
+				"Expected code %d (%s), received code %d (%s)",
+				test.expectedStatus, http.StatusText(test.expectedStatus),
+				w.Code, http.StatusText(w.Code))
+
+			if test.successful {
+				require.Equal(t, w.Result().Cookies()[0].Name, "tabula_user", "Expected cookie wasn't found")
+				generatedCookie := w.Result().Cookies()[0].Value
+
+				ctx := context.Background()
+				verifiedAuth, err := mockAuthService.VerifyAuth(ctx, generatedCookie)
+
+				require.NoError(t, err)
+
+				require.Equal(t, uint64(1), verifiedAuth, "User wasn't saved correctly")
+			} else {
+				require.Empty(t, w.Result().Cookies(), "Cookie was set despite unsuccessful registration")
 			}
 		})
 	}
