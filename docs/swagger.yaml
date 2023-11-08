@@ -39,11 +39,11 @@ definitions:
     type: object
   dto.AllWorkspaces:
     properties:
-      user_guest_boards:
+      user_guest_workspaces:
         items:
           $ref: '#/definitions/dto.UserGuestBoardInfo'
         type: array
-      user_owned_boards:
+      user_owned_workspaces:
         items:
           $ref: '#/definitions/dto.UserOwnedBoardInfo'
         type: array

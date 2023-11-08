@@ -52,7 +52,6 @@ func (wh WorkspaceHandler) GetUserWorkspaces(w http.ResponseWriter, r *http.Requ
 
 	response := dto.JSONResponse{
 		Body: dto.JSONMap{
-			"user":       user,
 			"workspaces": workspaces,
 		},
 	}

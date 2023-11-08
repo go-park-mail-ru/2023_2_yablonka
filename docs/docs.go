@@ -1232,13 +1232,13 @@ const docTemplate = `{
         "dto.AllWorkspaces": {
             "type": "object",
             "properties": {
-                "user_guest_boards": {
+                "user_guest_workspaces": {
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/dto.UserGuestBoardInfo"
                     }
                 },
-                "user_owned_boards": {
+                "user_owned_workspaces": {
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/dto.UserOwnedBoardInfo"

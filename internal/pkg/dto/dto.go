@@ -284,8 +284,8 @@ type UserGuestBoardInfo struct {
 // AllWorkspaces
 // DTO, собирающие все доски отдельно взятого пользователя
 type AllWorkspaces struct {
-	OwnedWorkspaces []UserOwnedBoardInfo `json:"user_owned_boards"`
-	GuestWorkspaces []UserGuestBoardInfo `json:"user_guest_boards"`
+	OwnedWorkspaces []UserOwnedBoardInfo `json:"user_owned_workspaces"`
+	GuestWorkspaces []UserGuestBoardInfo `json:"user_guest_workspaces"`
 }
 
 // UserInfo
