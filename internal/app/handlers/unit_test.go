@@ -417,14 +417,188 @@ func TestUserHandler_LogOut(t *testing.T) {
 	}
 }
 
-func TestUserHandler_ChangePassword(t *testing.T) {
-	t.Parallel()
-}
+// func TestUserHandler_ChangePassword(t *testing.T) {
+// 	t.Parallel()
+
+// 	tests := []struct {
+// 		name           string
+// 		token          string
+// 		password       string
+// 		successful     bool
+// 		hasCookie      bool
+// 		expiredCookie  bool
+// 		expectedStatus int
+// 		expectedError  error
+// 	}{}
+
+// 	for _, test := range tests {
+// 		test := test
+// 		t.Run(test.name, func(t *testing.T) {
+// 			t.Parallel()
+
+// 			ctrl := gomock.NewController(t)
+
+// 			mockAuthService := mock_service.NewMockIAuthService(ctrl)
+// 			mockUserService := mock_service.NewMockIUserService(ctrl)
+// 			mockBoardService := mock_service.NewMockIBoardService(ctrl)
+// 			mockWorkspaceService := mock_service.NewMockIWorkspaceService(ctrl)
+
+// 			mux, err := createMux(mockAuthService, mockUserService, mockBoardService, mockWorkspaceService)
+// 			require.Equal(t, nil, err)
+// 		})
+// 	}
+// }
 
 func TestUserHandler_ChangeProfile(t *testing.T) {
 	t.Parallel()
+
+	tests := []struct {
+		name           string
+		userID         uint64
+		token          string
+		oldUserName    string
+		newUserName    string
+		oldUserSurname string
+		newUserSurname string
+		newDescription string
+		successful     bool
+		hasCookie      bool
+		expiredCookie  bool
+		expectedStatus int
+		expectedError  error
+	}{
+		{
+			name:           "Successful update",
+			userID:         1,
+			token:          "session",
+			oldUserName:    "Old name",
+			newUserName:    "New name",
+			newUserSurname: "New surname",
+			newDescription: "New description",
+			successful:     true,
+			expectedStatus: http.StatusOK,
+		},
+		// {
+		// 	name:           "Unsuccessful update",
+		// 	email:          "test@email.com",
+		// 	password:       "coolpassword",
+		// 	successful:     false,
+		// 	expectedStatus: http.StatusConflict,
+		// 	expectedError:  apperrors.ErrUserAlreadyExists,
+		// },
+	}
+
+	for _, test := range tests {
+		test := test
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+
+			ctrl := gomock.NewController(t)
+
+			mockAuthService := mock_service.NewMockIAuthService(ctrl)
+			mockUserService := mock_service.NewMockIUserService(ctrl)
+			mockBoardService := mock_service.NewMockIBoardService(ctrl)
+			mockWorkspaceService := mock_service.NewMockIWorkspaceService(ctrl)
+
+			mux, err := createMux(mockAuthService, mockUserService, mockBoardService, mockWorkspaceService)
+			require.Equal(t, nil, err)
+
+			newProfileInfo := dto.UserProfileInfo{
+				UserID:      test.userID,
+				Name:        test.newUserName,
+				Surname:     test.newUserSurname,
+				Description: test.newDescription,
+			}
+
+			body := bytes.NewReader([]byte(
+				fmt.Sprintf(`{"user_id":%d, "name":"%s", "surname":"%s", "description":"%s"}`,
+					test.userID, test.newUserName, test.newUserSurname, test.newDescription),
+			))
+
+			r := httptest.NewRequest("POST", "/api/v2/user/edit", body)
+			r.Header.Add("Access-Control-Request-Headers", "content-type")
+			r.Header.Add("Origin", "localhost:8081")
+			w := httptest.NewRecorder()
+
+			if test.successful {
+				cookie := &http.Cookie{
+					Name:     "tabula_user",
+					Value:    test.token,
+					HttpOnly: true,
+					SameSite: http.SameSiteLaxMode,
+					Expires:  time.Now().Add(time.Duration(time.Hour)),
+					Path:     "/api/v2/",
+				}
+
+				r.AddCookie(cookie)
+
+				mockAuthService.
+					EXPECT().
+					VerifyAuth(gomock.Any(), dto.SessionToken{Value: test.token}).
+					Return(dto.UserID{Value: test.userID}, nil)
+
+				mockUserService.
+					EXPECT().
+					GetWithID(gomock.Any(), dto.UserID{Value: test.userID}).
+					Return(
+						&entities.User{
+							ID: test.userID,
+						},
+						nil,
+					)
+			}
+
+			mockUpdateP := mockUserService.EXPECT().UpdateProfile(gomock.Any(), newProfileInfo)
+			if test.successful {
+				mockUpdateP.Return(nil)
+			} else {
+				mockUpdateP.Return(apperrors.ErrUserNotUpdated)
+			}
+
+			mux.ServeHTTP(w, r)
+
+			status := w.Result().StatusCode
+
+			require.EqualValuesf(t, test.expectedStatus, status,
+				"Expected code %d (%s), received code %d (%s)",
+				test.expectedStatus, http.StatusText(test.expectedStatus),
+				w.Code, http.StatusText(w.Code))
+
+			if test.successful {
+				resultBody := w.Result().Body.
+			}
+		})
+	}
 }
 
-func TestUserHandler_ChangeAvatar(t *testing.T) {
-	t.Parallel()
-}
+// func TestUserHandler_ChangeAvatar(t *testing.T) {
+// 	t.Parallel()
+
+// 	tests := []struct {
+// 		name           string
+// 		token          string
+// 		password       string
+// 		successful     bool
+// 		hasCookie      bool
+// 		expiredCookie  bool
+// 		expectedStatus int
+// 		expectedError  error
+// 	}{}
+
+// 	for _, test := range tests {
+// 		test := test
+// 		t.Run(test.name, func(t *testing.T) {
+// 			t.Parallel()
+
+// 			ctrl := gomock.NewController(t)
+
+// 			mockAuthService := mock_service.NewMockIAuthService(ctrl)
+// 			mockUserService := mock_service.NewMockIUserService(ctrl)
+// 			mockBoardService := mock_service.NewMockIBoardService(ctrl)
+// 			mockWorkspaceService := mock_service.NewMockIWorkspaceService(ctrl)
+
+// 			mux, err := createMux(mockAuthService, mockUserService, mockBoardService, mockWorkspaceService)
+// 			require.Equal(t, nil, err)
+// 		})
+// 	}
+// }
