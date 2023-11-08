@@ -1,0 +1,27 @@
+services:
+  server:
+    build: .
+    ports: 
+      - 8080:8080
+    tty: true
+    depends_on:
+      - db
+    links:
+      - db
+    command: >
+        sh -c "echo "Migrating" &&
+              ./tern migrate -c db/migrations/tern.conf -m db/migrations/ &&
+              echo 'Test migrations' &&
+              echo 'Starting backend' &&
+              ./yablonka-backend"
+    environment:
+      MIGRATOR_PASSWORD: ${MIGRATOR_PASSWORD}
+      POSTGRES_HOST: "db"
+  db:
+    image: postgres:latest
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: "postgres"
+    ports:
+      - 5432:5432

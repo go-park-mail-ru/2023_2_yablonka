@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"crypto/sha256"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -478,14 +479,18 @@ func TestUserHandler_ChangeProfile(t *testing.T) {
 			successful:     true,
 			expectedStatus: http.StatusOK,
 		},
-		// {
-		// 	name:           "Unsuccessful update",
-		// 	email:          "test@email.com",
-		// 	password:       "coolpassword",
-		// 	successful:     false,
-		// 	expectedStatus: http.StatusConflict,
-		// 	expectedError:  apperrors.ErrUserAlreadyExists,
-		// },
+		{
+			name:           "Unsuccessful update",
+			userID:         2,
+			token:          "session",
+			oldUserName:    "Old name",
+			newUserName:    "New name",
+			newUserSurname: "New surname",
+			newDescription: "New description",
+			successful:     false,
+			expectedStatus: http.StatusConflict,
+			expectedError:  apperrors.ErrUserAlreadyExists,
+		},
 	}
 
 	for _, test := range tests {
@@ -520,6 +525,8 @@ func TestUserHandler_ChangeProfile(t *testing.T) {
 			r.Header.Add("Origin", "localhost:8081")
 			w := httptest.NewRecorder()
 
+			mockUpdateP := mockUserService.EXPECT().UpdateProfile(gomock.Any(), newProfileInfo)
+
 			if test.successful {
 				cookie := &http.Cookie{
 					Name:     "tabula_user",
@@ -546,10 +553,7 @@ func TestUserHandler_ChangeProfile(t *testing.T) {
 						},
 						nil,
 					)
-			}
 
-			mockUpdateP := mockUserService.EXPECT().UpdateProfile(gomock.Any(), newProfileInfo)
-			if test.successful {
 				mockUpdateP.Return(nil)
 			} else {
 				mockUpdateP.Return(apperrors.ErrUserNotUpdated)
@@ -565,7 +569,12 @@ func TestUserHandler_ChangeProfile(t *testing.T) {
 				w.Code, http.StatusText(w.Code))
 
 			if test.successful {
-				resultBody := w.Result().Body.
+				resultBody := w.Body.Bytes()
+				expectedBody := dto.JSONResponse{
+					Body: dto.JSONMap{},
+				}
+				err := json.Unmarshal(resultBody, &expectedBody)
+				require.NoError(t, err)
 			}
 		})
 	}
