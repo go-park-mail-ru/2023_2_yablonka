@@ -20,8 +20,9 @@ func NewBoardService(storage storage.IBoardStorage) *BoardService {
 	}
 }
 
-func (bs BoardService) GetBoardWithListsAndTasks(ctx context.Context, id dto.BoardID) (*entities.Board, error) {
-	return bs.storage.GetById(ctx, id)
+// TODO Fix
+func (bs BoardService) GetFullBoard(ctx context.Context, info dto.IndividualBoardRequest) (*entities.Board, error) {
+	return bs.storage.GetById(ctx, dto.BoardID{Value: info.BoardID})
 }
 
 func (bs BoardService) Create(ctx context.Context, board dto.NewBoardInfo) (*entities.Board, error) {
