@@ -373,6 +373,58 @@ const docTemplate = `{
         },
         "/board/update/": {
             "post": {
+                "description": "Обновить доску",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "boards"
+                ],
+                "summary": "Обновить доску",
+                "parameters": [
+                    {
+                        "description": "обновленные данные доски",
+                        "name": "boardInfo",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.UpdatedBoardInfo"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "no content",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/board/update/change_thumbnail": {
+            "post": {
                 "description": "Обновить картинку доску",
                 "consumes": [
                     "application/json"
@@ -1217,7 +1269,7 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "thumbnail_url": {
-                    "$ref": "#/definitions/dto.AllWorkspaces"
+                    "$ref": "#/definitions/dto.UrlObj"
                 }
             }
         },
@@ -1486,6 +1538,14 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.UrlObj": {
+            "type": "object",
+            "properties": {
+                "url": {
                     "type": "string"
                 }
             }
