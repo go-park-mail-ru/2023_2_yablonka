@@ -215,6 +215,214 @@ const docTemplate = `{
                 }
             }
         },
+        "/board/": {
+            "get": {
+                "description": "Получить доску",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "boards"
+                ],
+                "summary": "Получить доску",
+                "parameters": [
+                    {
+                        "description": "id доски",
+                        "name": "boardRequest",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.IndividualBoardRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "объект доски",
+                        "schema": {
+                            "$ref": "#/definitions/doc_structs.BoardResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/board/create/": {
+            "post": {
+                "description": "Создать доску",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "boards"
+                ],
+                "summary": "Создать доску",
+                "parameters": [
+                    {
+                        "description": "данные новой доски",
+                        "name": "newBoardInfo",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.NewBoardInfo"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "объект доски",
+                        "schema": {
+                            "$ref": "#/definitions/doc_structs.BoardResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/board/delete/": {
+            "delete": {
+                "description": "Удалить доску",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "boards"
+                ],
+                "summary": "Удалить доску",
+                "parameters": [
+                    {
+                        "description": "id доски",
+                        "name": "boardID",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.BoardID"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "no content",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/board/update/": {
+            "post": {
+                "description": "Обновить картинку доску",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "boards"
+                ],
+                "summary": "Обновить картинку доски",
+                "parameters": [
+                    {
+                        "description": "обновленные данные задания",
+                        "name": "boardInfo",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.UpdatedBoardThumbnailInfo"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Ссылка на новую картинку",
+                        "schema": {
+                            "$ref": "#/definitions/doc_structs.ThumbnailUploadResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/list/create/": {
             "post": {
                 "description": "Создать список",
@@ -981,6 +1189,14 @@ const docTemplate = `{
                 }
             }
         },
+        "doc_structs.BoardResponse": {
+            "type": "object",
+            "properties": {
+                "board": {
+                    "$ref": "#/definitions/entities.Board"
+                }
+            }
+        },
         "doc_structs.ListResponse": {
             "type": "object",
             "properties": {
@@ -1055,6 +1271,14 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.BoardID": {
+            "type": "object",
+            "properties": {
+                "board_id": {
+                    "type": "integer"
+                }
+            }
+        },
         "dto.ChangeWorkspaceThumbnailInfo": {
             "type": "object",
             "properties": {
@@ -1069,11 +1293,39 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.IndividualBoardRequest": {
+            "type": "object",
+            "properties": {
+                "board_id": {
+                    "type": "integer"
+                },
+                "user_id": {
+                    "type": "string"
+                }
+            }
+        },
         "dto.ListID": {
             "type": "object",
             "properties": {
                 "id": {
                     "type": "string"
+                }
+            }
+        },
+        "dto.NewBoardInfo": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "owner_id": {
+                    "type": "integer"
+                },
+                "workspace_id": {
+                    "type": "integer"
                 }
             }
         },
@@ -1156,6 +1408,34 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.UpdatedBoardInfo": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.UpdatedBoardThumbnailInfo": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "thumbnail": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                }
+            }
+        },
         "dto.UpdatedListInfo": {
             "type": "object",
             "properties": {
@@ -1224,6 +1504,17 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.UserInfo": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                }
+            }
+        },
         "dto.UserOwnedBoardInfo": {
             "type": "object",
             "properties": {
@@ -1260,6 +1551,38 @@ const docTemplate = `{
             "properties": {
                 "workspace_id": {
                     "type": "integer"
+                }
+            }
+        },
+        "entities.Board": {
+            "type": "object",
+            "properties": {
+                "board_id": {
+                    "type": "integer"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "lists": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/entities.List"
+                    }
+                },
+                "name": {
+                    "type": "string"
+                },
+                "owner": {
+                    "$ref": "#/definitions/dto.UserInfo"
+                },
+                "thumbnail_url": {
+                    "type": "string"
+                },
+                "users": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/entities.User"
+                    }
                 }
             }
         },

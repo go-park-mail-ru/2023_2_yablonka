@@ -12,6 +12,11 @@ definitions:
       workspaces:
         $ref: '#/definitions/dto.AllWorkspaces'
     type: object
+  doc_structs.BoardResponse:
+    properties:
+      board:
+        $ref: '#/definitions/entities.Board'
+    type: object
   doc_structs.ListResponse:
     properties:
       list:
@@ -59,6 +64,11 @@ definitions:
       user_id:
         type: string
     type: object
+  dto.BoardID:
+    properties:
+      board_id:
+        type: integer
+    type: object
   dto.ChangeWorkspaceThumbnailInfo:
     properties:
       id:
@@ -68,10 +78,28 @@ definitions:
           type: integer
         type: array
     type: object
+  dto.IndividualBoardRequest:
+    properties:
+      board_id:
+        type: integer
+      user_id:
+        type: string
+    type: object
   dto.ListID:
     properties:
       id:
         type: string
+    type: object
+  dto.NewBoardInfo:
+    properties:
+      description:
+        type: string
+      name:
+        type: string
+      owner_id:
+        type: integer
+      workspace_id:
+        type: integer
     type: object
   dto.NewListInfo:
     properties:
@@ -124,6 +152,24 @@ definitions:
       id:
         type: string
     type: object
+  dto.UpdatedBoardInfo:
+    properties:
+      description:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+    type: object
+  dto.UpdatedBoardThumbnailInfo:
+    properties:
+      id:
+        type: string
+      thumbnail:
+        items:
+          type: integer
+        type: array
+    type: object
   dto.UpdatedListInfo:
     properties:
       description:
@@ -168,6 +214,13 @@ definitions:
       owner_id:
         type: integer
     type: object
+  dto.UserInfo:
+    properties:
+      email:
+        type: string
+      id:
+        type: integer
+    type: object
   dto.UserOwnedBoardInfo:
     properties:
       board_id:
@@ -192,6 +245,27 @@ definitions:
     properties:
       workspace_id:
         type: integer
+    type: object
+  entities.Board:
+    properties:
+      board_id:
+        type: integer
+      description:
+        type: string
+      lists:
+        items:
+          $ref: '#/definitions/entities.List'
+        type: array
+      name:
+        type: string
+      owner:
+        $ref: '#/definitions/dto.UserInfo'
+      thumbnail_url:
+        type: string
+      users:
+        items:
+          $ref: '#/definitions/entities.User'
+        type: array
     type: object
   entities.List:
     properties:
@@ -388,6 +462,142 @@ paths:
       summary: Подтвердить вход
       tags:
       - auth
+  /board/:
+    get:
+      consumes:
+      - application/json
+      description: Получить доску
+      parameters:
+      - description: id доски
+        in: body
+        name: boardRequest
+        required: true
+        schema:
+          $ref: '#/definitions/dto.IndividualBoardRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: объект доски
+          schema:
+            $ref: '#/definitions/doc_structs.BoardResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+      summary: Получить доску
+      tags:
+      - boards
+  /board/create/:
+    post:
+      consumes:
+      - application/json
+      description: Создать доску
+      parameters:
+      - description: данные новой доски
+        in: body
+        name: newBoardInfo
+        required: true
+        schema:
+          $ref: '#/definitions/dto.NewBoardInfo'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: объект доски
+          schema:
+            $ref: '#/definitions/doc_structs.BoardResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+      summary: Создать доску
+      tags:
+      - boards
+  /board/delete/:
+    delete:
+      consumes:
+      - application/json
+      description: Удалить доску
+      parameters:
+      - description: id доски
+        in: body
+        name: boardID
+        required: true
+        schema:
+          $ref: '#/definitions/dto.BoardID'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: no content
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+      summary: Удалить доску
+      tags:
+      - boards
+  /board/update/:
+    post:
+      consumes:
+      - application/json
+      description: Обновить картинку доску
+      parameters:
+      - description: обновленные данные задания
+        in: body
+        name: boardInfo
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdatedBoardThumbnailInfo'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Ссылка на новую картинку
+          schema:
+            $ref: '#/definitions/doc_structs.ThumbnailUploadResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+      summary: Обновить картинку доски
+      tags:
+      - boards
   /list/create/:
     post:
       consumes:
