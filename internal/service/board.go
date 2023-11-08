@@ -3,20 +3,16 @@ package service
 import (
 	"context"
 	"server/internal/pkg/dto"
+	"server/internal/pkg/entities"
 )
 
 type IBoardService interface {
-	// GetUserOwnedBoards
-	// находит все доски, созданные пользователем
-	// или возвращает ошибку apperrors.ErrUserNotFound (401)
-	GetUserOwnedBoards(context.Context, dto.VerifiedAuthInfo) ([]dto.UserOwnedBoardInfo, error)
-	// GetUserGuestBoards
-	// находит все доски, в которых участвует пользователь
-	// или возвращает ошибку apperrors.ErrUserNotFound (401)
-	GetUserGuestBoards(context.Context, dto.VerifiedAuthInfo) ([]dto.UserGuestBoardInfo, error)
-
-	// TODO Implement
-	// GetBoard(context.Context, dto.IndividualBoardInfo) (*entities.Board, error)
-	// CreateBoard(context.Context, dto.NewBoardInfo) (*entities.Board, error)
-	// UpdateBoard(context.Context, dto.IndividualBoardInfo) (*entities.Board, error)
+	// GetUsersInBoard
+	// возвращает пользователей и их роли в доске
+	// или возвращает ошибки ...
+	GetFullBoard(context.Context, dto.IndividualBoardRequest) (*entities.Board, error)
+	Create(context.Context, dto.NewBoardInfo) (*entities.Board, error)
+	UpdateData(context.Context, dto.UpdatedBoardInfo) error
+	UpdateThumbnail(context.Context, dto.UpdatedBoardThumbnailInfo) (*dto.UrlObj, error)
+	Delete(context.Context, dto.BoardID) error
 }

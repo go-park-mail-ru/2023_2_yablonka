@@ -17,47 +17,6 @@
     "host": "localhost:8080",
     "basePath": "/api/v2",
     "paths": {
-        "/api/v2/user/boards/": {
-            "get": {
-                "description": "Выводит и созданные им доски и те, в которых он гость. Работает только для авторизированного пользователя.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "boards"
-                ],
-                "summary": "Вывести все доски текущего пользователя",
-                "responses": {
-                    "200": {
-                        "description": "Пользователь и его доски",
-                        "schema": {
-                            "$ref": "#/definitions/doc_structs.UserBoardsResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/apperrors.ErrorResponse"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/apperrors.ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/apperrors.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
         "/auth/login/": {
             "post": {
                 "description": "Для этого использует сессии",
@@ -167,7 +126,7 @@
                 "parameters": [
                     {
                         "description": "Эл. почта и логин пользователя",
-                        "name": "authData",
+                        "name": "signup",
                         "in": "body",
                         "required": true,
                         "schema": {
@@ -249,6 +208,751 @@
                     }
                 }
             }
+        },
+        "/list/create/": {
+            "post": {
+                "description": "Создать список",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "lists"
+                ],
+                "summary": "Создать список",
+                "parameters": [
+                    {
+                        "description": "данные нового списка",
+                        "name": "newListInfo",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.NewListInfo"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "объект списка",
+                        "schema": {
+                            "$ref": "#/definitions/doc_structs.ListResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/list/delete/": {
+            "delete": {
+                "description": "Удалить список",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "lists"
+                ],
+                "summary": "Удалить список",
+                "parameters": [
+                    {
+                        "description": "id списка",
+                        "name": "listID",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.ListID"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "no content",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/list/update/": {
+            "post": {
+                "description": "Обновить список",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "lists"
+                ],
+                "summary": "Обновить список",
+                "parameters": [
+                    {
+                        "description": "обновленные данные списка",
+                        "name": "listInfo",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.UpdatedListInfo"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "no content",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/task/": {
+            "get": {
+                "description": "Получить задание",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "tasks"
+                ],
+                "summary": "Получить задание",
+                "parameters": [
+                    {
+                        "description": "id задания",
+                        "name": "taskID",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.TaskID"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "объект задания",
+                        "schema": {
+                            "$ref": "#/definitions/doc_structs.TaskResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/task/create/": {
+            "post": {
+                "description": "Создать задание",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "tasks"
+                ],
+                "summary": "Создать задание",
+                "parameters": [
+                    {
+                        "description": "данные нового задания",
+                        "name": "newTaskInfo",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.NewTaskInfo"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "объект задания",
+                        "schema": {
+                            "$ref": "#/definitions/doc_structs.TaskResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/task/delete/": {
+            "delete": {
+                "description": "Удалить задание",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "tasks"
+                ],
+                "summary": "Удалить задание",
+                "parameters": [
+                    {
+                        "description": "id задания",
+                        "name": "taskID",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.TaskID"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "no content",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/task/update/": {
+            "post": {
+                "description": "Обновить задание",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "tasks"
+                ],
+                "summary": "Обновить задание",
+                "parameters": [
+                    {
+                        "description": "обновленные данные задания",
+                        "name": "taskInfo",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.UpdatedTaskInfo"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "no content",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/user/edit/": {
+            "post": {
+                "description": "В ответ ничего не шлёт",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Поменять данные профиля",
+                "parameters": [
+                    {
+                        "description": "id пользователя, имя, фамилия, описание пользователя",
+                        "name": "newProfileInfo",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.UserProfileInfo"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "no content",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/user/edit/change_password/": {
+            "post": {
+                "description": "В ответ шлёт ссылку на файл",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Поменять аватарку",
+                "parameters": [
+                    {
+                        "description": "id пользователя, изображение",
+                        "name": "avatarChangeInfo",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.AvatarChangeInfo"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "no content",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/user/workspaces/": {
+            "get": {
+                "description": "Выводит и созданные им рабочие пространства и те, в которых он гость. Работает только для авторизированного пользователя.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "workspaces"
+                ],
+                "summary": "Вывести все рабочие пространства и доски текущего пользователя",
+                "responses": {
+                    "200": {
+                        "description": "Пользователь и его рабочие пространства",
+                        "schema": {
+                            "$ref": "#/definitions/doc_structs.AllWorkspacesResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/workspace/create/": {
+            "post": {
+                "description": "Создать рабочее пространство",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "workspaces"
+                ],
+                "summary": "Создать рабочее пространство",
+                "parameters": [
+                    {
+                        "description": "данные нового рабочего пространства",
+                        "name": "newWorkspaceInfo",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.NewWorkspaceInfo"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "no content",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/workspace/delete/": {
+            "delete": {
+                "description": "Удалить рабочее пространство",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "workspaces"
+                ],
+                "summary": "Удалить рабочее пространство",
+                "parameters": [
+                    {
+                        "description": "id рабочего пространства",
+                        "name": "workspaceID",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.WorkspaceID"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "no content",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/workspace/update/": {
+            "post": {
+                "description": "Обновить рабочее пространство",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "workspaces"
+                ],
+                "summary": "Обновить рабочее пространство",
+                "parameters": [
+                    {
+                        "description": "обновленные данные рабочего пространства",
+                        "name": "workspaceInfo",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.UpdatedWorkspaceInfo"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "no content",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/workspace/update/change_thumbnail": {
+            "post": {
+                "description": "Обновить картинку рабочего пространства",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "workspaces"
+                ],
+                "summary": "Обновить картинку рабочего пространства",
+                "parameters": [
+                    {
+                        "description": "обновленные данные рабочего пространства",
+                        "name": "thumbnailInfo",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.ChangeWorkspaceThumbnailInfo"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Ссылка на новую картинку",
+                        "schema": {
+                            "$ref": "#/definitions/doc_structs.ThumbnailUploadResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/workspace/update/change_users/": {
+            "post": {
+                "description": "Обновить гостей рабочего пространства",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "workspaces"
+                ],
+                "summary": "Обновить гостей рабочего пространства",
+                "parameters": [
+                    {
+                        "description": "обновленный список пользователей",
+                        "name": "authData",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.UpdatedWorkspaceInfo"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "no content",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -260,17 +964,38 @@
                 }
             }
         },
-        "doc_structs.UserBoardsResponse": {
+        "doc_structs.AllWorkspacesResponse": {
             "type": "object",
             "properties": {
-                "boards": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/entities.Board"
-                    }
-                },
                 "user": {
                     "$ref": "#/definitions/entities.User"
+                },
+                "workspaces": {
+                    "$ref": "#/definitions/dto.AllWorkspaces"
+                }
+            }
+        },
+        "doc_structs.ListResponse": {
+            "type": "object",
+            "properties": {
+                "list": {
+                    "$ref": "#/definitions/entities.List"
+                }
+            }
+        },
+        "doc_structs.TaskResponse": {
+            "type": "object",
+            "properties": {
+                "task": {
+                    "$ref": "#/definitions/entities.Task"
+                }
+            }
+        },
+        "doc_structs.ThumbnailUploadResponse": {
+            "type": "object",
+            "properties": {
+                "thumbnail_url": {
+                    "$ref": "#/definitions/dto.AllWorkspaces"
                 }
             }
         },
@@ -279,6 +1004,23 @@
             "properties": {
                 "user": {
                     "$ref": "#/definitions/entities.User"
+                }
+            }
+        },
+        "dto.AllWorkspaces": {
+            "type": "object",
+            "properties": {
+                "user_guest_boards": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.UserGuestBoardInfo"
+                    }
+                },
+                "user_owned_boards": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.UserOwnedBoardInfo"
+                    }
                 }
             }
         },
@@ -293,44 +1035,207 @@
                 }
             }
         },
-        "dto.UserInfo": {
+        "dto.AvatarChangeInfo": {
             "type": "object",
             "properties": {
-                "email": {
-                    "type": "string"
+                "avatar": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
                 },
-                "id": {
-                    "type": "integer"
+                "user_id": {
+                    "type": "string"
                 }
             }
         },
-        "entities.Board": {
+        "dto.ChangeWorkspaceThumbnailInfo": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "thumbnail": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                }
+            }
+        },
+        "dto.ListID": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.NewListInfo": {
             "type": "object",
             "properties": {
                 "board_id": {
                     "type": "integer"
                 },
-                "guests": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/dto.UserInfo"
-                    }
+                "description": {
+                    "type": "string"
+                },
+                "list_position": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.NewTaskInfo": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "end": {
+                    "type": "string"
+                },
+                "list_id": {
+                    "type": "integer"
+                },
+                "list_position": {
+                    "type": "integer"
                 },
                 "name": {
                     "type": "string"
                 },
-                "owner": {
-                    "$ref": "#/definitions/dto.UserInfo"
+                "start": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.NewWorkspaceInfo": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "owner_id": {
+                    "type": "integer"
                 },
                 "thumbnail_url": {
                     "type": "string"
                 }
             }
         },
-        "entities.User": {
+        "dto.PasswordChangeInfo": {
             "type": "object",
             "properties": {
-                "email": {
+                "new_password": {
+                    "type": "string"
+                },
+                "old_password": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.TaskID": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.UpdatedListInfo": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "list_position": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.UpdatedTaskInfo": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "end": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "list_position": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "start": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.UpdatedWorkspaceInfo": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.UserGuestBoardInfo": {
+            "type": "object",
+            "properties": {
+                "board_info": {
+                    "$ref": "#/definitions/dto.UserOwnedBoardInfo"
+                },
+                "owner_email": {
+                    "type": "string"
+                },
+                "owner_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.UserOwnedBoardInfo": {
+            "type": "object",
+            "properties": {
+                "board_id": {
+                    "type": "integer"
+                },
+                "board_name": {
+                    "type": "string"
+                },
+                "thumbnail_url": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.UserProfileInfo": {
+            "type": "object",
+            "properties": {
+                "description": {
                     "type": "string"
                 },
                 "name": {
@@ -339,7 +1244,93 @@
                 "surname": {
                     "type": "string"
                 },
-                "thumbnail_url": {
+                "user_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.WorkspaceID": {
+            "type": "object",
+            "properties": {
+                "workspace_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "entities.List": {
+            "type": "object",
+            "properties": {
+                "board_id": {
+                    "type": "integer"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "list_position": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "tasks": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/entities.Task"
+                    }
+                }
+            }
+        },
+        "entities.Task": {
+            "type": "object",
+            "properties": {
+                "date_created": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "end": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "list_id": {
+                    "type": "integer"
+                },
+                "list_position": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "start": {
+                    "type": "string"
+                },
+                "users": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/entities.User"
+                    }
+                }
+            }
+        },
+        "entities.User": {
+            "type": "object",
+            "properties": {
+                "avatar_url": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "surname": {
                     "type": "string"
                 },
                 "user_id": {

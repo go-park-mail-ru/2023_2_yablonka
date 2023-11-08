@@ -9,7 +9,7 @@ import (
 	"server/internal/service"
 )
 
-func AuthMiddleware(as service.IAuthService, us service.IUserAuthService) func(http.Handler) http.Handler {
+func AuthMiddleware(as service.IAuthService, us service.IUserService) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			rCtx := r.Context()
@@ -18,14 +18,18 @@ func AuthMiddleware(as service.IAuthService, us service.IUserAuthService) func(h
 				*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.GenericUnauthorizedResponse))
 				return
 			}
-			token := cookie.Value
-			userInfo, err := as.VerifyAuth(rCtx, token)
+
+			token := dto.SessionToken{
+				Value: cookie.Value,
+			}
+
+			userID, err := as.VerifyAuth(rCtx, token)
 			if err != nil {
 				*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.ErrorMap[err]))
 				return
 			}
 
-			userObj, err := us.GetUserByID(rCtx, userInfo.UserID)
+			userObj, err := us.GetWithID(rCtx, userID)
 
 			if errors.Is(err, apperrors.ErrUserNotFound) {
 				*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.GenericUnauthorizedResponse))
