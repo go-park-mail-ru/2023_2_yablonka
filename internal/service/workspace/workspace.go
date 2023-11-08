@@ -77,9 +77,9 @@ func (ws WorkspaceService) UpdateThumbnail(ctx context.Context, info dto.ChangeW
 // UpdateUsers
 // обновляет список пользователей рабочего пространства
 // или возвращает ошибки ...
-// func (ws WorkspaceService) UpdateUsers(ctx context.Context, info dto.ChangeWorkspaceGuestsInfo) error {
-// 	return nil
-// }
+func (ws WorkspaceService) UpdateUsers(ctx context.Context, info dto.ChangeWorkspaceGuestsInfo) error {
+	return nil
+}
 
 // Delete
 // удаляет рабочее пространство в БД по id
