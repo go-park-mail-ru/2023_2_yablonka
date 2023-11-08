@@ -2,7 +2,6 @@ package postgresql
 
 import (
 	"context"
-	"log"
 	"server/internal/apperrors"
 	"server/internal/pkg/dto"
 	"server/internal/pkg/entities"
@@ -24,70 +23,24 @@ func NewBoardStorage(db *pgxpool.Pool) *PostgreSQLBoardStorage {
 	}
 }
 
-// GetUserOwnedBoards
-// находит все доски, созданные пользователем
-// или возвращает ошибку apperrors.ErrUserNotFound (401)
-func (s *PostgreSQLBoardStorage) GetUserOwnedBoards(ctx context.Context, userID dto.UserID) (*[]entities.Board, error) {
-	sql, args, err := sq.
-		Select(allBoardFields...).
-		From("public.board").
-		Join("public.board_user ON public.board.id = public.board_user.id_board").
-		Where(sq.Eq{"public.Board_User.id_user": userID.Value}).
-		ToSql()
-
-	if err != nil {
-		return nil, apperrors.ErrCouldNotBuildQuery
-	}
-
-	rows, err := s.db.Query(ctx, sql, args...)
-
-	if err != nil {
-		return nil, apperrors.ErrCouldNotBuildQuery
-	}
-
-	defer rows.Close()
-
-	var boards []entities.Board
-	for rows.Next() {
-		var board entities.Board
-		err := rows.Scan(&board.ID, &board.Name, &board.Owner, &board.ThumbnailURL, &board.Users)
-		if err != nil {
-			log.Fatal(err)
-		}
-		boards = append(boards, board)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, apperrors.ErrBoardNotFound
-	}
-
-	return &boards, nil
-}
-
-// GetUserGuestBoards
-// находит все доски, в которых участвует пользователь
-// или возвращает ошибку apperrors.ErrUserNotFound (401)
-func (s *PostgreSQLBoardStorage) GetUserGuestBoards(ctx context.Context, userID dto.UserID) (*[]entities.Board, error) {
-	return nil, nil
-}
-
 // TODO Ограничить количество всего за раз
 // GetById
 // находит доску и связанные с ней списки и задания по id
 // или возвращает ошибки ...
 func (s *PostgreSQLBoardStorage) GetById(ctx context.Context, id dto.BoardID) (*entities.Board, error) {
-	sql, args, err := sq.Select("public.board.*", "public.list.*", "public.task.*").
-		From("public.board").
-		Join("public.list ON public.board.id = public.list.board_id").
-		Join("public.task ON public.list.id = public.task.list_id").
-		Where(sq.Eq{"public.board.id": id}).
+	sql, args, err := sq.Select("board.*", "list.*", "task.*").
+		From("board").
+		Join("list ON board.id = list.board_id").
+		Join("task ON list.id = task.list_id").
+		Where(sq.Eq{"board.id": id}).
 		ToSql()
 	if err != nil {
-		return nil, err
+		return nil, apperrors.ErrCouldNotBuildQuery
 	}
 
 	rows, err := s.db.Query(context.Background(), sql, args...)
 	if err != nil {
-		return nil, err
+		return nil, apperrors.ErrCouldNotBuildQuery
 	}
 	defer rows.Close()
 
@@ -104,7 +57,7 @@ func (s *PostgreSQLBoardStorage) GetById(ctx context.Context, id dto.BoardID) (*
 			&list.Description,
 		)
 		if err != nil {
-			return nil, err
+			return nil, apperrors.ErrCouldNotGetBoard
 		}
 
 		for rows.Next() {
@@ -122,7 +75,7 @@ func (s *PostgreSQLBoardStorage) GetById(ctx context.Context, id dto.BoardID) (*
 				&task.Description,
 			)
 			if err != nil {
-				return nil, err
+				return nil, apperrors.ErrCouldNotGetBoard
 			}
 			list.Tasks = append(list.Tasks, task)
 		}
@@ -135,9 +88,9 @@ func (s *PostgreSQLBoardStorage) GetById(ctx context.Context, id dto.BoardID) (*
 
 func (s *PostgreSQLBoardStorage) Create(ctx context.Context, info dto.NewBoardInfo) (*entities.Board, error) {
 	query1, args, err := sq.
-		Insert("public.Board").
-		Columns("id_workspace", "name", "description", "thumbnail_url").
-		Values(info.WorkspaceID, info.Name, info.Description, info.ThumbnailURL).
+		Insert("board").
+		Columns("id_workspace", "name", "description").
+		Values(info.WorkspaceID, info.Name, info.Description).
 		Suffix("RETURNING id").
 		ToSql()
 	if err != nil {
@@ -157,11 +110,11 @@ func (s *PostgreSQLBoardStorage) Create(ctx context.Context, info dto.NewBoardIn
 		for err != nil {
 			err = tx.Rollback(ctx)
 		}
-		return nil, apperrors.ErrUserNotCreated
+		return nil, apperrors.ErrBoardNotCreated
 	}
 
 	query2, args, err := sq.
-		Insert("public.Board_User").
+		Insert("board_user").
 		Columns("id_board", "id_user").
 		Values(boardID, info.OwnerID).
 		ToSql()
@@ -177,7 +130,7 @@ func (s *PostgreSQLBoardStorage) Create(ctx context.Context, info dto.NewBoardIn
 		for err != nil {
 			err = tx.Rollback(ctx)
 		}
-		return nil, apperrors.ErrUserNotCreated
+		return nil, apperrors.ErrBoardNotCreated
 	}
 
 	err = tx.Commit(ctx)
@@ -186,39 +139,71 @@ func (s *PostgreSQLBoardStorage) Create(ctx context.Context, info dto.NewBoardIn
 		for err != nil {
 			err = tx.Rollback(ctx)
 		}
-		return nil, apperrors.ErrUserNotCreated
+		return nil, apperrors.ErrBoardNotCreated
 	}
 
 	return &entities.Board{}, nil
 }
 
-func (s *PostgreSQLBoardStorage) Update(ctx context.Context, id dto.IndividualBoardInfo) (*entities.Board, error) {
-	return nil, nil
+func (s *PostgreSQLBoardStorage) UpdateData(ctx context.Context, info dto.UpdatedBoardInfo) error {
+	sql, args, err := sq.
+		Update("board").
+		Set("name", info.Name).
+		Set("description", info.Description).
+		Where(sq.Eq{"board.id": info.ID}).
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
+
+	if err != nil {
+		return apperrors.ErrCouldNotBuildQuery
+	}
+
+	query := s.db.QueryRow(ctx, sql, args...)
+
+	if query.Scan() != nil {
+		return apperrors.ErrBoardNotUpdated
+	}
+
+	return nil
+}
+
+func (s *PostgreSQLBoardStorage) UpdateThumbnailUrl(ctx context.Context, info dto.ImageUrlInfo) error {
+	sql, args, err := sq.
+		Update("board").
+		Set("thumbnail_url", info.Url).
+		Where(sq.Eq{"id": info.ID}).
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
+
+	if err != nil {
+		return apperrors.ErrCouldNotBuildQuery
+	}
+
+	query := s.db.QueryRow(ctx, sql, args...)
+
+	if query.Scan() != nil {
+		return apperrors.ErrBoardNotUpdated
+	}
+
+	return nil
 }
 
 func (s *PostgreSQLBoardStorage) Delete(ctx context.Context, id dto.BoardID) error {
-	// TODO Implement later
-	// s.mu.RLock()
-	// userBoards, ok := s.boardData[board.OwnerEmail]
-	// if !ok {
-	// 	return apperrors.ErrUserNotFound
-	// }
-	// s.mu.RUnlock()
+	sql, args, err := sq.
+		Delete("board").
+		Where(sq.Eq{"id": id.Value}).
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
 
-	// boardIndex := -1
-	// for i, b := range userBoards {
-	// 	if b.ID == board.ID {
-	// 		boardIndex = i
-	// 		break
-	// 	}
-	// }
-	// if boardIndex == -1 {
-	// 	return apperrors.ErrBoardNotFound
-	// }
-	// userBoards[boardIndex] = nil
+	if err != nil {
+		return apperrors.ErrCouldNotBuildQuery
+	}
 
-	// s.mu.Lock()
-	// s.boardData[board.OwnerEmail] = userBoards
-	// s.mu.Unlock()
+	query := s.db.QueryRow(ctx, sql, args...)
+
+	if query.Scan() != nil {
+		return apperrors.ErrBoardNotDeleted
+	}
+
 	return nil
 }

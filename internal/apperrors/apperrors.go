@@ -67,8 +67,14 @@ var (
 
 // Ошибки, связанные с BoardService
 var (
-	// ErrBoardNotFound ошибка: доски с полученным ID не существует
-	ErrBoardNotFound = errors.New("no board found for provided board ID")
+	// ErrWorkspaceNotDeleted ошибка: не удалось создать рабочее прострнство в БД
+	ErrBoardNotCreated = errors.New("board couldn't be created")
+	// ErrWorkspaceNotDeleted ошибка: не удалось получить рабочее прострнство в БД
+	ErrBoardNotUpdated = errors.New("board couldn't be updated")
+	// ErrWorkspaceNotDeleted ошибка: не удалось удалить рабочее прострнство в БД
+	ErrBoardNotDeleted = errors.New("board couldn't be deleted")
+	// ErrCouldNotGetBoard ошибка: доски с полученным ID не существует
+	ErrCouldNotGetBoard = errors.New("could not retrieve board")
 )
 
 // Ошибки, связанные с WorkspaceService
@@ -99,8 +105,8 @@ var (
 	ErrTaskNotUpdated = errors.New("task couldn't be updated")
 	// ErrTaskNotDeleted ошибка: не удалось удалить задание в БД
 	ErrTaskNotDeleted = errors.New("task couldn't be deleted")
-	// CouldNotGetTask ошибка: не удалось получить задание в БД
-	CouldNotGetTask = errors.New("couldn't get task")
+	// ErrCouldNotGetTask ошибка: не удалось получить задание в БД
+	ErrCouldNotGetTask = errors.New("couldn't get task")
 )
 
 // ErrorResponse
@@ -169,7 +175,17 @@ var ErrorMap = map[error]ErrorResponse{
 	ErrWorkspaceNotCreated:    InternalServerErrorResponse,
 	ErrCouldNotGetWorkspace:   InternalServerErrorResponse,
 	ErrWorkspaceNotDeleted:    InternalServerErrorResponse,
-	ErrBoardNotFound:          InternalServerErrorResponse,
+	ErrBoardNotCreated:        InternalServerErrorResponse,
+	ErrBoardNotUpdated:        InternalServerErrorResponse,
+	ErrBoardNotDeleted:        InternalServerErrorResponse,
+	ErrCouldNotGetBoard:       InternalServerErrorResponse,
+	ErrTaskNotCreated:         InternalServerErrorResponse,
+	ErrTaskNotUpdated:         InternalServerErrorResponse,
+	ErrTaskNotDeleted:         InternalServerErrorResponse,
+	ErrCouldNotGetTask:        InternalServerErrorResponse,
+	ErrListNotCreated:         InternalServerErrorResponse,
+	ErrListNotUpdated:         InternalServerErrorResponse,
+	ErrListNotDeleted:         InternalServerErrorResponse,
 }
 
 func ErrorJSON(err ErrorResponse) []byte {

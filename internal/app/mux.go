@@ -51,6 +51,10 @@ func GetChiMux(manager handlers.HandlerManager, config config.BaseServerConfig) 
 		r.Route("/board", func(r chi.Router) {
 			r.Use(middleware.AuthMiddleware(manager.UserHandler.GetAuthService(), manager.UserHandler.GetUserService()))
 			r.Get("/", manager.BoardHandler.GetFullBoard)
+			r.Get("/create", manager.BoardHandler.Create)
+			r.Get("/update/", manager.WorkspaceHandler.UpdateData)
+			r.Get("/update/change_thumbnail", manager.WorkspaceHandler.UpdateThumbnail)
+			r.Get("/delete", manager.BoardHandler.Delete)
 		})
 		r.Route("/list", func(r chi.Router) {
 			r.Use(middleware.AuthMiddleware(manager.UserHandler.GetAuthService(), manager.UserHandler.GetUserService()))

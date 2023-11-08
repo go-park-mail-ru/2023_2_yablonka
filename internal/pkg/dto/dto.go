@@ -133,14 +133,14 @@ type IndividualBoardInfo struct {
 	ThumbnailURL string `json:"thumbnail_url"`
 }
 
+// TODO Add thumbnails
 // NewBoardInfo
 // DTO для новой доски
 type NewBoardInfo struct {
-	Name         string `json:"name"`
-	OwnerID      uint64 `json:"owner_id"`
-	WorkspaceID  uint64 `json:"workspace_id"`
-	Description  string `json:"description"`
-	ThumbnailURL string `json:"thumbnail_url"`
+	Name        string `json:"name"`
+	OwnerID     uint64 `json:"owner_id"`
+	WorkspaceID uint64 `json:"workspace_id"`
+	Description string `json:"description"`
 }
 
 // WorkspaceID
@@ -217,6 +217,21 @@ type UpdatedTaskInfo struct {
 	Start        time.Time `json:"start"`
 	End          time.Time `json:"end"`
 	ListPosition string    `json:"list_position"`
+}
+
+// UpdatedBoardInfo
+// DTO для обновленной доски
+type UpdatedBoardInfo struct {
+	ID          string `json:"id"`
+	Name        string `json:"name"`
+	Description string `json:"description"`
+}
+
+// UpdatedBoardThumbnailInfo
+// DTO для обновленной картинки доски
+type UpdatedBoardThumbnailInfo struct {
+	ID        string `json:"id"`
+	Thumbnail []byte `json:"thumbnail"`
 }
 
 // UpdatedListInfo

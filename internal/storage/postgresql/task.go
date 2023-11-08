@@ -73,7 +73,7 @@ func (s *PostgresTaskStorage) Read(ctx context.Context, id dto.TaskID) (*entitie
 
 	rows, err := s.db.Query(context.Background(), sql, args...)
 	if err != nil {
-		return nil, apperrors.CouldNotGetTask
+		return nil, apperrors.ErrCouldNotGetTask
 	}
 	defer rows.Close()
 
@@ -86,7 +86,7 @@ func (s *PostgresTaskStorage) Read(ctx context.Context, id dto.TaskID) (*entitie
 			&user,
 		)
 		if err != nil {
-			return nil, apperrors.CouldNotGetTask
+			return nil, apperrors.ErrCouldNotGetTask
 		}
 
 		task.Users = append(task.Users, user)

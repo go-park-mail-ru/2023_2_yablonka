@@ -40,77 +40,75 @@ func (m *MockIBoardService) EXPECT() *MockIBoardServiceMockRecorder {
 	return m.recorder
 }
 
-// CreateBoard mocks base method.
-func (m *MockIBoardService) CreateBoard(arg0 context.Context, arg1 dto.NewBoardInfo) (*entities.Board, error) {
+// Create mocks base method.
+func (m *MockIBoardService) Create(arg0 context.Context, arg1 dto.NewBoardInfo) (*entities.Board, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateBoard", arg0, arg1)
+	ret := m.ctrl.Call(m, "Create", arg0, arg1)
 	ret0, _ := ret[0].(*entities.Board)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// CreateBoard indicates an expected call of CreateBoard.
-func (mr *MockIBoardServiceMockRecorder) CreateBoard(arg0, arg1 any) *gomock.Call {
+// Create indicates an expected call of Create.
+func (mr *MockIBoardServiceMockRecorder) Create(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateBoard", reflect.TypeOf((*MockIBoardService)(nil).CreateBoard), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockIBoardService)(nil).Create), arg0, arg1)
 }
 
-// GetBoardWithListsAndTasks mocks base method.
-func (m *MockIBoardService) GetBoardWithListsAndTasks(arg0 context.Context, arg1 dto.BoardID) (*entities.Board, error) {
+// Delete mocks base method.
+func (m *MockIBoardService) Delete(arg0 context.Context, arg1 dto.BoardID) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetBoardWithListsAndTasks", arg0, arg1)
+	ret := m.ctrl.Call(m, "Delete", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Delete indicates an expected call of Create.
+func (mr *MockIBoardServiceMockRecorder) Delete(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockIBoardService)(nil).Create), arg0)
+}
+
+// GetFullBoard mocks base method.
+func (m *MockIBoardService) GetFullBoard(arg0 context.Context, arg1 dto.IndividualBoardRequest) (*entities.Board, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetFullBoard", arg0, arg1)
 	ret0, _ := ret[0].(*entities.Board)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetBoardWithListsAndTasks indicates an expected call of GetBoardWithListsAndTasks.
-func (mr *MockIBoardServiceMockRecorder) GetBoardWithListsAndTasks(arg0, arg1 any) *gomock.Call {
+// GetFullBoard indicates an expected call of GetFullBoard.
+func (mr *MockIBoardServiceMockRecorder) GetFullBoard(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBoardWithListsAndTasks", reflect.TypeOf((*MockIBoardService)(nil).GetBoardWithListsAndTasks), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFullBoard", reflect.TypeOf((*MockIBoardService)(nil).GetFullBoard), arg0, arg1)
 }
 
-// GetUserGuestBoards mocks base method.
-func (m *MockIBoardService) GetUserGuestBoards(arg0 context.Context, arg1 dto.UserID) ([]dto.UserGuestBoardInfo, error) {
+// UpdateData mocks base method.
+func (m *MockIBoardService) UpdateData(arg0 context.Context, arg1 dto.UpdatedBoardInfo) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetUserGuestBoards", arg0, arg1)
-	ret0, _ := ret[0].([]dto.UserGuestBoardInfo)
+	ret := m.ctrl.Call(m, "UpdateData", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateData indicates an expected call of UpdateData.
+func (mr *MockIBoardServiceMockRecorder) UpdateData(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateData", reflect.TypeOf((*MockIBoardService)(nil).UpdateData), arg0, arg1)
+}
+
+// UpdateThumbnail mocks base method.
+func (m *MockIBoardService) UpdateThumbnail(arg0 context.Context, arg1 dto.UpdatedBoardThumbnailInfo) (*dto.UrlObj, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateThumbnail", arg0, arg1)
+	ret0, _ := ret[0].(*dto.UrlObj)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetUserGuestBoards indicates an expected call of GetUserGuestBoards.
-func (mr *MockIBoardServiceMockRecorder) GetUserGuestBoards(arg0, arg1 any) *gomock.Call {
+// UpdateThumbnail indicates an expected call of UpdateThumbnail.
+func (mr *MockIBoardServiceMockRecorder) UpdateThumbnail(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserGuestBoards", reflect.TypeOf((*MockIBoardService)(nil).GetUserGuestBoards), arg0, arg1)
-}
-
-// GetUserOwnedBoards mocks base method.
-func (m *MockIBoardService) GetUserOwnedBoards(arg0 context.Context, arg1 dto.UserID) ([]dto.UserOwnedBoardInfo, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetUserOwnedBoards", arg0, arg1)
-	ret0, _ := ret[0].([]dto.UserOwnedBoardInfo)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetUserOwnedBoards indicates an expected call of GetUserOwnedBoards.
-func (mr *MockIBoardServiceMockRecorder) GetUserOwnedBoards(arg0, arg1 any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserOwnedBoards", reflect.TypeOf((*MockIBoardService)(nil).GetUserOwnedBoards), arg0, arg1)
-}
-
-// UpdateBoard mocks base method.
-func (m *MockIBoardService) UpdateBoard(arg0 context.Context, arg1 dto.IndividualBoardInfo) (*entities.Board, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateBoard", arg0, arg1)
-	ret0, _ := ret[0].(*entities.Board)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// UpdateBoard indicates an expected call of UpdateBoard.
-func (mr *MockIBoardServiceMockRecorder) UpdateBoard(arg0, arg1 any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateBoard", reflect.TypeOf((*MockIBoardService)(nil).UpdateBoard), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateThumbnail", reflect.TypeOf((*MockIBoardService)(nil).UpdateThumbnail), arg0, arg1)
 }
