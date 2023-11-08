@@ -15,6 +15,7 @@ import (
 // структура для хранения параметров сервера
 type BaseServerConfig struct {
 	SessionDuration time.Duration `yaml:"-"`
+	ConnectionHost  string        `yaml:"-"`
 	Server          struct {
 		AllowedMethods   []string `yaml:"allowed_methods"`
 		AllowedHosts     []string `yaml:"allowed_hosts"`
@@ -26,6 +27,7 @@ type BaseServerConfig struct {
 // ServerConfig
 // структура для хранения параметров сервера
 type ServerConfig interface {
+	GetBase() BaseServerConfig
 	Validate() error
 }
 
@@ -38,7 +40,7 @@ func (config *BaseServerConfig) Validate() error {
 	return nil
 }
 
-// NewJWTEnvConfig
+// NewBaseEnvConfig
 // создаёт конфиг из .env файла, находящегося по полученному пути
 func NewBaseEnvConfig(envPath string, configPath string) (*BaseServerConfig, error) {
 	var err error
@@ -59,6 +61,7 @@ func NewBaseEnvConfig(envPath string, configPath string) (*BaseServerConfig, err
 
 	config := &BaseServerConfig{
 		SessionDuration: sessionDuration,
+		ConnectionHost:  getDBConnectionHost(),
 	}
 
 	file, err := os.Open(configPath)
@@ -74,6 +77,17 @@ func NewBaseEnvConfig(envPath string, configPath string) (*BaseServerConfig, err
 	}
 
 	return config, nil
+}
+
+// getDBConnectionHost
+// возвращает имя хоста для соединения с БД (по умолчанию localhost)
+func getDBConnectionHost() string {
+	host, hOk := os.LookupEnv("POSTGRES_HOST")
+	if !hOk {
+		return "localhost"
+	}
+
+	return host
 }
 
 // buildSessionDurationEnv

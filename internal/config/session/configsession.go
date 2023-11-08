@@ -24,6 +24,10 @@ func (config *SessionServerConfig) Validate() error {
 	return nil
 }
 
+func (config *SessionServerConfig) GetBase() config.BaseServerConfig {
+	return config.Base
+}
+
 func NewSessionEnvConfig(envPath string, configPath string) (*SessionServerConfig, error) {
 	baseConfig, err := config.NewBaseEnvConfig(envPath, configPath)
 
