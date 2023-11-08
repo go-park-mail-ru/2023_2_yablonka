@@ -19,8 +19,8 @@ func NewTaskService(storage storage.ITaskStorage) *TaskService {
 	}
 }
 
-// Create
-// создает новое задание
+// Read
+// возвращает задание
 // или возвращает ошибки ...
 func (ts TaskService) Read(ctx context.Context, id dto.TaskID) (*entities.Task, error) {
 	return ts.storage.Read(ctx, id)
