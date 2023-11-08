@@ -113,9 +113,9 @@ func (s PostgresTaskStorage) Update(ctx context.Context, info dto.UpdatedTaskInf
 		return apperrors.ErrCouldNotBuildQuery
 	}
 
-	query := s.db.QueryRow(ctx, sql, args...)
+	_, err = s.db.Exec(ctx, sql, args...)
 
-	if query.Scan() != nil {
+	if err != nil {
 		return apperrors.ErrTaskNotUpdated
 	}
 
@@ -136,9 +136,9 @@ func (s PostgresTaskStorage) Delete(ctx context.Context, id dto.TaskID) error {
 		return apperrors.ErrCouldNotBuildQuery
 	}
 
-	query := s.db.QueryRow(ctx, sql, args...)
+	_, err = s.db.Exec(ctx, sql, args...)
 
-	if query.Scan() != nil {
+	if err != nil {
 		return apperrors.ErrTaskNotDeleted
 	}
 

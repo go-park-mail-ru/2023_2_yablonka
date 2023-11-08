@@ -158,9 +158,9 @@ func (s *PostgreSQLBoardStorage) UpdateData(ctx context.Context, info dto.Update
 		return apperrors.ErrCouldNotBuildQuery
 	}
 
-	query := s.db.QueryRow(ctx, sql, args...)
+	_, err = s.db.Exec(ctx, sql, args...)
 
-	if query.Scan() != nil {
+	if err != nil {
 		return apperrors.ErrBoardNotUpdated
 	}
 
@@ -199,9 +199,9 @@ func (s *PostgreSQLBoardStorage) Delete(ctx context.Context, id dto.BoardID) err
 		return apperrors.ErrCouldNotBuildQuery
 	}
 
-	query := s.db.QueryRow(ctx, sql, args...)
+	_, err = s.db.Exec(ctx, sql, args...)
 
-	if query.Scan() != nil {
+	if err != nil {
 		return apperrors.ErrBoardNotDeleted
 	}
 

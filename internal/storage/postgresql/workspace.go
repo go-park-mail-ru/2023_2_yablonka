@@ -194,9 +194,9 @@ func (s PostgresWorkspaceStorage) UpdateData(ctx context.Context, info dto.Updat
 		return apperrors.ErrCouldNotBuildQuery
 	}
 
-	query := s.db.QueryRow(ctx, sql, args...)
+	_, err = s.db.Exec(ctx, sql, args...)
 
-	if query.Scan() != nil {
+	if err != nil {
 		return apperrors.ErrUserNotUpdated
 	}
 
@@ -218,9 +218,9 @@ func (s *PostgresWorkspaceStorage) UpdateThumbnailUrl(ctx context.Context, info 
 		return apperrors.ErrCouldNotBuildQuery
 	}
 
-	query := s.db.QueryRow(ctx, sql, args...)
+	_, err = s.db.Exec(ctx, sql, args...)
 
-	if query.Scan() != nil {
+	if err != nil {
 		return apperrors.ErrUserNotUpdated
 	}
 
@@ -241,9 +241,9 @@ func (s PostgresWorkspaceStorage) Delete(ctx context.Context, id dto.WorkspaceID
 		return apperrors.ErrCouldNotBuildQuery
 	}
 
-	query := s.db.QueryRow(ctx, sql, args...)
+	_, err = s.db.Exec(ctx, sql, args...)
 
-	if query.Scan() != nil {
+	if err != nil {
 		return apperrors.ErrUserNotDeleted
 	}
 

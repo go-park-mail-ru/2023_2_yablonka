@@ -116,7 +116,8 @@ func (s *PostgresUserStorage) Create(ctx context.Context, info dto.SignupInfo) (
 	}
 
 	query := s.db.QueryRow(ctx, sql, args...)
-	if query.Scan(&user.ID) != nil {
+	err = query.Scan(&user.ID)
+	if err != nil {
 		return nil, apperrors.ErrUserNotCreated
 	}
 
@@ -138,9 +139,9 @@ func (s *PostgresUserStorage) UpdatePassword(ctx context.Context, info dto.Passw
 		return apperrors.ErrCouldNotBuildQuery
 	}
 
-	query := s.db.QueryRow(ctx, sql, args...)
+	_, err = s.db.Exec(ctx, sql, args...)
 
-	if query.Scan() != nil {
+	if err != nil {
 		return apperrors.ErrUserNotUpdated
 	}
 
@@ -164,9 +165,9 @@ func (s *PostgresUserStorage) UpdateProfile(ctx context.Context, info dto.UserPr
 		return apperrors.ErrCouldNotBuildQuery
 	}
 
-	query := s.db.QueryRow(ctx, sql, args...)
+	_, err = s.db.Exec(ctx, sql, args...)
 
-	if query.Scan() != nil {
+	if err != nil {
 		return apperrors.ErrUserNotUpdated
 	}
 
@@ -188,9 +189,9 @@ func (s *PostgresUserStorage) UpdateAvatarUrl(ctx context.Context, info dto.Imag
 		return apperrors.ErrCouldNotBuildQuery
 	}
 
-	query := s.db.QueryRow(ctx, sql, args...)
+	_, err = s.db.Exec(ctx, sql, args...)
 
-	if query.Scan() != nil {
+	if err != nil {
 		return apperrors.ErrUserNotUpdated
 	}
 
@@ -211,9 +212,9 @@ func (s *PostgresUserStorage) Delete(ctx context.Context, id dto.UserID) error {
 		return apperrors.ErrCouldNotBuildQuery
 	}
 
-	query := s.db.QueryRow(ctx, sql, args...)
+	_, err = s.db.Exec(ctx, sql, args...)
 
-	if query.Scan() != nil {
+	if err != nil {
 		return apperrors.ErrUserNotDeleted
 	}
 

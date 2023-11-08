@@ -2,6 +2,7 @@ package postgresql
 
 import (
 	"context"
+	"log"
 	"server/internal/apperrors"
 	"server/internal/pkg/dto"
 	"server/internal/pkg/entities"
@@ -28,22 +29,34 @@ func NewAuthStorage(db *pgxpool.Pool) *PostgresAuthStorage {
 // сохраняет сессию в хранилище, возвращает ID сесссии для куки
 // или возвращает ошибку ErrTokenNotGenerated (500), ErrCouldntBuildQuery (500), ErrSessionNotCreated(500)
 func (s PostgresAuthStorage) CreateSession(ctx context.Context, session *entities.Session) error {
+	log.Println("Storage -- saving session")
+
 	sql, args, err := sq.
 		Insert("public.session").
 		Columns("id_user", "expiration_date", "token").
 		Values(session.UserID, session.ExpiryDate, session.Token).
 		PlaceholderFormat(sq.Dollar).
+		Suffix("RETURNING token").
 		ToSql()
 
 	if err != nil {
+		log.Println("Failed to build query")
 		return apperrors.ErrCouldNotBuildQuery
 	}
 
-	query := s.db.QueryRow(ctx, sql, args...)
+	log.Println("Query formed:", sql)
 
-	if query.Scan() != nil {
+	_, err = s.db.Exec(ctx, sql, args...)
+
+	log.Println("Queried DB")
+
+	if err != nil {
+		log.Println("Failed to store session")
+		log.Println("Returned error", err.Error())
 		return apperrors.ErrSessionNotCreated
 	}
+
+	log.Println("Stored session")
 
 	return nil
 }
@@ -85,9 +98,9 @@ func (s PostgresAuthStorage) DeleteSession(ctx context.Context, token dto.Sessio
 		return apperrors.ErrCouldNotBuildQuery
 	}
 
-	row := s.db.QueryRow(ctx, sql, args...)
+	_, err = s.db.Exec(ctx, sql, args...)
 
-	if row.Scan() != nil {
+	if err != nil {
 		return apperrors.ErrSessionNotFound
 	}
 

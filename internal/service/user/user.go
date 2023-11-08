@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/sha256"
 	"fmt"
+	"log"
 	"os"
 	"server/internal/apperrors"
 	"server/internal/pkg/dto"
@@ -27,9 +28,11 @@ func NewUserService(storage storage.IUserStorage) *UserService {
 // создает нового пользователя по данным
 // или возвращает ошибку apperrors.ErrUserAlreadyExists (409)
 func (us UserService) RegisterUser(ctx context.Context, info dto.AuthInfo) (*entities.User, error) {
+	log.Println("Service -- Registering")
 	_, err := us.storage.GetWithLogin(ctx, dto.UserLogin{Value: info.Email})
 
 	if err == nil {
+		log.Println("User exists")
 		return nil, apperrors.ErrUserAlreadyExists
 	}
 

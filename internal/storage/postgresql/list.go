@@ -71,9 +71,9 @@ func (s PostgresListStorage) Update(ctx context.Context, info dto.UpdatedListInf
 		return apperrors.ErrCouldNotBuildQuery
 	}
 
-	query := s.db.QueryRow(ctx, sql, args...)
+	_, err = s.db.Exec(ctx, sql, args...)
 
-	if query.Scan() != nil {
+	if err != nil {
 		return apperrors.ErrListNotUpdated
 	}
 
@@ -94,9 +94,9 @@ func (s PostgresListStorage) Delete(ctx context.Context, id dto.ListID) error {
 		return apperrors.ErrCouldNotBuildQuery
 	}
 
-	query := s.db.QueryRow(ctx, sql, args...)
+	_, err = s.db.Exec(ctx, sql, args...)
 
-	if query.Scan() != nil {
+	if err != nil {
 		return apperrors.ErrListNotDeleted
 	}
 
