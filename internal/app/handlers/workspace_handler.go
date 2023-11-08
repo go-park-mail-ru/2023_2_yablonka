@@ -248,7 +248,7 @@ func (wh WorkspaceHandler) UpdateThumbnail(w http.ResponseWriter, r *http.Reques
 // @Accept  json
 // @Produce  json
 //
-// @Param authData body dto.UpdatedWorkspaceInfo true "обновленный список пользователей"
+// @Param guestsInfo body dto.UpdatedWorkspaceInfo true "обновленный список пользователей"
 //
 // @Success 204  {string}  string "no content"
 // @Failure 400  {object}  apperrors.ErrorResponse
