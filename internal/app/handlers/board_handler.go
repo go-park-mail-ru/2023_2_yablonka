@@ -203,7 +203,7 @@ func (bh BoardHandler) UpdateData(w http.ResponseWriter, r *http.Request) {
 // @Failure 401  {object}  apperrors.ErrorResponse
 // @Failure 500  {object}  apperrors.ErrorResponse
 //
-// @Router /board/update/ [post]
+// @Router /board/update/change_thumbnail [post]
 func (bh BoardHandler) UpdateThumbnail(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
 
