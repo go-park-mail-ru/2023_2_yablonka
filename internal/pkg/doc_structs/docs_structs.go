@@ -25,6 +25,10 @@ type ThumbnailUploadResponse struct {
 	ThumbnailUrl dto.UrlObj `json:"thumbnail_url"`
 }
 
+type AvatarChangeResponse struct {
+	AvatarUrl dto.UrlObj `json:"avatar_url"`
+}
+
 type TaskResponse struct {
 	Task entities.Task `json:"task"`
 }

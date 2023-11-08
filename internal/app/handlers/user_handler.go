@@ -228,6 +228,7 @@ func (uh UserHandler) LogOut(w http.ResponseWriter, r *http.Request) {
 	response := dto.JSONResponse{
 		Body: dto.JSONMap{},
 	}
+
 	jsonResponse, err := json.Marshal(response)
 	if err != nil {
 		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.InternalServerErrorResponse))
@@ -257,7 +258,6 @@ func (uh UserHandler) LogOut(w http.ResponseWriter, r *http.Request) {
 // @Router /auth/verify [get]
 func (uh UserHandler) VerifyAuthEndpoint(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
-	log.Println(r.Cookies())
 
 	cookie, err := r.Cookie("tabula_user")
 
@@ -415,7 +415,6 @@ func (uh UserHandler) ChangeProfile(w http.ResponseWriter, r *http.Request) {
 	r.Body.Close()
 }
 
-// TODO Fix
 // @Summary Поменять аватарку
 // @Description В ответ шлёт ссылку на файл
 // @Tags auth
@@ -425,10 +424,10 @@ func (uh UserHandler) ChangeProfile(w http.ResponseWriter, r *http.Request) {
 //
 // @Param avatarChangeInfo body dto.AvatarChangeInfo true "id пользователя, изображение"
 //
-// @Success 204  {string} string "no content"
+// @Success 200  {object}  doc_structs.AvatarChangeResponse "ссылка на аватарку"
 // @Failure 500  {object}  apperrors.ErrorResponse
 //
-// @Router /user/edit/change_password/ [post]
+// @Router /user/edit/change_avatar/ [post]
 func (uh UserHandler) ChangeAvatar(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
 

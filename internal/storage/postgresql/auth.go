@@ -39,9 +39,9 @@ func (s PostgresAuthStorage) CreateSession(ctx context.Context, session *entitie
 		return apperrors.ErrCouldNotBuildQuery
 	}
 
-	query := s.db.QueryRow(ctx, sql, args...)
+	_, err = s.db.Exec(ctx, sql, args...)
 
-	if query.Scan() != nil {
+	if err != nil {
 		return apperrors.ErrSessionNotCreated
 	}
 
