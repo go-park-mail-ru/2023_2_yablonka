@@ -1,7 +1,7 @@
 package handlers
 
 import (
-	config "server/internal/config/session"
+	config "server/internal/config"
 	"server/internal/service"
 	auth "server/internal/service/auth"
 	board "server/internal/service/board"
@@ -35,7 +35,7 @@ func NewHandlerManager(dbConnection *pgxpool.Pool, config config.SessionConfig) 
 	listStorage := postgresql.NewListStorage(dbConnection)
 	taskStorage := postgresql.NewTaskStorage(dbConnection)
 
-	authService := auth.NewAuthService(*config, authStorage)
+	authService := auth.NewAuthService(config, authStorage)
 	userService := user.NewUserService(userStorage)
 	boardService := board.NewBoardService(boardStorage)
 	workspaceService := workspace.NewWorkspaceService(workspaceStorage)

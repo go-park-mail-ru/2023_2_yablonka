@@ -75,7 +75,7 @@ func createMux(mockAuthService *mock_service.MockIAuthService,
 		return nil, err
 	}
 
-	mux, _ := app.GetChiMux(mockHandlerManager, *cfg)
+	mux, _ := app.GetChiMux(mockHandlerManager, *cfg.CORS)
 	return mux, nil
 }
 

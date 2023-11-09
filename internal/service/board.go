@@ -7,9 +7,6 @@ import (
 )
 
 type IBoardService interface {
-	// GetBoardUsers
-	// возвращает связанные пользователи доски
-	GetBoardUsers(context.Context, dto.BoardID) (*[]dto.UserPublicInfo, error)
 	// GetFullBoard
 	// возвращает доску со связанными пользователями, списками и заданиями
 	GetFullBoard(context.Context, dto.IndividualBoardRequest) (*entities.Board, error)

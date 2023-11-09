@@ -89,7 +89,7 @@ func (s *PostgreSQLBoardStorage) GetById(ctx context.Context, id dto.BoardID) (*
 // GetUsers
 // находит пользователей, у которых есть доступ к доске
 // или возвращает ошибки ...
-func (s *PostgreSQLBoardStorage) GetUsers(ctx context.Context, id dto.BoardID) ([]dto.UserPublicInfo, error) {
+func (s *PostgreSQLBoardStorage) GetUsers(ctx context.Context, id dto.BoardID) (*[]dto.UserPublicInfo, error) {
 	sql, args, err := sq.Select("user.id").
 		From("user").
 		Join("board_user ON board_user.id_user = user.id").
@@ -117,7 +117,7 @@ func (s *PostgreSQLBoardStorage) GetUsers(ctx context.Context, id dto.BoardID) (
 		users = append(users, user)
 	}
 
-	return users, nil
+	return &users, nil
 }
 
 func (s *PostgreSQLBoardStorage) Create(ctx context.Context, info dto.NewBoardInfo) (*entities.Board, error) {
