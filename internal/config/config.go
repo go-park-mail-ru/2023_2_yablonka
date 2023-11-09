@@ -33,7 +33,7 @@ type SessionConfig struct {
 }
 
 type DatabaseConfig struct {
-	User              string `yaml:"postgres"`
+	User              string `yaml:"user"`
 	Password          string `yaml:"-"`
 	Host              string `yaml:"-"`
 	Port              uint64 `yaml:"port"`

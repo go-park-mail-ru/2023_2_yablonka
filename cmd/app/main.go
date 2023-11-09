@@ -38,6 +38,7 @@ func main() {
 		log.Fatal(err.Error())
 	}
 	log.Println("config generated")
+	log.Println(config.Database.User)
 
 	dbConnection, err := postgresql.GetDBConnection(*config.Database)
 	if err != nil {
