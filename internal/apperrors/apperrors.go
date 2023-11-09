@@ -21,6 +21,8 @@ var (
 	ErrSessionIDLengthMissing = errors.New("session ID length is missing")
 	// ErrSessionNullIDLength ошибка: в полученном конфиге длина ID сессии равна нулю
 	ErrSessionNullIDLength = errors.New("session ID length is zero")
+	// ErrDatabasePWMissing ошибка: в полученном конфиге нет пароля от БД
+	ErrDatabasePWMissing = errors.New("database PW is missing")
 )
 
 // Ошибки, связанные с авторизацией

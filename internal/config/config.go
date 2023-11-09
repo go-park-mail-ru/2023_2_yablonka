@@ -14,9 +14,10 @@ import (
 // ServerConfig
 // структура для хранения параметров сервера
 type BaseServerConfig struct {
-	SessionDuration time.Duration `yaml:"-"`
-	ConnectionHost  string        `yaml:"-"`
-	Server          struct {
+	SessionDuration  time.Duration `yaml:"-"`
+	ConnectionHost   string        `yaml:"-"`
+	DatabasePassword string        `yaml:"-"`
+	Server           struct {
 		AllowedMethods   []string `yaml:"allowed_methods"`
 		AllowedHosts     []string `yaml:"allowed_hosts"`
 		AllowedHeaders   []string `yaml:"allowed_headers"`
@@ -59,9 +60,15 @@ func NewBaseEnvConfig(envPath string, configPath string) (*BaseServerConfig, err
 		return nil, err
 	}
 
+	databasePassword, err := getDBPassword()
+	if err != nil {
+		return nil, err
+	}
+
 	config := &BaseServerConfig{
-		SessionDuration: sessionDuration,
-		ConnectionHost:  getDBConnectionHost(),
+		SessionDuration:  sessionDuration,
+		ConnectionHost:   getDBConnectionHost(),
+		DatabasePassword: databasePassword,
 	}
 
 	file, err := os.Open(configPath)
@@ -88,6 +95,15 @@ func getDBConnectionHost() string {
 	}
 
 	return host
+}
+
+func getDBPassword() (string, error) {
+	pwd, pOk := os.LookupEnv("POSTGRES_PASSWORD")
+	if !pOk {
+		return "", apperrors.ErrDatabasePWMissing
+	}
+
+	return pwd, nil
 }
 
 // buildSessionDurationEnv

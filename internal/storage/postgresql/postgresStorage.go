@@ -11,7 +11,7 @@ import (
 func GetDBConnection(conf config.ServerConfig) (*pgxpool.Pool, error) {
 	var (
 		user           = "postgres"
-		password       = "postgres"
+		password       = conf.GetBase().DatabasePassword
 		host           = conf.GetBase().ConnectionHost
 		port           = "5432"
 		dbname         = "Tabula"
