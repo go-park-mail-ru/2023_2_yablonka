@@ -70,7 +70,7 @@ func (bs BoardService) UpdateData(ctx context.Context, info dto.UpdatedBoardInfo
 func (bs BoardService) UpdateThumbnail(ctx context.Context, info dto.UpdatedBoardThumbnailInfo) (*dto.UrlObj, error) {
 	thumbnailUrlInfo := dto.ImageUrlInfo{
 		ID:  info.ID,
-		Url: "images/user_avatars/" + info.ID + ".png",
+		Url: "images/board_thumbnails/" + info.ID + ".png",
 	}
 	f, err := os.Create(thumbnailUrlInfo.Url)
 	if err != nil {

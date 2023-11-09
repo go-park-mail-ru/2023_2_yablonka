@@ -30,7 +30,7 @@ definitions:
   doc_structs.ThumbnailUploadResponse:
     properties:
       thumbnail_url:
-        $ref: '#/definitions/dto.AllWorkspaces'
+        $ref: '#/definitions/dto.UrlObj'
     type: object
   doc_structs.UserResponse:
     properties:
@@ -39,11 +39,11 @@ definitions:
     type: object
   dto.AllWorkspaces:
     properties:
-      user_guest_boards:
+      user_guest_workspaces:
         items:
           $ref: '#/definitions/dto.UserGuestBoardInfo'
         type: array
-      user_owned_boards:
+      user_owned_workspaces:
         items:
           $ref: '#/definitions/dto.UserOwnedBoardInfo'
         type: array
@@ -203,6 +203,11 @@ definitions:
       id:
         type: string
       name:
+        type: string
+    type: object
+  dto.UrlObj:
+    properties:
+      url:
         type: string
     type: object
   dto.UserGuestBoardInfo:
@@ -565,6 +570,40 @@ paths:
       tags:
       - boards
   /board/update/:
+    post:
+      consumes:
+      - application/json
+      description: Обновить доску
+      parameters:
+      - description: обновленные данные доски
+        in: body
+        name: boardInfo
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdatedBoardInfo'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: no content
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+      summary: Обновить доску
+      tags:
+      - boards
+  /board/update/change_thumbnail:
     post:
       consumes:
       - application/json

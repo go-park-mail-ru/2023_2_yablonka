@@ -99,7 +99,7 @@ func (s *PostgresUserStorage) GetLoginInfoWithID(ctx context.Context, id dto.Use
 // или возвращает ошибки ...
 func (s *PostgresUserStorage) Create(ctx context.Context, info dto.SignupInfo) (*entities.User, error) {
 	sql, args, err := sq.
-		Insert("public.user").
+		Insert("user").
 		Columns("email", "password_hash").
 		Values(info.Email, info.PasswordHash).
 		PlaceholderFormat(sq.Dollar).

@@ -25,7 +25,7 @@ type ThumbnailUploadResponse struct {
 	ThumbnailUrl dto.UrlObj `json:"thumbnail_url"`
 }
 
-type AvatarUploadResponse struct {
+type AvatarChangeResponse struct {
 	AvatarUrl dto.UrlObj `json:"avatar_url"`
 }
 

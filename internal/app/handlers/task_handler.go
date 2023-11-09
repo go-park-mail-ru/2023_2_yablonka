@@ -88,7 +88,7 @@ func (th TaskHandler) Create(w http.ResponseWriter, r *http.Request) {
 // @Failure 401  {object}  apperrors.ErrorResponse
 // @Failure 500  {object}  apperrors.ErrorResponse
 //
-// @Router /task/ [get]
+// @Router /task [get]
 func (th TaskHandler) Read(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
 
@@ -243,48 +243,3 @@ func (th TaskHandler) Delete(w http.ResponseWriter, r *http.Request) {
 
 	r.Body.Close()
 }
-
-/*
-// @Produce  jsonunc (lh TaskHandler) ReadListsInBoard(w http.ResponseWriter, r *http.Request) {
-	rCtx := r.Context()
-
-	var boardID dto.BoardID
-	err := json.NewDecoder(r.Body).Decode(&boardID)
-	if err != nil {
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.BadRequestResponse))
-		return
-	}
-
-	_, err = govalidator.ValidateStruct(boardID)
-	if err != nil {
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.BadRequestResponse))
-		return
-	}
-
-	lists, err := lh.ws.ReadListsInBoard(rCtx, boardID)
-	if err != nil {
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.ErrorMap[err]))
-		return
-	}
-
-	response := dto.JSONResponse{
-		Body: dto.JSONMap{
-			"lists": lists,
-		},
-	}
-
-	jsonResponse, err := json.Marshal(response)
-	if err != nil {
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.InternalServerErrorResponse))
-		return
-	}
-
-	_, err = w.Write(jsonResponse)
-	if err != nil {
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.InternalServerErrorResponse))
-		return
-	}
-
-	r.Body.Close()
-}
-*/

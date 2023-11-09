@@ -147,6 +147,7 @@ func (uh UserHandler) ChangeProfile(w http.ResponseWriter, r *http.Request) {
 // @Failure 500  {object}  apperrors.ErrorResponse
 //
 // @Router /user/edit/change_avatar/ [post]
+// @Router /user/edit/change_avatar/ [post]
 func (uh UserHandler) ChangeAvatar(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
 
