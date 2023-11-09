@@ -49,7 +49,7 @@ func Test_SessionConfig(t *testing.T) {
 			t.Parallel()
 			_, err := config.NewSessionConfig()
 
-			require.ErrorIs(t, test.expectedError, err)
+			require.ErrorIs(t, err, test.expectedError)
 		})
 	}
 }
