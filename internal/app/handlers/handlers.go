@@ -17,6 +17,7 @@ import (
 // HandlerManager
 // объект со всеми хэндлерами приложения
 type HandlerManager struct {
+	AuthHandler
 	UserHandler
 	BoardHandler
 	WorkspaceHandler
@@ -26,7 +27,7 @@ type HandlerManager struct {
 
 // NewHandlerManager
 // возвращает HandlerManager со всеми хэндлерами приложения
-func NewHandlerManager(dbConnection *pgxpool.Pool, config *config.SessionServerConfig) *HandlerManager {
+func NewHandlerManager(dbConnection *pgxpool.Pool, config config.SessionConfig) *HandlerManager {
 	userStorage := postgresql.NewUserStorage(dbConnection)
 	authStorage := postgresql.NewAuthStorage(dbConnection)
 	boardStorage := postgresql.NewBoardStorage(dbConnection)
@@ -34,15 +35,16 @@ func NewHandlerManager(dbConnection *pgxpool.Pool, config *config.SessionServerC
 	listStorage := postgresql.NewListStorage(dbConnection)
 	taskStorage := postgresql.NewTaskStorage(dbConnection)
 
+	authService := auth.NewAuthService(*config, authStorage)
 	userService := user.NewUserService(userStorage)
-	authService := auth.NewAuthSessionService(*config, authStorage)
 	boardService := board.NewBoardService(boardStorage)
 	workspaceService := workspace.NewWorkspaceService(workspaceStorage)
 	listService := list.NewListService(listStorage)
 	taskService := task.NewTaskService(taskStorage)
 
 	return &HandlerManager{
-		UserHandler:      *NewUserHandler(authService, userService),
+		AuthHandler:      *NewAuthHandler(authService, userService),
+		UserHandler:      *NewUserHandler(userService),
 		BoardHandler:     *NewBoardHandler(authService, boardService),
 		WorkspaceHandler: *NewWorkspaceHandler(workspaceService),
 		ListHandler:      *NewListHandler(listService),
@@ -50,11 +52,19 @@ func NewHandlerManager(dbConnection *pgxpool.Pool, config *config.SessionServerC
 	}
 }
 
-// NewUserHandler
+// NewAuthHandler
 // возвращает AuthHandler с необходимыми сервисами
-func NewUserHandler(as service.IAuthService, us service.IUserService) *UserHandler {
-	return &UserHandler{
+func NewAuthHandler(as service.IAuthService, us service.IUserService) *AuthHandler {
+	return &AuthHandler{
 		as: as,
+		us: us,
+	}
+}
+
+// NewUserHandler
+// возвращает UserHandler с необходимыми сервисами
+func NewUserHandler(us service.IUserService) *UserHandler {
+	return &UserHandler{
 		us: us,
 	}
 }

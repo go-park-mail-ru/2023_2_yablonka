@@ -27,25 +27,25 @@ type User struct {
 // Workspace
 // структура для хранения доски
 type Workspace struct {
-	ID           uint64  `json:"id"`
-	Name         string  `json:"name"`
-	Description  string  `json:"description"`
-	DateCreated  string  `json:"date_created"`
-	ThumbnailURL string  `json:"thumbnail_url"`
-	Users        string  `json:"users"`
-	Boards       []Board `json:"boards"`
+	ID           uint64               `json:"id"`
+	Name         string               `json:"name"`
+	Description  string               `json:"description"`
+	DateCreated  string               `json:"date_created"`
+	ThumbnailURL string               `json:"thumbnail_url"`
+	Users        []dto.UserPublicInfo `json:"users"`
+	Boards       []Board              `json:"boards"`
 }
 
 // Board
 // структура для хранения доски
 type Board struct {
-	ID           uint64       `json:"board_id"`
-	Name         string       `json:"name"`
-	Owner        dto.UserInfo `json:"owner"`
-	Description  string       `json:"description"`
-	ThumbnailURL string       `json:"thumbnail_url"`
-	Users        []User       `json:"users"`
-	Lists        []List       `json:"lists"`
+	ID           uint64               `json:"board_id"`
+	Name         string               `json:"name"`
+	Owner        dto.UserInfo         `json:"owner"`
+	Description  string               `json:"description"`
+	ThumbnailURL string               `json:"thumbnail_url"`
+	Users        []dto.UserPublicInfo `json:"users"`
+	Lists        []List               `json:"lists"`
 }
 
 // List

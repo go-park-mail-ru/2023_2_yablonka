@@ -1,6 +1,6 @@
 # config.yml
 
-server:
+cors:
   allowed_methods:
     - GET
     - POST
@@ -18,3 +18,11 @@ server:
     - Acccess-Control-Allow-Origin
     - Content-Type
   allow_credentials: true
+  debug: true
+db:
+  user: postgres
+  port: 5432
+  db_name: Tabula
+  app_name: Tabula
+  schema: public
+  connection_timeout: 5

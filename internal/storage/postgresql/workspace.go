@@ -29,44 +29,44 @@ func NewWorkspaceStorage(db *pgxpool.Pool) *PostgresWorkspaceStorage {
 // находит пользователя в БД по почте
 // или возвращает ошибки ...
 func (s PostgresWorkspaceStorage) GetUserWorkspaces(ctx context.Context, userID dto.UserID) (*dto.AllWorkspaces, error) {
-	// sql, args, err := sq.
-	// 	Select("workspace.*", "user.id", "user.email", "role.*").
-	// 	From("workspace").
-	// 	Join("user_workspace ON user_workspace.id_workspace = workspace.id").
-	// 	Join("user ON user_workspace.id_user = user.id").
-	// 	Join("role ON user_workspace.id_role = role.id").
-	// 	Where(sq.Eq{"user_workspace.id_user": userID.Value}).
-	// 	ToSql()
-	// if err != nil {
-	// 	return nil, apperrors.ErrCouldNotBuildQuery
-	// }
+	sql, args, err := sq.
+		Select("workspace.*", "user.id", "user.email", "role.*").
+		From("workspace").
+		Join("user_workspace ON user_workspace.id_workspace = workspace.id").
+		Join("user ON user_workspace.id_user = user.id").
+		Join("role ON user_workspace.id_role = role.id").
+		Where(sq.Eq{"user_workspace.id_user": userID.Value}).
+		ToSql()
+	if err != nil {
+		return nil, apperrors.ErrCouldNotBuildQuery
+	}
 
-	// rows, err := s.db.Query(context.Background(), sql, args...)
-	// if err != nil {
-	// 	return nil, err
-	// }
-	// defer rows.Close()
+	rows, err := s.db.Query(context.Background(), sql, args...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
 
-	// var usersWithRoles dto.UsersAndRoles
-	// for rows.Next() {
-	// 	var user dto.UserInWorkspace
-	// 	var role dto.RoleInWorkspace
+	var usersWithRoles dto.UsersAndRoles
+	for rows.Next() {
+		var user dto.UserInWorkspace
+		var role dto.RoleInWorkspace
 
-	// 	err = rows.Scan(
-	// 		&user,
-	// 		&role,
-	// 	)
-	// 	if err != nil {
-	// 		return nil, err
-	// 	}
+		err = rows.Scan(
+			&user,
+			&role,
+		)
+		if err != nil {
+			return nil, err
+		}
 
-	// 	usersWithRoles.Users = append(usersWithRoles.Users, user)
-	// 	usersWithRoles.Roles = append(usersWithRoles.Roles, role)
-	// }
+		usersWithRoles.Users = append(usersWithRoles.Users, user)
+		usersWithRoles.Roles = append(usersWithRoles.Roles, role)
+	}
 
-	// if err = rows.Err(); err != nil {
-	// 	return nil, err
-	// }
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
 
 	return nil, nil
 }

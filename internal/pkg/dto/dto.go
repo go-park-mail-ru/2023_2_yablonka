@@ -42,7 +42,7 @@ type RoleInWorkspace struct {
 // структура для запроса данных доски
 type IndividualBoardRequest struct {
 	BoardID uint64 `json:"board_id"`
-	UserID  string `json:"user_id"`
+	UserID  uint64 `json:"user_id"`
 }
 
 // AvatarChangeInfo
@@ -94,6 +94,16 @@ type UserProfileInfo struct {
 	Name        string `json:"name"`
 	Surname     string `json:"surname"`
 	Description string `json:"description"`
+}
+
+// UserProfileInfo
+// DTO для изменения профиля
+type UserPublicInfo struct {
+	ID          uint64 `json:"user_id"`
+	Name        string `json:"name"`
+	Surname     string `json:"surname"`
+	Description string `json:"description"`
+	AvatarURL   string `json:"avatar_url"`
 }
 
 // PasswordChangeInfo

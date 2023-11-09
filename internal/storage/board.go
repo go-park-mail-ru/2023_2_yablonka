@@ -9,24 +9,22 @@ import (
 )
 
 type IBoardStorage interface {
+	// GetUsers
+	// находит пользователей, у которых есть доступ к доске
+	GetUsers(context.Context, dto.BoardID) (*[]dto.UserPublicInfo, error)
 	// GetById
 	// находит доску и связанные с ней списки и задания по id
-	// или возвращает ошибки ...
 	GetById(context.Context, dto.BoardID) (*entities.Board, error)
 	// UpdateData
 	// обновляет доску
-	// или возвращает ошибки ...
 	UpdateData(context.Context, dto.UpdatedBoardInfo) error
 	// Update
 	// обновляет картинку доски
-	// или возвращает ошибки ...
 	UpdateThumbnailUrl(context.Context, dto.ImageUrlInfo) error
 	// Create
 	// создает доску
-	// или возвращает ошибки ...
 	Create(context.Context, dto.NewBoardInfo) (*entities.Board, error)
 	// Delete
 	// удаляет доску
-	// или возвращает ошибки ...
 	Delete(context.Context, dto.BoardID) error
 }

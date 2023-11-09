@@ -32,7 +32,7 @@ func hashFromAuthInfo(info dto.AuthInfo) string {
 	return fmt.Sprintf("%x", hasher.Sum(nil))
 }
 
-func createConfig(envPath string) (*config.BaseServerConfig, error) {
+func createConfig(envPath string) (*config.Config, error) {
 	cfgFile, err := os.Create(envPath + ".env")
 	if err != nil {
 		return nil, err
@@ -51,7 +51,7 @@ func createConfig(envPath string) (*config.BaseServerConfig, error) {
 		return nil, err
 	}
 
-	config, err := config.NewBaseEnvConfig(envPath, configPath)
+	config, err := config.LoadConfig(envPath, configPath)
 	if err != nil {
 		return nil, err
 	}
@@ -65,7 +65,7 @@ func createMux(mockAuthService *mock_service.MockIAuthService,
 	mockWorkspaceService *mock_service.MockIWorkspaceService) (http.Handler, error) {
 
 	mockHandlerManager := handlers.HandlerManager{
-		UserHandler:      *handlers.NewUserHandler(mockAuthService, mockUserService),
+		UserHandler:      *handlers.NewUserHandler(mockUserService),
 		WorkspaceHandler: *handlers.NewWorkspaceHandler(mockWorkspaceService),
 		BoardHandler:     *handlers.NewBoardHandler(mockAuthService, mockBoardService),
 	}

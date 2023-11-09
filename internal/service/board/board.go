@@ -20,19 +20,53 @@ func NewBoardService(storage storage.IBoardStorage) *BoardService {
 	}
 }
 
-// TODO Fix
+// GetFullBoard
+// возвращает доску со связанными пользователями, списками и заданиями
 func (bs BoardService) GetFullBoard(ctx context.Context, info dto.IndividualBoardRequest) (*entities.Board, error) {
-	return bs.storage.GetById(ctx, dto.BoardID{Value: info.BoardID})
+	boardID := dto.BoardID{
+		Value: info.BoardID,
+	}
+
+	boardUsers, err := bs.storage.GetUsers(ctx, boardID)
+	if err != nil {
+		return nil, err
+	}
+
+	userHasAccessToBoard := false
+	for _, user := range *boardUsers {
+		if user.ID == info.UserID {
+			userHasAccessToBoard = true
+		}
+	}
+
+	if !userHasAccessToBoard {
+		return nil, err
+	}
+
+	board, err := bs.storage.GetById(ctx, boardID)
+	if err != nil {
+		return nil, err
+	}
+
+	board.Users = *boardUsers
+
+	return board, nil
 }
 
+// Create
+// создаёт доску и связь с пользователем-создателем
 func (bs BoardService) Create(ctx context.Context, board dto.NewBoardInfo) (*entities.Board, error) {
 	return bs.storage.Create(ctx, board)
 }
 
+// UpdateData
+// возвращает доску со связанными пользователями, списками и заданиями
 func (bs BoardService) UpdateData(ctx context.Context, info dto.UpdatedBoardInfo) error {
 	return bs.storage.UpdateData(ctx, info)
 }
 
+// UpdateThumbnail
+// сохраняет картинку доски в папку images/board_thumbnails с названием id доски и сохраняет ссылку на изображение в БД
 func (bs BoardService) UpdateThumbnail(ctx context.Context, info dto.UpdatedBoardThumbnailInfo) (*dto.UrlObj, error) {
 	thumbnailUrlInfo := dto.ImageUrlInfo{
 		ID:  info.ID,
@@ -56,6 +90,8 @@ func (bs BoardService) UpdateThumbnail(ctx context.Context, info dto.UpdatedBoar
 	return &dto.UrlObj{Value: thumbnailUrlInfo.Url}, nil
 }
 
+// Delete
+// удаляет доску
 func (bs BoardService) Delete(ctx context.Context, id dto.BoardID) error {
 	return bs.storage.Delete(ctx, id)
 }

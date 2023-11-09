@@ -17,7 +17,7 @@ import (
 
 // GetChiMux
 // возвращает mux, реализованный с помощью модуля chi
-func GetChiMux(manager handlers.HandlerManager, config config.BaseServerConfig) (http.Handler, error) {
+func GetChiMux(manager handlers.HandlerManager, config config.CORSConfig) (http.Handler, error) {
 	mux := chi.NewRouter()
 
 	mux.Use(middleware.JsonHeader)
@@ -28,46 +28,45 @@ func GetChiMux(manager handlers.HandlerManager, config config.BaseServerConfig) 
 
 	mux.Route("/api/v2", func(r chi.Router) {
 		r.Route("/auth", func(r chi.Router) {
-			r.Post("/login/", manager.UserHandler.LogIn)
-			r.Post("/signup/", manager.UserHandler.SignUp)
-			r.Delete("/logout/", manager.UserHandler.LogOut)
-			r.Get("/verify", manager.UserHandler.VerifyAuthEndpoint)
+			r.Get("/verify", manager.AuthHandler.VerifyAuthEndpoint)
+			r.Post("/login/", manager.AuthHandler.LogIn)
+			r.Post("/signup/", manager.AuthHandler.SignUp)
+			r.Delete("/logout/", manager.AuthHandler.LogOut)
 		})
 		r.Route("/user", func(r chi.Router) {
-			r.Use(middleware.AuthMiddleware(manager.UserHandler.GetAuthService(), manager.UserHandler.GetUserService()))
-			r.Get("/workspaces/", manager.WorkspaceHandler.GetUserWorkspaces)
-			r.Post("/edit", manager.UserHandler.ChangeProfile)
+			r.Use(middleware.AuthMiddleware(manager.AuthHandler.GetAuthService(), manager.AuthHandler.GetUserService()))
+			r.Get("/workspaces", manager.WorkspaceHandler.GetUserWorkspaces)
+			r.Post("/edit/", manager.UserHandler.ChangeProfile)
 			r.Post("/edit/change_password/", manager.UserHandler.ChangePassword)
-			r.Post("/edit/change_avatar", manager.UserHandler.ChangeAvatar)
+			r.Post("/edit/change_avatar/", manager.UserHandler.ChangeAvatar)
 		})
 		r.Route("/workspace", func(r chi.Router) {
-			r.Use(middleware.AuthMiddleware(manager.UserHandler.GetAuthService(), manager.UserHandler.GetUserService()))
-			r.Get("/create", manager.WorkspaceHandler.Create)
-			r.Get("/update/", manager.WorkspaceHandler.UpdateData)
-			r.Get("/update/change_thumbnail", manager.WorkspaceHandler.UpdateThumbnail)
-			r.Get("/update/change_users", manager.WorkspaceHandler.ChangeGuests)
-			r.Get("/delete/", manager.WorkspaceHandler.Delete)
+			r.Use(middleware.AuthMiddleware(manager.AuthHandler.GetAuthService(), manager.AuthHandler.GetUserService()))
+			r.Post("/create/", manager.WorkspaceHandler.Create)
+			r.Post("/update/", manager.WorkspaceHandler.UpdateData)
+			r.Post("/update/change_users/", manager.WorkspaceHandler.ChangeGuests)
+			r.Delete("/delete/", manager.WorkspaceHandler.Delete)
 		})
 		r.Route("/board", func(r chi.Router) {
-			r.Use(middleware.AuthMiddleware(manager.UserHandler.GetAuthService(), manager.UserHandler.GetUserService()))
-			r.Get("/", manager.BoardHandler.GetFullBoard)
-			r.Get("/create", manager.BoardHandler.Create)
-			r.Get("/update/", manager.WorkspaceHandler.UpdateData)
-			r.Get("/update/change_thumbnail", manager.WorkspaceHandler.UpdateThumbnail)
-			r.Get("/delete", manager.BoardHandler.Delete)
+			r.Use(middleware.AuthMiddleware(manager.AuthHandler.GetAuthService(), manager.AuthHandler.GetUserService()))
+			r.Post("/", manager.BoardHandler.GetFullBoard)
+			r.Post("/create/", manager.BoardHandler.Create)
+			r.Post("/update/", manager.BoardHandler.UpdateData)
+			r.Post("/update/change_thumbnail", manager.BoardHandler.UpdateThumbnail)
+			r.Delete("/delete", manager.BoardHandler.Delete)
 		})
 		r.Route("/list", func(r chi.Router) {
-			r.Use(middleware.AuthMiddleware(manager.UserHandler.GetAuthService(), manager.UserHandler.GetUserService()))
-			r.Get("/create", manager.ListHandler.Create)
-			r.Get("/edit", manager.ListHandler.Update)
-			r.Get("/delete", manager.ListHandler.Delete)
+			r.Use(middleware.AuthMiddleware(manager.AuthHandler.GetAuthService(), manager.AuthHandler.GetUserService()))
+			r.Post("/create/", manager.ListHandler.Create)
+			r.Post("/edit/", manager.ListHandler.Update)
+			r.Delete("/delete", manager.ListHandler.Delete)
 		})
 		r.Route("/task", func(r chi.Router) {
-			r.Use(middleware.AuthMiddleware(manager.UserHandler.GetAuthService(), manager.UserHandler.GetUserService()))
-			r.Get("/", manager.TaskHandler.Read)
-			r.Get("/create", manager.TaskHandler.Create)
-			r.Get("/edit", manager.TaskHandler.Update)
-			r.Get("/delete", manager.TaskHandler.Delete)
+			r.Use(middleware.AuthMiddleware(manager.AuthHandler.GetAuthService(), manager.AuthHandler.GetUserService()))
+			r.Post("/", manager.TaskHandler.Read)
+			r.Post("/create/", manager.TaskHandler.Create)
+			r.Post("/edit/", manager.TaskHandler.Update)
+			r.Delete("/delete", manager.TaskHandler.Delete)
 		})
 	})
 	mux.Route("/swagger/", func(r chi.Router) {

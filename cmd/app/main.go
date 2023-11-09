@@ -8,7 +8,7 @@ import (
 	"os/signal"
 	"server/internal/app"
 	"server/internal/app/handlers"
-	config "server/internal/config/session"
+	config "server/internal/config"
 	"server/internal/storage/postgresql"
 
 	"github.com/asaskevich/govalidator"
@@ -32,24 +32,24 @@ const envPath string = "internal/config/.env"
 // @BasePath /api/v2
 // @query.collection.format multi
 func main() {
-	config, err := config.NewSessionEnvConfig(envPath, configPath)
+	config, err := config.LoadConfig(envPath, configPath)
 	govalidator.SetFieldsRequiredByDefault(true)
 	if err != nil {
 		log.Fatal(err.Error())
 	}
 	log.Println("config generated")
 
-	dbConnection, err := postgresql.GetDBConnection(config)
+	dbConnection, err := postgresql.GetDBConnection(*config.Database)
 	if err != nil {
 		log.Fatal(err.Error())
 	}
 	defer dbConnection.Close()
 	log.Println("database connected")
 
-	handlerManager := handlers.NewHandlerManager(dbConnection, config)
+	handlerManager := handlers.NewHandlerManager(dbConnection, *config.Session)
 	log.Println("handlers configured")
 
-	mux, err := app.GetChiMux(*handlerManager, config.Base)
+	mux, err := app.GetChiMux(*handlerManager, *config.CORS)
 	if err != nil {
 		log.Fatal(err.Error())
 	}

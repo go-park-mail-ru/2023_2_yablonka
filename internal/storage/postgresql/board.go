@@ -86,6 +86,40 @@ func (s *PostgreSQLBoardStorage) GetById(ctx context.Context, id dto.BoardID) (*
 	return &board, nil
 }
 
+// GetUsers
+// находит пользователей, у которых есть доступ к доске
+// или возвращает ошибки ...
+func (s *PostgreSQLBoardStorage) GetUsers(ctx context.Context, id dto.BoardID) ([]dto.UserPublicInfo, error) {
+	sql, args, err := sq.Select("user.id").
+		From("user").
+		Join("board_user ON board_user.id_user = user.id").
+		Where(sq.Eq{"board_user.id_board": id}).
+		ToSql()
+	if err != nil {
+		return nil, apperrors.ErrCouldNotBuildQuery
+	}
+
+	rows, err := s.db.Query(context.Background(), sql, args...)
+	if err != nil {
+		return nil, apperrors.ErrCouldNotGetBoard
+	}
+	defer rows.Close()
+
+	var users []dto.UserPublicInfo
+	for rows.Next() {
+		var user dto.UserPublicInfo
+
+		err = rows.Scan(&user)
+		if err != nil {
+			return nil, apperrors.ErrCouldNotGetBoard
+		}
+
+		users = append(users, user)
+	}
+
+	return users, nil
+}
+
 func (s *PostgreSQLBoardStorage) Create(ctx context.Context, info dto.NewBoardInfo) (*entities.Board, error) {
 	query1, args, err := sq.
 		Insert("board").

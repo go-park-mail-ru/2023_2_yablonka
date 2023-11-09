@@ -8,21 +8,17 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-func GetDBConnection(conf config.ServerConfig) (*pgxpool.Pool, error) {
-	var (
-		user           = "postgres"
-		password       = conf.GetBase().DatabasePassword
-		host           = conf.GetBase().ConnectionHost
-		port           = "5432"
-		dbname         = "Tabula"
-		appName        = "Tabula"
-		schema         = "public"
-		connectTimeout = 5
-	)
-
+func GetDBConnection(conf config.DatabaseConfig) (*pgxpool.Pool, error) {
 	dbURL := fmt.Sprintf(
-		"postgres://%s:%s@%s:%s/%s?application_name=%s&search_path=%s&connect_timeout=%d",
-		user, password, host, port, dbname, appName, schema, connectTimeout,
+		"postgres://%s:%s@%s:%d/%s?application_name=%s&search_path=%s&connect_timeout=%d",
+		conf.User,
+		conf.Password,
+		conf.Host,
+		conf.Port,
+		conf.DBName,
+		conf.AppName,
+		conf.Schema,
+		conf.ConnectionTimeout,
 	)
 
 	dbpool, err := pgxpool.New(context.Background(), dbURL)

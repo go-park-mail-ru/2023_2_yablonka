@@ -7,14 +7,14 @@ import (
 	"github.com/rs/cors"
 )
 
-func GetCors(conf config.BaseServerConfig) func(http.Handler) http.Handler {
+func GetCors(conf config.CORSConfig) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return cors.New(cors.Options{
-			AllowedHeaders:   conf.Server.AllowedHeaders,
-			AllowedOrigins:   conf.Server.AllowedHosts,
-			AllowCredentials: true,
-			AllowedMethods:   conf.Server.AllowedMethods,
-			Debug:            true,
+			AllowedHeaders:   conf.AllowedHeaders,
+			AllowedOrigins:   conf.AllowedHosts,
+			AllowCredentials: conf.AllowCredentials,
+			AllowedMethods:   conf.AllowedMethods,
+			Debug:            conf.Debug,
 		}).Handler(next)
 	}
 }

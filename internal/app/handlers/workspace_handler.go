@@ -184,64 +184,6 @@ func (wh WorkspaceHandler) UpdateData(w http.ResponseWriter, r *http.Request) {
 	r.Body.Close()
 }
 
-// @Summary Обновить картинку рабочего пространства
-// @Description Обновить картинку рабочего пространства
-// @Tags workspaces
-//
-// @Accept  json
-// @Produce  json
-//
-// @Param thumbnailInfo body dto.ChangeWorkspaceThumbnailInfo true "обновленные данные рабочего пространства"
-//
-// @Success 200  {object}  doc_structs.ThumbnailUploadResponse "Ссылка на новую картинку"
-// @Failure 400  {object}  apperrors.ErrorResponse
-// @Failure 401  {object}  apperrors.ErrorResponse
-// @Failure 500  {object}  apperrors.ErrorResponse
-//
-// @Router /workspace/update/change_thumbnail [post]
-func (wh WorkspaceHandler) UpdateThumbnail(w http.ResponseWriter, r *http.Request) {
-	rCtx := r.Context()
-
-	var thumbnailInfo dto.ChangeWorkspaceThumbnailInfo
-	err := json.NewDecoder(r.Body).Decode(&thumbnailInfo)
-	if err != nil {
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.BadRequestResponse))
-		return
-	}
-
-	_, err = govalidator.ValidateStruct(thumbnailInfo)
-	if err != nil {
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.BadRequestResponse))
-		return
-	}
-
-	urlObj, err := wh.ws.UpdateThumbnail(rCtx, thumbnailInfo)
-	if err != nil {
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.ErrorMap[err]))
-		return
-	}
-
-	response := dto.JSONResponse{
-		Body: dto.JSONMap{
-			"thumbnail_url": urlObj,
-		},
-	}
-
-	jsonResponse, err := json.Marshal(response)
-	if err != nil {
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.InternalServerErrorResponse))
-		return
-	}
-
-	_, err = w.Write(jsonResponse)
-	if err != nil {
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.InternalServerErrorResponse))
-		return
-	}
-
-	r.Body.Close()
-}
-
 // @Summary Обновить гостей рабочего пространства
 // @Description Обновить гостей рабочего пространства
 // @Tags workspaces

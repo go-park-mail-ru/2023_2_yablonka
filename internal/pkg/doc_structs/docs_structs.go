@@ -22,7 +22,11 @@ type AllWorkspacesResponse struct {
 }
 
 type ThumbnailUploadResponse struct {
-	ThumbnailUrl dto.AllWorkspaces `json:"thumbnail_url"`
+	ThumbnailUrl dto.UrlObj `json:"thumbnail_url"`
+}
+
+type AvatarUploadResponse struct {
+	AvatarUrl dto.UrlObj `json:"avatar_url"`
 }
 
 type TaskResponse struct {
