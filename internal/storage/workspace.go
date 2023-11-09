@@ -23,6 +23,10 @@ type IWorkspaceStorage interface {
 	// обновляет рабочее пространство в БД
 	// или возвращает ошибки ...
 	UpdateData(context.Context, dto.UpdatedWorkspaceInfo) error
+	// UpdateUsers
+	// обновляет людей с доступом в рабочее пространство в БД
+	// или возвращает ошибки ...
+	UpdateUsers(context.Context, dto.ChangeWorkspaceGuestsInfo) error
 	// UpdateThumbnail
 	// обновляет ссылку на картину рабочего пространства в БД
 	// или возвращает ошибки ...

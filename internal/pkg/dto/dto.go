@@ -264,8 +264,8 @@ type UpdatedWorkspaceInfo struct {
 // AddWorkspaceGuestsInfo
 // DTO для изменения списка гостей рабочего пространства
 type ChangeWorkspaceGuestsInfo struct {
-	ID     string   `json:"id"`
-	Guests []UserID `json:"guests"`
+	WorkspaceID string   `json:"id"`
+	Guests      []UserID `json:"guests"`
 }
 
 // ChangeWorkspaceThumbnailInfo

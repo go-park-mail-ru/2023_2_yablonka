@@ -187,6 +187,7 @@ func (s PostgresWorkspaceStorage) UpdateData(ctx context.Context, info dto.Updat
 		Update("workspace").
 		Set("name", info.Name).
 		Set("description", info.Description).
+		Where(sq.Eq{"workspace.id": info.ID}).
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
 
@@ -200,6 +201,13 @@ func (s PostgresWorkspaceStorage) UpdateData(ctx context.Context, info dto.Updat
 		return apperrors.ErrUserNotUpdated
 	}
 
+	return nil
+}
+
+// UpdateUsers
+// обновляет людей с доступом в рабочее пространство в БД
+// или возвращает ошибки ...
+func (s PostgresWorkspaceStorage) UpdateUsers(ctx context.Context, info dto.ChangeWorkspaceGuestsInfo) error {
 	return nil
 }
 
