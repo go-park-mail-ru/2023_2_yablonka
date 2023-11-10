@@ -45,7 +45,10 @@ func createConfig(envPath string) (*config.Config, error) {
 			"SESSION_DURATION_HOURS=0"+"\n"+
 			"SESSION_DURATION_MINUTES=0"+"\n"+
 			"SESSION_DURATION_SECONDS=0"+"\n"+
-			"SESSION_ID_LENGTH=32"+"\n",
+			"SESSION_ID_LENGTH=32"+"\n"+
+			"POSTGRES_USER='testuser'"+"\n"+
+			"POSTGRES_PASSWORD='testpw'"+"\n"+
+			"POSTGRES_DB='testdb'",
 	)
 	if err != nil {
 		return nil, err
