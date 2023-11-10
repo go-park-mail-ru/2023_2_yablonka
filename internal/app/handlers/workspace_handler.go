@@ -3,14 +3,13 @@ package handlers
 import (
 	"context"
 	"encoding/json"
+	"log"
 	"net/http"
 	"server/internal/apperrors"
 	_ "server/internal/pkg/doc_structs"
 	"server/internal/pkg/dto"
 	"server/internal/pkg/entities"
 	"server/internal/service"
-
-	"github.com/asaskevich/govalidator"
 )
 
 type WorkspaceHandler struct {
@@ -90,18 +89,22 @@ func (wh WorkspaceHandler) Create(w http.ResponseWriter, r *http.Request) {
 	var newWorkspaceInfo dto.NewWorkspaceInfo
 	err := json.NewDecoder(r.Body).Decode(&newWorkspaceInfo)
 	if err != nil {
+		log.Println("Handler -- Failed to decode incoming JSON")
+		log.Println("Error:", err.Error())
 		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.BadRequestResponse))
 		return
 	}
 
-	_, err = govalidator.ValidateStruct(newWorkspaceInfo)
-	if err != nil {
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.BadRequestResponse))
-		return
-	}
+	// _, err = govalidator.ValidateStruct(newWorkspaceInfo)
+	// if err != nil {
+	// 	*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.BadRequestResponse))
+	// 	return
+	// }
 
 	workspace, err := wh.ws.Create(rCtx, newWorkspaceInfo)
 	if err != nil {
+		log.Println("Handler -- Failed to create workspace")
+		log.Println("Error:", err.Error())
 		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.ErrorMap[err]))
 		return
 	}
@@ -152,11 +155,11 @@ func (wh WorkspaceHandler) UpdateData(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err = govalidator.ValidateStruct(workspaceInfo)
-	if err != nil {
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.BadRequestResponse))
-		return
-	}
+	// _, err = govalidator.ValidateStruct(workspaceInfo)
+	// if err != nil {
+	// 	*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.BadRequestResponse))
+	// 	return
+	// }
 
 	err = wh.ws.UpdateData(rCtx, workspaceInfo)
 	if err != nil {
@@ -208,11 +211,11 @@ func (wh WorkspaceHandler) ChangeGuests(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	_, err = govalidator.ValidateStruct(guestsInfo)
-	if err != nil {
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.BadRequestResponse))
-		return
-	}
+	// _, err = govalidator.ValidateStruct(guestsInfo)
+	// if err != nil {
+	// 	*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.BadRequestResponse))
+	// 	return
+	// }
 
 	err = wh.ws.UpdateUsers(rCtx, guestsInfo)
 	if err != nil {
@@ -264,11 +267,11 @@ func (wh WorkspaceHandler) Delete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err = govalidator.ValidateStruct(workspaceID)
-	if err != nil {
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.BadRequestResponse))
-		return
-	}
+	// _, err = govalidator.ValidateStruct(workspaceID)
+	// if err != nil {
+	// 	*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.BadRequestResponse))
+	// 	return
+	// }
 
 	err = wh.ws.Delete(rCtx, workspaceID)
 	if err != nil {
