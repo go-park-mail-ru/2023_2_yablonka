@@ -16,9 +16,14 @@ var (
 		"public.workspace.id", "public.workspace.name", "public.workspace.description", "public.workspace.date_created", "public.workspace.thumbnail_url",
 		"public.boards.id", "public.boards.name", "public.boards.description", "public.boards.date_created", "public.boards.thumbnail_url",
 	}
-	userWorkspaceFields = []string{
-		"workspace.id", "workspace.name", "workspace.description",
-		"user.id", "user.email",
-		"role.id", "role.name", "role.description",
+	userOwnedWorkspaceFields = []string{
+		"workspace.id", "workspace.name", "workspace.date_created", "workspace.description",
+		"user.id", "user.email", "user.name", "user.surname", "user.description", "user.avatar_url",
+		"id", "name", "description", "thumbnail_url", "user.id",
+	}
+	userGuestWorkspaceFields = []string{
+		"workspace.id", "workspace.id_creator", "workspace.name", "workspace.date_created", "workspace.description",
+		"user.id", "user.email", "user.name", "user.surname", "user.description", "user.avatar_url",
+		"id", "name", "description", "thumbnail_url", "user.id",
 	}
 )

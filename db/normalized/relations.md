@@ -4,6 +4,7 @@
     erDiagram
         WORKSPACE { 
             int id PK
+            int id_creator FK
             string name
             string description
             timestamp date_created
@@ -171,6 +172,7 @@
         USER ||--o{ COMMENT_EMBEDDING : uploaded
         USER ||--o{ COMMENT : made
         USER ||--o{ REACTION : made
+        USER ||--o{ WORKSPACE : made
         USER ||--|| SESSION : has
 
         COMMENT ||--o{ COMMENT_EMBEDDING : has
@@ -190,7 +192,8 @@
 
 ## workspace
 Рабочее пространство, в котором хранятся доски.
-    id                          
+    id    
+    id_creator                     
     name                        
     thumbnail_url               
     date_created                
@@ -367,6 +370,7 @@
 
 ## Таблица workspace:
     {workspace.id} -> workspace.id
+    {workspace.id} -> workspace.id_creator
     {workspace.id} -> workspace.name
     {workspace.id} -> workspace.thumbnail_url
     {workspace.id} -> workspace.date_created

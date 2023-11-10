@@ -8,9 +8,13 @@ import (
 
 type IWorkspaceStorage interface {
 	// GetUserOwnedWorkspaces
-	// находит все рабочие пространства, связанные с пользователем, группированные по ролям
+	// находит все рабочие пространства, созданные пользователем
 	// или возвращает ошибку apperrors.ErrUserNotFound (401)
-	GetUserWorkspaces(context.Context, dto.UserID) (*dto.AllWorkspaces, error)
+	GetUserOwnedWorkspaces(context.Context, dto.UserID) (*[]dto.UserOwnedWorkspaceInfo, error)
+	// GetUserGuestWorkspaces
+	// находит все рабочие пространства, где пользователь гость
+	// или возвращает ошибку apperrors.ErrUserNotFound (401)
+	GetUserGuestWorkspaces(context.Context, dto.UserID) (*[]dto.UserGuestWorkspaceInfo, error)
 	// GetWorkspace
 	// находит рабочее пространство в БД по его id
 	// или возвращает ошибки ...

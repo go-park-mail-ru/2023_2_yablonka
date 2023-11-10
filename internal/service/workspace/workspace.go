@@ -22,8 +22,20 @@ func NewWorkspaceService(storage storage.IWorkspaceStorage) *WorkspaceService {
 // GetUserWorkspaces
 // находит пользователя в БД по почте
 // или возвращает ошибки ...
-func (ws WorkspaceService) GetUserWorkspaces(ctx context.Context, id dto.UserID) (*dto.AllWorkspaces, error) {
-	return ws.storage.GetUserWorkspaces(ctx, id)
+func (ws WorkspaceService) GetUserWorkspaces(ctx context.Context, userID dto.UserID) (*dto.AllWorkspaces, error) {
+	ownedWorkspaces, err := ws.storage.GetUserOwnedWorkspaces(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+
+	guestWorkspaces, err := ws.storage.GetUserGuestWorkspaces(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+	return &dto.AllWorkspaces{
+		OwnedWorkspaces: *ownedWorkspaces,
+		GuestWorkspaces: *guestWorkspaces,
+	}, nil
 }
 
 // GetByID

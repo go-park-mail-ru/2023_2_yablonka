@@ -25,18 +25,18 @@ func NewWorkspaceStorage(db *pgxpool.Pool) *PostgresWorkspaceStorage {
 	}
 }
 
-// GetUserWorkspaces
+// GetUserOwnedWorkspaces
 // находит рабочие пространства, связанные с пользователем в БД
 // или возвращает ошибки ...
-func (s PostgresWorkspaceStorage) GetUserWorkspaces(ctx context.Context, userID dto.UserID) (*dto.AllWorkspaces, error) {
+func (s PostgresWorkspaceStorage) GetUserOwnedWorkspaces(ctx context.Context, userID dto.UserID) (*[]dto.UserOwnedWorkspaceInfo, error) {
 	sql, args, err := sq.
-		Select(userWorkspaceFields...).
+		Select(userOwnedWorkspaceFields...).
 		From("public.workspace").
 		Join("public.user_workspace ON public.user_workspace.id_workspace = workspace.id").
 		Join("public.user ON public.user_workspace.id_user = user.id").
-		Join("public.role ON public.user_workspace.id_role = role.id").
+		Join("public.board ON public.board.id_workspace = public.workspace.id").
+		Join("public.board_user ON public.board_user.id_board = public.board.id").
 		Where(sq.Eq{"public.user_workspace.id_user": userID.Value}).
-		GroupBy("role.id").
 		ToSql()
 	if err != nil {
 		return nil, apperrors.ErrCouldNotBuildQuery
@@ -48,28 +48,86 @@ func (s PostgresWorkspaceStorage) GetUserWorkspaces(ctx context.Context, userID 
 	}
 	defer rows.Close()
 
-	var usersWithRoles dto.UsersAndRoles
+	var workspaces []dto.UserOwnedWorkspaceInfo
 	for rows.Next() {
-		var user dto.UserInWorkspace
-		var role dto.RoleInWorkspace
+		var workspace dto.UserOwnedWorkspaceInfo
+		var users []dto.UserPublicInfo
+		var boards []dto.WorkspaceBoardInfo
 
 		err = rows.Scan(
-			&user,
-			&role,
+			&workspace.ID,
+			&workspace.Name,
+			&workspace.DateCreated,
+			&workspace.Description,
+			&users,
+			&boards,
 		)
 		if err != nil {
 			return nil, err
 		}
-
-		usersWithRoles.Users = append(usersWithRoles.Users, user)
-		usersWithRoles.Roles = append(usersWithRoles.Roles, role)
+		workspace.UsersData = users
+		workspace.Boards = boards
+		workspaces = append(workspaces, workspace)
 	}
 
 	if err = rows.Err(); err != nil {
 		return nil, err
 	}
 
-	return nil, nil
+	return &workspaces, nil
+}
+
+// GetUserGuestWorkspaces
+// находит рабочие пространства, связанные с пользователем в БД
+// или возвращает ошибки ...
+func (s PostgresWorkspaceStorage) GetUserGuestWorkspaces(ctx context.Context, userID dto.UserID) (*[]dto.UserGuestWorkspaceInfo, error) {
+	sql, args, err := sq.
+		Select(userGuestWorkspaceFields...).
+		From("public.workspace").
+		Join("public.user_workspace ON public.user_workspace.id_workspace = workspace.id").
+		Join("public.user ON public.user_workspace.id_user = user.id").
+		Join("public.board ON public.board.id_workspace = public.workspace.id").
+		Join("public.board_user ON public.board_user.id_board = public.board.id").
+		Where(sq.Eq{"public.user_workspace.id_user": userID.Value}).
+		ToSql()
+	if err != nil {
+		return nil, apperrors.ErrCouldNotBuildQuery
+	}
+
+	rows, err := s.db.Query(context.Background(), sql, args...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var workspaces []dto.UserGuestWorkspaceInfo
+	for rows.Next() {
+		var workspace dto.UserGuestWorkspaceInfo
+		var users []dto.UserPublicInfo
+		var boards []dto.WorkspaceBoardInfo
+
+		err = rows.Scan(
+			&workspace.ID,
+			&workspace.CreatorID,
+			&workspace.Name,
+			&workspace.DateCreated,
+			&workspace.Description,
+			&users,
+			&boards,
+		)
+		if err != nil {
+			return nil, err
+		}
+		workspace.UsersData = users
+		workspace.Boards = boards
+		workspaces = append(workspaces, workspace)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return &workspaces, nil
 }
 
 // GetWorkspace
