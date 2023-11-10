@@ -131,7 +131,7 @@ const docTemplate = `{
                 "summary": "Зарегистрировать нового пользователя",
                 "parameters": [
                     {
-                        "description": "Эл. почта и логин пользователя",
+                        "description": "Базовые данные пользователя",
                         "name": "signup",
                         "in": "body",
                         "required": true,
@@ -631,7 +631,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/task/": {
+        "/task": {
             "get": {
                 "description": "Получить задание",
                 "consumes": [
@@ -879,7 +879,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/user/edit/change_password/": {
+        "/user/edit/change_avatar/": {
             "post": {
                 "description": "В ответ шлёт ссылку на файл",
                 "consumes": [
@@ -904,7 +904,47 @@ const docTemplate = `{
                     }
                 ],
                 "responses": {
-                    "204": {
+                    "200": {
+                        "description": "Объект пользователя",
+                        "schema": {
+                            "$ref": "#/definitions/doc_structs.AvatarUploadResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/user/edit/change_password/": {
+            "post": {
+                "description": "Получает старый и новый пароли, а также id пользователя",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "Поменять пароль",
+                "parameters": [
+                    {
+                        "description": "id, старый и новый пароли пользователя",
+                        "name": "passwords",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.PasswordChangeInfo"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
                         "description": "no content",
                         "schema": {
                             "type": "string"
@@ -1116,58 +1156,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/workspace/update/change_thumbnail": {
-            "post": {
-                "description": "Обновить картинку рабочего пространства",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "workspaces"
-                ],
-                "summary": "Обновить картинку рабочего пространства",
-                "parameters": [
-                    {
-                        "description": "обновленные данные рабочего пространства",
-                        "name": "thumbnailInfo",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/dto.ChangeWorkspaceThumbnailInfo"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Ссылка на новую картинку",
-                        "schema": {
-                            "$ref": "#/definitions/doc_structs.ThumbnailUploadResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/apperrors.ErrorResponse"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/apperrors.ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/apperrors.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
         "/workspace/update/change_users/": {
             "post": {
                 "description": "Обновить гостей рабочего пространства",
@@ -1184,7 +1172,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "description": "обновленный список пользователей",
-                        "name": "authData",
+                        "name": "guestsInfo",
                         "in": "body",
                         "required": true,
                         "schema": {
@@ -1241,6 +1229,14 @@ const docTemplate = `{
                 }
             }
         },
+        "doc_structs.AvatarUploadResponse": {
+            "type": "object",
+            "properties": {
+                "avatar_url": {
+                    "$ref": "#/definitions/dto.UrlObj"
+                }
+            }
+        },
         "doc_structs.BoardResponse": {
             "type": "object",
             "properties": {
@@ -1287,13 +1283,13 @@ const docTemplate = `{
                 "user_guest_workspaces": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/dto.UserGuestBoardInfo"
+                        "$ref": "#/definitions/dto.UserGuestWorkspaceInfo"
                     }
                 },
                 "user_owned_workspaces": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/dto.UserOwnedBoardInfo"
+                        "$ref": "#/definitions/dto.UserOwnedWorkspaceInfo"
                     }
                 }
             }
@@ -1331,20 +1327,6 @@ const docTemplate = `{
                 }
             }
         },
-        "dto.ChangeWorkspaceThumbnailInfo": {
-            "type": "object",
-            "properties": {
-                "id": {
-                    "type": "string"
-                },
-                "thumbnail": {
-                    "type": "array",
-                    "items": {
-                        "type": "integer"
-                    }
-                }
-            }
-        },
         "dto.IndividualBoardRequest": {
             "type": "object",
             "properties": {
@@ -1352,7 +1334,7 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "user_id": {
-                    "type": "string"
+                    "type": "integer"
                 }
             }
         },
@@ -1550,16 +1532,42 @@ const docTemplate = `{
                 }
             }
         },
-        "dto.UserGuestBoardInfo": {
+        "dto.UserGuestWorkspaceInfo": {
             "type": "object",
             "properties": {
-                "board_info": {
-                    "$ref": "#/definitions/dto.UserOwnedBoardInfo"
+                "boards": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.WorkspaceBoardInfo"
+                    }
                 },
-                "owner_email": {
+                "creator_id": {
+                    "type": "integer"
+                },
+                "date_created": {
                     "type": "string"
                 },
-                "owner_id": {
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "users_data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.UserPublicInfo"
+                    }
+                }
+            }
+        },
+        "dto.UserID": {
+            "type": "object",
+            "properties": {
+                "user_id": {
                     "type": "integer"
                 }
             }
@@ -1575,17 +1583,32 @@ const docTemplate = `{
                 }
             }
         },
-        "dto.UserOwnedBoardInfo": {
+        "dto.UserOwnedWorkspaceInfo": {
             "type": "object",
             "properties": {
-                "board_id": {
+                "boards": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.WorkspaceBoardInfo"
+                    }
+                },
+                "date_created": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "id": {
                     "type": "integer"
                 },
-                "board_name": {
+                "name": {
                     "type": "string"
                 },
-                "thumbnail_url": {
-                    "type": "string"
+                "users_data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.UserPublicInfo"
+                    }
                 }
             }
         },
@@ -1603,6 +1626,49 @@ const docTemplate = `{
                 },
                 "user_id": {
                     "type": "integer"
+                }
+            }
+        },
+        "dto.UserPublicInfo": {
+            "type": "object",
+            "properties": {
+                "avatar_url": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "surname": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.WorkspaceBoardInfo": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "thumbnail_url": {
+                    "type": "string"
+                },
+                "users": {
+                    "$ref": "#/definitions/dto.UserID"
                 }
             }
         },
@@ -1641,7 +1707,7 @@ const docTemplate = `{
                 "users": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/entities.User"
+                        "$ref": "#/definitions/dto.UserPublicInfo"
                     }
                 }
             }
@@ -1713,10 +1779,16 @@ const docTemplate = `{
                 "avatar_url": {
                     "type": "string"
                 },
+                "description": {
+                    "type": "string"
+                },
                 "email": {
                     "type": "string"
                 },
                 "name": {
+                    "type": "string"
+                },
+                "password_hash": {
                     "type": "string"
                 },
                 "surname": {

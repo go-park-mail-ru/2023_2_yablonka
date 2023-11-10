@@ -35,6 +35,7 @@ func (us UserService) RegisterUser(ctx context.Context, info dto.AuthInfo) (*ent
 		log.Println("User exists")
 		return nil, apperrors.ErrUserAlreadyExists
 	}
+	log.Println("User doesnt exists")
 
 	return us.storage.Create(ctx, dto.SignupInfo{
 		Email:        info.Email,

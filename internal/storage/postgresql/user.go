@@ -48,7 +48,18 @@ func (s *PostgresUserStorage) GetWithLogin(ctx context.Context, login dto.UserLo
 	row := s.db.QueryRow(ctx, sql, args...)
 
 	user := entities.User{}
-	err = row.Scan(&user.ID, &user.Email, &user.PasswordHash, &user.Name, &user.Surname, &user.AvatarURL, &user.Description)
+	err = row.Scan(
+		&user.ID,
+		&user.Email,
+		&user.PasswordHash,
+		&user.Name,
+		&user.Surname,
+		&user.AvatarURL,
+		&user.Description,
+	)
+	log.Println(user)
+	log.Println(err)
+
 	if err != nil {
 		fmt.Println("Error", err.Error())
 		return nil, apperrors.ErrUserNotFound
