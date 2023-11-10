@@ -3,6 +3,7 @@ package middleware
 import (
 	"context"
 	"errors"
+	"log"
 	"net/http"
 	"server/internal/apperrors"
 	"server/internal/pkg/dto"
@@ -15,6 +16,7 @@ func AuthMiddleware(as service.IAuthService, us service.IUserService) func(http.
 			rCtx := r.Context()
 			cookie, err := r.Cookie("tabula_user")
 			if err != nil {
+				log.Println("Cookie not found")
 				*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.GenericUnauthorizedResponse))
 				return
 			}
@@ -25,6 +27,7 @@ func AuthMiddleware(as service.IAuthService, us service.IUserService) func(http.
 
 			userID, err := as.VerifyAuth(rCtx, token)
 			if err != nil {
+				log.Println("Session not found")
 				*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.ErrorMap[err]))
 				return
 			}
@@ -32,9 +35,11 @@ func AuthMiddleware(as service.IAuthService, us service.IUserService) func(http.
 			userObj, err := us.GetWithID(rCtx, userID)
 
 			if errors.Is(err, apperrors.ErrUserNotFound) {
+				log.Println("User not found")
 				*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.GenericUnauthorizedResponse))
 				return
 			} else if err != nil {
+				log.Println("Other error")
 				*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.ErrorMap[err]))
 				return
 			}
