@@ -30,9 +30,9 @@ type User struct {
 type Workspace struct {
 	ID           uint64               `json:"id"`
 	Name         string               `json:"name"`
-	Description  string               `json:"description"`
+	Description  *string              `json:"description"`
 	DateCreated  string               `json:"date_created"`
-	ThumbnailURL string               `json:"thumbnail_url"`
+	ThumbnailURL *string              `json:"thumbnail_url"`
 	Users        []dto.UserPublicInfo `json:"users"`
 	Boards       []Board              `json:"boards"`
 }
@@ -43,8 +43,8 @@ type Board struct {
 	ID           uint64               `json:"board_id"`
 	Name         string               `json:"name"`
 	Owner        dto.UserInfo         `json:"owner"`
-	Description  string               `json:"description"`
-	ThumbnailURL string               `json:"thumbnail_url"`
+	Description  *string              `json:"description"`
+	ThumbnailURL *string              `json:"thumbnail_url"`
 	Users        []dto.UserPublicInfo `json:"users"`
 	Lists        []List               `json:"lists"`
 }
@@ -52,34 +52,34 @@ type Board struct {
 // List
 // структура для хранения списка
 type List struct {
-	ID           uint64 `json:"id"`
-	BoardID      uint64 `json:"board_id"`
-	Name         string `json:"name"`
-	Description  string `json:"description"`
-	ListPosition uint64 `json:"list_position"`
-	Tasks        []Task `json:"tasks"`
+	ID           uint64  `json:"id"`
+	BoardID      uint64  `json:"board_id"`
+	Name         string  `json:"name"`
+	Description  *string `json:"description"`
+	ListPosition uint64  `json:"list_position"`
+	Tasks        []Task  `json:"tasks"`
 }
 
 // Role
 // структура для хранения роли пользователя
 type Role struct {
-	ID          uint64 `json:"id"`
-	Name        string `json:"name"`
-	Description string `json:"description"`
+	ID          uint64  `json:"id"`
+	Name        string  `json:"name"`
+	Description *string `json:"description"`
 }
 
 // Workspace
 // структура для хранения доски
 type Task struct {
-	ID           uint64    `json:"id"`
-	ListID       uint64    `json:"list_id"`
-	DateCreated  string    `json:"date_created"`
-	Name         string    `json:"name"`
-	Description  string    `json:"description"`
-	ListPosition uint64    `json:"list_position"`
-	Start        time.Time `json:"start"`
-	End          time.Time `json:"end"`
-	Users        []User    `json:"users"`
+	ID           uint64     `json:"id"`
+	ListID       uint64     `json:"list_id"`
+	DateCreated  string     `json:"date_created"`
+	Name         string     `json:"name"`
+	Description  *string    `json:"description"`
+	ListPosition uint64     `json:"list_position"`
+	Start        *time.Time `json:"start"`
+	End          *time.Time `json:"end"`
+	Users        []User     `json:"users"`
 }
 
 func (u *User) TableName() string {
