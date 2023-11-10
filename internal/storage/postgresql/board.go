@@ -33,6 +33,7 @@ func (s *PostgreSQLBoardStorage) GetById(ctx context.Context, id dto.BoardID) (*
 		Join("public.list ON public.board.id = public.list.board_id").
 		Join("public.task ON public.list.id = public.task.list_id").
 		Where(sq.Eq{"public.board.id": id}).
+		PlaceholderFormat(sq.Dollar).
 		ToSql()
 	if err != nil {
 		return nil, apperrors.ErrCouldNotBuildQuery
@@ -45,7 +46,6 @@ func (s *PostgreSQLBoardStorage) GetById(ctx context.Context, id dto.BoardID) (*
 	defer rows.Close()
 
 	var board entities.Board
-	// pgx.CollectRows[entities.Board](rows, pgx.RowToStructByName[entities.Board])
 	for rows.Next() {
 		var list entities.List
 
@@ -95,6 +95,7 @@ func (s *PostgreSQLBoardStorage) GetUsers(ctx context.Context, id dto.BoardID) (
 		From("public.user").
 		Join("public.board_user ON public.board_user.id_user = public.user.id").
 		Where(sq.Eq{"public.board_user.id_board": id}).
+		PlaceholderFormat(sq.Dollar).
 		ToSql()
 	if err != nil {
 		return nil, apperrors.ErrCouldNotBuildQuery
