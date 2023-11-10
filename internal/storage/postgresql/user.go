@@ -30,7 +30,8 @@ func (s *PostgresUserStorage) GetWithLogin(ctx context.Context, login dto.UserLo
 	sql, args, err := sq.
 		Select(allUserFields...).
 		From("public.user").
-		Where(sq.Eq{"email": login}).
+		Where(sq.Eq{"email": login.Value}).
+		PlaceholderFormat(sq.Dollar).
 		ToSql()
 
 	if err != nil {
@@ -40,7 +41,18 @@ func (s *PostgresUserStorage) GetWithLogin(ctx context.Context, login dto.UserLo
 	row := s.db.QueryRow(ctx, sql, args...)
 
 	user := entities.User{}
-	err = row.Scan(&user)
+	err = row.Scan(
+		&user.ID,
+		&user.Email,
+		&user.PasswordHash,
+		&user.Name,
+		&user.Surname,
+		&user.AvatarURL,
+		&user.Description,
+	)
+	log.Println(user)
+	log.Println(err)
+
 	if err != nil {
 		return nil, apperrors.ErrUserNotFound
 	}
@@ -56,6 +68,7 @@ func (s *PostgresUserStorage) GetWithID(ctx context.Context, id dto.UserID) (*en
 		Select(allUserFields...).
 		From("public.user").
 		Where(sq.Eq{"id": id.Value}).
+		PlaceholderFormat(sq.Dollar).
 		ToSql()
 
 	if err != nil {
@@ -80,6 +93,7 @@ func (s *PostgresUserStorage) GetLoginInfoWithID(ctx context.Context, id dto.Use
 		Select("email", "password_hash").
 		From("public.user").
 		Where(sq.Eq{"id": id.Value}).
+		PlaceholderFormat(sq.Dollar).
 		ToSql()
 
 	if err != nil {

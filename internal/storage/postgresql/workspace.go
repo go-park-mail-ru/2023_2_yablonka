@@ -99,23 +99,18 @@ func (s PostgresWorkspaceStorage) GetUserGuestWorkspaces(ctx context.Context, us
 	var workspaces []dto.UserGuestWorkspaceInfo
 	for rows.Next() {
 		var workspace dto.UserGuestWorkspaceInfo
-		var users []dto.UserPublicInfo
-		var boards []dto.WorkspaceBoardInfo
 
 		err = rows.Scan(
 			&workspace.ID,
-			&workspace.CreatorID,
 			&workspace.Name,
 			&workspace.DateCreated,
 			&workspace.Description,
-			&users,
-			&boards,
+			&workspace.UsersData,
+			&workspace.Boards,
 		)
 		if err != nil {
 			return nil, err
 		}
-		workspace.UsersData = users
-		workspace.Boards = boards
 		workspaces = append(workspaces, workspace)
 	}
 
@@ -173,8 +168,8 @@ func (s PostgresWorkspaceStorage) GetWorkspace(ctx context.Context, id dto.Works
 func (s PostgresWorkspaceStorage) Create(ctx context.Context, info dto.NewWorkspaceInfo) (*entities.Workspace, error) {
 	query1, args, err := sq.
 		Insert("public.workspace").
-		Columns("name", "thumbnail_url", "description").
-		Values(info.Name, info.ThumbnailURL, info.Description).
+		Columns("name", "thumbnail_url", "description", "id_creator").
+		Values(info.Name, info.ThumbnailURL, info.Description, info.OwnerID).
 		PlaceholderFormat(sq.Dollar).
 		Suffix("RETURNING id, date_created").
 		ToSql()
