@@ -8,8 +8,6 @@ import (
 	_ "server/internal/pkg/doc_structs"
 	"server/internal/pkg/dto"
 	"server/internal/service"
-
-	"github.com/asaskevich/govalidator"
 )
 
 type BoardHandler struct {
@@ -42,11 +40,11 @@ func (bh BoardHandler) GetFullBoard(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err = govalidator.ValidateStruct(boardRequest)
-	if err != nil {
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.BadRequestResponse))
-		return
-	}
+	// _, err = govalidator.ValidateStruct(boardRequest)
+	// if err != nil {
+	// 	*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.BadRequestResponse))
+	// 	return
+	// }
 
 	board, err := bh.bs.GetFullBoard(rCtx, boardRequest)
 	if err != nil {
@@ -100,11 +98,11 @@ func (bh BoardHandler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err = govalidator.ValidateStruct(newBoardInfo)
-	if err != nil {
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.BadRequestResponse))
-		return
-	}
+	// _, err = govalidator.ValidateStruct(newBoardInfo)
+	// if err != nil {
+	// 	*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.BadRequestResponse))
+	// 	return
+	// }
 
 	board, err := bh.bs.Create(rCtx, newBoardInfo)
 	if err != nil {
@@ -158,11 +156,11 @@ func (bh BoardHandler) UpdateData(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err = govalidator.ValidateStruct(boardInfo)
-	if err != nil {
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.BadRequestResponse))
-		return
-	}
+	// _, err = govalidator.ValidateStruct(boardInfo)
+	// if err != nil {
+	// 	*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.BadRequestResponse))
+	// 	return
+	// }
 
 	err = bh.bs.UpdateData(rCtx, boardInfo)
 	if err != nil {
@@ -214,11 +212,11 @@ func (bh BoardHandler) UpdateThumbnail(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err = govalidator.ValidateStruct(boardInfo)
-	if err != nil {
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.BadRequestResponse))
-		return
-	}
+	// _, err = govalidator.ValidateStruct(boardInfo)
+	// if err != nil {
+	// 	*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.BadRequestResponse))
+	// 	return
+	// }
 
 	urlObj, err := bh.bs.UpdateThumbnail(rCtx, boardInfo)
 	if err != nil {
@@ -272,11 +270,11 @@ func (bh BoardHandler) Delete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err = govalidator.ValidateStruct(boardID)
-	if err != nil {
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.BadRequestResponse))
-		return
-	}
+	// _, err = govalidator.ValidateStruct(boardID)
+	// if err != nil {
+	// 	*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.BadRequestResponse))
+	// 	return
+	// }
 
 	err = bh.bs.Delete(rCtx, boardID)
 	if err != nil {
