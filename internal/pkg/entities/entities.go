@@ -28,13 +28,12 @@ type User struct {
 // Workspace
 // структура для хранения доски
 type Workspace struct {
-	ID           uint64               `json:"id"`
-	Name         string               `json:"name"`
-	Description  *string              `json:"description"`
-	DateCreated  string               `json:"date_created"`
-	ThumbnailURL *string              `json:"thumbnail_url"`
-	Users        []dto.UserPublicInfo `json:"users"`
-	Boards       []Board              `json:"boards"`
+	ID          uint64               `json:"id"`
+	Name        string               `json:"name"`
+	Description *string              `json:"description"`
+	DateCreated time.Time            `json:"date_created"`
+	Users       []dto.UserPublicInfo `json:"users"`
+	Boards      []Board              `json:"boards"`
 }
 
 // Board

@@ -2,6 +2,8 @@ package postgresql
 
 import (
 	"context"
+	"fmt"
+	"log"
 	"server/internal/apperrors"
 	"server/internal/pkg/dto"
 	"server/internal/pkg/entities"
@@ -168,12 +170,14 @@ func (s PostgresWorkspaceStorage) GetWorkspace(ctx context.Context, id dto.Works
 func (s PostgresWorkspaceStorage) Create(ctx context.Context, info dto.NewWorkspaceInfo) (*entities.Workspace, error) {
 	query1, args, err := sq.
 		Insert("public.workspace").
-		Columns("name", "thumbnail_url", "description", "id_creator").
-		Values(info.Name, info.ThumbnailURL, info.Description, info.OwnerID).
+		Columns("name", "description", "id_creator").
+		Values(info.Name, info.Description, info.OwnerID).
 		PlaceholderFormat(sq.Dollar).
 		Suffix("RETURNING id, date_created").
 		ToSql()
+
 	if err != nil {
+		fmt.Println("Storage -- Failed to build query")
 		return nil, apperrors.ErrCouldNotBuildQuery
 	}
 
@@ -182,14 +186,17 @@ func (s PostgresWorkspaceStorage) Create(ctx context.Context, info dto.NewWorksp
 		return nil, apperrors.ErrCouldNotBuildQuery
 	}
 
+	log.Println("Built workspace query\n\t", query1, "\nwith args\n\t", args)
+
 	workspace := entities.Workspace{
-		Name:         *info.Name,
-		Description:  info.Description,
-		ThumbnailURL: info.ThumbnailURL,
+		Name:        *info.Name,
+		Description: info.Description,
 	}
 
 	row := tx.QueryRow(ctx, query1, args...)
-	if row.Scan(&workspace.ID, &workspace.DateCreated) != nil {
+	log.Println("Storage -- DB queried")
+	if err := row.Scan(&workspace.ID, &workspace.DateCreated); err != nil {
+		log.Println("Storage -- Workspace insert failed with error", err.Error())
 		err = tx.Rollback(ctx)
 		for err != nil {
 			err = tx.Rollback(ctx)
@@ -197,19 +204,25 @@ func (s PostgresWorkspaceStorage) Create(ctx context.Context, info dto.NewWorksp
 		return nil, apperrors.ErrWorkspaceNotCreated
 	}
 
+	log.Println("Storage -- Workspace created")
+
 	query2, args, err := sq.
-		Insert("workspace_user").
+		Insert("user_workspace").
 		Columns("id_workspace", "id_user", "id_role").
 		Values(workspace.ID, info.OwnerID, 1).
+		PlaceholderFormat(sq.Dollar).
 		ToSql()
 
 	if err != nil {
 		return nil, apperrors.ErrCouldNotBuildQuery
 	}
 
+	log.Println("Built workspace user query\n\t", query2, "\nwith args\n\t", args)
+
 	_, err = tx.Exec(ctx, query2, args...)
 
 	if err != nil {
+		log.Println("Storage -- Workspace user insert failed with error", err.Error())
 		err = tx.Rollback(ctx)
 		for err != nil {
 			err = tx.Rollback(ctx)
@@ -217,14 +230,18 @@ func (s PostgresWorkspaceStorage) Create(ctx context.Context, info dto.NewWorksp
 		return nil, apperrors.ErrWorkspaceNotCreated
 	}
 
+	log.Println("Storage -- Committing changes")
 	err = tx.Commit(ctx)
 	if err != nil {
+		log.Println("Storage -- Failed to commit changes")
 		err = tx.Rollback(ctx)
 		for err != nil {
 			err = tx.Rollback(ctx)
 		}
 		return nil, apperrors.ErrWorkspaceNotCreated
 	}
+
+	log.Println("Storage -- Committed changes")
 
 	return &workspace, nil
 }

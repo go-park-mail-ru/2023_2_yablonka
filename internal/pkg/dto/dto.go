@@ -1,7 +1,6 @@
 package dto
 
 import (
-	"server/internal/pkg/entities"
 	"time"
 )
 
@@ -184,10 +183,9 @@ type SessionToken struct {
 // NewWorkspaceInfo
 // DTO для нового рабочего пространства
 type NewWorkspaceInfo struct {
-	Name         *string `json:"name"`
-	Description  *string `json:"description"`
-	ThumbnailURL *string `json:"thumbnail_url"`
-	OwnerID      uint64  `json:"owner_id"`
+	Name        *string `json:"name"`
+	Description *string `json:"description"`
+	OwnerID     uint64  `json:"owner_id"`
 }
 
 // ListID
@@ -200,11 +198,6 @@ type ListID struct {
 // DTO для id задач
 type TaskID struct {
 	Value string `json:"id"`
-}
-
-type TaskReturnValue struct {
-	Task  entities.Task
-	Users []entities.User
 }
 
 // NewListInfo
