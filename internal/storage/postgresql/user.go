@@ -2,6 +2,7 @@ package postgresql
 
 import (
 	"context"
+	"log"
 	"server/internal/apperrors"
 	"server/internal/pkg/dto"
 	"server/internal/pkg/entities"
@@ -29,7 +30,7 @@ func (s *PostgresUserStorage) GetWithLogin(ctx context.Context, login dto.UserLo
 	sql, args, err := sq.
 		Select(allUserFields...).
 		From("public.user").
-		Where(sq.Eq{"login": login.Value}).
+		Where(sq.Eq{"login": login}).
 		ToSql()
 
 	if err != nil {
@@ -39,7 +40,8 @@ func (s *PostgresUserStorage) GetWithLogin(ctx context.Context, login dto.UserLo
 	row := s.db.QueryRow(ctx, sql, args...)
 
 	user := entities.User{}
-	if row.Scan(&user) != nil {
+	err = row.Scan(&user)
+	if err != nil {
 		return nil, apperrors.ErrUserNotFound
 	}
 
@@ -83,11 +85,13 @@ func (s *PostgresUserStorage) GetLoginInfoWithID(ctx context.Context, id dto.Use
 	if err != nil {
 		return nil, apperrors.ErrCouldNotBuildQuery
 	}
+	log.Printf("query created")
 
 	row := s.db.QueryRow(ctx, sql, args...)
 
 	loginInfo := dto.LoginInfo{}
-	if row.Scan(&loginInfo) != nil {
+	err = row.Scan(&loginInfo)
+	if err != nil {
 		return nil, apperrors.ErrUserNotFound
 	}
 
@@ -99,11 +103,11 @@ func (s *PostgresUserStorage) GetLoginInfoWithID(ctx context.Context, id dto.Use
 // или возвращает ошибки ...
 func (s *PostgresUserStorage) Create(ctx context.Context, info dto.SignupInfo) (*entities.User, error) {
 	sql, args, err := sq.
-		Insert("user").
+		Insert("public.user").
 		Columns("email", "password_hash").
 		Values(info.Email, info.PasswordHash).
-		PlaceholderFormat(sq.Dollar).
 		Suffix("RETURNING id").
+		PlaceholderFormat(sq.Dollar).
 		ToSql()
 
 	if err != nil {

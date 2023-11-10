@@ -2,7 +2,6 @@ CREATE TABLE IF NOT EXISTS public.workspace
 (
     id serial NOT NULL,
     name text NOT NULL DEFAULT 'Рабочее место',
-    thumbnail_url text,
     date_created timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
     description text,
     CONSTRAINT workspace_pkey PRIMARY KEY (id),

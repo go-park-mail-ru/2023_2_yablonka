@@ -23,10 +23,6 @@ type IWorkspaceService interface {
 	// обновляет рабочее пространство
 	// или возвращает ошибки ...
 	UpdateData(context.Context, dto.UpdatedWorkspaceInfo) error
-	// UpdateThumbnail
-	// обновляет картинку рабочего пространства
-	// или возвращает ошибки ...
-	UpdateThumbnail(context.Context, dto.ChangeWorkspaceThumbnailInfo) (*dto.UrlObj, error)
 	// UpdateUsers
 	// обновляет список пользователей рабочего пространства
 	// или возвращает ошибки ...

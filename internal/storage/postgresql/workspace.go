@@ -26,16 +26,17 @@ func NewWorkspaceStorage(db *pgxpool.Pool) *PostgresWorkspaceStorage {
 }
 
 // GetUserWorkspaces
-// находит пользователя в БД по почте
+// находит рабочие пространства, связанные с пользователем в БД
 // или возвращает ошибки ...
 func (s PostgresWorkspaceStorage) GetUserWorkspaces(ctx context.Context, userID dto.UserID) (*dto.AllWorkspaces, error) {
 	sql, args, err := sq.
-		Select("workspace.*", "user.id", "user.email", "role.*").
-		From("workspace").
-		Join("user_workspace ON user_workspace.id_workspace = workspace.id").
-		Join("user ON user_workspace.id_user = user.id").
-		Join("role ON user_workspace.id_role = role.id").
-		Where(sq.Eq{"user_workspace.id_user": userID.Value}).
+		Select(userWorkspaceFields...).
+		From("public.workspace").
+		Join("public.user_workspace ON public.user_workspace.id_workspace = workspace.id").
+		Join("public.user ON public.user_workspace.id_user = user.id").
+		Join("public.role ON public.user_workspace.id_role = role.id").
+		Where(sq.Eq{"public.user_workspace.id_user": userID.Value}).
+		GroupBy("role.id").
 		ToSql()
 	if err != nil {
 		return nil, apperrors.ErrCouldNotBuildQuery
@@ -77,9 +78,9 @@ func (s PostgresWorkspaceStorage) GetUserWorkspaces(ctx context.Context, userID 
 func (s PostgresWorkspaceStorage) GetWorkspace(ctx context.Context, id dto.WorkspaceID) (*entities.Workspace, error) {
 	sql, args, err := sq.
 		Select(allWorkspaceAndBoardFields...).
-		From("workspace").
-		Join("board ON workspace.id = board.workspace_id").
-		Where(sq.Eq{"workspace.id": id.Value}).
+		From("public.workspace").
+		Join("public.board ON public.workspace.id = public.board.workspace_id").
+		Where(sq.Eq{"public.workspace.id": id.Value}).
 		ToSql()
 	if err != nil {
 		return nil, err
@@ -117,7 +118,7 @@ func (s PostgresWorkspaceStorage) GetWorkspace(ctx context.Context, id dto.Works
 // или возвращает ошибки ...
 func (s PostgresWorkspaceStorage) Create(ctx context.Context, info dto.NewWorkspaceInfo) (*entities.Workspace, error) {
 	query1, args, err := sq.
-		Insert("workspace").
+		Insert("public.workspace").
 		Columns("name", "thumbnail_url", "description").
 		Values(info.Name, info.ThumbnailURL, info.Description).
 		PlaceholderFormat(sq.Dollar).
@@ -184,7 +185,7 @@ func (s PostgresWorkspaceStorage) Create(ctx context.Context, info dto.NewWorksp
 // или возвращает ошибки ...
 func (s PostgresWorkspaceStorage) UpdateData(ctx context.Context, info dto.UpdatedWorkspaceInfo) error {
 	sql, args, err := sq.
-		Update("workspace").
+		Update("public.workspace").
 		Set("name", info.Name).
 		Set("description", info.Description).
 		Where(sq.Eq{"workspace.id": info.ID}).
@@ -211,36 +212,12 @@ func (s PostgresWorkspaceStorage) UpdateUsers(ctx context.Context, info dto.Chan
 	return nil
 }
 
-// UpdateAvatarUrl
-// обновляет аватарку пользователя в БД
-// или возвращает ошибки ...
-func (s *PostgresWorkspaceStorage) UpdateThumbnailUrl(ctx context.Context, info dto.ImageUrlInfo) error {
-	sql, args, err := sq.
-		Update("public.workspace").
-		Set("thumbnail_url", info.Url).
-		Where(sq.Eq{"id": info.ID}).
-		PlaceholderFormat(sq.Dollar).
-		ToSql()
-
-	if err != nil {
-		return apperrors.ErrCouldNotBuildQuery
-	}
-
-	_, err = s.db.Exec(ctx, sql, args...)
-
-	if err != nil {
-		return apperrors.ErrUserNotUpdated
-	}
-
-	return nil
-}
-
 // Delete
 // удаляет данногt рабочее пространство в БД по id
 // или возвращает ошибки ...
 func (s PostgresWorkspaceStorage) Delete(ctx context.Context, id dto.WorkspaceID) error {
 	sql, args, err := sq.
-		Delete("workspace").
+		Delete("public.workspace").
 		Where(sq.Eq{"id": id.Value}).
 		PlaceholderFormat(sq.Dollar).
 		ToSql()

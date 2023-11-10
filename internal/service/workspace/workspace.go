@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"os"
 	"server/internal/pkg/dto"
 	"server/internal/pkg/entities"
 	"server/internal/storage"
@@ -46,32 +45,6 @@ func (ws WorkspaceService) Create(ctx context.Context, info dto.NewWorkspaceInfo
 // или возвращает ошибки .....
 func (ws WorkspaceService) UpdateData(ctx context.Context, info dto.UpdatedWorkspaceInfo) error {
 	return ws.storage.UpdateData(ctx, info)
-}
-
-// UpdateThumbnail
-// обновляет картинку рабочего пространства
-// или возвращает ошибки ...
-func (ws WorkspaceService) UpdateThumbnail(ctx context.Context, info dto.ChangeWorkspaceThumbnailInfo) (*dto.UrlObj, error) {
-	thumbnailUrlInfo := dto.ImageUrlInfo{
-		ID:  info.ID,
-		Url: "images/workspace_thumbnails/" + info.ID + ".png",
-	}
-	f, err := os.Create(thumbnailUrlInfo.Url)
-	if err != nil {
-		return nil, err
-	}
-	defer f.Close()
-
-	err = ws.storage.UpdateThumbnailUrl(ctx, thumbnailUrlInfo)
-	if err != nil {
-		errDelete := os.Remove(thumbnailUrlInfo.Url)
-		for errDelete != nil {
-			errDelete = os.Remove(thumbnailUrlInfo.Url)
-		}
-		return nil, err
-	}
-
-	return &dto.UrlObj{Value: thumbnailUrlInfo.Url}, nil
 }
 
 // UpdateUsers

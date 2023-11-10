@@ -130,7 +130,7 @@ type SignupInfo struct {
 // DTO для обработки данных, полученных при входе
 type LoginInfo struct {
 	Email        string `json:"email" valid:"type(string),email"`
-	PasswordHash string `json:"-" valid:"type(string)"`
+	PasswordHash string `json:"password_hash" valid:"type(string)"`
 }
 
 // IndividualBoardInfo

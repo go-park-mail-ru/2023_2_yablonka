@@ -28,11 +28,11 @@ func NewBoardStorage(db *pgxpool.Pool) *PostgreSQLBoardStorage {
 // находит доску и связанные с ней списки и задания по id
 // или возвращает ошибки ...
 func (s *PostgreSQLBoardStorage) GetById(ctx context.Context, id dto.BoardID) (*entities.Board, error) {
-	sql, args, err := sq.Select("board.*", "list.*", "task.*").
-		From("board").
-		Join("list ON board.id = list.board_id").
-		Join("task ON list.id = task.list_id").
-		Where(sq.Eq{"board.id": id}).
+	sql, args, err := sq.Select(append(allBoardFields, append(allListFields, allTaskFields...)...)...).
+		From("public.board").
+		Join("public.list ON public.board.id = public.list.board_id").
+		Join("public.task ON public.list.id = public.task.list_id").
+		Where(sq.Eq{"public.board.id": id}).
 		ToSql()
 	if err != nil {
 		return nil, apperrors.ErrCouldNotBuildQuery
@@ -91,9 +91,9 @@ func (s *PostgreSQLBoardStorage) GetById(ctx context.Context, id dto.BoardID) (*
 // или возвращает ошибки ...
 func (s *PostgreSQLBoardStorage) GetUsers(ctx context.Context, id dto.BoardID) (*[]dto.UserPublicInfo, error) {
 	sql, args, err := sq.Select("user.id").
-		From("user").
-		Join("board_user ON board_user.id_user = user.id").
-		Where(sq.Eq{"board_user.id_board": id}).
+		From("public.user").
+		Join("public.board_user ON public.board_user.id_user = public.user.id").
+		Where(sq.Eq{"public.board_user.id_board": id}).
 		ToSql()
 	if err != nil {
 		return nil, apperrors.ErrCouldNotBuildQuery
@@ -122,7 +122,7 @@ func (s *PostgreSQLBoardStorage) GetUsers(ctx context.Context, id dto.BoardID) (
 
 func (s *PostgreSQLBoardStorage) Create(ctx context.Context, info dto.NewBoardInfo) (*entities.Board, error) {
 	query1, args, err := sq.
-		Insert("board").
+		Insert("public.board").
 		Columns("id_workspace", "name", "description").
 		Values(info.WorkspaceID, info.Name, info.Description).
 		Suffix("RETURNING id").
@@ -148,7 +148,7 @@ func (s *PostgreSQLBoardStorage) Create(ctx context.Context, info dto.NewBoardIn
 	}
 
 	query2, args, err := sq.
-		Insert("board_user").
+		Insert("public.board_user").
 		Columns("id_board", "id_user").
 		Values(boardID, info.OwnerID).
 		ToSql()
@@ -181,10 +181,10 @@ func (s *PostgreSQLBoardStorage) Create(ctx context.Context, info dto.NewBoardIn
 
 func (s *PostgreSQLBoardStorage) UpdateData(ctx context.Context, info dto.UpdatedBoardInfo) error {
 	sql, args, err := sq.
-		Update("board").
+		Update("public.board").
 		Set("name", info.Name).
 		Set("description", info.Description).
-		Where(sq.Eq{"board.id": info.ID}).
+		Where(sq.Eq{"id": info.ID}).
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
 
@@ -203,7 +203,7 @@ func (s *PostgreSQLBoardStorage) UpdateData(ctx context.Context, info dto.Update
 
 func (s *PostgreSQLBoardStorage) UpdateThumbnailUrl(ctx context.Context, info dto.ImageUrlInfo) error {
 	sql, args, err := sq.
-		Update("board").
+		Update("public.board").
 		Set("thumbnail_url", info.Url).
 		Where(sq.Eq{"id": info.ID}).
 		PlaceholderFormat(sq.Dollar).
@@ -224,7 +224,7 @@ func (s *PostgreSQLBoardStorage) UpdateThumbnailUrl(ctx context.Context, info dt
 
 func (s *PostgreSQLBoardStorage) Delete(ctx context.Context, id dto.BoardID) error {
 	sql, args, err := sq.
-		Delete("board").
+		Delete("public.board").
 		Where(sq.Eq{"id": id.Value}).
 		PlaceholderFormat(sq.Dollar).
 		ToSql()

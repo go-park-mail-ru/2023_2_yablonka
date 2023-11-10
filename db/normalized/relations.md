@@ -6,7 +6,6 @@
             int id PK
             string name
             string description
-            string thumbnail_url
             timestamp date_created
         }
         BOARD {

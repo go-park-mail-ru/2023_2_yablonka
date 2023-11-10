@@ -29,9 +29,9 @@ func NewTaskStorage(db *pgxpool.Pool) *PostgresTaskStorage {
 // или возвращает ошибки ...
 func (s PostgresTaskStorage) Create(ctx context.Context, info dto.NewTaskInfo) (*entities.Task, error) {
 	sql, args, err := sq.
-		Insert("list").
-		Columns("name", "list_position", "description", "id_list", "start", "end").
-		Values(info.Name, info.ListPosition, info.Description, info.ListID, info.Start, info.End).
+		Insert("public.task").
+		Columns(newTaskFields...).
+		Values(info.ListID, info.Name, info.Description, info.ListPosition, info.Start, info.End).
 		PlaceholderFormat(sq.Dollar).
 		Suffix("RETURNING id").
 		ToSql()
@@ -64,6 +64,7 @@ func (s *PostgresTaskStorage) Read(ctx context.Context, id dto.TaskID) (*entitie
 	sql, args, err := sq.
 		Select(append(allTaskFields, allUserFields...)...).
 		From("public.task").
+		Join("public.task_user ON public.task.id = public.task_user.id_task").
 		Where(sq.Eq{"id": id.Value}).
 		ToSql()
 
@@ -100,12 +101,13 @@ func (s *PostgresTaskStorage) Read(ctx context.Context, id dto.TaskID) (*entitie
 // или возвращает ошибки ...
 func (s PostgresTaskStorage) Update(ctx context.Context, info dto.UpdatedTaskInfo) error {
 	sql, args, err := sq.
-		Update("column").
+		Update("public.task").
 		Set("name", info.Name).
 		Set("description", info.Description).
 		Set("start", info.Start).
 		Set("end", info.End).
 		Set("list_position", info.ListPosition).
+		Where(sq.Eq{"id": info.ID}).
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
 
@@ -127,7 +129,7 @@ func (s PostgresTaskStorage) Update(ctx context.Context, info dto.UpdatedTaskInf
 // или возвращает ошибки ...
 func (s PostgresTaskStorage) Delete(ctx context.Context, id dto.TaskID) error {
 	sql, args, err := sq.
-		Delete("task").
+		Delete("public.task").
 		Where(sq.Eq{"id": id.Value}).
 		PlaceholderFormat(sq.Dollar).
 		ToSql()

@@ -29,7 +29,7 @@ func NewListStorage(db *pgxpool.Pool) *PostgresListStorage {
 // или возвращает ошибки ...
 func (s PostgresListStorage) Create(ctx context.Context, info dto.NewListInfo) (*entities.List, error) {
 	sql, args, err := sq.
-		Insert("list").
+		Insert("public.list").
 		Columns("name", "list_position", "description", "id_board").
 		Values(info.Name, info.ListPosition, info.Description, info.BoardID).
 		PlaceholderFormat(sq.Dollar).
@@ -60,10 +60,11 @@ func (s PostgresListStorage) Create(ctx context.Context, info dto.NewListInfo) (
 // или возвращает ошибки ...
 func (s PostgresListStorage) Update(ctx context.Context, info dto.UpdatedListInfo) error {
 	sql, args, err := sq.
-		Update("column").
+		Update("public.list").
 		Set("name", info.Name).
 		Set("description", info.Description).
 		Set("list_position", info.ListPosition).
+		Where(sq.Eq{"id": info.ID}).
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
 
@@ -85,7 +86,7 @@ func (s PostgresListStorage) Update(ctx context.Context, info dto.UpdatedListInf
 // или возвращает ошибки ...
 func (s PostgresListStorage) Delete(ctx context.Context, id dto.ListID) error {
 	sql, args, err := sq.
-		Delete("column").
+		Delete("public.list").
 		Where(sq.Eq{"id": id.Value}).
 		PlaceholderFormat(sq.Dollar).
 		ToSql()

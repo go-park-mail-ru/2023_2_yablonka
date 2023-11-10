@@ -18,10 +18,11 @@ type Session struct {
 type User struct {
 	ID           uint64 `json:"user_id"`
 	Email        string `json:"email" valid:"type(string),email"`
-	PasswordHash string `json:"-"`
+	PasswordHash string `json:"password_hash"`
 	Name         string `json:"name"`
 	Surname      string `json:"surname"`
 	AvatarURL    string `json:"avatar_url"`
+	Description  string `json:"description"`
 }
 
 // Workspace
