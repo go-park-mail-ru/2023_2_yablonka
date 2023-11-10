@@ -8,8 +8,6 @@ import (
 	_ "server/internal/pkg/doc_structs"
 	"server/internal/pkg/dto"
 	"server/internal/service"
-
-	"github.com/asaskevich/govalidator"
 )
 
 type ListHandler struct {
@@ -41,11 +39,11 @@ func (lh ListHandler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err = govalidator.ValidateStruct(newListInfo)
-	if err != nil {
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.BadRequestResponse))
-		return
-	}
+	// _, err = govalidator.ValidateStruct(newListInfo)
+	// if err != nil {
+	// 	*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.BadRequestResponse))
+	// 	return
+	// }
 
 	list, err := lh.ls.Create(rCtx, newListInfo)
 	if err != nil {
@@ -99,11 +97,11 @@ func (lh ListHandler) Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err = govalidator.ValidateStruct(listInfo)
-	if err != nil {
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.BadRequestResponse))
-		return
-	}
+	// _, err = govalidator.ValidateStruct(listInfo)
+	// if err != nil {
+	// 	*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.BadRequestResponse))
+	// 	return
+	// }
 
 	err = lh.ls.Update(rCtx, listInfo)
 	if err != nil {
@@ -155,11 +153,11 @@ func (lh ListHandler) Delete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err = govalidator.ValidateStruct(listID)
-	if err != nil {
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.BadRequestResponse))
-		return
-	}
+	// _, err = govalidator.ValidateStruct(listID)
+	// if err != nil {
+	// 	*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.BadRequestResponse))
+	// 	return
+	// }
 
 	err = lh.ls.Delete(rCtx, listID)
 	if err != nil {
