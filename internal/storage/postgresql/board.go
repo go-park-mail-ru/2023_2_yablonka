@@ -45,6 +45,7 @@ func (s *PostgreSQLBoardStorage) GetById(ctx context.Context, id dto.BoardID) (*
 	defer rows.Close()
 
 	var board entities.Board
+	// pgx.CollectRows[entities.Board](rows, pgx.RowToStructByName[entities.Board])
 	for rows.Next() {
 		var list entities.List
 
@@ -213,9 +214,9 @@ func (s *PostgreSQLBoardStorage) UpdateThumbnailUrl(ctx context.Context, info dt
 		return apperrors.ErrCouldNotBuildQuery
 	}
 
-	query := s.db.QueryRow(ctx, sql, args...)
+	_, err = s.db.Exec(ctx, sql, args...)
 
-	if query.Scan() != nil {
+	if err != nil {
 		return apperrors.ErrBoardNotUpdated
 	}
 

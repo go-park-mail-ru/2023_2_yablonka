@@ -78,7 +78,11 @@ func (s PostgresAuthStorage) GetSession(ctx context.Context, token dto.SessionTo
 	row := s.db.QueryRow(ctx, sql, args...)
 
 	session := entities.Session{}
-	if row.Scan(&session) != nil {
+	err = row.Scan(
+		&session.UserID,
+		&session.ExpiryDate,
+	)
+	if err != nil {
 		return nil, apperrors.ErrSessionNotFound
 	}
 
