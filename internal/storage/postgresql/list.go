@@ -40,7 +40,7 @@ func (s PostgresListStorage) Create(ctx context.Context, info dto.NewListInfo) (
 	}
 
 	list := entities.List{
-		Name:         info.Name,
+		Name:         *info.Name,
 		BoardID:      info.BoardID,
 		Description:  info.Description,
 		ListPosition: info.ListPosition,

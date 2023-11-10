@@ -183,7 +183,7 @@ func (s PostgresWorkspaceStorage) Create(ctx context.Context, info dto.NewWorksp
 	}
 
 	workspace := entities.Workspace{
-		Name:         info.Name,
+		Name:         *info.Name,
 		Description:  info.Description,
 		ThumbnailURL: info.ThumbnailURL,
 	}
