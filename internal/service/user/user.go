@@ -98,7 +98,7 @@ func (us UserService) UpdateProfile(ctx context.Context, info dto.UserProfileInf
 func (us UserService) UpdateAvatar(ctx context.Context, info dto.AvatarChangeInfo) (*dto.UrlObj, error) {
 	avatarUrlInfo := dto.ImageUrlInfo{
 		ID:  info.UserID,
-		Url: "images/user_avatars/" + info.UserID + ".png",
+		Url: "images/user_avatars/" + string(info.UserID) + ".png",
 	}
 	f, err := os.Create(avatarUrlInfo.Url)
 	if err != nil {

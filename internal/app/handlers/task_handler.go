@@ -98,9 +98,13 @@ func (th TaskHandler) Create(w http.ResponseWriter, r *http.Request) {
 func (th TaskHandler) Read(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
 
+	log.Println("Handler -- Reading task")
+
 	var taskID dto.TaskID
 	err := json.NewDecoder(r.Body).Decode(&taskID)
 	if err != nil {
+		log.Println("Failed to decode JSON")
+		log.Println("Error:", err.Error())
 		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.BadRequestResponse))
 		return
 	}
@@ -113,6 +117,8 @@ func (th TaskHandler) Read(w http.ResponseWriter, r *http.Request) {
 
 	task, err := th.ts.Read(rCtx, taskID)
 	if err != nil {
+		log.Println("Failed to read task")
+		log.Println("Error:", err.Error())
 		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.ErrorMap[err]))
 		return
 	}

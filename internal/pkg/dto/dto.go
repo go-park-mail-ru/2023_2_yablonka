@@ -50,14 +50,14 @@ type IndividualBoardRequest struct {
 // AvatarChangeInfo
 // структура для изменения аватарки
 type AvatarChangeInfo struct {
-	UserID string `json:"user_id"`
+	UserID uint64 `json:"user_id"`
 	Avatar []byte `json:"avatar"`
 }
 
 // ImageRequest
 // структура для изменения аватарки
 type ImageUrlInfo struct {
-	ID  string `json:"user_id"`
+	ID  uint64 `json:"user_id"`
 	Url string `json:"avatar_url"`
 }
 
@@ -192,13 +192,13 @@ type NewWorkspaceInfo struct {
 // ListID
 // DTO для id списка задач
 type ListID struct {
-	Value string `json:"id"`
+	Value uint64 `json:"id"`
 }
 
 // TaskID
 // DTO для id задач
 type TaskID struct {
-	Value string `json:"id"`
+	Value uint64 `json:"id"`
 }
 
 // NewListInfo
@@ -224,7 +224,7 @@ type NewTaskInfo struct {
 // UpdatedTaskInfo
 // DTO для обновленной задачи
 type UpdatedTaskInfo struct {
-	ID           string     `json:"id"`
+	ID           uint64     `json:"id"`
 	Name         string     `json:"name"`
 	Description  *string    `json:"description"`
 	Start        *time.Time `json:"start"`
@@ -235,7 +235,7 @@ type UpdatedTaskInfo struct {
 // UpdatedBoardInfo
 // DTO для обновленной доски
 type UpdatedBoardInfo struct {
-	ID          string  `json:"id"`
+	ID          uint64  `json:"id"`
 	Name        string  `json:"name"`
 	Description *string `json:"description"`
 }
@@ -243,14 +243,14 @@ type UpdatedBoardInfo struct {
 // UpdatedBoardThumbnailInfo
 // DTO для обновленной картинки доски
 type UpdatedBoardThumbnailInfo struct {
-	ID        string `json:"id"`
+	ID        uint64 `json:"id"`
 	Thumbnail []byte `json:"thumbnail"`
 }
 
 // UpdatedListInfo
 // DTO для обновленного списка задач
 type UpdatedListInfo struct {
-	ID           string  `json:"id"`
+	ID           uint64  `json:"id"`
 	Name         string  `json:"name"`
 	Description  *string `json:"description"`
 	ListPosition string  `json:"list_position"`
@@ -259,7 +259,7 @@ type UpdatedListInfo struct {
 // UpdatedWorkspaceInfo
 // DTO для обновления данных рабочего пространства
 type UpdatedWorkspaceInfo struct {
-	ID          string  `json:"id"`
+	ID          uint64  `json:"id"`
 	Name        string  `json:"name"`
 	Description *string `json:"description"`
 }
@@ -267,14 +267,14 @@ type UpdatedWorkspaceInfo struct {
 // AddWorkspaceGuestsInfo
 // DTO для изменения списка гостей рабочего пространства
 type ChangeWorkspaceGuestsInfo struct {
-	WorkspaceID string   `json:"id"`
+	WorkspaceID uint64   `json:"id"`
 	Guests      []UserID `json:"guests"`
 }
 
 // ChangeWorkspaceThumbnailInfo
 // DTO для изменения картинки рабочего пространства
 type ChangeWorkspaceThumbnailInfo struct {
-	ID        string `json:"id"`
+	ID        uint64 `json:"id"`
 	Thumbnail []byte `json:"thumbnail"`
 }
 
