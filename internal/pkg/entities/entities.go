@@ -72,7 +72,7 @@ type Role struct {
 type Task struct {
 	ID           uint64     `json:"id"`
 	ListID       uint64     `json:"list_id"`
-	DateCreated  string     `json:"date_created"`
+	DateCreated  time.Time  `json:"date_created"`
 	Name         string     `json:"name"`
 	Description  *string    `json:"description"`
 	ListPosition uint64     `json:"list_position"`

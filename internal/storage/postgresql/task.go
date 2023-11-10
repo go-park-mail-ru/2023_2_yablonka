@@ -41,13 +41,13 @@ func (s PostgresTaskStorage) Create(ctx context.Context, info dto.NewTaskInfo) (
 		Columns(newTaskFields...).
 		Values(info.ListID, info.Name, info.Description, info.ListPosition, info.Start, info.End).
 		PlaceholderFormat(sq.Dollar).
-		Suffix("RETURNING id").
+		Suffix("RETURNING id, date_created").
 		ToSql()
 	if err != nil {
 		return nil, apperrors.ErrCouldNotBuildQuery
 	}
 
-	list := entities.Task{
+	task := entities.Task{
 		Name:         info.Name,
 		ListID:       info.ListID,
 		Description:  info.Description,
@@ -59,14 +59,14 @@ func (s PostgresTaskStorage) Create(ctx context.Context, info dto.NewTaskInfo) (
 	query := s.db.QueryRow(ctx, sql, args...)
 	log.Println("Formed query\n\t", sql, "\nwith args\n\t", args)
 
-	err = query.Scan(&list.ID)
+	err = query.Scan(&task.ID, &task.DateCreated)
 
 	if err != nil {
 		log.Println("Storage -- Task failed to create with error", err.Error())
 		return nil, apperrors.ErrTaskNotCreated
 	}
 
-	return &list, nil
+	return &task, nil
 }
 
 // Read

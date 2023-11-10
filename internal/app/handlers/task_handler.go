@@ -63,7 +63,7 @@ func (th TaskHandler) Create(w http.ResponseWriter, r *http.Request) {
 
 	response := dto.JSONResponse{
 		Body: dto.JSONMap{
-			"list": task,
+			"task": task,
 		},
 	}
 
