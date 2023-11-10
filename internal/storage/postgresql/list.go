@@ -32,15 +32,15 @@ func (s PostgresListStorage) Create(ctx context.Context, info dto.NewListInfo) (
 		Insert("public.list").
 		Columns("name", "list_position", "description", "id_board").
 		Values(info.Name, info.ListPosition, info.Description, info.BoardID).
-		PlaceholderFormat(sq.Dollar).
 		Suffix("RETURNING id").
+		PlaceholderFormat(sq.Dollar).
 		ToSql()
 	if err != nil {
 		return nil, apperrors.ErrCouldNotBuildQuery
 	}
 
 	list := entities.List{
-		Name:         *info.Name,
+		Name:         info.Name,
 		BoardID:      info.BoardID,
 		Description:  info.Description,
 		ListPosition: info.ListPosition,

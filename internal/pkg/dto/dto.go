@@ -205,7 +205,7 @@ type TaskID struct {
 // DTO для нового списка задач
 type NewListInfo struct {
 	BoardID      uint64  `json:"board_id"`
-	Name         *string `json:"name"`
+	Name         string  `json:"name"`
 	Description  *string `json:"description"`
 	ListPosition uint64  `json:"list_position"`
 }
