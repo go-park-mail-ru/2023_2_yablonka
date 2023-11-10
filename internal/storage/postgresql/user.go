@@ -2,6 +2,7 @@ package postgresql
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"server/internal/apperrors"
 	"server/internal/pkg/dto"
@@ -27,21 +28,29 @@ func NewUserStorage(db *pgxpool.Pool) *PostgresUserStorage {
 // находит пользователя в БД по почте
 // или возвращает ошибки ...
 func (s *PostgresUserStorage) GetWithLogin(ctx context.Context, login dto.UserLogin) (*entities.User, error) {
+	log.Println("Looking for user with login", login.Value)
+	email := "'" + login.Value + "'"
+	log.Println("Wrapped string:", email)
+
 	sql, args, err := sq.
 		Select(allUserFields...).
 		From("public.user").
-		Where(sq.Eq{"login": login}).
+		Where(sq.Eq{"email": login.Value}).
+		PlaceholderFormat(sq.Dollar).
 		ToSql()
 
 	if err != nil {
 		return nil, apperrors.ErrCouldNotBuildQuery
 	}
 
+	log.Println("Built query:", sql, "\nwith args:", args)
+
 	row := s.db.QueryRow(ctx, sql, args...)
 
 	user := entities.User{}
-	err = row.Scan(&user)
+	err = row.Scan(&user.ID, &user.Email, &user.PasswordHash, &user.Name, &user.Surname, &user.AvatarURL, &user.Description)
 	if err != nil {
+		fmt.Println("Error", err.Error())
 		return nil, apperrors.ErrUserNotFound
 	}
 
@@ -56,6 +65,7 @@ func (s *PostgresUserStorage) GetWithID(ctx context.Context, id dto.UserID) (*en
 		Select(allUserFields...).
 		From("public.user").
 		Where(sq.Eq{"id": id.Value}).
+		PlaceholderFormat(sq.Dollar).
 		ToSql()
 
 	if err != nil {
@@ -65,7 +75,7 @@ func (s *PostgresUserStorage) GetWithID(ctx context.Context, id dto.UserID) (*en
 	row := s.db.QueryRow(ctx, sql, args...)
 
 	user := entities.User{}
-	if row.Scan(&user) != nil {
+	if row.Scan(&user.ID, &user.Email, &user.PasswordHash, &user.Name, &user.Surname, &user.AvatarURL, &user.Description) != nil {
 		return nil, apperrors.ErrUserNotFound
 	}
 
@@ -80,6 +90,7 @@ func (s *PostgresUserStorage) GetLoginInfoWithID(ctx context.Context, id dto.Use
 		Select("email", "password_hash").
 		From("public.user").
 		Where(sq.Eq{"id": id.Value}).
+		PlaceholderFormat(sq.Dollar).
 		ToSql()
 
 	if err != nil {
