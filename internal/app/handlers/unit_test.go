@@ -456,6 +456,9 @@ func TestUserHandler_LogOut(t *testing.T) {
 func TestUserHandler_ChangeProfile(t *testing.T) {
 	t.Parallel()
 
+	newDescription := "New description"
+	newSurname := "New surname"
+
 	tests := []struct {
 		name           string
 		userID         uint64
@@ -463,8 +466,8 @@ func TestUserHandler_ChangeProfile(t *testing.T) {
 		oldUserName    string
 		newUserName    string
 		oldUserSurname string
-		newUserSurname string
-		newDescription string
+		newUserSurname *string
+		newDescription *string
 		successful     bool
 		expiredCookie  bool
 		expectedStatus int
@@ -476,8 +479,8 @@ func TestUserHandler_ChangeProfile(t *testing.T) {
 			token:          "session",
 			oldUserName:    "Old name",
 			newUserName:    "New name",
-			newUserSurname: "New surname",
-			newDescription: "New description",
+			newUserSurname: &newSurname,
+			newDescription: &newDescription,
 			successful:     true,
 			expectedStatus: http.StatusOK,
 		},
