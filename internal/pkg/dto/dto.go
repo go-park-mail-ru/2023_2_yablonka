@@ -152,6 +152,7 @@ type IndividualBoardInfo struct {
 type NewBoardInfo struct {
 	Name        *string `json:"name"`
 	OwnerID     uint64  `json:"owner_id"`
+	OwnerEmail  string  `json:"owner_email"`
 	WorkspaceID uint64  `json:"workspace_id"`
 	Description *string `json:"description"`
 }

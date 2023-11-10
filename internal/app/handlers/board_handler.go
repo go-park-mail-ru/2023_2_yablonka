@@ -3,10 +3,12 @@ package handlers
 import (
 	"context"
 	"encoding/json"
+	"log"
 	"net/http"
 	"server/internal/apperrors"
 	_ "server/internal/pkg/doc_structs"
 	"server/internal/pkg/dto"
+	"server/internal/pkg/entities"
 	"server/internal/service"
 )
 
@@ -94,9 +96,14 @@ func (bh BoardHandler) Create(w http.ResponseWriter, r *http.Request) {
 	var newBoardInfo dto.NewBoardInfo
 	err := json.NewDecoder(r.Body).Decode(&newBoardInfo)
 	if err != nil {
+		log.Println("Handler -- Failed to decode incoming JSON")
+		log.Println("Error:", err.Error())
 		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.BadRequestResponse))
 		return
 	}
+
+	newBoardInfo.OwnerID = rCtx.Value(dto.UserObjKey).(*entities.User).ID
+	newBoardInfo.OwnerEmail = rCtx.Value(dto.UserObjKey).(*entities.User).Email
 
 	// _, err = govalidator.ValidateStruct(newBoardInfo)
 	// if err != nil {

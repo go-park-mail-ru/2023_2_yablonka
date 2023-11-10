@@ -2,6 +2,7 @@ package postgresql
 
 import (
 	"context"
+	"log"
 	"server/internal/apperrors"
 	"server/internal/pkg/dto"
 	"server/internal/pkg/entities"
@@ -127,11 +128,16 @@ func (s *PostgreSQLBoardStorage) Create(ctx context.Context, info dto.NewBoardIn
 		Insert("public.board").
 		Columns("id_workspace", "name", "description").
 		Values(info.WorkspaceID, info.Name, info.Description).
+		PlaceholderFormat(sq.Dollar).
 		Suffix("RETURNING id").
 		ToSql()
+
 	if err != nil {
+		log.Println("Storage -- Failed to build query")
 		return nil, apperrors.ErrCouldNotBuildQuery
 	}
+
+	log.Println("Built board query\n\t", query1, "\nwith args\n\t", args)
 
 	tx, err := s.db.BeginTx(ctx, pgx.TxOptions{})
 	if err != nil {
@@ -141,7 +147,9 @@ func (s *PostgreSQLBoardStorage) Create(ctx context.Context, info dto.NewBoardIn
 	var boardID int
 
 	row := tx.QueryRow(ctx, query1, args...)
-	if row.Scan(&boardID) != nil {
+	log.Println("Storage -- DB queried")
+	if err := row.Scan(&boardID); err != nil {
+		log.Println("Storage -- Board insert failed with error", err.Error())
 		err = tx.Rollback(ctx)
 		for err != nil {
 			err = tx.Rollback(ctx)
@@ -149,19 +157,25 @@ func (s *PostgreSQLBoardStorage) Create(ctx context.Context, info dto.NewBoardIn
 		return nil, apperrors.ErrBoardNotCreated
 	}
 
+	log.Println("Storage -- Board created")
+
 	query2, args, err := sq.
 		Insert("public.board_user").
 		Columns("id_board", "id_user").
 		Values(boardID, info.OwnerID).
+		PlaceholderFormat(sq.Dollar).
 		ToSql()
 
 	if err != nil {
 		return nil, apperrors.ErrCouldNotBuildQuery
 	}
 
+	log.Println("Built board user query\n\t", query2, "\nwith args\n\t", args)
+
 	_, err = tx.Exec(ctx, query2, args...)
 
 	if err != nil {
+		log.Println("Storage -- Board user insert failed with error", err.Error())
 		err = tx.Rollback(ctx)
 		for err != nil {
 			err = tx.Rollback(ctx)
@@ -169,8 +183,10 @@ func (s *PostgreSQLBoardStorage) Create(ctx context.Context, info dto.NewBoardIn
 		return nil, apperrors.ErrBoardNotCreated
 	}
 
+	log.Println("Storage -- Committing changes")
 	err = tx.Commit(ctx)
 	if err != nil {
+		log.Println("Storage -- Failed to commit changes")
 		err = tx.Rollback(ctx)
 		for err != nil {
 			err = tx.Rollback(ctx)
@@ -178,7 +194,19 @@ func (s *PostgreSQLBoardStorage) Create(ctx context.Context, info dto.NewBoardIn
 		return nil, apperrors.ErrBoardNotCreated
 	}
 
-	return &entities.Board{}, nil
+	newBoard := entities.Board{
+		ID:   uint64(boardID),
+		Name: *info.Name,
+		Owner: dto.UserInfo{
+			ID:    info.OwnerID,
+			Email: info.OwnerEmail,
+		},
+		Description: info.Description,
+	}
+
+	log.Println("Storage -- Committed changes")
+
+	return &newBoard, nil
 }
 
 func (s *PostgreSQLBoardStorage) UpdateData(ctx context.Context, info dto.UpdatedBoardInfo) error {
