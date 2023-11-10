@@ -3,6 +3,7 @@ package handlers
 import (
 	"context"
 	"encoding/json"
+	"log"
 	"net/http"
 	"server/internal/apperrors"
 	_ "server/internal/pkg/doc_structs"
@@ -35,6 +36,8 @@ func (lh ListHandler) Create(w http.ResponseWriter, r *http.Request) {
 	var newListInfo dto.NewListInfo
 	err := json.NewDecoder(r.Body).Decode(&newListInfo)
 	if err != nil {
+		log.Println("Handler -- Failed to decode incoming JSON")
+		log.Println("Error:", err.Error())
 		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.BadRequestResponse))
 		return
 	}

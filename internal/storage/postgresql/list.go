@@ -2,6 +2,7 @@ package postgresql
 
 import (
 	"context"
+	"log"
 	"server/internal/apperrors"
 	"server/internal/pkg/dto"
 	"server/internal/pkg/entities"
@@ -35,9 +36,13 @@ func (s PostgresListStorage) Create(ctx context.Context, info dto.NewListInfo) (
 		Suffix("RETURNING id").
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
+
 	if err != nil {
+		log.Println("Storage -- Failed to build query")
 		return nil, apperrors.ErrCouldNotBuildQuery
 	}
+
+	log.Println("Built list query\n\t", sql, "\nwith args\n\t", args)
 
 	list := entities.List{
 		Name:         info.Name,
@@ -48,9 +53,12 @@ func (s PostgresListStorage) Create(ctx context.Context, info dto.NewListInfo) (
 
 	query := s.db.QueryRow(ctx, sql, args...)
 
-	if query.Scan(&list.ID) != nil {
+	if err := query.Scan(&list.ID); err != nil {
+		log.Println("Storage -- Failed to create list")
 		return nil, apperrors.ErrWorkspaceNotCreated
 	}
+
+	log.Println("Storage -- List created")
 
 	return &list, nil
 }
