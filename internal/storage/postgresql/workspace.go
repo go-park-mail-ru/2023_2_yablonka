@@ -51,22 +51,18 @@ func (s PostgresWorkspaceStorage) GetUserOwnedWorkspaces(ctx context.Context, us
 	var workspaces []dto.UserOwnedWorkspaceInfo
 	for rows.Next() {
 		var workspace dto.UserOwnedWorkspaceInfo
-		var users []dto.UserPublicInfo
-		var boards []dto.WorkspaceBoardInfo
 
 		err = rows.Scan(
 			&workspace.ID,
 			&workspace.Name,
 			&workspace.DateCreated,
 			&workspace.Description,
-			&users,
-			&boards,
+			&workspace.UsersData,
+			&workspace.Boards,
 		)
 		if err != nil {
 			return nil, err
 		}
-		workspace.UsersData = users
-		workspace.Boards = boards
 		workspaces = append(workspaces, workspace)
 	}
 

@@ -12,6 +12,11 @@ definitions:
       workspaces:
         $ref: '#/definitions/dto.AllWorkspaces'
     type: object
+  doc_structs.AvatarUploadResponse:
+    properties:
+      avatar_url:
+        $ref: '#/definitions/dto.UrlObj'
+    type: object
   doc_structs.BoardResponse:
     properties:
       board:
@@ -41,11 +46,11 @@ definitions:
     properties:
       user_guest_workspaces:
         items:
-          $ref: '#/definitions/dto.UserGuestBoardInfo'
+          $ref: '#/definitions/dto.UserGuestWorkspaceInfo'
         type: array
       user_owned_workspaces:
         items:
-          $ref: '#/definitions/dto.UserOwnedBoardInfo'
+          $ref: '#/definitions/dto.UserOwnedWorkspaceInfo'
         type: array
     type: object
   dto.AuthInfo:
@@ -69,21 +74,12 @@ definitions:
       board_id:
         type: integer
     type: object
-  dto.ChangeWorkspaceThumbnailInfo:
-    properties:
-      id:
-        type: string
-      thumbnail:
-        items:
-          type: integer
-        type: array
-    type: object
   dto.IndividualBoardRequest:
     properties:
       board_id:
         type: integer
       user_id:
-        type: string
+        type: integer
     type: object
   dto.ListID:
     properties:
@@ -210,13 +206,30 @@ definitions:
       url:
         type: string
     type: object
-  dto.UserGuestBoardInfo:
+  dto.UserGuestWorkspaceInfo:
     properties:
-      board_info:
-        $ref: '#/definitions/dto.UserOwnedBoardInfo'
-      owner_email:
+      boards:
+        items:
+          $ref: '#/definitions/dto.WorkspaceBoardInfo'
+        type: array
+      creator_id:
+        type: integer
+      date_created:
         type: string
-      owner_id:
+      description:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      users_data:
+        items:
+          $ref: '#/definitions/dto.UserPublicInfo'
+        type: array
+    type: object
+  dto.UserID:
+    properties:
+      user_id:
         type: integer
     type: object
   dto.UserInfo:
@@ -226,14 +239,24 @@ definitions:
       id:
         type: integer
     type: object
-  dto.UserOwnedBoardInfo:
+  dto.UserOwnedWorkspaceInfo:
     properties:
-      board_id:
+      boards:
+        items:
+          $ref: '#/definitions/dto.WorkspaceBoardInfo'
+        type: array
+      date_created:
+        type: string
+      description:
+        type: string
+      id:
         type: integer
-      board_name:
+      name:
         type: string
-      thumbnail_url:
-        type: string
+      users_data:
+        items:
+          $ref: '#/definitions/dto.UserPublicInfo'
+        type: array
     type: object
   dto.UserProfileInfo:
     properties:
@@ -245,6 +268,34 @@ definitions:
         type: string
       user_id:
         type: integer
+    type: object
+  dto.UserPublicInfo:
+    properties:
+      avatar_url:
+        type: string
+      description:
+        type: string
+      email:
+        type: string
+      name:
+        type: string
+      surname:
+        type: string
+      user_id:
+        type: integer
+    type: object
+  dto.WorkspaceBoardInfo:
+    properties:
+      description:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      thumbnail_url:
+        type: string
+      users:
+        $ref: '#/definitions/dto.UserID'
     type: object
   dto.WorkspaceID:
     properties:
@@ -269,7 +320,7 @@ definitions:
         type: string
       users:
         items:
-          $ref: '#/definitions/entities.User'
+          $ref: '#/definitions/dto.UserPublicInfo'
         type: array
     type: object
   entities.List:
@@ -316,9 +367,13 @@ definitions:
     properties:
       avatar_url:
         type: string
+      description:
+        type: string
       email:
         type: string
       name:
+        type: string
+      password_hash:
         type: string
       surname:
         type: string
@@ -407,7 +462,7 @@ paths:
       - application/json
       description: Также вводит пользователя в систему
       parameters:
-      - description: Эл. почта и логин пользователя
+      - description: Базовые данные пользователя
         in: body
         name: signup
         required: true
@@ -739,7 +794,7 @@ paths:
       summary: Обновить список
       tags:
       - lists
-  /task/:
+  /task:
     get:
       consumes:
       - application/json
@@ -901,7 +956,7 @@ paths:
       summary: Поменять данные профиля
       tags:
       - auth
-  /user/edit/change_password/:
+  /user/edit/change_avatar/:
     post:
       consumes:
       - application/json
@@ -916,10 +971,10 @@ paths:
       produces:
       - application/json
       responses:
-        "204":
-          description: no content
+        "200":
+          description: Объект пользователя
           schema:
-            type: string
+            $ref: '#/definitions/doc_structs.AvatarUploadResponse'
         "500":
           description: Internal Server Error
           schema:
@@ -927,6 +982,32 @@ paths:
       summary: Поменять аватарку
       tags:
       - auth
+  /user/edit/change_password/:
+    post:
+      consumes:
+      - application/json
+      description: Получает старый и новый пароли, а также id пользователя
+      parameters:
+      - description: id, старый и новый пароли пользователя
+        in: body
+        name: passwords
+        required: true
+        schema:
+          $ref: '#/definitions/dto.PasswordChangeInfo'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: no content
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+      summary: Поменять пароль
+      tags:
+      - user
   /user/workspaces/:
     get:
       consumes:
@@ -1057,40 +1138,6 @@ paths:
       summary: Обновить рабочее пространство
       tags:
       - workspaces
-  /workspace/update/change_thumbnail:
-    post:
-      consumes:
-      - application/json
-      description: Обновить картинку рабочего пространства
-      parameters:
-      - description: обновленные данные рабочего пространства
-        in: body
-        name: thumbnailInfo
-        required: true
-        schema:
-          $ref: '#/definitions/dto.ChangeWorkspaceThumbnailInfo'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Ссылка на новую картинку
-          schema:
-            $ref: '#/definitions/doc_structs.ThumbnailUploadResponse'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/apperrors.ErrorResponse'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/apperrors.ErrorResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/apperrors.ErrorResponse'
-      summary: Обновить картинку рабочего пространства
-      tags:
-      - workspaces
   /workspace/update/change_users/:
     post:
       consumes:
@@ -1099,7 +1146,7 @@ paths:
       parameters:
       - description: обновленный список пользователей
         in: body
-        name: authData
+        name: guestsInfo
         required: true
         schema:
           $ref: '#/definitions/dto.UpdatedWorkspaceInfo'

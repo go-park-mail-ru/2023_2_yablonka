@@ -30,7 +30,7 @@ func (s *PostgresUserStorage) GetWithLogin(ctx context.Context, login dto.UserLo
 	sql, args, err := sq.
 		Select(allUserFields...).
 		From("public.user").
-		Where(sq.Eq{"login": login}).
+		Where(sq.Eq{"email": login}).
 		ToSql()
 
 	if err != nil {
