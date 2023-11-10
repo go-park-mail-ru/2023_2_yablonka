@@ -517,7 +517,7 @@ func TestUserHandler_ChangeProfile(t *testing.T) {
 
 			body := bytes.NewReader([]byte(
 				fmt.Sprintf(`{"user_id":%d, "name":"%s", "surname":"%s", "description":"%s"}`,
-					test.userID, test.newUserName, test.newUserSurname, test.newDescription),
+					test.userID, test.newUserName, *test.newUserSurname, *test.newDescription),
 			))
 
 			r := httptest.NewRequest("POST", "/api/v2/user/edit", body)
