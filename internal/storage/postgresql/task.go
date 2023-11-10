@@ -3,6 +3,7 @@ package postgresql
 import (
 	"context"
 	"fmt"
+	"log"
 	"server/internal/apperrors"
 	"server/internal/pkg/dto"
 	"server/internal/pkg/entities"
@@ -16,6 +17,11 @@ import (
 // Хранилище данных в PostgreSQL
 type PostgresTaskStorage struct {
 	db *pgxpool.Pool
+}
+
+type TaskReturnValue struct {
+	Task  entities.Task
+	Users []entities.User
 }
 
 // NewTaskStorage
@@ -51,8 +57,12 @@ func (s PostgresTaskStorage) Create(ctx context.Context, info dto.NewTaskInfo) (
 	}
 
 	query := s.db.QueryRow(ctx, sql, args...)
+	log.Println("Formed query\n\t", sql, "\nwith args\n\t", args)
 
-	if query.Scan(&list.ID) != nil {
+	err = query.Scan(&list.ID)
+
+	if err != nil {
+		log.Println("Storage -- Task failed to create with error", err.Error())
 		return nil, apperrors.ErrTaskNotCreated
 	}
 
@@ -83,9 +93,11 @@ func (s *PostgresTaskStorage) Read(ctx context.Context, id dto.TaskID) (*entitie
 
 	// var task dto.TaskReturnValue
 
-	tasks, err := pgx.CollectRows(rows, pgx.RowToStructByName[dto.TaskReturnValue])
+	tasks, err := pgx.CollectRows(rows, pgx.RowToStructByName[TaskReturnValue])
 	fmt.Println(tasks)
-
+	if err != nil {
+		fmt.Println("error:", err.Error())
+	}
 	// var task entities.Task
 	// for rows.Next() {
 	// 	var user entities.User
