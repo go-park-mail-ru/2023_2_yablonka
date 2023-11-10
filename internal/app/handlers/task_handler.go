@@ -3,6 +3,7 @@ package handlers
 import (
 	"context"
 	"encoding/json"
+	"log"
 	"net/http"
 	"server/internal/apperrors"
 	_ "server/internal/pkg/doc_structs"
@@ -32,23 +33,30 @@ type TaskHandler struct {
 //
 // @Router /task/create/ [post]
 func (th TaskHandler) Create(w http.ResponseWriter, r *http.Request) {
+	log.Println("Handler -- Creating task")
 	rCtx := r.Context()
 
 	var newTaskInfo dto.NewTaskInfo
 	err := json.NewDecoder(r.Body).Decode(&newTaskInfo)
 	if err != nil {
+		log.Println("Failed to decode JSON")
+		log.Println("Error:", err.Error())
 		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.BadRequestResponse))
 		return
 	}
 
-	_, err = govalidator.ValidateStruct(newTaskInfo)
-	if err != nil {
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.BadRequestResponse))
-		return
-	}
+	// _, err = govalidator.ValidateStruct(newTaskInfo)
+	// if err != nil {
+	// 	log.Println("Failed to validate struct")
+	// 	log.Println("Error:", err.Error())
+	// 	*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.BadRequestResponse))
+	// 	return
+	// }
 
 	task, err := th.ts.Create(rCtx, newTaskInfo)
 	if err != nil {
+		log.Println("Failed to create task")
+		log.Println("Error:", err.Error())
 		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.ErrorMap[err]))
 		return
 	}
