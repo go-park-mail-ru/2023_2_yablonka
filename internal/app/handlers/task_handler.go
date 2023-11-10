@@ -9,8 +9,6 @@ import (
 	_ "server/internal/pkg/doc_structs"
 	"server/internal/pkg/dto"
 	"server/internal/service"
-
-	"github.com/asaskevich/govalidator"
 )
 
 type TaskHandler struct {
@@ -107,11 +105,11 @@ func (th TaskHandler) Read(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err = govalidator.ValidateStruct(taskID)
-	if err != nil {
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.BadRequestResponse))
-		return
-	}
+	// _, err = govalidator.ValidateStruct(taskID)
+	// if err != nil {
+	// 	*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.BadRequestResponse))
+	// 	return
+	// }
 
 	task, err := th.ts.Read(rCtx, taskID)
 	if err != nil {
@@ -165,11 +163,11 @@ func (th TaskHandler) Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err = govalidator.ValidateStruct(taskInfo)
-	if err != nil {
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.BadRequestResponse))
-		return
-	}
+	// _, err = govalidator.ValidateStruct(taskInfo)
+	// if err != nil {
+	// 	*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.BadRequestResponse))
+	// 	return
+	// }
 
 	err = th.ts.Update(rCtx, taskInfo)
 	if err != nil {
@@ -221,11 +219,11 @@ func (th TaskHandler) Delete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err = govalidator.ValidateStruct(taskID)
-	if err != nil {
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.BadRequestResponse))
-		return
-	}
+	// _, err = govalidator.ValidateStruct(taskID)
+	// if err != nil {
+	// 	*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.BadRequestResponse))
+	// 	return
+	// }
 
 	err = th.ts.Delete(rCtx, taskID)
 	if err != nil {
