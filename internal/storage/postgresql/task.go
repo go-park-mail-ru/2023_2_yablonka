@@ -2,11 +2,13 @@ package postgresql
 
 import (
 	"context"
+	"fmt"
 	"server/internal/apperrors"
 	"server/internal/pkg/dto"
 	"server/internal/pkg/entities"
 
 	sq "github.com/Masterminds/squirrel"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -66,6 +68,7 @@ func (s *PostgresTaskStorage) Read(ctx context.Context, id dto.TaskID) (*entitie
 		From("public.task").
 		Join("public.task_user ON public.task.id = public.task_user.id_task").
 		Where(sq.Eq{"id": id.Value}).
+		PlaceholderFormat(sq.Dollar).
 		ToSql()
 
 	if err != nil {
@@ -78,22 +81,28 @@ func (s *PostgresTaskStorage) Read(ctx context.Context, id dto.TaskID) (*entitie
 	}
 	defer rows.Close()
 
-	var task entities.Task
-	for rows.Next() {
-		var user entities.User
+	// var task dto.TaskReturnValue
 
-		err = rows.Scan(
-			&task,
-			&user,
-		)
-		if err != nil {
-			return nil, apperrors.ErrCouldNotGetTask
-		}
+	tasks, err := pgx.CollectRows(rows, pgx.RowToStructByName[dto.TaskReturnValue])
+	fmt.Println(tasks)
 
-		task.Users = append(task.Users, user)
-	}
+	// var task entities.Task
+	// for rows.Next() {
+	// 	var user entities.User
 
-	return &task, nil
+	// 	err = rows.Scan(
+	// 		&task,
+	// 		&user,
+	// 	)
+	// 	if err != nil {
+	// 		return nil, apperrors.ErrCouldNotGetTask
+	// 	}
+
+	// 	task.Users = append(task.Users, user)
+	// }
+
+	// return &task, nil
+	return nil, nil
 }
 
 // Update

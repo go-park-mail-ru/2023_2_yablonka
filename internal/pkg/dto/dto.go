@@ -1,6 +1,7 @@
 package dto
 
 import (
+	"server/internal/pkg/entities"
 	"time"
 )
 
@@ -199,6 +200,11 @@ type ListID struct {
 // DTO для id задач
 type TaskID struct {
 	Value string `json:"id"`
+}
+
+type TaskReturnValue struct {
+	Task  entities.Task
+	Users []entities.User
 }
 
 // NewListInfo
