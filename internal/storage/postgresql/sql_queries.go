@@ -9,7 +9,7 @@ var (
 	allBoardFields   = []string{"id", "id_workspace", "name", "description", "date_created", "thumbnail_url"}
 	allListFields    = []string{"id", "id_board", "name", "description", "list_position"}
 	allTaskFields    = []string{"id", "id_list", "date_created", "name", "description", "list_position", "start", "end"}
-	newTaskFields    = []string{"id_list", "name", "description", "list_position", "start", "end"}
+	newTaskFields    = []string{"id_list", "name", "description", "list_position", "task_start", "task_end"}
 	allSessionFields = []string{"id_user", "expiration_date"}
 	//allBoardFields             = []string{"id", "id_workspace", "name", "description", "date_created", "thumbnail_url"}
 	allWorkspaceAndBoardFields = []string{
