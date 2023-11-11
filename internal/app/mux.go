@@ -24,7 +24,6 @@ func GetChiMux(manager handlers.HandlerManager, config config.CORSConfig) (http.
 	mux.Use(middleware.ErrorHandler)
 	mux.Use(middleware.Logger)
 	mux.Use(middleware.GetCors(config))
-	mux.Use(middleware.CSRFMiddleware(manager.AuthHandler.GetCSRFService()))
 	mux.Use(middleware.PanicRecovery)
 
 	mux.Route("/api/v2", func(r chi.Router) {
@@ -36,6 +35,7 @@ func GetChiMux(manager handlers.HandlerManager, config config.CORSConfig) (http.
 		})
 		r.Route("/user", func(r chi.Router) {
 			r.Use(middleware.AuthMiddleware(manager.AuthHandler.GetAuthService(), manager.AuthHandler.GetUserService()))
+			r.Use(middleware.CSRFMiddleware(manager.AuthHandler.GetCSRFService()))
 			r.Get("/workspaces", manager.WorkspaceHandler.GetUserWorkspaces)
 			r.Post("/edit/", manager.UserHandler.ChangeProfile)
 			r.Post("/edit/change_password/", manager.UserHandler.ChangePassword)
@@ -43,6 +43,7 @@ func GetChiMux(manager handlers.HandlerManager, config config.CORSConfig) (http.
 		})
 		r.Route("/workspace", func(r chi.Router) {
 			r.Use(middleware.AuthMiddleware(manager.AuthHandler.GetAuthService(), manager.AuthHandler.GetUserService()))
+			r.Use(middleware.CSRFMiddleware(manager.AuthHandler.GetCSRFService()))
 			r.Post("/create/", manager.WorkspaceHandler.Create)
 			r.Post("/update/", manager.WorkspaceHandler.UpdateData)
 			r.Post("/update/change_users/", manager.WorkspaceHandler.ChangeGuests)
@@ -50,6 +51,7 @@ func GetChiMux(manager handlers.HandlerManager, config config.CORSConfig) (http.
 		})
 		r.Route("/board", func(r chi.Router) {
 			r.Use(middleware.AuthMiddleware(manager.AuthHandler.GetAuthService(), manager.AuthHandler.GetUserService()))
+			r.Use(middleware.CSRFMiddleware(manager.AuthHandler.GetCSRFService()))
 			r.Post("/", manager.BoardHandler.GetFullBoard)
 			r.Post("/create/", manager.BoardHandler.Create)
 			r.Post("/update/", manager.BoardHandler.UpdateData)
@@ -58,12 +60,14 @@ func GetChiMux(manager handlers.HandlerManager, config config.CORSConfig) (http.
 		})
 		r.Route("/list", func(r chi.Router) {
 			r.Use(middleware.AuthMiddleware(manager.AuthHandler.GetAuthService(), manager.AuthHandler.GetUserService()))
+			r.Use(middleware.CSRFMiddleware(manager.AuthHandler.GetCSRFService()))
 			r.Post("/create/", manager.ListHandler.Create)
 			r.Post("/edit/", manager.ListHandler.Update)
 			r.Delete("/delete", manager.ListHandler.Delete)
 		})
 		r.Route("/task", func(r chi.Router) {
 			r.Use(middleware.AuthMiddleware(manager.AuthHandler.GetAuthService(), manager.AuthHandler.GetUserService()))
+			r.Use(middleware.CSRFMiddleware(manager.AuthHandler.GetCSRFService()))
 			r.Post("/", manager.TaskHandler.Read)
 			r.Post("/create/", manager.TaskHandler.Create)
 			r.Post("/edit/", manager.TaskHandler.Update)

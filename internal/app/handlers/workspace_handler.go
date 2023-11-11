@@ -95,6 +95,7 @@ func (wh WorkspaceHandler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	log.Println("Handler -- JSON parsed")
 	// _, err = govalidator.ValidateStruct(newWorkspaceInfo)
 	// if err != nil {
 	// 	*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.BadRequestResponse))
@@ -268,6 +269,7 @@ func (wh WorkspaceHandler) Delete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	log.Println("Handler -- JSON parsed")
 	// _, err = govalidator.ValidateStruct(workspaceID)
 	// if err != nil {
 	// 	*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.BadRequestResponse))

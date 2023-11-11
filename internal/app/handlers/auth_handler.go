@@ -105,7 +105,7 @@ func (ah AuthHandler) LogIn(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	r.Header.Set("X-CSRF-Token", csrfToken.Token)
+	w.Header().Set("X-CSRF-Token", csrfToken.Token)
 
 	log.Println("csrf set")
 
