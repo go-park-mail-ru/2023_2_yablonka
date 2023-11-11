@@ -8,6 +8,14 @@ import (
 // Session
 // структура для хранения сессии
 type Session struct {
+	SessionID  string
+	UserID     uint64
+	ExpiryDate time.Time
+}
+
+// CSRF
+// структура для хранения сессии CSRF
+type CSRF struct {
 	Token      string
 	UserID     uint64
 	ExpiryDate time.Time

@@ -16,6 +16,7 @@ import (
 type AuthHandler struct {
 	as service.IAuthService
 	us service.IUserService
+	cs service.ICSRFService
 }
 
 func (ah AuthHandler) GetAuthService() service.IAuthService {
@@ -70,7 +71,11 @@ func (ah AuthHandler) LogIn(w http.ResponseWriter, r *http.Request) {
 	}
 	log.Println("password checked")
 
-	token, expiresAt, err := ah.as.AuthUser(rCtx, dto.UserID{Value: user.ID})
+	userID := dto.UserID{
+		Value: user.ID,
+	}
+
+	session, err := ah.as.AuthUser(rCtx, userID)
 	if err != nil {
 		log.Println(err)
 		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.ErrorMap[err]))
@@ -78,23 +83,34 @@ func (ah AuthHandler) LogIn(w http.ResponseWriter, r *http.Request) {
 	}
 	log.Println("user authorized")
 
-	cookie := &http.Cookie{
+	authCookie := &http.Cookie{
 		Name:     "tabula_user",
-		Value:    token.Value,
+		Value:    session.ID,
 		HttpOnly: true,
 		SameSite: http.SameSiteLaxMode,
-		Expires:  expiresAt,
+		Expires:  session.ExpirationDate,
 		Path:     "/api/v2/",
 	}
 
-	http.SetCookie(w, cookie)
-	log.Println("cookie set")
+	http.SetCookie(w, authCookie)
+	log.Println("authorisation cookie set")
+
+	csrfToken, err := ah.cs.SetupCSRF(rCtx, userID)
+	if err != nil {
+		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.ErrorMap[err]))
+		return
+	}
+
+	r.Header.Set("X-CSRF-Token", csrfToken.Token)
+
+	log.Println("csrf set")
 
 	response := dto.JSONResponse{
 		Body: dto.JSONMap{
 			"user": user,
 		},
 	}
+
 	jsonResponse, err := json.Marshal(response)
 	if err != nil {
 		log.Println(err)
@@ -159,7 +175,11 @@ func (ah AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 	}
 	log.Println("user registered")
 
-	token, expiresAt, err := ah.as.AuthUser(rCtx, dto.UserID{Value: user.ID})
+	userID := dto.UserID{
+		Value: user.ID,
+	}
+
+	session, err := ah.as.AuthUser(rCtx, userID)
 	if err != nil {
 		log.Println(err)
 		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.ErrorMap[err]))
@@ -169,15 +189,25 @@ func (ah AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 
 	cookie := &http.Cookie{
 		Name:     "tabula_user",
-		Value:    token.Value,
+		Value:    session.ID,
 		HttpOnly: true,
 		SameSite: http.SameSiteLaxMode,
-		Expires:  expiresAt,
+		Expires:  session.ExpirationDate,
 		Path:     "/api/v2/",
 	}
 
 	http.SetCookie(w, cookie)
 	log.Println("cookie set")
+
+	csrfToken, err := ah.cs.SetupCSRF(rCtx, userID)
+	if err != nil {
+		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.ErrorMap[err]))
+		return
+	}
+
+	r.Header.Set("X-CSRF-Token", csrfToken.Token)
+
+	log.Println("csrf set")
 
 	response := dto.JSONResponse{
 		Body: dto.JSONMap{
@@ -230,7 +260,7 @@ func (ah AuthHandler) LogOut(w http.ResponseWriter, r *http.Request) {
 	log.Println("cookie decoded")
 
 	token := dto.SessionToken{
-		Value: cookie.Value,
+		ID: cookie.Value,
 	}
 
 	_, err = ah.as.VerifyAuth(rCtx, token)
@@ -309,7 +339,7 @@ func (ah AuthHandler) VerifyAuthEndpoint(w http.ResponseWriter, r *http.Request)
 	log.Println(cookie.Value)
 
 	token := dto.SessionToken{
-		Value: cookie.Value,
+		ID: cookie.Value,
 	}
 
 	userID, err := ah.as.VerifyAuth(rCtx, token)

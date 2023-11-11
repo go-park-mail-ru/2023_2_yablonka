@@ -34,7 +34,7 @@ func (s PostgresAuthStorage) CreateSession(ctx context.Context, session *entitie
 	sql, args, err := sq.
 		Insert("public.session").
 		Columns("id_user", "expiration_date", "token").
-		Values(session.UserID, session.ExpiryDate, session.Token).
+		Values(session.UserID, session.ExpiryDate, session.SessionID).
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
 
@@ -67,7 +67,7 @@ func (s PostgresAuthStorage) GetSession(ctx context.Context, token dto.SessionTo
 	sql, args, err := sq.
 		Select(allSessionFields...).
 		From("public.session").
-		Where(sq.Eq{"token": token.Value}).
+		Where(sq.Eq{"token": token.ID}).
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
 
@@ -95,7 +95,7 @@ func (s PostgresAuthStorage) GetSession(ctx context.Context, token dto.SessionTo
 func (s PostgresAuthStorage) DeleteSession(ctx context.Context, token dto.SessionToken) error {
 	sql, args, err := sq.
 		Delete("public.session").
-		Where(sq.Eq{"token": token.Value}).
+		Where(sq.Eq{"token": token.ID}).
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
 

@@ -12,52 +12,55 @@ import (
 	"time"
 )
 
-type AuthSessionService struct {
+type AuthService struct {
 	sessionDuration time.Duration
 	sessionIDLength uint
-	storage         storage.IAuthStorage
+	authStorage     storage.IAuthStorage
 }
 
 // NewAuthService
 // возвращает AuthSessionService с инициализированной датой истечения сессии и хранилищем сессий
-func NewAuthService(config config.SessionConfig, storage storage.IAuthStorage) *AuthSessionService {
-	return &AuthSessionService{
+func NewAuthService(config config.SessionConfig, authStorage storage.IAuthStorage) *AuthService {
+	return &AuthService{
 		sessionDuration: config.Duration,
 		sessionIDLength: config.IDLength,
-		storage:         storage,
+		authStorage:     authStorage,
 	}
 }
 
 // AuthUser
 // возвращает уникальную строку авторизации и её длительность
 // или возвращает ошибки apperrors.ErrTokenNotGenerated (500)
-func (a *AuthSessionService) AuthUser(ctx context.Context, id dto.UserID) (dto.SessionToken, time.Time, error) {
+func (a *AuthService) AuthUser(ctx context.Context, id dto.UserID) (dto.SessionToken, error) {
 	expiresAt := time.Now().Add(a.sessionDuration)
 
-	token, err := generateSessionID(a.sessionIDLength)
+	sessionID, err := generateString(a.sessionIDLength)
 	if err != nil {
-		return dto.SessionToken{}, time.Time{}, apperrors.ErrTokenNotGenerated
+		return dto.SessionToken{}, apperrors.ErrTokenNotGenerated
 	}
 
 	session := &entities.Session{
-		Token:      token,
+		SessionID:  sessionID,
 		UserID:     id.Value,
 		ExpiryDate: expiresAt,
 	}
 
-	err = a.storage.CreateSession(ctx, session)
+	err = a.authStorage.CreateSession(ctx, session)
 	if err != nil {
-		return dto.SessionToken{}, time.Time{}, err
+		return dto.SessionToken{}, err
 	}
 
-	return dto.SessionToken{Value: token}, expiresAt, nil
+	return dto.SessionToken{
+		ID:             sessionID,
+		ExpirationDate: expiresAt,
+	}, nil
 }
 
 // VerifyAuth
 // проверяет состояние авторизации, возвращает ID авторизированного пользователя
 // или возвращает ошибки apperrors.ErrSessionNotFound (401)
-func (a *AuthSessionService) VerifyAuth(ctx context.Context, token dto.SessionToken) (dto.UserID, error) {
-	sessionObj, err := a.storage.GetSession(ctx, token)
+func (a *AuthService) VerifyAuth(ctx context.Context, token dto.SessionToken) (dto.UserID, error) {
+	sessionObj, err := a.authStorage.GetSession(ctx, token)
 	if err != nil {
 		return dto.UserID{}, err
 	}
@@ -71,19 +74,19 @@ func (a *AuthSessionService) VerifyAuth(ctx context.Context, token dto.SessionTo
 // LogOut
 // удаляет текущую сессию
 // или возвращает ошибку apperrors.ErrSessionNotFound (401)
-func (a *AuthSessionService) LogOut(ctx context.Context, token dto.SessionToken) error {
-	return a.storage.DeleteSession(ctx, token)
+func (a *AuthService) LogOut(ctx context.Context, token dto.SessionToken) error {
+	return a.authStorage.DeleteSession(ctx, token)
 }
 
 // GetLifetime
 // возвращает длительность авторизации
-func (a *AuthSessionService) GetLifetime() time.Duration {
+func (a *AuthService) GetLifetime() time.Duration {
 	return a.sessionDuration
 }
 
-// GenerateSessionID
+// generateString
 // возвращает alphanumeric строку, собранную криптографически безопасным PRNG
-func generateSessionID(n uint) (string, error) {
+func generateString(n uint) (string, error) {
 	letterRunes := []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
 	buf := make([]rune, n)
 	for i := range buf {

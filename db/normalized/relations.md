@@ -554,11 +554,11 @@
     {task_embedding.id_embedding, task_embedding.id_task} -> task.list_position
 
 ## Таблица session:
-    {session.token} -> session.token
-    {session.token} -> session.expiration_date
+    {session.id_session} -> session.id_session
+    {session.id_session} -> session.expiration_date
 
 ## Принадлежность session к одному user-у:
-    {session.token} -> user.id
+    {session.id_session} -> user.id
 
 ## Таблица comment:
     {comment.id} -> comment.id

@@ -182,7 +182,7 @@ func TestUserHandler_LogIn(t *testing.T) {
 				generatedCookie := w.Result().Cookies()[0].Value
 
 				ctx := context.Background()
-				userID, err := mockAuthService.VerifyAuth(ctx, dto.SessionToken{Value: generatedCookie})
+				userID, err := mockAuthService.VerifyAuth(ctx, dto.SessionToken{ID: generatedCookie})
 
 				require.NoError(t, err)
 				require.Equal(t, test.userID, userID, "Expected cookie wasn't found")
@@ -287,7 +287,7 @@ func TestUserHandler_SignUp(t *testing.T) {
 				generatedCookie := w.Result().Cookies()[0].Value
 
 				ctx := context.Background()
-				verifiedAuth, err := mockAuthService.VerifyAuth(ctx, dto.SessionToken{Value: generatedCookie})
+				verifiedAuth, err := mockAuthService.VerifyAuth(ctx, dto.SessionToken{ID: generatedCookie})
 
 				require.NoError(t, err)
 
@@ -374,18 +374,18 @@ func TestUserHandler_LogOut(t *testing.T) {
 
 				mockAuthService.
 					EXPECT().
-					VerifyAuth(gomock.Any(), dto.SessionToken{Value: test.token}).
+					VerifyAuth(gomock.Any(), dto.SessionToken{ID: test.token}).
 					Return(dto.UserID{Value: uint64(1)}, nil)
 
 				mockAuthService.
 					EXPECT().
-					LogOut(gomock.Any(), dto.SessionToken{Value: test.token}).
+					LogOut(gomock.Any(), dto.SessionToken{ID: test.token}).
 					Return(nil)
 			} else if test.hasCookie {
 				var duration time.Duration
 				mockAuthService.
 					EXPECT().
-					VerifyAuth(gomock.Any(), dto.SessionToken{Value: test.token}).
+					VerifyAuth(gomock.Any(), dto.SessionToken{ID: test.token}).
 					Return(dto.UserID{Value: uint64(0)}, test.expectedError)
 
 				if test.expiredCookie {
@@ -541,7 +541,7 @@ func TestUserHandler_ChangeProfile(t *testing.T) {
 
 				mockAuthService.
 					EXPECT().
-					VerifyAuth(gomock.Any(), dto.SessionToken{Value: test.token}).
+					VerifyAuth(gomock.Any(), dto.SessionToken{ID: test.token}).
 					Return(dto.UserID{Value: test.userID}, nil)
 
 				mockUserService.
