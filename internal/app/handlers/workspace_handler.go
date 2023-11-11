@@ -263,6 +263,7 @@ func (wh WorkspaceHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	var workspaceID dto.WorkspaceID
 	err := json.NewDecoder(r.Body).Decode(&workspaceID)
 	if err != nil {
+		log.Println("Handler -- JSON parse failed with error", err.Error())
 		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.BadRequestResponse))
 		return
 	}

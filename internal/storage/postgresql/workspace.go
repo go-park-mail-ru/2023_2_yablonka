@@ -289,13 +289,17 @@ func (s PostgresWorkspaceStorage) Delete(ctx context.Context, id dto.WorkspaceID
 		ToSql()
 
 	if err != nil {
+		log.Println("Storage -- Couldn't build query")
 		return apperrors.ErrCouldNotBuildQuery
 	}
+
+	log.Println("Built workspace DELETE query\n\t", sql, "\nwith args\n\t", args)
 
 	_, err = s.db.Exec(ctx, sql, args...)
 
 	if err != nil {
-		return apperrors.ErrUserNotDeleted
+		log.Println("Failed to delete workspace with error", err.Error())
+		return apperrors.ErrWorkspaceNotDeleted
 	}
 
 	return nil
