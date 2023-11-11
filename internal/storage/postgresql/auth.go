@@ -95,7 +95,7 @@ func (s PostgresAuthStorage) GetSession(ctx context.Context, token dto.SessionTo
 func (s PostgresAuthStorage) DeleteSession(ctx context.Context, token dto.SessionToken) error {
 	sql, args, err := sq.
 		Delete("public.session").
-		Where(sq.Eq{"token": token.ID}).
+		Where(sq.Eq{"id_session": token.ID}).
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
 
