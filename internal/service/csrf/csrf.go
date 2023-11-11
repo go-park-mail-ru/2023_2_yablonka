@@ -40,7 +40,7 @@ func (cs *CSRFService) GetLifetime() time.Duration {
 func (cs *CSRFService) SetupCSRF(ctx context.Context, id dto.UserID) (dto.CSRFData, error) {
 	expiresAt := time.Now().Add(cs.sessionDuration)
 
-	token, err := generateString(cs.sessionIDLength)
+	token, err := generateToken(cs.sessionIDLength)
 	if err != nil {
 		return dto.CSRFData{}, apperrors.ErrTokenNotGenerated
 	}
@@ -87,7 +87,7 @@ func (cs *CSRFService) DeleteCSRF(ctx context.Context, token dto.CSRFToken) erro
 
 // generateString
 // возвращает alphanumeric строку, собранную криптографически безопасным PRNG
-func generateString(n uint) (string, error) {
+func generateToken(n uint) (string, error) {
 	letterRunes := []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
 	buf := make([]rune, n)
 	for i := range buf {
