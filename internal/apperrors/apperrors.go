@@ -39,6 +39,8 @@ var (
 	ErrUserNotUpdated = errors.New("user couldn't be updated")
 	// ErrUserNotDeleted ошибка: не удалось обновить пользователя в БД
 	ErrUserNotDeleted = errors.New("user couldn't be deleted")
+	// ErrCouldNotGetUser ошибка: не удалось получить задание в БД
+	ErrCouldNotGetUser = errors.New("couldn't get User")
 )
 
 // Ошибки, связанные с AuthService

@@ -9,7 +9,7 @@ import (
 	"server/internal/pkg/entities"
 
 	sq "github.com/Masterminds/squirrel"
-	"github.com/jackc/pgx/v5"
+	pgx "github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -17,11 +17,6 @@ import (
 // Хранилище данных в PostgreSQL
 type PostgresTaskStorage struct {
 	db *pgxpool.Pool
-}
-
-type TaskReturnValue struct {
-	Task  entities.Task
-	Users []entities.User
 }
 
 // NewTaskStorage
@@ -43,9 +38,13 @@ func (s PostgresTaskStorage) Create(ctx context.Context, info dto.NewTaskInfo) (
 		PlaceholderFormat(sq.Dollar).
 		Suffix("RETURNING id, date_created").
 		ToSql()
+
 	if err != nil {
+		log.Println("Storage -- Failed to build query with error", err.Error())
 		return nil, apperrors.ErrCouldNotBuildQuery
 	}
+
+	log.Println("Formed query\n\t", sql, "\nwith args\n\t", args)
 
 	task := entities.Task{
 		Name:         info.Name,
@@ -56,8 +55,8 @@ func (s PostgresTaskStorage) Create(ctx context.Context, info dto.NewTaskInfo) (
 		End:          info.End,
 	}
 
+	log.Println("Storage -- Querying DB", err.Error())
 	query := s.db.QueryRow(ctx, sql, args...)
-	log.Println("Formed query\n\t", sql, "\nwith args\n\t", args)
 
 	err = query.Scan(&task.ID, &task.DateCreated)
 
@@ -73,48 +72,59 @@ func (s PostgresTaskStorage) Create(ctx context.Context, info dto.NewTaskInfo) (
 // находит задание в БД по его id
 // или возвращает ошибки ...
 func (s *PostgresTaskStorage) Read(ctx context.Context, id dto.TaskID) (*entities.Task, error) {
-	sql, args, err := sq.
-		Select(append(allTaskFields, allUserFields...)...).
+	query1, args, err := sq.
+		Select(allTaskFields...).
 		From("public.task").
-		Join("public.task_user ON public.task.id = public.task_user.id_task").
 		Where(sq.Eq{"id": id.Value}).
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
 
+	task := entities.Task{}
+
 	if err != nil {
+		log.Println("Storage -- Failed to build query with error", err.Error())
 		return nil, apperrors.ErrCouldNotBuildQuery
 	}
 
-	rows, err := s.db.Query(context.Background(), sql, args...)
-	if err != nil {
+	log.Println("Formed query\n\t", query1, "\nwith args\n\t", args)
+
+	row := s.db.QueryRow(context.Background(), query1, args...)
+	if err = row.Scan(&task.ID, &task.ListID, &task.DateCreated, &task.Name, &task.Description, &task.ListPosition, &task.Start, &task.End); err != nil {
+		log.Println("Failed to query DB with error", err.Error())
 		return nil, apperrors.ErrCouldNotGetTask
+	}
+
+	query2, args, err := sq.
+		Select(allUserFields...).
+		From("public.task_user").
+		Join("public.user ON public.user.id = public.task_user.id_user").
+		Where(sq.Eq{"public.task_user.id_task": id.Value}).
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
+
+	if err != nil {
+		log.Println("Storage -- Failed to build query with error", err.Error())
+		return nil, apperrors.ErrCouldNotBuildQuery
+	}
+
+	log.Println("Formed query\n\t", query2, "\nwith args\n\t", args)
+
+	rows, err := s.db.Query(context.Background(), query2, args...)
+	if err != nil {
+		log.Println("Storage -- Failed to query DB with error", err.Error())
+		return nil, apperrors.ErrCouldNotGetUser
 	}
 	defer rows.Close()
 
-	// var task dto.TaskReturnValue
-
-	tasks, err := pgx.CollectRows(rows, pgx.RowToStructByName[TaskReturnValue])
-	fmt.Println(tasks)
+	users, err := pgx.CollectRows(rows, pgx.RowToStructByPos[entities.User])
 	if err != nil {
-		fmt.Println("error:", err.Error())
+		fmt.Println("Failed collecting users with error:", err.Error())
+		return nil, apperrors.ErrCouldNotGetTask
 	}
-	// var task entities.Task
-	// for rows.Next() {
-	// 	var user entities.User
 
-	// 	err = rows.Scan(
-	// 		&task,
-	// 		&user,
-	// 	)
-	// 	if err != nil {
-	// 		return nil, apperrors.ErrCouldNotGetTask
-	// 	}
+	task.Users = append(task.Users, users...)
 
-	// 	task.Users = append(task.Users, user)
-	// }
-
-	// return &task, nil
-	return nil, nil
+	return &task, nil
 }
 
 // Update
