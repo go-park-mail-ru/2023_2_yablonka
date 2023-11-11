@@ -6,7 +6,7 @@ CREATE TABLE IF NOT EXISTS public.task_user
     CONSTRAINT task_user_id_task_fkey FOREIGN KEY (id_task)
         REFERENCES public.task (id) MATCH SIMPLE
         ON UPDATE NO ACTION
-        ON DELETE NO ACTION
+        ON DELETE CASCADE
         NOT VALID,
     CONSTRAINT task_user_id_user_fkey FOREIGN KEY (id_user)
         REFERENCES public."user" (id) MATCH SIMPLE

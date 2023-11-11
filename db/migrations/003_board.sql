@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS public.board
     CONSTRAINT board_id_workspace_fkey FOREIGN KEY (id_workspace)
         REFERENCES public.workspace (id) MATCH SIMPLE
         ON UPDATE NO ACTION
-        ON DELETE NO ACTION
+        ON DELETE CASCADE
         NOT VALID,
     CONSTRAINT board_name_length_check CHECK (length(name) <= 150) NOT VALID
 )

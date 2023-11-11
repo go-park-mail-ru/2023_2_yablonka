@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS public.list
     CONSTRAINT list_id_board_fkey FOREIGN KEY (id_board)
         REFERENCES public.board (id) MATCH SIMPLE
         ON UPDATE NO ACTION
-        ON DELETE NO ACTION
+        ON DELETE CASCADE
         NOT VALID,
     CONSTRAINT list_list_position_check CHECK (list_position >= 0) NOT VALID,
     CONSTRAINT column_name_length_check CHECK (length(name) <= 150) NOT VALID
