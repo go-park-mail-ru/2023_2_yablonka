@@ -9,6 +9,7 @@ import (
 	apperrors "server/internal/apperrors"
 	_ "server/internal/pkg/doc_structs"
 	dto "server/internal/pkg/dto"
+	"server/internal/pkg/entities"
 	"server/internal/service"
 
 	"github.com/asaskevich/govalidator"
@@ -91,6 +92,12 @@ func (uh UserHandler) ChangeProfile(w http.ResponseWriter, r *http.Request) {
 
 	var newProfileInfo dto.UserProfileInfo
 
+	user, ok := rCtx.Value(dto.UserObjKey).(*entities.User)
+	if !ok {
+		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.GenericUnauthorizedResponse))
+		return
+	}
+
 	err := json.NewDecoder(r.Body).Decode(&newProfileInfo)
 	if err != nil {
 		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.BadRequestResponse))
@@ -98,12 +105,14 @@ func (uh UserHandler) ChangeProfile(w http.ResponseWriter, r *http.Request) {
 	}
 	log.Println("request struct decoded")
 
-	_, err = govalidator.ValidateStruct(newProfileInfo)
-	if err != nil {
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.GenericUnauthorizedResponse))
-		return
-	}
-	log.Println("request struct validated")
+	// _, err = govalidator.ValidateStruct(newProfileInfo)
+	// if err != nil {
+	// 	*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.GenericUnauthorizedResponse))
+	// 	return
+	// }
+	// log.Println("request struct validated")
+
+	newProfileInfo.UserID = user.ID
 
 	err = uh.us.UpdateProfile(rCtx, newProfileInfo)
 	if err != nil {
