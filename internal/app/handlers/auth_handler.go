@@ -27,6 +27,10 @@ func (ah AuthHandler) GetUserService() service.IUserService {
 	return ah.us
 }
 
+func (ah AuthHandler) GetCSRFService() service.ICSRFService {
+	return ah.cs
+}
+
 // @Summary Войти в систему
 // @Description Для этого использует сессии
 // @Tags auth
