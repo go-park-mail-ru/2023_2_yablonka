@@ -109,6 +109,13 @@ type UserPublicInfo struct {
 	AvatarURL   *string `json:"avatar_url"`
 }
 
+type UserOwnerInfo struct {
+	ID      uint64  `json:"owner_id"`
+	Email   string  `json:"owner_email"`
+	Name    *string `json:"owner_name"`
+	Surname *string `json:"owner_surname"`
+}
+
 // PasswordChangeInfo
 // DTO для обработки данных, полученных при входе
 type PasswordHashesInfo struct {
@@ -295,41 +302,33 @@ type ChangeWorkspaceThumbnailInfo struct {
 // ChangeWorkspaceThumbnailInfo
 // DTO для изменения картинки рабочего пространства
 type WorkspaceBoardInfo struct {
-	ID           uint64   `json:"id"`
-	Name         string   `json:"name"`
-	Description  *string  `json:"description"`
-	ThumbnailURL *string  `json:"thumbnail_url"`
-	Users        []UserID `json:"users"`
+	ID          uint64  `json:"id"`
+	Name        string  `json:"name"`
+	Description *string `json:"description"`
 }
 
 // UserOwnedWorkspaceInfo
 // DTO для рабочего пространства, принадлежащей конкретному пользователю
 type UserOwnedWorkspaceInfo struct {
-	ID          uint64               `json:"id"`
-	Name        string               `json:"name"`
-	DateCreated time.Time            `json:"date_created"`
-	Description *string              `json:"description"`
-	UsersData   []UserPublicInfo     `json:"users_data"`
-	Boards      []WorkspaceBoardInfo `json:"boards"`
+	ID     uint64               `json:"workspace_id"`
+	Name   string               `json:"workspace_name"`
+	Boards []WorkspaceBoardInfo `json:"boards"`
 }
 
 // UserGuestWorkspaceInfo
 // DTO для рабочего пространства, где пользователь гость
 type UserGuestWorkspaceInfo struct {
-	ID          uint64               `json:"id"`
-	CreatorID   uint64               `json:"creator_id"`
-	Name        string               `json:"name"`
-	DateCreated time.Time            `json:"date_created"`
-	Description *string              `json:"description"`
-	UsersData   []UserPublicInfo     `json:"users_data"`
-	Boards      []WorkspaceBoardInfo `json:"boards"`
+	ID     uint64               `json:"workspace_id"`
+	Name   string               `json:"workspace_name"`
+	Owner  UserOwnerInfo        `json:"workspace_owner"`
+	Boards []WorkspaceBoardInfo `json:"boards"`
 }
 
 // AllWorkspaces
 // DTO, собирающие все доски отдельно взятого пользователя
 type AllWorkspaces struct {
-	OwnedWorkspaces []UserOwnedWorkspaceInfo `json:"user_owned_workspaces"`
-	GuestWorkspaces []UserGuestWorkspaceInfo `json:"user_guest_workspaces"`
+	OwnedWorkspaces []UserOwnedWorkspaceInfo `json:"yourWorkspaces"`
+	GuestWorkspaces []UserGuestWorkspaceInfo `json:"guestWorkspaces"`
 }
 
 // UserInfo

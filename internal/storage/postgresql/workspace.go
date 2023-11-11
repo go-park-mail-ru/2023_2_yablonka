@@ -7,6 +7,7 @@ import (
 	"server/internal/apperrors"
 	"server/internal/pkg/dto"
 	"server/internal/pkg/entities"
+	"strconv"
 
 	sq "github.com/Masterminds/squirrel"
 	pgx "github.com/jackc/pgx/v5"
@@ -17,6 +18,17 @@ import (
 // Хранилище данных в PostgreSQL
 type PostgresWorkspaceStorage struct {
 	db *pgxpool.Pool
+}
+
+type GuestWorkspaceReturn struct {
+	WorkspaceID   uint64
+	WorkspaceName string
+	dto.UserOwnerInfo
+}
+
+type BoardReturn struct {
+	WorkspaceID uint64
+	dto.WorkspaceBoardInfo
 }
 
 // NewWorkspaceStorage
@@ -31,96 +43,204 @@ func NewWorkspaceStorage(db *pgxpool.Pool) *PostgresWorkspaceStorage {
 // находит рабочие пространства, связанные с пользователем в БД
 // или возвращает ошибки ...
 func (s PostgresWorkspaceStorage) GetUserOwnedWorkspaces(ctx context.Context, userID dto.UserID) (*[]dto.UserOwnedWorkspaceInfo, error) {
-	sql, args, err := sq.
-		Select(userOwnedWorkspaceFields...).
+	workspaceQuery, args, err := sq.
+		Select("id", "name").
 		From("public.workspace").
-		Join("public.user_workspace ON public.user_workspace.id_workspace = workspace.id").
-		Join("public.user ON public.user_workspace.id_user = user.id").
-		Join("public.board ON public.board.id_workspace = public.workspace.id").
-		Join("public.board_user ON public.board_user.id_board = public.board.id").
-		Where(sq.Eq{"public.user_workspace.id_user": userID.Value}).
+		Where(sq.Eq{"id_creator": userID.Value}).
+		PlaceholderFormat(sq.Dollar).
 		ToSql()
+
 	if err != nil {
+		log.Println("Storage -- Failed to build query")
 		return nil, apperrors.ErrCouldNotBuildQuery
 	}
 
-	rows, err := s.db.Query(context.Background(), sql, args...)
+	log.Println("Built user owned workspaces query\n\t", workspaceQuery, "\nwith args\n\t", args)
+
+	rows, err := s.db.Query(context.Background(), workspaceQuery, args...)
 	if err != nil {
+		log.Println("Storage -- DB workspaces query failed with error", err.Error())
 		return nil, err
 	}
+	log.Println("Workspaces got")
 	defer rows.Close()
 
-	var workspaces []dto.UserOwnedWorkspaceInfo
+	// workspaceQuery, args, err := sq.
+	// 	Select(allWorkspaceFields...).
+	// 	From("public.workspace").
+	// 	Join("public.user_workspace ON public.user_workspace.id_workspace = public.workspace.id").
+	// 	Join("public.user ON public.user_workspace.id_user = public.user.id").
+	// 	Join("public.board ON public.board.id_workspace = public.workspace.id").
+	// 	Join("public.board_user ON public.board_user.id_board = public.board.id").
+	// 	Where(sq.Eq{"public.user_workspace.id_user": userID.Value}).
+	// 	PlaceholderFormat(sq.Dollar).
+	// 	ToSql()
+
+	// var workspaces []dto.UserOwnedWorkspaceInfo
+	workspaces := map[uint64]dto.UserOwnedWorkspaceInfo{}
+	var ownedID []uint64
 	for rows.Next() {
 		var workspace dto.UserOwnedWorkspaceInfo
 
 		err = rows.Scan(
 			&workspace.ID,
 			&workspace.Name,
-			&workspace.DateCreated,
-			&workspace.Description,
-			&workspace.UsersData,
-			&workspace.Boards,
 		)
 		if err != nil {
+			fmt.Println("Scanning failed due to error", err.Error())
 			return nil, err
 		}
-		workspaces = append(workspaces, workspace)
+		workspaces[workspace.ID] = workspace
+		ownedID = append(ownedID, workspace.ID)
 	}
 
-	if err = rows.Err(); err != nil {
+	boardQuery, args, err := sq.
+		Select("id_workspace", "id", "name", "description").
+		From("public.board").
+		Where(sq.Eq{"id_workspace": ownedID}).
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
+
+	if err != nil {
+		log.Println("Storage -- Failed to build query")
+		return nil, apperrors.ErrCouldNotBuildQuery
+	}
+
+	log.Println("Built boards query\n\t", boardQuery, "\nwith args\n\t", args)
+
+	rows, err = s.db.Query(context.Background(), boardQuery, args...)
+	if err != nil {
+		log.Println("Storage -- DB boards query failed with error", err.Error())
 		return nil, err
 	}
+	log.Println("Boards got")
+	defer rows.Close()
 
-	return &workspaces, nil
+	boardRows, err := pgx.CollectRows(rows, pgx.RowToStructByPos[BoardReturn])
+	if err != nil {
+		fmt.Println("Failed collecting boards with error:", err.Error())
+		return nil, apperrors.ErrCouldNotGetBoard
+	}
+	log.Println("Boards collected")
+
+	for _, boardRow := range boardRows {
+		board := dto.WorkspaceBoardInfo{
+			ID:          boardRow.ID,
+			Name:        boardRow.Name,
+			Description: boardRow.Description,
+		}
+		ws := workspaces[boardRow.WorkspaceID]
+		ws.Boards = append(ws.Boards, board)
+		workspaces[boardRow.WorkspaceID] = ws
+	}
+	log.Println("Boards appended to workspaces")
+
+	var result []dto.UserOwnedWorkspaceInfo
+	for _, value := range workspaces {
+		result = append(result, value)
+	}
+
+	return &result, nil
 }
 
 // GetUserGuestWorkspaces
 // находит рабочие пространства, связанные с пользователем в БД
 // или возвращает ошибки ...
 func (s PostgresWorkspaceStorage) GetUserGuestWorkspaces(ctx context.Context, userID dto.UserID) (*[]dto.UserGuestWorkspaceInfo, error) {
-	sql, args, err := sq.
+	workspaceQuery, args, err := sq.
 		Select(userGuestWorkspaceFields...).
+		Distinct().
 		From("public.workspace").
-		Join("public.user_workspace ON public.user_workspace.id_workspace = workspace.id").
-		Join("public.user ON public.user_workspace.id_user = user.id").
-		Join("public.board ON public.board.id_workspace = public.workspace.id").
-		Join("public.board_user ON public.board_user.id_board = public.board.id").
-		Where(sq.Eq{"public.user_workspace.id_user": userID.Value}).
+		Join("public.user_workspace ON public.user_workspace.id_user = " + strconv.FormatUint(uint64(userID.Value), 10)).
+		Join("public.user ON public.user.id = public.workspace.id_creator").
+		Where(sq.NotEq{"public.workspace.id_creator": userID.Value}).
+		PlaceholderFormat(sq.Dollar).
 		ToSql()
+
 	if err != nil {
+		log.Println("Storage -- Failed to build query")
 		return nil, apperrors.ErrCouldNotBuildQuery
 	}
 
-	rows, err := s.db.Query(context.Background(), sql, args...)
+	log.Println("Built user guest workspaces query\n\t", workspaceQuery, "\nwith args\n\t", args)
+
+	rows, err := s.db.Query(context.Background(), workspaceQuery, args...)
 	if err != nil {
+		log.Println("Storage -- DB workspaces query failed with error", err.Error())
 		return nil, err
 	}
+	log.Println("Workspaces got")
 	defer rows.Close()
 
-	var workspaces []dto.UserGuestWorkspaceInfo
-	for rows.Next() {
-		var workspace dto.UserGuestWorkspaceInfo
-
-		err = rows.Scan(
-			&workspace.ID,
-			&workspace.Name,
-			&workspace.DateCreated,
-			&workspace.Description,
-			&workspace.UsersData,
-			&workspace.Boards,
-		)
-		if err != nil {
-			return nil, err
-		}
-		workspaces = append(workspaces, workspace)
+	workspaceRows, err := pgx.CollectRows(rows, pgx.RowToStructByPos[GuestWorkspaceReturn])
+	if err != nil {
+		fmt.Println("Failed collecting boards with error:", err.Error())
+		return nil, apperrors.ErrCouldNotGetBoard
 	}
 
-	if err = rows.Err(); err != nil {
+	workspaces := map[uint64]dto.UserGuestWorkspaceInfo{}
+	var guestID []uint64
+	for _, row := range workspaceRows {
+		workspaces[row.WorkspaceID] = dto.UserGuestWorkspaceInfo{
+			ID:   row.WorkspaceID,
+			Name: row.WorkspaceName,
+			Owner: dto.UserOwnerInfo{
+				ID:      row.ID,
+				Email:   row.Email,
+				Name:    row.Name,
+				Surname: row.Surname,
+			},
+		}
+		guestID = append(guestID, row.WorkspaceID)
+	}
+
+	boardQuery, args, err := sq.
+		Select("id_workspace", "id", "name", "description").
+		From("public.board").
+		Where(sq.Eq{"id_workspace": guestID}).
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
+
+	if err != nil {
+		log.Println("Storage -- Failed to build query")
+		return nil, apperrors.ErrCouldNotBuildQuery
+	}
+
+	log.Println("Built boards query\n\t", boardQuery, "\nwith args\n\t", args)
+
+	rows, err = s.db.Query(context.Background(), boardQuery, args...)
+	if err != nil {
+		log.Println("Storage -- DB boards query failed with error", err.Error())
 		return nil, err
 	}
+	log.Println("Boards got")
+	defer rows.Close()
 
-	return &workspaces, nil
+	boardRows, err := pgx.CollectRows(rows, pgx.RowToStructByPos[BoardReturn])
+	if err != nil {
+		fmt.Println("Failed collecting boards with error:", err.Error())
+		return nil, apperrors.ErrCouldNotGetBoard
+	}
+	log.Println("Boards collected")
+
+	for _, boardRow := range boardRows {
+		board := dto.WorkspaceBoardInfo{
+			ID:          boardRow.ID,
+			Name:        boardRow.Name,
+			Description: boardRow.Description,
+		}
+		ws := workspaces[boardRow.WorkspaceID]
+		ws.Boards = append(ws.Boards, board)
+		workspaces[boardRow.WorkspaceID] = ws
+	}
+	log.Println("Boards appended to workspaces")
+
+	var result []dto.UserGuestWorkspaceInfo
+	for _, workspace := range workspaces {
+		result = append(result, workspace)
+	}
+
+	return &result, nil
 }
 
 // GetWorkspace

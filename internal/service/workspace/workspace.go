@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"log"
 	"server/internal/pkg/dto"
 	"server/internal/pkg/entities"
 	"server/internal/storage"
@@ -25,11 +26,13 @@ func NewWorkspaceService(storage storage.IWorkspaceStorage) *WorkspaceService {
 func (ws WorkspaceService) GetUserWorkspaces(ctx context.Context, userID dto.UserID) (*dto.AllWorkspaces, error) {
 	ownedWorkspaces, err := ws.storage.GetUserOwnedWorkspaces(ctx, userID)
 	if err != nil {
+		log.Println("Service -- Failed to get user owned workspaces")
 		return nil, err
 	}
 
 	guestWorkspaces, err := ws.storage.GetUserGuestWorkspaces(ctx, userID)
 	if err != nil {
+		log.Println("Service -- Failed to get user guest workspaces")
 		return nil, err
 	}
 	return &dto.AllWorkspaces{
