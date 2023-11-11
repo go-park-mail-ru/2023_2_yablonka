@@ -46,9 +46,9 @@ func (cs *CSRFService) SetupCSRF(ctx context.Context, id dto.UserID) (dto.CSRFDa
 	}
 
 	csrf := &entities.CSRF{
-		Token:      token,
-		UserID:     id.Value,
-		ExpiryDate: expiresAt,
+		Token:          token,
+		UserID:         id.Value,
+		ExpirationDate: expiresAt,
 	}
 
 	err = cs.storage.Create(ctx, csrf)
@@ -71,7 +71,7 @@ func (cs *CSRFService) VerifyCSRF(ctx context.Context, token dto.CSRFToken) erro
 		return err
 	}
 
-	if CSRFObj.ExpiryDate.Before(time.Now()) {
+	if CSRFObj.ExpirationDate.Before(time.Now()) {
 		return apperrors.ErrSessionExpired
 	}
 

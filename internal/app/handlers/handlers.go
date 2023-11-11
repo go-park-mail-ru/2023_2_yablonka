@@ -5,6 +5,7 @@ import (
 	"server/internal/service"
 	auth "server/internal/service/auth"
 	board "server/internal/service/board"
+	csrf "server/internal/service/csrf"
 	list "server/internal/service/list"
 	task "server/internal/service/task"
 	user "server/internal/service/user"
@@ -34,6 +35,7 @@ func NewHandlerManager(dbConnection *pgxpool.Pool, config config.SessionConfig) 
 	workspaceStorage := postgresql.NewWorkspaceStorage(dbConnection)
 	listStorage := postgresql.NewListStorage(dbConnection)
 	taskStorage := postgresql.NewTaskStorage(dbConnection)
+	csrfStorage := postgresql.NewCSRFStorage(dbConnection)
 
 	authService := auth.NewAuthService(config, authStorage)
 	userService := user.NewUserService(userStorage)
@@ -41,9 +43,10 @@ func NewHandlerManager(dbConnection *pgxpool.Pool, config config.SessionConfig) 
 	workspaceService := workspace.NewWorkspaceService(workspaceStorage)
 	listService := list.NewListService(listStorage)
 	taskService := task.NewTaskService(taskStorage)
+	csrfService := csrf.NewCSRFService(config, csrfStorage)
 
 	return &HandlerManager{
-		AuthHandler:      *NewAuthHandler(authService, userService),
+		AuthHandler:      *NewAuthHandler(authService, userService, csrfService),
 		UserHandler:      *NewUserHandler(userService),
 		BoardHandler:     *NewBoardHandler(authService, boardService),
 		WorkspaceHandler: *NewWorkspaceHandler(workspaceService),
@@ -54,10 +57,11 @@ func NewHandlerManager(dbConnection *pgxpool.Pool, config config.SessionConfig) 
 
 // NewAuthHandler
 // возвращает AuthHandler с необходимыми сервисами
-func NewAuthHandler(as service.IAuthService, us service.IUserService) *AuthHandler {
+func NewAuthHandler(as service.IAuthService, us service.IUserService, cs service.ICSRFService) *AuthHandler {
 	return &AuthHandler{
 		as: as,
 		us: us,
+		cs: cs,
 	}
 }
 

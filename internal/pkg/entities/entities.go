@@ -16,9 +16,9 @@ type Session struct {
 // CSRF
 // структура для хранения сессии CSRF
 type CSRF struct {
-	Token      string
-	UserID     uint64
-	ExpiryDate time.Time
+	Token          string
+	UserID         uint64
+	ExpirationDate time.Time
 }
 
 // User
