@@ -178,7 +178,21 @@ type UserID struct {
 // SessionToken
 // DTO для токена сессии
 type SessionToken struct {
-	Value string `json:"session_token"`
+	ID             string    `json:"session_token"`
+	ExpirationDate time.Time `json:"expiration_date"`
+}
+
+// CSRFToken
+// DTO для токена CSRF
+type CSRFData struct {
+	Token          string    `json:"csrf_token"`
+	Expirationdate time.Time `json:"expiration_date"`
+}
+
+// CSRFToken
+// DTO для токена CSRF
+type CSRFToken struct {
+	Value string `json:"csrf_token"`
 }
 
 // NewWorkspaceInfo

@@ -41,13 +41,12 @@ func (m *MockIAuthService) EXPECT() *MockIAuthServiceMockRecorder {
 }
 
 // AuthUser mocks base method.
-func (m *MockIAuthService) AuthUser(arg0 context.Context, arg1 dto.UserID) (dto.SessionToken, time.Time, error) {
+func (m *MockIAuthService) AuthUser(arg0 context.Context, arg1 dto.UserID) (dto.SessionToken, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AuthUser", arg0, arg1)
 	ret0, _ := ret[0].(dto.SessionToken)
-	ret1, _ := ret[1].(time.Time)
-	ret2, _ := ret[2].(error)
-	return ret0, ret1, ret2
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // AuthUser indicates an expected call of AuthUser.

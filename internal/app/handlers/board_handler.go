@@ -105,11 +105,11 @@ func (bh BoardHandler) Create(w http.ResponseWriter, r *http.Request) {
 	newBoardInfo.OwnerID = rCtx.Value(dto.UserObjKey).(*entities.User).ID
 	newBoardInfo.OwnerEmail = rCtx.Value(dto.UserObjKey).(*entities.User).Email
 
-	// _, err = govalidator.ValidateStruct(newBoardInfo)
-	// if err != nil {
-	// 	*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.BadRequestResponse))
-	// 	return
-	// }
+	// // _, err = govalidator.ValidateStruct(newBoardInfo)
+	// // if err != nil {
+	// // 	*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.BadRequestResponse))
+	// // 	return
+	// // }
 
 	board, err := bh.bs.Create(rCtx, newBoardInfo)
 	if err != nil {

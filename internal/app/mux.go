@@ -25,6 +25,7 @@ func GetChiMux(manager handlers.HandlerManager, config config.CORSConfig) (http.
 	mux.Use(middleware.Logger)
 	mux.Use(middleware.GetCors(config))
 	mux.Use(middleware.PanicRecovery)
+	mux.Use(middleware.PanicRecovery)
 
 	mux.Route("/api/v2", func(r chi.Router) {
 		r.Route("/auth", func(r chi.Router) {

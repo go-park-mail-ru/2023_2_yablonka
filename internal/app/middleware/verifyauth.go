@@ -22,7 +22,7 @@ func AuthMiddleware(as service.IAuthService, us service.IUserService) func(http.
 			}
 
 			token := dto.SessionToken{
-				Value: cookie.Value,
+				ID: cookie.Value,
 			}
 
 			userID, err := as.VerifyAuth(rCtx, token)
