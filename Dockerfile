@@ -22,8 +22,8 @@ RUN adduser --system nonroot --ingroup nonroot
 COPY --from=build-stage ./app/db ./db
 COPY --from=build-stage ./go/bin/tern ./tern
 COPY --from=build-stage ./app/yablonka-backend ./yablonka-backend
-COPY --from=build-stage ./app/internal/config/.env ./internal/config/.env
-COPY --from=build-stage ./app/internal/config/config.yml ./internal/config/config.yml
+COPY --from=build-stage ./app/config/.env ./internal/config/.env
+COPY --from=build-stage ./app/config/config.yml ./internal/config/config.yml
 
 EXPOSE 8080
 EXPOSE 5432
