@@ -44,11 +44,11 @@ definitions:
     type: object
   dto.AllWorkspaces:
     properties:
-      user_guest_workspaces:
+      guestWorkspaces:
         items:
           $ref: '#/definitions/dto.UserGuestWorkspaceInfo'
         type: array
-      user_owned_workspaces:
+      yourWorkspaces:
         items:
           $ref: '#/definitions/dto.UserOwnedWorkspaceInfo'
         type: array
@@ -67,7 +67,7 @@ definitions:
           type: integer
         type: array
       user_id:
-        type: string
+        type: integer
     type: object
   dto.BoardID:
     properties:
@@ -84,13 +84,15 @@ definitions:
   dto.ListID:
     properties:
       id:
-        type: string
+        type: integer
     type: object
   dto.NewBoardInfo:
     properties:
       description:
         type: string
       name:
+        type: string
+      owner_email:
         type: string
       owner_id:
         type: integer
@@ -131,8 +133,6 @@ definitions:
         type: string
       owner_id:
         type: integer
-      thumbnail_url:
-        type: string
     type: object
   dto.PasswordChangeInfo:
     properties:
@@ -146,21 +146,21 @@ definitions:
   dto.TaskID:
     properties:
       id:
-        type: string
+        type: integer
     type: object
   dto.UpdatedBoardInfo:
     properties:
       description:
         type: string
       id:
-        type: string
+        type: integer
       name:
         type: string
     type: object
   dto.UpdatedBoardThumbnailInfo:
     properties:
       id:
-        type: string
+        type: integer
       thumbnail:
         items:
           type: integer
@@ -171,7 +171,7 @@ definitions:
       description:
         type: string
       id:
-        type: string
+        type: integer
       list_position:
         type: string
       name:
@@ -184,7 +184,7 @@ definitions:
       end:
         type: string
       id:
-        type: string
+        type: integer
       list_position:
         type: string
       name:
@@ -197,7 +197,7 @@ definitions:
       description:
         type: string
       id:
-        type: string
+        type: integer
       name:
         type: string
     type: object
@@ -212,25 +212,12 @@ definitions:
         items:
           $ref: '#/definitions/dto.WorkspaceBoardInfo'
         type: array
-      creator_id:
+      workspace_id:
         type: integer
-      date_created:
+      workspace_name:
         type: string
-      description:
-        type: string
-      id:
-        type: integer
-      name:
-        type: string
-      users_data:
-        items:
-          $ref: '#/definitions/dto.UserPublicInfo'
-        type: array
-    type: object
-  dto.UserID:
-    properties:
-      user_id:
-        type: integer
+      workspace_owner:
+        $ref: '#/definitions/dto.UserOwnerInfo'
     type: object
   dto.UserInfo:
     properties:
@@ -245,18 +232,21 @@ definitions:
         items:
           $ref: '#/definitions/dto.WorkspaceBoardInfo'
         type: array
-      date_created:
-        type: string
-      description:
-        type: string
-      id:
+      workspace_id:
         type: integer
-      name:
+      workspace_name:
         type: string
-      users_data:
-        items:
-          $ref: '#/definitions/dto.UserPublicInfo'
-        type: array
+    type: object
+  dto.UserOwnerInfo:
+    properties:
+      owner_email:
+        type: string
+      owner_id:
+        type: integer
+      owner_name:
+        type: string
+      owner_surname:
+        type: string
     type: object
   dto.UserProfileInfo:
     properties:
@@ -292,10 +282,6 @@ definitions:
         type: integer
       name:
         type: string
-      thumbnail_url:
-        type: string
-      users:
-        $ref: '#/definitions/dto.UserID'
     type: object
   dto.WorkspaceID:
     properties:

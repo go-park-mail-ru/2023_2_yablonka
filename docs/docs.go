@@ -1280,13 +1280,13 @@ const docTemplate = `{
         "dto.AllWorkspaces": {
             "type": "object",
             "properties": {
-                "user_guest_workspaces": {
+                "guestWorkspaces": {
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/dto.UserGuestWorkspaceInfo"
                     }
                 },
-                "user_owned_workspaces": {
+                "yourWorkspaces": {
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/dto.UserOwnedWorkspaceInfo"
@@ -1315,7 +1315,7 @@ const docTemplate = `{
                     }
                 },
                 "user_id": {
-                    "type": "string"
+                    "type": "integer"
                 }
             }
         },
@@ -1342,7 +1342,7 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "id": {
-                    "type": "string"
+                    "type": "integer"
                 }
             }
         },
@@ -1353,6 +1353,9 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "name": {
+                    "type": "string"
+                },
+                "owner_email": {
                     "type": "string"
                 },
                 "owner_id": {
@@ -1414,9 +1417,6 @@ const docTemplate = `{
                 },
                 "owner_id": {
                     "type": "integer"
-                },
-                "thumbnail_url": {
-                    "type": "string"
                 }
             }
         },
@@ -1438,7 +1438,7 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "id": {
-                    "type": "string"
+                    "type": "integer"
                 }
             }
         },
@@ -1449,7 +1449,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "id": {
-                    "type": "string"
+                    "type": "integer"
                 },
                 "name": {
                     "type": "string"
@@ -1460,7 +1460,7 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "id": {
-                    "type": "string"
+                    "type": "integer"
                 },
                 "thumbnail": {
                     "type": "array",
@@ -1477,7 +1477,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "id": {
-                    "type": "string"
+                    "type": "integer"
                 },
                 "list_position": {
                     "type": "string"
@@ -1497,7 +1497,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "id": {
-                    "type": "string"
+                    "type": "integer"
                 },
                 "list_position": {
                     "type": "string"
@@ -1517,7 +1517,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "id": {
-                    "type": "string"
+                    "type": "integer"
                 },
                 "name": {
                     "type": "string"
@@ -1541,34 +1541,14 @@ const docTemplate = `{
                         "$ref": "#/definitions/dto.WorkspaceBoardInfo"
                     }
                 },
-                "creator_id": {
+                "workspace_id": {
                     "type": "integer"
                 },
-                "date_created": {
+                "workspace_name": {
                     "type": "string"
                 },
-                "description": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "integer"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "users_data": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/dto.UserPublicInfo"
-                    }
-                }
-            }
-        },
-        "dto.UserID": {
-            "type": "object",
-            "properties": {
-                "user_id": {
-                    "type": "integer"
+                "workspace_owner": {
+                    "$ref": "#/definitions/dto.UserOwnerInfo"
                 }
             }
         },
@@ -1592,23 +1572,28 @@ const docTemplate = `{
                         "$ref": "#/definitions/dto.WorkspaceBoardInfo"
                     }
                 },
-                "date_created": {
-                    "type": "string"
-                },
-                "description": {
-                    "type": "string"
-                },
-                "id": {
+                "workspace_id": {
                     "type": "integer"
                 },
-                "name": {
+                "workspace_name": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.UserOwnerInfo": {
+            "type": "object",
+            "properties": {
+                "owner_email": {
                     "type": "string"
                 },
-                "users_data": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/dto.UserPublicInfo"
-                    }
+                "owner_id": {
+                    "type": "integer"
+                },
+                "owner_name": {
+                    "type": "string"
+                },
+                "owner_surname": {
+                    "type": "string"
                 }
             }
         },
@@ -1663,12 +1648,6 @@ const docTemplate = `{
                 },
                 "name": {
                     "type": "string"
-                },
-                "thumbnail_url": {
-                    "type": "string"
-                },
-                "users": {
-                    "$ref": "#/definitions/dto.UserID"
                 }
             }
         },
