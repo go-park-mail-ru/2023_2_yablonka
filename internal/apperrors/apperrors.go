@@ -61,6 +61,8 @@ var (
 	ErrSessionNotFound = errors.New("no session found for provided session ID")
 	// ErrSessionNotCreated ошибка: полученной сессии нет в хранилище
 	ErrSessionNotCreated = errors.New("session couldn't be created")
+	// ErrCSRFNotFound ошибка: полученного CSRF нет в хранилище
+	ErrCSRFNotFound = errors.New("provided CSRF not found in storage")
 )
 
 // Ошибки, связанные с сервером

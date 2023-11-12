@@ -83,7 +83,8 @@ func (s PostgresCSRFStorage) Get(ctx context.Context, token dto.CSRFToken) (*ent
 		&csrf.ExpirationDate,
 	)
 	if err != nil {
-		return nil, apperrors.ErrSessionNotFound
+		log.Println("")
+		return nil, apperrors.ErrCSRFNotFound
 	}
 
 	return &csrf, nil
