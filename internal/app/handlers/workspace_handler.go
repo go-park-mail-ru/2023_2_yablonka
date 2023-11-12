@@ -31,7 +31,6 @@ type WorkspaceHandler struct {
 // @Router /user/workspaces/ [get]
 func (wh WorkspaceHandler) GetUserWorkspaces(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
-	var jsonResponse []byte
 
 	user, ok := rCtx.Value(dto.UserObjKey).(*entities.User)
 	if !ok {
@@ -54,7 +53,7 @@ func (wh WorkspaceHandler) GetUserWorkspaces(w http.ResponseWriter, r *http.Requ
 			"workspaces": workspaces,
 		},
 	}
-	jsonResponse, err = json.Marshal(response)
+	jsonResponse, err := json.Marshal(response)
 	if err != nil {
 		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.InternalServerErrorResponse))
 		return
