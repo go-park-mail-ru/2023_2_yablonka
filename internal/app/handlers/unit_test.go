@@ -40,8 +40,7 @@ func createConfig(envPath string) (*config.Config, error) {
 	defer cfgFile.Close()
 
 	_, err = fmt.Fprint(cfgFile,
-		"JWT_SECRET='test secret'"+"\n"+
-			"SESSION_DURATION_DAYS=14"+"\n"+
+		"SESSION_DURATION_DAYS=14"+"\n"+
 			"SESSION_DURATION_HOURS=0"+"\n"+
 			"SESSION_DURATION_MINUTES=0"+"\n"+
 			"SESSION_DURATION_SECONDS=0"+"\n"+
