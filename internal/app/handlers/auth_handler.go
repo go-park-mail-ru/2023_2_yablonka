@@ -336,7 +336,8 @@ func (ah AuthHandler) VerifyAuthEndpoint(w http.ResponseWriter, r *http.Request)
 	cookie, err := r.Cookie("tabula_user")
 
 	if err != nil {
-		log.Println(err)
+		log.Println("Endpoint -- Cookie not found")
+		w.Header().Set("X-CSRF-Token", "")
 		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.GenericUnauthorizedResponse))
 		return
 	}
@@ -348,7 +349,9 @@ func (ah AuthHandler) VerifyAuthEndpoint(w http.ResponseWriter, r *http.Request)
 
 	userID, err := ah.as.VerifyAuth(rCtx, token)
 	if err != nil {
+		log.Println("Endpoint -- Failed to verify auth")
 		log.Println(err)
+		w.Header().Set("X-CSRF-Token", "")
 		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.ErrorMap[err]))
 		return
 	}
@@ -365,6 +368,14 @@ func (ah AuthHandler) VerifyAuthEndpoint(w http.ResponseWriter, r *http.Request)
 		return
 	}
 	log.Println("user found")
+
+	csrfToken, err := ah.cs.SetupCSRF(rCtx, userID)
+	if err != nil {
+		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.ErrorMap[err]))
+		return
+	}
+
+	w.Header().Set("X-CSRF-Token", csrfToken.Token)
 
 	response := dto.JSONResponse{
 		Body: dto.JSONMap{
