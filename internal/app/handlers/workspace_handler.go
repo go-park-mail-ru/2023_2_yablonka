@@ -28,7 +28,7 @@ type WorkspaceHandler struct {
 // @Failure 401  {object}  apperrors.ErrorResponse
 // @Failure 500  {object}  apperrors.ErrorResponse
 //
-// @Router /user/workspaces/ [get]
+// @Router /user/workspaces [get]
 func (wh WorkspaceHandler) GetUserWorkspaces(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
 

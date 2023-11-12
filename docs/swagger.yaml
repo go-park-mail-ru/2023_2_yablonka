@@ -985,7 +985,7 @@ paths:
       summary: Поменять пароль
       tags:
       - user
-  /user/workspaces/:
+  /user/workspaces:
     get:
       consumes:
       - application/json

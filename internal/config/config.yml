@@ -17,6 +17,9 @@ cors:
   allowed_headers:
     - Acccess-Control-Allow-Origin
     - Content-Type
+    - X-Csrf-Token
+  exposed_headers:
+    - X-Csrf-Token
   allow_credentials: true
   debug: true
 db:
