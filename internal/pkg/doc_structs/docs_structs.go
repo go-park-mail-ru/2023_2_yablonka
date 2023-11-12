@@ -8,16 +8,14 @@ import (
 // VerifiedAuthInfo
 // DTO, подтверждающее личность на основе сессии, полученных при регистрации
 type UserResponse struct {
-	User entities.User `json:"user"`
+	User dto.UserPublicInfo `json:"user"`
 }
 
 type UserBoardsResponse struct {
-	User   entities.User    `json:"user"`
 	Boards []entities.Board `json:"boards"`
 }
 
 type AllWorkspacesResponse struct {
-	User       entities.User     `json:"user"`
 	Workspaces dto.AllWorkspaces `json:"workspaces"`
 }
 
@@ -38,5 +36,5 @@ type BoardResponse struct {
 }
 
 type ListResponse struct {
-	Task entities.List `json:"list"`
+	List entities.List `json:"list"`
 }

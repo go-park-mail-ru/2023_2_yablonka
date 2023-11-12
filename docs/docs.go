@@ -216,7 +216,7 @@ const docTemplate = `{
             }
         },
         "/board/": {
-            "get": {
+            "post": {
                 "description": "Получить доску",
                 "consumes": [
                     "application/json"
@@ -231,11 +231,11 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "description": "id доски",
-                        "name": "boardRequest",
+                        "name": "boardID",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dto.IndividualBoardRequest"
+                            "$ref": "#/definitions/dto.BoardID"
                         }
                     }
                 ],
@@ -423,7 +423,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/board/update/change_thumbnail": {
+        "/board/update/change_thumbnail/": {
             "post": {
                 "description": "Обновить картинку доску",
                 "consumes": [
@@ -1221,9 +1221,6 @@ const docTemplate = `{
         "doc_structs.AllWorkspacesResponse": {
             "type": "object",
             "properties": {
-                "user": {
-                    "$ref": "#/definitions/entities.User"
-                },
                 "workspaces": {
                     "$ref": "#/definitions/dto.AllWorkspaces"
                 }
@@ -1273,7 +1270,7 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "user": {
-                    "$ref": "#/definitions/entities.User"
+                    "$ref": "#/definitions/dto.UserPublicInfo"
                 }
             }
         },
@@ -1323,17 +1320,6 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "board_id": {
-                    "type": "integer"
-                }
-            }
-        },
-        "dto.IndividualBoardRequest": {
-            "type": "object",
-            "properties": {
-                "board_id": {
-                    "type": "integer"
-                },
-                "user_id": {
                     "type": "integer"
                 }
             }

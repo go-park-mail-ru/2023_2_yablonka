@@ -47,6 +47,8 @@ func (ah AuthHandler) GetCSRFService() service.ICSRFService {
 //
 // @Router /auth/login/ [post]
 func (ah AuthHandler) LogIn(w http.ResponseWriter, r *http.Request) {
+	log.Println("--------------LogIn Endpoint START--------------")
+
 	rCtx := r.Context()
 
 	var authInfo dto.AuthInfo
@@ -54,6 +56,7 @@ func (ah AuthHandler) LogIn(w http.ResponseWriter, r *http.Request) {
 	err := json.NewDecoder(r.Body).Decode(&authInfo)
 	if err != nil {
 		log.Println(err)
+		log.Println("--------------LogIn Endpoint FAIL--------------")
 		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.BadRequestResponse))
 		return
 	}
@@ -62,6 +65,7 @@ func (ah AuthHandler) LogIn(w http.ResponseWriter, r *http.Request) {
 	_, err = govalidator.ValidateStruct(authInfo)
 	if err != nil {
 		log.Println(err)
+		log.Println("--------------LogIn Endpoint FAIL--------------")
 		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.GenericUnauthorizedResponse))
 		return
 	}
@@ -70,6 +74,7 @@ func (ah AuthHandler) LogIn(w http.ResponseWriter, r *http.Request) {
 	user, err := ah.us.CheckPassword(rCtx, authInfo)
 	if err != nil {
 		log.Println(err)
+		log.Println("--------------LogIn Endpoint FAIL--------------")
 		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.ErrorMap[err]))
 		return
 	}
@@ -82,6 +87,7 @@ func (ah AuthHandler) LogIn(w http.ResponseWriter, r *http.Request) {
 	session, err := ah.as.AuthUser(rCtx, userID)
 	if err != nil {
 		log.Println(err)
+		log.Println("--------------LogIn Endpoint FAIL--------------")
 		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.ErrorMap[err]))
 		return
 	}
@@ -97,10 +103,12 @@ func (ah AuthHandler) LogIn(w http.ResponseWriter, r *http.Request) {
 	}
 
 	http.SetCookie(w, authCookie)
-	log.Println("authorisation cookie set")
+	log.Println("authorization cookie set")
 
 	csrfToken, err := ah.cs.SetupCSRF(rCtx, userID)
 	if err != nil {
+		log.Println(err)
+		log.Println("--------------LogIn Endpoint FAIL--------------")
 		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.ErrorMap[err]))
 		return
 	}
@@ -118,6 +126,7 @@ func (ah AuthHandler) LogIn(w http.ResponseWriter, r *http.Request) {
 	jsonResponse, err := json.Marshal(response)
 	if err != nil {
 		log.Println(err)
+		log.Println("--------------LogIn Endpoint FAIL--------------")
 		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.InternalServerErrorResponse))
 		return
 	}
@@ -126,6 +135,7 @@ func (ah AuthHandler) LogIn(w http.ResponseWriter, r *http.Request) {
 	_, err = w.Write(jsonResponse)
 	if err != nil {
 		log.Println(err)
+		log.Println("--------------LogIn Endpoint FAIL--------------")
 		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.InternalServerErrorResponse))
 		return
 	}
@@ -133,6 +143,8 @@ func (ah AuthHandler) LogIn(w http.ResponseWriter, r *http.Request) {
 
 	r.Body.Close()
 	log.Println("response closed")
+
+	log.Println("--------------LogIn Endpoint SUCCESS--------------")
 }
 
 // @Summary Зарегистрировать нового пользователя
@@ -152,12 +164,14 @@ func (ah AuthHandler) LogIn(w http.ResponseWriter, r *http.Request) {
 //
 // @Router /auth/signup/ [post]
 func (ah AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
+	log.Println("--------------SignUp Endpoint START--------------")
 	rCtx := r.Context()
 
 	var signup dto.AuthInfo
 	err := json.NewDecoder(r.Body).Decode(&signup)
 	if err != nil {
 		log.Println(err)
+		log.Println("--------------SignUp Endpoint FAIL--------------")
 		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.BadRequestResponse))
 		return
 	}
@@ -166,6 +180,7 @@ func (ah AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 	_, err = govalidator.ValidateStruct(signup)
 	if err != nil {
 		log.Println(err)
+		log.Println("--------------SignUp Endpoint FAIL--------------")
 		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.BadRequestResponse))
 		return
 	}
@@ -174,6 +189,7 @@ func (ah AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 	user, err := ah.us.RegisterUser(rCtx, signup)
 	if err != nil {
 		log.Println(err)
+		log.Println("--------------SignUp Endpoint FAIL--------------")
 		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.ErrorMap[err]))
 		return
 	}
@@ -186,6 +202,7 @@ func (ah AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 	session, err := ah.as.AuthUser(rCtx, userID)
 	if err != nil {
 		log.Println(err)
+		log.Println("--------------SignUp Endpoint FAIL--------------")
 		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.ErrorMap[err]))
 		return
 	}
@@ -205,6 +222,8 @@ func (ah AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 
 	csrfToken, err := ah.cs.SetupCSRF(rCtx, userID)
 	if err != nil {
+		log.Println(err)
+		log.Println("--------------SignUp Endpoint FAIL--------------")
 		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.ErrorMap[err]))
 		return
 	}
@@ -213,15 +232,25 @@ func (ah AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 
 	log.Println("csrf set")
 
+	publicUserInfo := dto.UserPublicInfo{
+		ID:          user.ID,
+		Name:        user.Name,
+		Surname:     user.Surname,
+		Email:       user.Email,
+		Description: user.Description,
+		AvatarURL:   user.AvatarURL,
+	}
+
 	response := dto.JSONResponse{
 		Body: dto.JSONMap{
-			"user": user,
+			"user": publicUserInfo,
 		},
 	}
 
 	jsonResponse, err := json.Marshal(response)
 	if err != nil {
 		log.Println(err)
+		log.Println("--------------SignUp Endpoint FAIL--------------")
 		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.InternalServerErrorResponse))
 		return
 	}
@@ -230,6 +259,7 @@ func (ah AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 	_, err = w.Write(jsonResponse)
 	if err != nil {
 		log.Println(err)
+		log.Println("--------------SignUp Endpoint FAIL--------------")
 		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.InternalServerErrorResponse))
 		return
 	}
@@ -237,6 +267,7 @@ func (ah AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 
 	r.Body.Close()
 	log.Println("response closed")
+	log.Println("--------------SignUp Endpoint SUCCESS--------------")
 }
 
 // @Summary Выйти из системы

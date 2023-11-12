@@ -7,8 +7,6 @@ definitions:
     type: object
   doc_structs.AllWorkspacesResponse:
     properties:
-      user:
-        $ref: '#/definitions/entities.User'
       workspaces:
         $ref: '#/definitions/dto.AllWorkspaces'
     type: object
@@ -40,7 +38,7 @@ definitions:
   doc_structs.UserResponse:
     properties:
       user:
-        $ref: '#/definitions/entities.User'
+        $ref: '#/definitions/dto.UserPublicInfo'
     type: object
   dto.AllWorkspaces:
     properties:
@@ -72,13 +70,6 @@ definitions:
   dto.BoardID:
     properties:
       board_id:
-        type: integer
-    type: object
-  dto.IndividualBoardRequest:
-    properties:
-      board_id:
-        type: integer
-      user_id:
         type: integer
     type: object
   dto.ListID:
@@ -509,17 +500,17 @@ paths:
       tags:
       - auth
   /board/:
-    get:
+    post:
       consumes:
       - application/json
       description: Получить доску
       parameters:
       - description: id доски
         in: body
-        name: boardRequest
+        name: boardID
         required: true
         schema:
-          $ref: '#/definitions/dto.IndividualBoardRequest'
+          $ref: '#/definitions/dto.BoardID'
       produces:
       - application/json
       responses:
@@ -644,7 +635,7 @@ paths:
       summary: Обновить доску
       tags:
       - boards
-  /board/update/change_thumbnail:
+  /board/update/change_thumbnail/:
     post:
       consumes:
       - application/json
