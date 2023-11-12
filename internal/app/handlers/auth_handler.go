@@ -105,7 +105,7 @@ func (ah AuthHandler) LogIn(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set("X-CSRF-Token", csrfToken.Token)
+	w.Header().Set("X-Csrf-Token", csrfToken.Token)
 
 	log.Println("csrf set")
 
@@ -209,7 +209,7 @@ func (ah AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set("X-CSRF-Token", csrfToken.Token)
+	w.Header().Set("X-Csrf-Token", csrfToken.Token)
 
 	log.Println("csrf set")
 
@@ -341,7 +341,7 @@ func (ah AuthHandler) VerifyAuthEndpoint(w http.ResponseWriter, r *http.Request)
 
 	if err != nil {
 		log.Println("Endpoint -- Cookie not found")
-		w.Header().Set("X-CSRF-Token", "")
+		w.Header().Set("X-Csrf-Token", "")
 		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.GenericUnauthorizedResponse))
 		return
 	}
@@ -355,7 +355,7 @@ func (ah AuthHandler) VerifyAuthEndpoint(w http.ResponseWriter, r *http.Request)
 	if err != nil {
 		log.Println("Endpoint -- Failed to verify auth")
 		log.Println(err)
-		w.Header().Set("X-CSRF-Token", "")
+		w.Header().Set("X-Csrf-Token", "")
 		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.ErrorMap[err]))
 		return
 	}
@@ -379,7 +379,8 @@ func (ah AuthHandler) VerifyAuthEndpoint(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	w.Header().Set("X-CSRF-Token", csrfToken.Token)
+	w.Header().Set("X-Csrf-Token", csrfToken.Token)
+	log.Println("VerifyAuthEndpoint -- Set X-Csrf-Token header to", csrfToken.Token)
 
 	response := dto.JSONResponse{
 		Body: dto.JSONMap{

@@ -14,7 +14,7 @@ func CSRFMiddleware(cs service.ICSRFService) func(http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			rCtx := r.Context()
 			log.Println("CSRF Middleware -- Verifying CSRF")
-			csrf := r.Header.Get("X-CSRF-Token")
+			csrf := r.Header.Get("X-Csrf-Token")
 			if csrf == "" {
 				log.Println("CSRF Middleware -- CSRF header not set on incoming request")
 				*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.GenericUnauthorizedResponse))
