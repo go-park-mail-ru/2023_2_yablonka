@@ -6,6 +6,7 @@ import (
 	"server/internal/pkg/dto"
 	"server/internal/pkg/entities"
 	"server/internal/storage"
+	"strconv"
 )
 
 type BoardService struct {
@@ -70,7 +71,7 @@ func (bs BoardService) UpdateData(ctx context.Context, info dto.UpdatedBoardInfo
 func (bs BoardService) UpdateThumbnail(ctx context.Context, info dto.UpdatedBoardThumbnailInfo) (*dto.UrlObj, error) {
 	thumbnailUrlInfo := dto.ImageUrlInfo{
 		ID:  info.ID,
-		Url: "images/board_thumbnails/" + string(info.ID) + ".png",
+		Url: "images/board_thumbnails/" + strconv.FormatUint(info.ID, 10) + ".png",
 	}
 	f, err := os.Create(thumbnailUrlInfo.Url)
 	if err != nil {
