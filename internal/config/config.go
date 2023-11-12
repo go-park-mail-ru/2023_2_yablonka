@@ -23,6 +23,7 @@ type CORSConfig struct {
 	AllowedMethods   []string `yaml:"allowed_methods"`
 	AllowedHosts     []string `yaml:"allowed_hosts"`
 	AllowedHeaders   []string `yaml:"allowed_headers"`
+	ExposedHeaders   []string `yaml:"exposed_headers"`
 	AllowCredentials bool     `yaml:"allow_credentials"`
 	Debug            bool     `yaml:"debug"`
 }
