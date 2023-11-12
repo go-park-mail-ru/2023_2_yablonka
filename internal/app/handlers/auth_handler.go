@@ -332,6 +332,10 @@ func (ah AuthHandler) LogOut(w http.ResponseWriter, r *http.Request) {
 // @Router /auth/verify [get]
 func (ah AuthHandler) VerifyAuthEndpoint(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
+	log.Println("\tDEBUG cookie list")
+	for _, c := range r.Cookies() {
+		log.Println("\t", c)
+	}
 
 	cookie, err := r.Cookie("tabula_user")
 

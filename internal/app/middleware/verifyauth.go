@@ -14,6 +14,10 @@ func AuthMiddleware(as service.IAuthService, us service.IUserService) func(http.
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			rCtx := r.Context()
+			log.Println("\tDEBUG cookie list")
+			for _, c := range r.Cookies() {
+				log.Println("\t", c)
+			}
 			cookie, err := r.Cookie("tabula_user")
 			if err != nil {
 				log.Println("Middleware -- Cookie not found")
