@@ -56,15 +56,15 @@ func GetChiMux(manager handlers.HandlerManager, config config.CORSConfig) (http.
 			r.Post("/", manager.BoardHandler.GetFullBoard)
 			r.Post("/create/", manager.BoardHandler.Create)
 			r.Post("/update/", manager.BoardHandler.UpdateData)
-			r.Post("/update/change_thumbnail", manager.BoardHandler.UpdateThumbnail)
-			r.Delete("/delete", manager.BoardHandler.Delete)
+			r.Post("/update/change_thumbnail/", manager.BoardHandler.UpdateThumbnail)
+			r.Delete("/delete/", manager.BoardHandler.Delete)
 		})
 		r.Route("/list", func(r chi.Router) {
 			r.Use(middleware.AuthMiddleware(manager.AuthHandler.GetAuthService(), manager.AuthHandler.GetUserService()))
 			r.Use(middleware.CSRFMiddleware(manager.AuthHandler.GetCSRFService()))
 			r.Post("/create/", manager.ListHandler.Create)
 			r.Post("/edit/", manager.ListHandler.Update)
-			r.Delete("/delete", manager.ListHandler.Delete)
+			r.Delete("/delete/", manager.ListHandler.Delete)
 		})
 		r.Route("/task", func(r chi.Router) {
 			r.Use(middleware.AuthMiddleware(manager.AuthHandler.GetAuthService(), manager.AuthHandler.GetUserService()))
@@ -72,7 +72,7 @@ func GetChiMux(manager handlers.HandlerManager, config config.CORSConfig) (http.
 			r.Post("/", manager.TaskHandler.Read)
 			r.Post("/create/", manager.TaskHandler.Create)
 			r.Post("/edit/", manager.TaskHandler.Update)
-			r.Delete("/delete", manager.TaskHandler.Delete)
+			r.Delete("/delete/", manager.TaskHandler.Delete)
 		})
 	})
 	mux.Route("/swagger/", func(r chi.Router) {

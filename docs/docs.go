@@ -631,8 +631,8 @@ const docTemplate = `{
                 }
             }
         },
-        "/task": {
-            "get": {
+        "/task/": {
+            "post": {
                 "description": "Получить задание",
                 "consumes": [
                     "application/json"
@@ -1025,10 +1025,10 @@ const docTemplate = `{
                     }
                 ],
                 "responses": {
-                    "204": {
-                        "description": "no content",
+                    "200": {
+                        "description": "Пользователь и его рабочие пространства",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/doc_structs.AllWorkspacesResponse"
                         }
                     },
                     "400": {
