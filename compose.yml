@@ -16,11 +16,11 @@ services:
               echo 'Starting backend' &&
               ./yablonka-backend"
     env_file:
-      - ./internal/config/.env
+      - ./config/.env
   db:
     image: postgres:latest
     container_name: database
     env_file:
-      - ./internal/config/.env
+      - ./config/.env
     ports:
       - 5432:5432
