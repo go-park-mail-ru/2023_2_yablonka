@@ -126,8 +126,8 @@ func (s *PostgresUserStorage) GetLoginInfoWithID(ctx context.Context, id dto.Use
 func (s *PostgresUserStorage) Create(ctx context.Context, info dto.SignupInfo) (*entities.User, error) {
 	sql, args, err := sq.
 		Insert("public.user").
-		Columns("email", "password_hash").
-		Values(info.Email, info.PasswordHash).
+		Columns("email", "password_hash", "avatar_url").
+		Values(info.Email, info.PasswordHash, "avatar.jpg").
 		Suffix("RETURNING id").
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
