@@ -33,27 +33,38 @@ type UserHandler struct {
 //
 // @Router /user/edit/change_password/ [post]
 func (uh UserHandler) ChangePassword(w http.ResponseWriter, r *http.Request) {
+	log.Println("--------------UserHandler.ChangePassword Endpoint START--------------")
+
 	rCtx := r.Context()
 
 	var passwords dto.PasswordChangeInfo
 
 	err := json.NewDecoder(r.Body).Decode(&passwords)
 	if err != nil {
+		log.Println(err)
+		log.Println("--------------UserHandler.ChangePassword Endpoint FAIL--------------")
 		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.BadRequestResponse))
 		return
 	}
+	log.Println("request struct decoded")
 
 	_, err = govalidator.ValidateStruct(passwords)
 	if err != nil {
+		log.Println(err)
+		log.Println("--------------UserHandler.ChangePassword Endpoint FAIL--------------")
 		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.GenericUnauthorizedResponse))
 		return
 	}
+	log.Println("request struct validated")
 
 	err = uh.us.UpdatePassword(rCtx, passwords)
 	if err != nil {
+		log.Println(err)
+		log.Println("--------------UserHandler.ChangePassword Endpoint FAIL--------------")
 		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.ErrorMap[err]))
 		return
 	}
+	log.Println("password updated")
 
 	response := dto.JSONResponse{
 		Body: dto.JSONMap{},
@@ -61,17 +72,24 @@ func (uh UserHandler) ChangePassword(w http.ResponseWriter, r *http.Request) {
 
 	jsonResponse, err := json.Marshal(response)
 	if err != nil {
+		log.Println(err)
+		log.Println("--------------UserHandler.ChangePassword Endpoint FAIL--------------")
 		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.InternalServerErrorResponse))
 		return
 	}
+	log.Println("json response marshalled")
 
 	_, err = w.Write(jsonResponse)
 	if err != nil {
+		log.Println(err)
+		log.Println("--------------UserHandler.ChangePassword Endpoint FAIL--------------")
 		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.InternalServerErrorResponse))
 		return
 	}
-
 	r.Body.Close()
+	log.Println("response written")
+
+	log.Println("--------------UserHandler.ChangePassword Endpoint SUCCESS--------------")
 }
 
 // @Summary Поменять данные профиля

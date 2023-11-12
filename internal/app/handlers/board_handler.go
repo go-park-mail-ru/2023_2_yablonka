@@ -33,10 +33,14 @@ type BoardHandler struct {
 //
 // @Router /board/ [post]
 func (bh BoardHandler) GetFullBoard(w http.ResponseWriter, r *http.Request) {
+	log.Println("--------------BoardHandler.GetFullBoard Endpoint START--------------")
+
 	rCtx := r.Context()
 
 	user, ok := rCtx.Value(dto.UserObjKey).(*entities.User)
 	if !ok {
+		log.Println("user not found")
+		log.Println("--------------BoardHandler.GetFullBoard Endpoint FAIL--------------")
 		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.GenericUnauthorizedResponse))
 		return
 	}
@@ -44,6 +48,8 @@ func (bh BoardHandler) GetFullBoard(w http.ResponseWriter, r *http.Request) {
 	var boardID dto.BoardID
 	err := json.NewDecoder(r.Body).Decode(&boardID)
 	if err != nil {
+		log.Println(err)
+		log.Println("--------------BoardHandler.GetFullBoard Endpoint FAIL--------------")
 		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.BadRequestResponse))
 		return
 	}
@@ -55,6 +61,8 @@ func (bh BoardHandler) GetFullBoard(w http.ResponseWriter, r *http.Request) {
 
 	board, err := bh.bs.GetFullBoard(rCtx, boardRequest)
 	if err != nil {
+		log.Println(err)
+		log.Println("--------------BoardHandler.GetFullBoard Endpoint FAIL--------------")
 		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.ErrorMap[err]))
 		return
 	}
@@ -67,17 +75,24 @@ func (bh BoardHandler) GetFullBoard(w http.ResponseWriter, r *http.Request) {
 
 	jsonResponse, err := json.Marshal(response)
 	if err != nil {
+		log.Println(err)
+		log.Println("--------------BoardHandler.GetFullBoard Endpoint FAIL--------------")
 		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.InternalServerErrorResponse))
 		return
 	}
+	log.Println("json response marshalleed")
 
 	_, err = w.Write(jsonResponse)
 	if err != nil {
+		log.Println(err)
+		log.Println("--------------BoardHandler.GetFullBoard Endpoint FAIL--------------")
 		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.InternalServerErrorResponse))
 		return
 	}
-
 	r.Body.Close()
+	log.Println("response written")
+
+	log.Println("--------------BoardHandler.GetFullBoard Endpoint SUCCESS--------------")
 }
 
 // @Summary Создать доску
@@ -96,16 +111,20 @@ func (bh BoardHandler) GetFullBoard(w http.ResponseWriter, r *http.Request) {
 //
 // @Router /board/create/ [post]
 func (bh BoardHandler) Create(w http.ResponseWriter, r *http.Request) {
+	log.Println("--------------BoardHandler.Create Endpoint START--------------")
+
 	rCtx := r.Context()
 
 	var newBoardInfo dto.NewBoardInfo
 	err := json.NewDecoder(r.Body).Decode(&newBoardInfo)
 	if err != nil {
-		log.Println("Handler -- Failed to decode incoming JSON")
-		log.Println("Error:", err.Error())
+		log.Println("Failed to decode incoming JSON")
+		log.Println(err)
+		log.Println("--------------BoardHandler.Create Endpoint FAIL--------------")
 		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.BadRequestResponse))
 		return
 	}
+	log.Println("request struct decoded")
 
 	newBoardInfo.OwnerID = rCtx.Value(dto.UserObjKey).(*entities.User).ID
 	newBoardInfo.OwnerEmail = rCtx.Value(dto.UserObjKey).(*entities.User).Email
@@ -118,9 +137,12 @@ func (bh BoardHandler) Create(w http.ResponseWriter, r *http.Request) {
 
 	board, err := bh.bs.Create(rCtx, newBoardInfo)
 	if err != nil {
+		log.Println(err)
+		log.Println("--------------BoardHandler.Create Endpoint FAIL--------------")
 		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.ErrorMap[err]))
 		return
 	}
+	log.Println("board created")
 
 	response := dto.JSONResponse{
 		Body: dto.JSONMap{
@@ -130,17 +152,24 @@ func (bh BoardHandler) Create(w http.ResponseWriter, r *http.Request) {
 
 	jsonResponse, err := json.Marshal(response)
 	if err != nil {
+		log.Println(err)
+		log.Println("--------------BoardHandler.Create Endpoint FAIL--------------")
 		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.InternalServerErrorResponse))
 		return
 	}
+	log.Println("json response marshalled")
 
 	_, err = w.Write(jsonResponse)
 	if err != nil {
+		log.Println(err)
+		log.Println("--------------BoardHandler.Create Endpoint FAIL--------------")
 		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.InternalServerErrorResponse))
 		return
 	}
-
 	r.Body.Close()
+	log.Println("response written")
+
+	log.Println("--------------BoardHandler.Create Endpoint SUCCESS--------------")
 }
 
 // @Summary Обновить доску
@@ -159,14 +188,19 @@ func (bh BoardHandler) Create(w http.ResponseWriter, r *http.Request) {
 //
 // @Router /board/update/ [post]
 func (bh BoardHandler) UpdateData(w http.ResponseWriter, r *http.Request) {
+	log.Println("--------------BoardHandler.UpdateData Endpoint START--------------")
+
 	rCtx := r.Context()
 
 	var boardInfo dto.UpdatedBoardInfo
 	err := json.NewDecoder(r.Body).Decode(&boardInfo)
 	if err != nil {
+		log.Println(err)
+		log.Println("--------------BoardHandler.UpdateData Endpoint FAIL--------------")
 		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.BadRequestResponse))
 		return
 	}
+	log.Println("request struct decoded")
 
 	// _, err = govalidator.ValidateStruct(boardInfo)
 	// if err != nil {
@@ -176,9 +210,12 @@ func (bh BoardHandler) UpdateData(w http.ResponseWriter, r *http.Request) {
 
 	err = bh.bs.UpdateData(rCtx, boardInfo)
 	if err != nil {
+		log.Println(err)
+		log.Println("--------------BoardHandler.UpdateData Endpoint FAIL--------------")
 		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.ErrorMap[err]))
 		return
 	}
+	log.Println("board data updated")
 
 	response := dto.JSONResponse{
 		Body: dto.JSONMap{},
@@ -186,17 +223,24 @@ func (bh BoardHandler) UpdateData(w http.ResponseWriter, r *http.Request) {
 
 	jsonResponse, err := json.Marshal(response)
 	if err != nil {
+		log.Println(err)
+		log.Println("--------------BoardHandler.UpdateData Endpoint FAIL--------------")
 		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.InternalServerErrorResponse))
 		return
 	}
+	log.Println("json response marshalled")
 
 	_, err = w.Write(jsonResponse)
 	if err != nil {
+		log.Println(err)
+		log.Println("--------------BoardHandler.UpdateData Endpoint FAIL--------------")
 		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.InternalServerErrorResponse))
 		return
 	}
-
 	r.Body.Close()
+	log.Println("response written")
+
+	log.Println("--------------BoardHandler.UpdateData Endpoint SUCCESS--------------")
 }
 
 // @Summary Обновить картинку доски
@@ -215,14 +259,18 @@ func (bh BoardHandler) UpdateData(w http.ResponseWriter, r *http.Request) {
 //
 // @Router /board/update/change_thumbnail/ [post]
 func (bh BoardHandler) UpdateThumbnail(w http.ResponseWriter, r *http.Request) {
+	log.Println("--------------BoardHandler.UpdateThumbnail Endpoint START--------------")
 	rCtx := r.Context()
 
 	var boardInfo dto.UpdatedBoardThumbnailInfo
 	err := json.NewDecoder(r.Body).Decode(&boardInfo)
 	if err != nil {
+		log.Println(err)
+		log.Println("--------------BoardHandler.UpdateThumbnail Endpoint FAIL--------------")
 		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.BadRequestResponse))
 		return
 	}
+	log.Println("request struct decoded")
 
 	// _, err = govalidator.ValidateStruct(boardInfo)
 	// if err != nil {
@@ -232,9 +280,12 @@ func (bh BoardHandler) UpdateThumbnail(w http.ResponseWriter, r *http.Request) {
 
 	urlObj, err := bh.bs.UpdateThumbnail(rCtx, boardInfo)
 	if err != nil {
+		log.Println(err)
+		log.Println("--------------BoardHandler.UpdateThumbnail Endpoint FAIL--------------")
 		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.ErrorMap[err]))
 		return
 	}
+	log.Println("board thumbnail updated")
 
 	response := dto.JSONResponse{
 		Body: dto.JSONMap{
@@ -244,17 +295,24 @@ func (bh BoardHandler) UpdateThumbnail(w http.ResponseWriter, r *http.Request) {
 
 	jsonResponse, err := json.Marshal(response)
 	if err != nil {
+		log.Println(err)
+		log.Println("--------------BoardHandler.UpdateThumbnail Endpoint FAIL--------------")
 		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.InternalServerErrorResponse))
 		return
 	}
+	log.Println("json response marchalled")
 
 	_, err = w.Write(jsonResponse)
 	if err != nil {
+		log.Println(err)
+		log.Println("--------------BoardHandler.UpdateThumbnail Endpoint FAIL--------------")
 		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.InternalServerErrorResponse))
 		return
 	}
-
 	r.Body.Close()
+	log.Println("response written")
+
+	log.Println("--------------BoardHandler.UpdateThumbnail Endpoint SUCCESS--------------")
 }
 
 // @Summary Удалить доску
@@ -273,14 +331,19 @@ func (bh BoardHandler) UpdateThumbnail(w http.ResponseWriter, r *http.Request) {
 //
 // @Router /board/delete/ [delete]
 func (bh BoardHandler) Delete(w http.ResponseWriter, r *http.Request) {
+	log.Println("--------------BoardHandler.Delete Endpoint START--------------")
+
 	rCtx := r.Context()
 
 	var boardID dto.BoardID
 	err := json.NewDecoder(r.Body).Decode(&boardID)
 	if err != nil {
+		log.Println(err)
+		log.Println("--------------LogIn Endpoint FAIL--------------")
 		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.BadRequestResponse))
 		return
 	}
+	log.Println("request struct decoded")
 
 	// _, err = govalidator.ValidateStruct(boardID)
 	// if err != nil {
@@ -290,9 +353,12 @@ func (bh BoardHandler) Delete(w http.ResponseWriter, r *http.Request) {
 
 	err = bh.bs.Delete(rCtx, boardID)
 	if err != nil {
+		log.Println(err)
+		log.Println("--------------LogIn Endpoint FAIL--------------")
 		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.ErrorMap[err]))
 		return
 	}
+	log.Println("board deleted")
 
 	response := dto.JSONResponse{
 		Body: dto.JSONMap{},
@@ -300,15 +366,22 @@ func (bh BoardHandler) Delete(w http.ResponseWriter, r *http.Request) {
 
 	jsonResponse, err := json.Marshal(response)
 	if err != nil {
+		log.Println(err)
+		log.Println("--------------LogIn Endpoint FAIL--------------")
 		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.InternalServerErrorResponse))
 		return
 	}
+	log.Println("json response marshalled")
 
 	_, err = w.Write(jsonResponse)
 	if err != nil {
+		log.Println(err)
+		log.Println("--------------LogIn Endpoint FAIL--------------")
 		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.InternalServerErrorResponse))
 		return
 	}
-
 	r.Body.Close()
+	log.Println("response written")
+
+	log.Println("--------------LogIn Endpoint SUCCESS--------------")
 }

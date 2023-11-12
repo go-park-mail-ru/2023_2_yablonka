@@ -130,7 +130,7 @@ func (ah AuthHandler) LogIn(w http.ResponseWriter, r *http.Request) {
 		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.InternalServerErrorResponse))
 		return
 	}
-	log.Println("json response generated")
+	log.Println("json response marshalled")
 
 	_, err = w.Write(jsonResponse)
 	if err != nil {
@@ -139,10 +139,8 @@ func (ah AuthHandler) LogIn(w http.ResponseWriter, r *http.Request) {
 		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.InternalServerErrorResponse))
 		return
 	}
-	log.Println("response written")
-
 	r.Body.Close()
-	log.Println("response closed")
+	log.Println("response written")
 
 	log.Println("--------------LogIn Endpoint SUCCESS--------------")
 }
@@ -263,10 +261,9 @@ func (ah AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.InternalServerErrorResponse))
 		return
 	}
+	r.Body.Close()
 	log.Println("response written")
 
-	r.Body.Close()
-	log.Println("response closed")
 	log.Println("--------------SignUp Endpoint SUCCESS--------------")
 }
 
@@ -349,10 +346,8 @@ func (ah AuthHandler) LogOut(w http.ResponseWriter, r *http.Request) {
 		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.InternalServerErrorResponse))
 		return
 	}
-	log.Println("response written")
-
 	r.Body.Close()
-	log.Println("response closed")
+	log.Println("response written")
 
 	log.Println("--------------LogOut Endpoint SUCCESS--------------")
 }
@@ -453,10 +448,8 @@ func (ah AuthHandler) VerifyAuthEndpoint(w http.ResponseWriter, r *http.Request)
 		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.InternalServerErrorResponse))
 		return
 	}
-	log.Println("response written")
-
 	r.Body.Close()
-	log.Println("response closed")
+	log.Println("response written")
 
 	log.Println("--------------VerifyAuthEndpoint Endpoint SUCCESS--------------")
 }

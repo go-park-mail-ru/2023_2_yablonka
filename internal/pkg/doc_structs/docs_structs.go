@@ -34,6 +34,9 @@ type TaskResponse struct {
 type BoardResponse struct {
 	Board entities.Board `json:"board"`
 }
+type WorkspaceResponse struct {
+	Workspace entities.Workspace `json:"workspace"`
+}
 
 type ListResponse struct {
 	List entities.List `json:"list"`

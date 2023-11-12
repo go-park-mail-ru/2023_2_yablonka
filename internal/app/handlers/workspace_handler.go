@@ -76,7 +76,7 @@ func (wh WorkspaceHandler) GetUserWorkspaces(w http.ResponseWriter, r *http.Requ
 //
 // @Param newWorkspaceInfo body dto.NewWorkspaceInfo true "данные нового рабочего пространства"
 //
-// @Success 204  {string}  string "no content"
+// @Success 200  {object}  doc_structs.AllWorkspacesResponse "Пользователь и его рабочие пространства"
 // @Failure 400  {object}  apperrors.ErrorResponse
 // @Failure 401  {object}  apperrors.ErrorResponse
 // @Failure 500  {object}  apperrors.ErrorResponse
