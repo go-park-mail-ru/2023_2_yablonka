@@ -311,6 +311,7 @@ func (s PostgresWorkspaceStorage) Create(ctx context.Context, info dto.NewWorksp
 	workspace := entities.Workspace{
 		Name:        *info.Name,
 		Description: info.Description,
+		Boards:      []entities.Board{},
 	}
 
 	row := tx.QueryRow(ctx, query1, args...)
