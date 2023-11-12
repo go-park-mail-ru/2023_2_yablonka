@@ -1,6 +1,7 @@
 services:
   server:
     build: .
+    container_name: backend
     ports: 
       - 8080:8080
     tty: true
@@ -18,6 +19,7 @@ services:
       - ./internal/config/.env
   db:
     image: postgres:latest
+    container_name: database
     env_file:
       - ./internal/config/.env
     ports:
