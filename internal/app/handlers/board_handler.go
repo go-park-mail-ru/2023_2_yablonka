@@ -24,29 +24,34 @@ type BoardHandler struct {
 // @Accept  json
 // @Produce  json
 //
-// @Param boardRequest body dto.IndividualBoardRequest true "id доски"
+// @Param boardID body dto.BoardID true "id доски"
 //
 // @Success 200  {object}  doc_structs.BoardResponse "объект доски"
 // @Failure 400  {object}  apperrors.ErrorResponse
 // @Failure 401  {object}  apperrors.ErrorResponse
 // @Failure 500  {object}  apperrors.ErrorResponse
 //
-// @Router /board/ [get]
+// @Router /board/ [post]
 func (bh BoardHandler) GetFullBoard(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
 
-	var boardRequest dto.IndividualBoardRequest
-	err := json.NewDecoder(r.Body).Decode(&boardRequest)
+	user, ok := rCtx.Value(dto.UserObjKey).(*entities.User)
+	if !ok {
+		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.GenericUnauthorizedResponse))
+		return
+	}
+
+	var boardID dto.BoardID
+	err := json.NewDecoder(r.Body).Decode(&boardID)
 	if err != nil {
 		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.BadRequestResponse))
 		return
 	}
 
-	// _, err = govalidator.ValidateStruct(boardRequest)
-	// if err != nil {
-	// 	*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.BadRequestResponse))
-	// 	return
-	// }
+	boardRequest := dto.IndividualBoardRequest{
+		UserID:  user.ID,
+		BoardID: boardID.Value,
+	}
 
 	board, err := bh.bs.GetFullBoard(rCtx, boardRequest)
 	if err != nil {
@@ -208,7 +213,7 @@ func (bh BoardHandler) UpdateData(w http.ResponseWriter, r *http.Request) {
 // @Failure 401  {object}  apperrors.ErrorResponse
 // @Failure 500  {object}  apperrors.ErrorResponse
 //
-// @Router /board/update/change_thumbnail [post]
+// @Router /board/update/change_thumbnail/ [post]
 func (bh BoardHandler) UpdateThumbnail(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
 
