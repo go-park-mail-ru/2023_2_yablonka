@@ -16,7 +16,7 @@ func AuthMiddleware(as service.IAuthService, us service.IUserService) func(http.
 			rCtx := r.Context()
 			cookie, err := r.Cookie("tabula_user")
 			if err != nil {
-				log.Println("Cookie not found")
+				log.Println("Middleware -- Cookie not found")
 				*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.GenericUnauthorizedResponse))
 				return
 			}
@@ -27,7 +27,7 @@ func AuthMiddleware(as service.IAuthService, us service.IUserService) func(http.
 
 			userID, err := as.VerifyAuth(rCtx, token)
 			if err != nil {
-				log.Println("Session not found")
+				log.Println("Middleware -- Session not found")
 				*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.ErrorMap[err]))
 				return
 			}
