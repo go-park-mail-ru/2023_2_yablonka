@@ -284,11 +284,14 @@ func (ah AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 //
 // @Router /auth/logout/ [delete]
 func (ah AuthHandler) LogOut(w http.ResponseWriter, r *http.Request) {
+	log.Println("--------------LogOut Endpoint START--------------")
+
 	rCtx := r.Context()
 
 	cookie, err := r.Cookie("tabula_user")
 	if err != nil {
 		log.Println(err)
+		log.Println("--------------LogOut Endpoint FAIL--------------")
 		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.GenericUnauthorizedResponse))
 		return
 	}
@@ -301,6 +304,7 @@ func (ah AuthHandler) LogOut(w http.ResponseWriter, r *http.Request) {
 	_, err = ah.as.VerifyAuth(rCtx, token)
 	if err != nil {
 		log.Println(err)
+		log.Println("--------------LogOut Endpoint FAIL--------------")
 		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.ErrorMap[err]))
 		return
 	}
@@ -309,6 +313,7 @@ func (ah AuthHandler) LogOut(w http.ResponseWriter, r *http.Request) {
 	err = ah.as.LogOut(rCtx, token)
 	if err != nil {
 		log.Println(err)
+		log.Println("--------------LogOut Endpoint FAIL--------------")
 		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.ErrorMap[err]))
 		return
 	}
@@ -331,6 +336,7 @@ func (ah AuthHandler) LogOut(w http.ResponseWriter, r *http.Request) {
 	jsonResponse, err := json.Marshal(response)
 	if err != nil {
 		log.Println(err)
+		log.Println("--------------LogOut Endpoint FAIL--------------")
 		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.InternalServerErrorResponse))
 		return
 	}
@@ -339,6 +345,7 @@ func (ah AuthHandler) LogOut(w http.ResponseWriter, r *http.Request) {
 	_, err = w.Write(jsonResponse)
 	if err != nil {
 		log.Println(err)
+		log.Println("--------------LogOut Endpoint FAIL--------------")
 		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.InternalServerErrorResponse))
 		return
 	}
@@ -346,6 +353,8 @@ func (ah AuthHandler) LogOut(w http.ResponseWriter, r *http.Request) {
 
 	r.Body.Close()
 	log.Println("response closed")
+
+	log.Println("--------------LogOut Endpoint SUCCESS--------------")
 }
 
 // @Summary Подтвердить вход
@@ -362,6 +371,8 @@ func (ah AuthHandler) LogOut(w http.ResponseWriter, r *http.Request) {
 //
 // @Router /auth/verify [get]
 func (ah AuthHandler) VerifyAuthEndpoint(w http.ResponseWriter, r *http.Request) {
+	log.Println("--------------VerifyAuthEndpoint Endpoint START--------------")
+
 	rCtx := r.Context()
 	log.Println("\tDEBUG cookie list")
 	for _, c := range r.Cookies() {
@@ -371,7 +382,9 @@ func (ah AuthHandler) VerifyAuthEndpoint(w http.ResponseWriter, r *http.Request)
 	cookie, err := r.Cookie("tabula_user")
 
 	if err != nil {
-		log.Println("Endpoint -- Cookie not found")
+		log.Println("cookie not found")
+		log.Println(err)
+		log.Println("--------------VerifyAuthEndpoint Endpoint FAIL--------------")
 		w.Header().Set("X-Csrf-Token", "")
 		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.GenericUnauthorizedResponse))
 		return
@@ -384,8 +397,9 @@ func (ah AuthHandler) VerifyAuthEndpoint(w http.ResponseWriter, r *http.Request)
 
 	userID, err := ah.as.VerifyAuth(rCtx, token)
 	if err != nil {
-		log.Println("Endpoint -- Failed to verify auth")
+		log.Println("failed to verify auth")
 		log.Println(err)
+		log.Println("--------------VerifyAuthEndpoint Endpoint FAIL--------------")
 		w.Header().Set("X-Csrf-Token", "")
 		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.ErrorMap[err]))
 		return
@@ -395,10 +409,12 @@ func (ah AuthHandler) VerifyAuthEndpoint(w http.ResponseWriter, r *http.Request)
 	userObj, err := ah.us.GetWithID(rCtx, userID)
 	if err == apperrors.ErrUserNotFound {
 		log.Println(err)
+		log.Println("--------------VerifyAuthEndpoint Endpoint FAIL--------------")
 		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.GenericUnauthorizedResponse))
 		return
 	} else if err != nil {
 		log.Println(err)
+		log.Println("--------------VerifyAuthEndpoint Endpoint FAIL--------------")
 		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.ErrorMap[err]))
 		return
 	}
@@ -406,12 +422,14 @@ func (ah AuthHandler) VerifyAuthEndpoint(w http.ResponseWriter, r *http.Request)
 
 	csrfToken, err := ah.cs.SetupCSRF(rCtx, userID)
 	if err != nil {
+		log.Println(err)
+		log.Println("--------------VerifyAuthEndpoint Endpoint FAIL--------------")
 		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.ErrorMap[err]))
 		return
 	}
 
 	w.Header().Set("X-Csrf-Token", csrfToken.Token)
-	log.Println("VerifyAuthEndpoint -- Set X-Csrf-Token header to", csrfToken.Token)
+	log.Println("set X-Csrf-Token header to", csrfToken.Token)
 
 	response := dto.JSONResponse{
 		Body: dto.JSONMap{
@@ -422,6 +440,7 @@ func (ah AuthHandler) VerifyAuthEndpoint(w http.ResponseWriter, r *http.Request)
 	jsonResponse, err := json.Marshal(response)
 	if err != nil {
 		log.Println(err)
+		log.Println("--------------VerifyAuthEndpoint Endpoint FAIL--------------")
 		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.InternalServerErrorResponse))
 		return
 	}
@@ -430,6 +449,7 @@ func (ah AuthHandler) VerifyAuthEndpoint(w http.ResponseWriter, r *http.Request)
 	_, err = w.Write(jsonResponse)
 	if err != nil {
 		log.Println(err)
+		log.Println("--------------VerifyAuthEndpoint Endpoint FAIL--------------")
 		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.InternalServerErrorResponse))
 		return
 	}
@@ -437,4 +457,6 @@ func (ah AuthHandler) VerifyAuthEndpoint(w http.ResponseWriter, r *http.Request)
 
 	r.Body.Close()
 	log.Println("response closed")
+
+	log.Println("--------------VerifyAuthEndpoint Endpoint SUCCESS--------------")
 }
