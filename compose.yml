@@ -18,7 +18,7 @@ services:
     env_file:
       - ./config/.env
     volumes:
-      - ../../front-end/2023_2_yablonka/images/:/images/
+      - ../../front-end/2023_2_yablonka/static/img/:/images/
   db:
     image: postgres:latest
     container_name: database
