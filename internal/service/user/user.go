@@ -97,12 +97,12 @@ func (us UserService) UpdateProfile(ctx context.Context, info dto.UserProfileInf
 // обновляет аватарку пользователя
 // или возвращает ошибку apperrors.ErrUserNotFound (409)
 func (us UserService) UpdateAvatar(ctx context.Context, info dto.AvatarChangeInfo) (*dto.UrlObj, error) {
-	fileLocation := "img/user_avatars/" + strconv.FormatUint(info.UserID, 10) + ".png"
+	url := "user_avatars/" + strconv.FormatUint(info.UserID, 10) + ".png"
+	fileLocation := "img/" + url
 	log.Println("Service -- File location:", fileLocation)
 	avatarUrlInfo := dto.ImageUrlInfo{
-		ID: info.UserID,
-		// Url: "http://213.219.215.40:8080/" + fileLocation,
-		Url: fileLocation,
+		ID:  info.UserID,
+		Url: url,
 	}
 	log.Println("Service -- Full url to file", avatarUrlInfo.Url)
 	f, err := os.Create("./" + fileLocation)
