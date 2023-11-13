@@ -203,7 +203,7 @@ func (uh UserHandler) ChangeAvatar(w http.ResponseWriter, r *http.Request) {
 		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.ErrorMap[err]))
 		return
 	}
-	log.Println("avatar uploaded")
+	log.Println("Handler -- avatar uploaded")
 
 	response := dto.JSONResponse{
 		Body: dto.JSONMap{
