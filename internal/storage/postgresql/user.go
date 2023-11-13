@@ -191,9 +191,12 @@ func (s *PostgresUserStorage) UpdateProfile(ctx context.Context, info dto.UserPr
 		return apperrors.ErrCouldNotBuildQuery
 	}
 
+	log.Println("Built query:", sql, "\nwith args:", args)
+
 	_, err = s.db.Exec(ctx, sql, args...)
 
 	if err != nil {
+		log.Println("Storage -- Failed to execute query with error", err.Error())
 		return apperrors.ErrUserNotUpdated
 	}
 

@@ -182,20 +182,24 @@ func (uh UserHandler) ChangeAvatar(w http.ResponseWriter, r *http.Request) {
 
 	err := json.NewDecoder(r.Body).Decode(&avatarChangeInfo)
 	if err != nil {
+		log.Println("Handler -- Failed to decode incoming avatar with error", err.Error())
 		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.BadRequestResponse))
 		return
 	}
 	log.Println("request struct decoded")
 
-	_, err = govalidator.ValidateStruct(avatarChangeInfo)
-	if err != nil {
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.GenericUnauthorizedResponse))
-		return
-	}
-	log.Println("request struct validated")
+	// _, err = govalidator.ValidateStruct(avatarChangeInfo)
+	// if err != nil {
+	// 	*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.GenericUnauthorizedResponse))
+	// 	return
+	// }
+	// log.Println("request struct validated")
+
+	avatarChangeInfo.UserID = rCtx.Value(dto.UserObjKey).(*entities.User).ID
 
 	url, err := uh.us.UpdateAvatar(rCtx, avatarChangeInfo)
 	if err != nil {
+		log.Println("Handler -- Failed to update avatar with error", err.Error())
 		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.ErrorMap[err]))
 		return
 	}

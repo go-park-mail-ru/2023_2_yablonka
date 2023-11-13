@@ -97,21 +97,32 @@ func (us UserService) UpdateProfile(ctx context.Context, info dto.UserProfileInf
 // обновляет аватарку пользователя
 // или возвращает ошибку apperrors.ErrUserNotFound (409)
 func (us UserService) UpdateAvatar(ctx context.Context, info dto.AvatarChangeInfo) (*dto.UrlObj, error) {
+	fileLocation := "images/user_avatars/" + strconv.FormatUint(info.UserID, 10) + ".png"
+	log.Println("Service -- File location:", fileLocation)
 	avatarUrlInfo := dto.ImageUrlInfo{
 		ID:  info.UserID,
-		Url: "images/user_avatars/" + strconv.FormatUint(info.UserID, 10) + ".png",
+		Url: "http://213.219.215.40:8080/" + fileLocation,
 	}
-	f, err := os.Create(avatarUrlInfo.Url)
+	log.Println("Service -- Full url to file", avatarUrlInfo.Url)
+	f, err := os.Create("./" + fileLocation)
 	if err != nil {
+		log.Println("Service -- Failed to create file with error", err)
 		return nil, err
 	}
+
+	_, err = f.Write(info.Avatar)
+	if err != nil {
+		log.Println("Service -- Failed to write to file with error", err)
+	}
+
 	defer f.Close()
 
 	err = us.storage.UpdateAvatarUrl(ctx, avatarUrlInfo)
 	if err != nil {
-		errDelete := os.Remove(avatarUrlInfo.Url)
+		errDelete := os.Remove("./" + fileLocation)
 		for errDelete != nil {
-			errDelete = os.Remove(avatarUrlInfo.Url)
+			log.Println("Service -- Failed to remove file after unsuccessful update with error", err)
+			errDelete = os.Remove("./" + fileLocation)
 		}
 		return nil, err
 	}
