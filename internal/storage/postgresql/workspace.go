@@ -47,6 +47,7 @@ func (s PostgresWorkspaceStorage) GetUserOwnedWorkspaces(ctx context.Context, us
 		Select("id", "name").
 		From("public.workspace").
 		Where(sq.Eq{"id_creator": userID.Value}).
+		OrderBy("public.workspace.date_created").
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
 
@@ -155,6 +156,7 @@ func (s PostgresWorkspaceStorage) GetUserGuestWorkspaces(ctx context.Context, us
 		Join("public.user_workspace ON public.user_workspace.id_user = " + strconv.FormatUint(uint64(userID.Value), 10)).
 		Join("public.user ON public.user.id = public.workspace.id_creator").
 		Where(sq.NotEq{"public.workspace.id_creator": userID.Value}).
+		OrderBy("public.workspace.date_created").
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
 
