@@ -111,6 +111,7 @@ func (us UserService) UpdateAvatar(ctx context.Context, info dto.AvatarChangeInf
 		return nil, err
 	}
 
+	log.Println("Service -- Writing", len(info.Avatar), "bytes:\n\t", info.Avatar)
 	_, err = f.Write(info.Avatar)
 	if err != nil {
 		log.Println("Service -- Failed to write to file with error", err)
