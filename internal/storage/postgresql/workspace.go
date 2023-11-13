@@ -98,6 +98,7 @@ func (s PostgresWorkspaceStorage) GetUserOwnedWorkspaces(ctx context.Context, us
 		Select("id_workspace", "id", "name", "description").
 		From("public.board").
 		Where(sq.Eq{"id_workspace": ownedID}).
+		OrderBy("public.board.date_created").
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
 
@@ -198,6 +199,7 @@ func (s PostgresWorkspaceStorage) GetUserGuestWorkspaces(ctx context.Context, us
 		Select("id_workspace", "id", "name", "description").
 		From("public.board").
 		Where(sq.Eq{"id_workspace": guestID}).
+		OrderBy("public.board.date_created").
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
 

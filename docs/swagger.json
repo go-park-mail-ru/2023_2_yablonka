@@ -277,11 +277,11 @@
                 "parameters": [
                     {
                         "description": "данные новой доски",
-                        "name": "newBoardInfo",
+                        "name": "newBoardRequest",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dto.NewBoardInfo"
+                            "$ref": "#/definitions/dto.NewBoardRequest"
                         }
                     }
                 ],
@@ -1326,7 +1326,7 @@
                 }
             }
         },
-        "dto.NewBoardInfo": {
+        "dto.NewBoardRequest": {
             "type": "object",
             "properties": {
                 "description": {
@@ -1335,11 +1335,14 @@
                 "name": {
                     "type": "string"
                 },
-                "owner_email": {
-                    "type": "string"
-                },
                 "owner_id": {
                     "type": "integer"
+                },
+                "thumbnail": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
                 },
                 "workspace_id": {
                     "type": "integer"
@@ -1532,13 +1535,10 @@
                 }
             }
         },
-        "dto.UserInfo": {
+        "dto.UserID": {
             "type": "object",
             "properties": {
-                "email": {
-                    "type": "string"
-                },
-                "id": {
+                "user_id": {
                     "type": "integer"
                 }
             }
@@ -1645,6 +1645,9 @@
                 "board_id": {
                     "type": "integer"
                 },
+                "date_created": {
+                    "type": "string"
+                },
                 "description": {
                     "type": "string"
                 },
@@ -1658,7 +1661,7 @@
                     "type": "string"
                 },
                 "owner": {
-                    "$ref": "#/definitions/dto.UserInfo"
+                    "$ref": "#/definitions/dto.UserID"
                 },
                 "thumbnail_url": {
                     "type": "string"

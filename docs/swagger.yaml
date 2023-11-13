@@ -77,16 +77,18 @@ definitions:
       id:
         type: integer
     type: object
-  dto.NewBoardInfo:
+  dto.NewBoardRequest:
     properties:
       description:
         type: string
       name:
         type: string
-      owner_email:
-        type: string
       owner_id:
         type: integer
+      thumbnail:
+        items:
+          type: integer
+        type: array
       workspace_id:
         type: integer
     type: object
@@ -210,11 +212,9 @@ definitions:
       workspace_owner:
         $ref: '#/definitions/dto.UserOwnerInfo'
     type: object
-  dto.UserInfo:
+  dto.UserID:
     properties:
-      email:
-        type: string
-      id:
+      user_id:
         type: integer
     type: object
   dto.UserOwnedWorkspaceInfo:
@@ -283,6 +283,8 @@ definitions:
     properties:
       board_id:
         type: integer
+      date_created:
+        type: string
       description:
         type: string
       lists:
@@ -292,7 +294,7 @@ definitions:
       name:
         type: string
       owner:
-        $ref: '#/definitions/dto.UserInfo'
+        $ref: '#/definitions/dto.UserID'
       thumbnail_url:
         type: string
       users:
@@ -541,10 +543,10 @@ paths:
       parameters:
       - description: данные новой доски
         in: body
-        name: newBoardInfo
+        name: newBoardRequest
         required: true
         schema:
-          $ref: '#/definitions/dto.NewBoardInfo'
+          $ref: '#/definitions/dto.NewBoardRequest'
       produces:
       - application/json
       responses:

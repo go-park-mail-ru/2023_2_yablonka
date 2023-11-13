@@ -153,15 +153,25 @@ type IndividualBoardInfo struct {
 	ThumbnailURL *string `json:"thumbnail_url"`
 }
 
-// TODO Add thumbnails
 // NewBoardInfo
 // DTO для новой доски
 type NewBoardInfo struct {
+	Name        *string          `json:"name"`
+	OwnerID     uint64           `json:"owner_id"`
+	WorkspaceID uint64           `json:"workspace_id"`
+	Description *string          `json:"description"`
+	Thumbnail   []byte           `json:"thumbnail"`
+	Users       []UserPublicInfo `json:"user"`
+}
+
+// NewBoardRequest
+// DTO для запроса новой доски
+type NewBoardRequest struct {
 	Name        *string `json:"name"`
 	OwnerID     uint64  `json:"owner_id"`
-	OwnerEmail  string  `json:"owner_email"`
 	WorkspaceID uint64  `json:"workspace_id"`
 	Description *string `json:"description"`
+	Thumbnail   []byte  `json:"thumbnail"`
 }
 
 // WorkspaceID

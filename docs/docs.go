@@ -283,11 +283,11 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "description": "данные новой доски",
-                        "name": "newBoardInfo",
+                        "name": "newBoardRequest",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dto.NewBoardInfo"
+                            "$ref": "#/definitions/dto.NewBoardRequest"
                         }
                     }
                 ],
@@ -1332,7 +1332,7 @@ const docTemplate = `{
                 }
             }
         },
-        "dto.NewBoardInfo": {
+        "dto.NewBoardRequest": {
             "type": "object",
             "properties": {
                 "description": {
@@ -1341,11 +1341,14 @@ const docTemplate = `{
                 "name": {
                     "type": "string"
                 },
-                "owner_email": {
-                    "type": "string"
-                },
                 "owner_id": {
                     "type": "integer"
+                },
+                "thumbnail": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
                 },
                 "workspace_id": {
                     "type": "integer"
@@ -1538,13 +1541,10 @@ const docTemplate = `{
                 }
             }
         },
-        "dto.UserInfo": {
+        "dto.UserID": {
             "type": "object",
             "properties": {
-                "email": {
-                    "type": "string"
-                },
-                "id": {
+                "user_id": {
                     "type": "integer"
                 }
             }
@@ -1651,6 +1651,9 @@ const docTemplate = `{
                 "board_id": {
                     "type": "integer"
                 },
+                "date_created": {
+                    "type": "string"
+                },
                 "description": {
                     "type": "string"
                 },
@@ -1664,7 +1667,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "owner": {
-                    "$ref": "#/definitions/dto.UserInfo"
+                    "$ref": "#/definitions/dto.UserID"
                 },
                 "thumbnail_url": {
                     "type": "string"

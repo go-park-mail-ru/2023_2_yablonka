@@ -197,9 +197,8 @@ func (s *PostgreSQLBoardStorage) Create(ctx context.Context, info dto.NewBoardIn
 	newBoard := entities.Board{
 		ID:   uint64(boardID),
 		Name: *info.Name,
-		Owner: dto.UserInfo{
-			ID:    info.OwnerID,
-			Email: info.OwnerEmail,
+		Owner: dto.UserID{
+			Value: info.OwnerID,
 		},
 		Description: info.Description,
 	}

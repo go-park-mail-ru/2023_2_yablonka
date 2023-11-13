@@ -102,7 +102,7 @@ func (bh BoardHandler) GetFullBoard(w http.ResponseWriter, r *http.Request) {
 // @Accept  json
 // @Produce  json
 //
-// @Param newBoardInfo body dto.NewBoardInfo true "данные новой доски"
+// @Param newBoardRequest body dto.NewBoardRequest true "данные новой доски"
 //
 // @Success 200  {object}  doc_structs.BoardResponse "объект доски"
 // @Failure 400  {object}  apperrors.ErrorResponse
@@ -115,8 +115,8 @@ func (bh BoardHandler) Create(w http.ResponseWriter, r *http.Request) {
 
 	rCtx := r.Context()
 
-	var newBoardInfo dto.NewBoardInfo
-	err := json.NewDecoder(r.Body).Decode(&newBoardInfo)
+	var newBoardRequest dto.NewBoardRequest
+	err := json.NewDecoder(r.Body).Decode(&newBoardRequest)
 	if err != nil {
 		log.Println("Failed to decode incoming JSON")
 		log.Println(err)
@@ -126,14 +126,28 @@ func (bh BoardHandler) Create(w http.ResponseWriter, r *http.Request) {
 	}
 	log.Println("request struct decoded")
 
-	newBoardInfo.OwnerID = rCtx.Value(dto.UserObjKey).(*entities.User).ID
-	newBoardInfo.OwnerEmail = rCtx.Value(dto.UserObjKey).(*entities.User).Email
+	user, ok := rCtx.Value(dto.UserObjKey).(*entities.User)
+	if !ok {
+		log.Println("user not found")
+		log.Println("--------------BoardHandler.Create Endpoint FAIL--------------")
+		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.GenericUnauthorizedResponse))
+		return
+	}
+	log.Println("user found")
 
 	// // _, err = govalidator.ValidateStruct(newBoardInfo)
 	// // if err != nil {
 	// // 	*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.BadRequestResponse))
 	// // 	return
 	// // }
+
+	newBoardInfo := dto.NewBoardInfo{
+		Name:        newBoardRequest.Name,
+		Description: newBoardRequest.Description,
+		Thumbnail:   newBoardRequest.Thumbnail,
+		WorkspaceID: newBoardRequest.WorkspaceID,
+		OwnerID:     user.ID,
+	}
 
 	board, err := bh.bs.Create(rCtx, newBoardInfo)
 	if err != nil {
