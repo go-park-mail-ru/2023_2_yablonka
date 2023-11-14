@@ -15,8 +15,8 @@ import (
 	"github.com/asaskevich/govalidator"
 )
 
-const configPath string = "./config/config.yml"
-const envPath string = "./config/.env"
+const configPath string = "config/config.yml"
+const envPath string = "config/.env"
 
 // @title LA TABULA API
 // @version 2.0
