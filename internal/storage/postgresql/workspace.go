@@ -8,6 +8,7 @@ import (
 	"server/internal/pkg/dto"
 	"server/internal/pkg/entities"
 	"strconv"
+	"time"
 
 	sq "github.com/Masterminds/squirrel"
 	pgx "github.com/jackc/pgx/v5"
@@ -21,8 +22,9 @@ type PostgresWorkspaceStorage struct {
 }
 
 type GuestWorkspaceReturn struct {
-	WorkspaceID   uint64
-	WorkspaceName string
+	WorkspaceID          uint64
+	WorkspaceName        string
+	WorkspaceDateCreated time.Time
 	dto.UserOwnerInfo
 }
 
