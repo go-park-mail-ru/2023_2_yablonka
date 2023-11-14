@@ -13,6 +13,7 @@ import (
 	"server/internal/storage/postgresql"
 
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/sirupsen/logrus"
 )
 
 // HandlerManager
@@ -104,4 +105,13 @@ func NewTaskHandler(ts service.ITaskService) *TaskHandler {
 	return &TaskHandler{
 		ts: ts,
 	}
+}
+
+func handlerDebugLog(logger *logrus.Logger, function string, message string) {
+	logger.
+		WithFields(logrus.Fields{
+			"route_node": "handler",
+			"function":   function,
+		}).
+		Debug(message)
 }

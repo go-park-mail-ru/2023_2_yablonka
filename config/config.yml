@@ -1,5 +1,10 @@
 # config.yml
 
+server:
+  backend_port: 8080
+  frontend_port: 8081
+  host: '213.219.215.40'
+
 cors:
   allowed_methods:
     - GET
@@ -22,6 +27,7 @@ cors:
     - X-Csrf-Token
   allow_credentials: true
   debug: true
+
 db:
   user: postgres
   port: 5432
@@ -29,3 +35,14 @@ db:
   app_name: Tabula
   schema: public
   connection_timeout: 5
+
+logging:
+  # Accepted levels: trace, debug, info, warning, error
+  level: debug
+  disable_timestamp: false
+  full_timestamp: true
+  # If true, report_caller setting will be based on level being trace
+  # If false, report_caller setting will use the config value
+  level_based_report: true
+  report_caller: true
+  disable_level_truncation: true

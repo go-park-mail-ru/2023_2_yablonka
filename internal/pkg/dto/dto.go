@@ -371,4 +371,5 @@ const (
 	BoardsObjKey
 	ErrorKey
 	SIDLengthKey
+	LoggerKey
 )

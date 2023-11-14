@@ -23,6 +23,8 @@ var (
 	ErrSessionNullIDLength = errors.New("session ID length is zero")
 	// ErrDatabasePWMissing ошибка: в полученном конфиге нет пароля от БД
 	ErrDatabasePWMissing = errors.New("database PW is missing")
+	// ErrInvalidLoggingLevel ошибка: в полученном конфиге указан неправильный уровень логгирования
+	ErrInvalidLoggingLevel = errors.New("incorrect logging level provided (accepted values -- debug, info, warning, error)")
 )
 
 // Ошибки, связанные с авторизацией
@@ -200,4 +202,11 @@ func ErrorJSON(err ErrorResponse) []byte {
 	}
 	jsonResponse, _ := json.Marshal(response)
 	return jsonResponse
+}
+
+func ReturnError(err ErrorResponse, w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(err.Code)
+	response := ErrorJSON(err)
+	_, _ = w.Write(response)
+	r.Body.Close()
 }

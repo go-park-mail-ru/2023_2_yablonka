@@ -1,9 +1,8 @@
 package handlers
 
 import (
-	"context"
 	"encoding/json"
-	"log"
+	"fmt"
 	"net/http"
 	"server/internal/apperrors"
 	"server/internal/pkg/dto"
@@ -11,6 +10,7 @@ import (
 	"time"
 
 	"github.com/asaskevich/govalidator"
+	"github.com/sirupsen/logrus"
 )
 
 type AuthHandler struct {
@@ -47,51 +47,56 @@ func (ah AuthHandler) GetCSRFService() service.ICSRFService {
 //
 // @Router /auth/login/ [post]
 func (ah AuthHandler) LogIn(w http.ResponseWriter, r *http.Request) {
-	log.Println("--------------LogIn Endpoint START--------------")
-
 	rCtx := r.Context()
+	funcName := "LogIn"
+
+	logger := rCtx.Value(dto.LoggerKey).(*logrus.Logger)
+	logger.Info("Logging user in")
 
 	var authInfo dto.AuthInfo
 
+	handlerDebugLog(logger, funcName, "Decoding incoming JSON")
 	err := json.NewDecoder(r.Body).Decode(&authInfo)
 	if err != nil {
-		log.Println(err)
-		log.Println("--------------LogIn Endpoint FAIL--------------")
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.BadRequestResponse))
+		logger.Error("Login failed")
+		handlerDebugLog(logger, funcName, "Logging user in failed with error"+err.Error())
+		apperrors.ReturnError(apperrors.BadRequestResponse, w, r)
 		return
 	}
-	log.Println("request struct decoded")
+	handlerDebugLog(logger, funcName, "JSON decoded")
 
+	handlerDebugLog(logger, funcName, "Validating login info")
 	_, err = govalidator.ValidateStruct(authInfo)
 	if err != nil {
-		log.Println(err)
-		log.Println("--------------LogIn Endpoint FAIL--------------")
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.GenericUnauthorizedResponse))
+		logger.Error("Login failed")
+		handlerDebugLog(logger, funcName, "Logging user in failed with error"+err.Error())
+		apperrors.ReturnError(apperrors.BadRequestResponse, w, r)
 		return
 	}
-	log.Println("request struct validated")
+	handlerDebugLog(logger, funcName, "Login info validated")
 
 	user, err := ah.us.CheckPassword(rCtx, authInfo)
 	if err != nil {
-		log.Println(err)
-		log.Println("--------------LogIn Endpoint FAIL--------------")
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.ErrorMap[err]))
+		logger.Error("Login failed")
+		handlerDebugLog(logger, funcName, "Logging user in failed with error"+err.Error())
+		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
 		return
 	}
-	log.Println("password checked")
+	handlerDebugLog(logger, funcName, "Password checked")
 
 	userID := dto.UserID{
 		Value: user.ID,
 	}
 
+	handlerDebugLog(logger, funcName, fmt.Sprintf("Creating session for user ID %d", userID.Value))
 	session, err := ah.as.AuthUser(rCtx, userID)
 	if err != nil {
-		log.Println(err)
-		log.Println("--------------LogIn Endpoint FAIL--------------")
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.ErrorMap[err]))
+		logger.Error("Login failed")
+		handlerDebugLog(logger, funcName, "Logging user in failed with error"+err.Error())
+		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
 		return
 	}
-	log.Println("user authorized")
+	handlerDebugLog(logger, funcName, "Session created")
 
 	authCookie := &http.Cookie{
 		Name:     "tabula_user",
@@ -102,47 +107,61 @@ func (ah AuthHandler) LogIn(w http.ResponseWriter, r *http.Request) {
 		Path:     "/api/v2/",
 	}
 
+	handlerDebugLog(logger, funcName, "Setting cookie")
 	http.SetCookie(w, authCookie)
-	log.Println("authorization cookie set")
+	handlerDebugLog(logger, funcName, "Cookie set")
 
+	handlerDebugLog(logger, funcName, fmt.Sprintf("Setting up CSRF for user ID %d", userID.Value))
 	csrfToken, err := ah.cs.SetupCSRF(rCtx, userID)
 	if err != nil {
-		log.Println(err)
-		log.Println("--------------LogIn Endpoint FAIL--------------")
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.ErrorMap[err]))
+		logger.Error("Login failed")
+		handlerDebugLog(logger, funcName, "Logging user in failed with error"+err.Error())
+		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
 		return
 	}
+	handlerDebugLog(logger, funcName, "CSRF set up")
 
+	handlerDebugLog(logger, funcName, "Setting CSRF token response header")
 	w.Header().Set("X-Csrf-Token", csrfToken.Token)
+	handlerDebugLog(logger, funcName, "CSRF token response header set")
 
-	log.Println("csrf set")
+	publicUserInfo := dto.UserPublicInfo{
+		ID:          user.ID,
+		Name:        user.Name,
+		Surname:     user.Surname,
+		Email:       user.Email,
+		Description: user.Description,
+		AvatarURL:   user.AvatarURL,
+	}
 
 	response := dto.JSONResponse{
 		Body: dto.JSONMap{
-			"user": user,
+			"user": publicUserInfo,
 		},
 	}
 
+	handlerDebugLog(logger, funcName, "Marshaling response to JSON")
 	jsonResponse, err := json.Marshal(response)
 	if err != nil {
-		log.Println(err)
-		log.Println("--------------LogIn Endpoint FAIL--------------")
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.InternalServerErrorResponse))
+		logger.Error("Login failed")
+		handlerDebugLog(logger, funcName, "Logging user in failed with error"+err.Error())
+		apperrors.ReturnError(apperrors.InternalServerErrorResponse, w, r)
 		return
 	}
-	log.Println("json response marshalled")
+	handlerDebugLog(logger, funcName, "JSON response marshaled")
 
+	handlerDebugLog(logger, funcName, "Writing JSON response")
 	_, err = w.Write(jsonResponse)
 	if err != nil {
-		log.Println(err)
-		log.Println("--------------LogIn Endpoint FAIL--------------")
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.InternalServerErrorResponse))
+		logger.Error("Login failed")
+		handlerDebugLog(logger, funcName, "Logging user in failed with error"+err.Error())
+		apperrors.ReturnError(apperrors.InternalServerErrorResponse, w, r)
 		return
 	}
 	r.Body.Close()
-	log.Println("response written")
 
-	log.Println("--------------LogIn Endpoint SUCCESS--------------")
+	handlerDebugLog(logger, funcName, "Response written")
+	logger.Info("Logged user in")
 }
 
 // @Summary Зарегистрировать нового пользователя
@@ -162,49 +181,57 @@ func (ah AuthHandler) LogIn(w http.ResponseWriter, r *http.Request) {
 //
 // @Router /auth/signup/ [post]
 func (ah AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
-	log.Println("--------------SignUp Endpoint START--------------")
 	rCtx := r.Context()
+	funcName := "SignUp"
+
+	logger := rCtx.Value(dto.LoggerKey).(*logrus.Logger)
+	logger.Info("Signing new user up")
 
 	var signup dto.AuthInfo
+
+	handlerDebugLog(logger, funcName, "Decoding incoming JSON")
 	err := json.NewDecoder(r.Body).Decode(&signup)
 	if err != nil {
-		log.Println(err)
-		log.Println("--------------SignUp Endpoint FAIL--------------")
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.BadRequestResponse))
+		logger.Error("Signup failed")
+		handlerDebugLog(logger, funcName, "Signing user up failed with error"+err.Error())
+		apperrors.ReturnError(apperrors.BadRequestResponse, w, r)
 		return
 	}
-	log.Println("request struct decoded")
+	handlerDebugLog(logger, funcName, "JSON Decoded")
 
+	handlerDebugLog(logger, funcName, "Validating signup data")
 	_, err = govalidator.ValidateStruct(signup)
 	if err != nil {
-		log.Println(err)
-		log.Println("--------------SignUp Endpoint FAIL--------------")
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.BadRequestResponse))
+		logger.Error("Signup failed")
+		handlerDebugLog(logger, funcName, "Signing user up failed with error"+err.Error())
+		apperrors.ReturnError(apperrors.BadRequestResponse, w, r)
 		return
 	}
-	log.Println("request struct validated")
+	handlerDebugLog(logger, funcName, "Signup data validated")
 
+	handlerDebugLog(logger, funcName, "Registering user")
 	user, err := ah.us.RegisterUser(rCtx, signup)
 	if err != nil {
-		log.Println(err)
-		log.Println("--------------SignUp Endpoint FAIL--------------")
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.ErrorMap[err]))
+		logger.Error("Signup failed")
+		handlerDebugLog(logger, funcName, "Signing user up failed with error"+err.Error())
+		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
 		return
 	}
-	log.Println("user registered")
+	handlerDebugLog(logger, "SingUp", "User registered")
 
 	userID := dto.UserID{
 		Value: user.ID,
 	}
 
+	handlerDebugLog(logger, funcName, fmt.Sprintf("Creating session for user ID %d", userID.Value))
 	session, err := ah.as.AuthUser(rCtx, userID)
 	if err != nil {
-		log.Println(err)
-		log.Println("--------------SignUp Endpoint FAIL--------------")
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.ErrorMap[err]))
+		logger.Error("Signup failed")
+		handlerDebugLog(logger, funcName, "Signing user up failed with error"+err.Error())
+		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
 		return
 	}
-	log.Println("user authorized")
+	handlerDebugLog(logger, funcName, "Session created")
 
 	cookie := &http.Cookie{
 		Name:     "tabula_user",
@@ -215,20 +242,23 @@ func (ah AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 		Path:     "/api/v2/",
 	}
 
+	handlerDebugLog(logger, funcName, "Setting cookie")
 	http.SetCookie(w, cookie)
-	log.Println("cookie set")
+	handlerDebugLog(logger, funcName, "Cookie set")
 
+	handlerDebugLog(logger, funcName, fmt.Sprintf("Setting up CSRF for user ID %d", userID.Value))
 	csrfToken, err := ah.cs.SetupCSRF(rCtx, userID)
 	if err != nil {
-		log.Println(err)
-		log.Println("--------------SignUp Endpoint FAIL--------------")
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.ErrorMap[err]))
+		logger.Error("Signup failed")
+		handlerDebugLog(logger, funcName, "Signing user up failed with error"+err.Error())
+		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
 		return
 	}
+	handlerDebugLog(logger, funcName, "CSRF set up")
 
+	handlerDebugLog(logger, funcName, "Setting CSRF token response header")
 	w.Header().Set("X-Csrf-Token", csrfToken.Token)
-
-	log.Println("csrf set")
+	handlerDebugLog(logger, funcName, "CSRF token response header set")
 
 	publicUserInfo := dto.UserPublicInfo{
 		ID:          user.ID,
@@ -245,26 +275,28 @@ func (ah AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 		},
 	}
 
+	handlerDebugLog(logger, funcName, "Marshaling response to JSON")
 	jsonResponse, err := json.Marshal(response)
 	if err != nil {
-		log.Println(err)
-		log.Println("--------------SignUp Endpoint FAIL--------------")
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.InternalServerErrorResponse))
+		logger.Error("Signup failed")
+		handlerDebugLog(logger, funcName, "Signing user up failed with error"+err.Error())
+		apperrors.ReturnError(apperrors.InternalServerErrorResponse, w, r)
 		return
 	}
-	log.Println("json response generated")
+	handlerDebugLog(logger, funcName, "JSON response marshaled")
 
+	handlerDebugLog(logger, funcName, "Writing JSON response")
 	_, err = w.Write(jsonResponse)
 	if err != nil {
-		log.Println(err)
-		log.Println("--------------SignUp Endpoint FAIL--------------")
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.InternalServerErrorResponse))
+		logger.Error("Signup failed")
+		handlerDebugLog(logger, funcName, "Signing user up failed with error"+err.Error())
+		apperrors.ReturnError(apperrors.InternalServerErrorResponse, w, r)
 		return
 	}
 	r.Body.Close()
-	log.Println("response written")
 
-	log.Println("--------------SignUp Endpoint SUCCESS--------------")
+	handlerDebugLog(logger, funcName, "Response written")
+	logger.Info("Finished signing new user up")
 }
 
 // @Summary Выйти из системы
@@ -281,40 +313,45 @@ func (ah AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 //
 // @Router /auth/logout/ [delete]
 func (ah AuthHandler) LogOut(w http.ResponseWriter, r *http.Request) {
-	log.Println("--------------LogOut Endpoint START--------------")
-
 	rCtx := r.Context()
+	funcName := "LogOut"
 
+	logger := rCtx.Value(dto.LoggerKey).(*logrus.Logger)
+	logger.Info("Logging user out")
+
+	handlerDebugLog(logger, funcName, "Checking cookie")
 	cookie, err := r.Cookie("tabula_user")
 	if err != nil {
-		log.Println(err)
-		log.Println("--------------LogOut Endpoint FAIL--------------")
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.GenericUnauthorizedResponse))
+		logger.Error("Logout failed")
+		handlerDebugLog(logger, funcName, "Logging user out failed with error"+err.Error())
+		apperrors.ReturnError(apperrors.GenericUnauthorizedResponse, w, r)
 		return
 	}
-	log.Println("cookie decoded")
+	handlerDebugLog(logger, funcName, "Cookie found")
 
 	token := dto.SessionToken{
 		ID: cookie.Value,
 	}
 
-	_, err = ah.as.VerifyAuth(rCtx, token)
+	handlerDebugLog(logger, funcName, "Verifying session from cookie")
+	user, err := ah.as.VerifyAuth(rCtx, token)
 	if err != nil {
-		log.Println(err)
-		log.Println("--------------LogOut Endpoint FAIL--------------")
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.ErrorMap[err]))
+		logger.Error("Logout failed")
+		handlerDebugLog(logger, funcName, "Logging user out failed with error"+err.Error())
+		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
 		return
 	}
-	log.Println("auth verified")
+	handlerDebugLog(logger, funcName, "Session verified")
 
+	handlerDebugLog(logger, funcName, fmt.Sprintf("Deleting session for user ID %d", user.Value))
 	err = ah.as.LogOut(rCtx, token)
 	if err != nil {
-		log.Println(err)
-		log.Println("--------------LogOut Endpoint FAIL--------------")
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.ErrorMap[err]))
+		logger.Error("Logout failed")
+		handlerDebugLog(logger, funcName, "Logging user out failed with error"+err.Error())
+		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
 		return
 	}
-	log.Println("user logged out")
+	handlerDebugLog(logger, funcName, "Session deleted")
 
 	cookie = &http.Cookie{
 		Name:     "tabula_user",
@@ -324,32 +361,36 @@ func (ah AuthHandler) LogOut(w http.ResponseWriter, r *http.Request) {
 		Expires:  time.Time{},
 		Path:     "/api/v2/",
 	}
+
+	handlerDebugLog(logger, funcName, "Setting empty cookie")
 	http.SetCookie(w, cookie)
-	log.Println("cookie set")
+	handlerDebugLog(logger, funcName, "Empty cookie set")
 
 	response := dto.JSONResponse{
 		Body: dto.JSONMap{},
 	}
+
+	handlerDebugLog(logger, funcName, "Marshaling JSON response")
 	jsonResponse, err := json.Marshal(response)
 	if err != nil {
-		log.Println(err)
-		log.Println("--------------LogOut Endpoint FAIL--------------")
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.InternalServerErrorResponse))
+		logger.Error("Logout failed")
+		handlerDebugLog(logger, funcName, "Logging user out failed with error"+err.Error())
+		apperrors.ReturnError(apperrors.InternalServerErrorResponse, w, r)
 		return
 	}
-	log.Println("json response generated")
+	handlerDebugLog(logger, funcName, "JSON response marshaled")
 
+	handlerDebugLog(logger, funcName, "Writing JSON response")
 	_, err = w.Write(jsonResponse)
 	if err != nil {
-		log.Println(err)
-		log.Println("--------------LogOut Endpoint FAIL--------------")
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.InternalServerErrorResponse))
+		logger.Error("Logout failed")
+		handlerDebugLog(logger, funcName, "Logging user out failed with error"+err.Error())
+		apperrors.ReturnError(apperrors.InternalServerErrorResponse, w, r)
 		return
 	}
 	r.Body.Close()
-	log.Println("response written")
-
-	log.Println("--------------LogOut Endpoint SUCCESS--------------")
+	handlerDebugLog(logger, funcName, "Response written")
+	logger.Info("Logged user out")
 }
 
 // @Summary Подтвердить вход
@@ -366,90 +407,121 @@ func (ah AuthHandler) LogOut(w http.ResponseWriter, r *http.Request) {
 //
 // @Router /auth/verify [get]
 func (ah AuthHandler) VerifyAuthEndpoint(w http.ResponseWriter, r *http.Request) {
-	log.Println("--------------VerifyAuthEndpoint Endpoint START--------------")
-
 	rCtx := r.Context()
-	log.Println("\tDEBUG cookie list")
-	for _, c := range r.Cookies() {
-		log.Println("\t", c)
-	}
+	funcName := "VerifyAuthEndpoint"
 
+	logger := rCtx.Value(dto.LoggerKey).(*logrus.Logger)
+	logger.Info("Verifying user's authentication")
+
+	handlerDebugLog(logger, funcName, "Checking cookie")
 	cookie, err := r.Cookie("tabula_user")
-
 	if err != nil {
-		log.Println("cookie not found")
-		log.Println(err)
-		log.Println("--------------VerifyAuthEndpoint Endpoint FAIL--------------")
+		logger.Error("Verification failed")
+		handlerDebugLog(logger, funcName, "Verifying user failed with error"+err.Error())
+		handlerDebugLog(logger, funcName, "Setting empty CSRF token response header")
 		w.Header().Set("X-Csrf-Token", "")
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.GenericUnauthorizedResponse))
+		handlerDebugLog(logger, funcName, "Empty CSRF token response header set")
+		apperrors.ReturnError(apperrors.GenericUnauthorizedResponse, w, r)
 		return
 	}
-	log.Println(cookie.Value)
+	handlerDebugLog(logger, funcName, "Cookie found")
 
 	token := dto.SessionToken{
 		ID: cookie.Value,
 	}
 
+	handlerDebugLog(logger, funcName, "Verifying session from cookie")
 	userID, err := ah.as.VerifyAuth(rCtx, token)
 	if err != nil {
-		log.Println("failed to verify auth")
-		log.Println(err)
-		log.Println("--------------VerifyAuthEndpoint Endpoint FAIL--------------")
+		logger.Error("Verification failed")
+		handlerDebugLog(logger, funcName, "Verifying user failed with error"+err.Error())
+		handlerDebugLog(logger, funcName, "Setting empty CSRF token response header")
 		w.Header().Set("X-Csrf-Token", "")
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.ErrorMap[err]))
+		handlerDebugLog(logger, funcName, "Empty CSRF token response header set")
+		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
 		return
 	}
-	log.Println("auth verified")
+	handlerDebugLog(logger, funcName, "Session verified")
 
-	userObj, err := ah.us.GetWithID(rCtx, userID)
+	handlerDebugLog(logger, funcName, fmt.Sprintf("Getting user info for user ID %d", userID.Value))
+	user, err := ah.us.GetWithID(rCtx, userID)
 	if err == apperrors.ErrUserNotFound {
-		log.Println(err)
-		log.Println("--------------VerifyAuthEndpoint Endpoint FAIL--------------")
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.GenericUnauthorizedResponse))
+		logger.Error("Verification failed")
+		handlerDebugLog(logger, funcName, "Verifying user failed with error"+err.Error())
+		handlerDebugLog(logger, funcName, "Setting empty CSRF token response header")
+		w.Header().Set("X-Csrf-Token", "")
+		handlerDebugLog(logger, funcName, "Empty CSRF token response header set")
+		apperrors.ReturnError(apperrors.GenericUnauthorizedResponse, w, r)
 		return
 	} else if err != nil {
-		log.Println(err)
-		log.Println("--------------VerifyAuthEndpoint Endpoint FAIL--------------")
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.ErrorMap[err]))
+		logger.Error("Verification failed")
+		handlerDebugLog(logger, funcName, "Verifying user failed with error"+err.Error())
+		handlerDebugLog(logger, funcName, "Setting empty CSRF token response header")
+		w.Header().Set("X-Csrf-Token", "")
+		handlerDebugLog(logger, funcName, "Empty CSRF token response header set")
+		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
 		return
 	}
-	log.Println("user found")
+	handlerDebugLog(logger, funcName, "Got user object")
 
+	handlerDebugLog(logger, funcName, fmt.Sprintf("Setting up CSRF for user ID %d", userID.Value))
 	csrfToken, err := ah.cs.SetupCSRF(rCtx, userID)
 	if err != nil {
-		log.Println(err)
-		log.Println("--------------VerifyAuthEndpoint Endpoint FAIL--------------")
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.ErrorMap[err]))
+		logger.Error("Verification failed")
+		handlerDebugLog(logger, funcName, "Verifying user failed with error"+err.Error())
+		handlerDebugLog(logger, funcName, "Setting empty CSRF token response header")
+		w.Header().Set("X-Csrf-Token", "")
+		handlerDebugLog(logger, funcName, "Empty CSRF token response header set")
+		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
 		return
 	}
+	handlerDebugLog(logger, funcName, "CSRF set up")
 
+	handlerDebugLog(logger, funcName, "Setting CSRF token response header")
 	w.Header().Set("X-Csrf-Token", csrfToken.Token)
-	log.Println("set X-Csrf-Token header to", csrfToken.Token)
+	handlerDebugLog(logger, funcName, "CSRF token response header set")
+
+	publicUserInfo := dto.UserPublicInfo{
+		ID:          user.ID,
+		Name:        user.Name,
+		Surname:     user.Surname,
+		Email:       user.Email,
+		Description: user.Description,
+		AvatarURL:   user.AvatarURL,
+	}
 
 	response := dto.JSONResponse{
 		Body: dto.JSONMap{
-			"user": userObj,
+			"user": publicUserInfo,
 		},
 	}
 
+	handlerDebugLog(logger, funcName, "Marshaling JSON response")
 	jsonResponse, err := json.Marshal(response)
 	if err != nil {
-		log.Println(err)
-		log.Println("--------------VerifyAuthEndpoint Endpoint FAIL--------------")
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.InternalServerErrorResponse))
+		logger.Error("Verification failed")
+		handlerDebugLog(logger, funcName, "Verifying user failed with error"+err.Error())
+		handlerDebugLog(logger, funcName, "Setting empty CSRF token response header")
+		w.Header().Set("X-Csrf-Token", "")
+		handlerDebugLog(logger, funcName, "Empty CSRF token response header set")
+		apperrors.ReturnError(apperrors.InternalServerErrorResponse, w, r)
 		return
 	}
-	log.Println("json response generated")
+	handlerDebugLog(logger, funcName, "JSON response marshaled")
 
+	handlerDebugLog(logger, funcName, "Writing JSON response")
 	_, err = w.Write(jsonResponse)
 	if err != nil {
-		log.Println(err)
-		log.Println("--------------VerifyAuthEndpoint Endpoint FAIL--------------")
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.InternalServerErrorResponse))
+		logger.Error("Verification failed")
+		handlerDebugLog(logger, funcName, "Verifying user failed with error"+err.Error())
+		handlerDebugLog(logger, funcName, "Setting empty CSRF token response header")
+		w.Header().Set("X-Csrf-Token", "")
+		handlerDebugLog(logger, funcName, "Empty CSRF token response header set")
+		apperrors.ReturnError(apperrors.InternalServerErrorResponse, w, r)
 		return
 	}
 	r.Body.Close()
-	log.Println("response written")
+	handlerDebugLog(logger, funcName, "Response written")
 
-	log.Println("--------------VerifyAuthEndpoint Endpoint SUCCESS--------------")
+	logger.Info("Finished verifying user")
 }

@@ -17,14 +17,16 @@ import (
 
 // GetChiMux
 // возвращает mux, реализованный с помощью модуля chi
-func GetChiMux(manager handlers.HandlerManager, config config.CORSConfig) (http.Handler, error) {
+func GetChiMux(manager handlers.HandlerManager, config config.Config) (http.Handler, error) {
 	mux := chi.NewRouter()
 
-	mux.Use(middleware.GetCors(config))
-	mux.Use(middleware.JsonHeader)
-	mux.Use(middleware.Logger)
-	mux.Use(middleware.ErrorHandler)
+	mux.Use(middleware.SetLogger(*config.Logging))
 	mux.Use(middleware.PanicRecovery)
+	mux.Use(middleware.GetCors(*config.CORS))
+	mux.Use(middleware.JsonHeader)
+
+	// Testing in-place error handling
+	// mux.Use(middleware.ErrorHandler)
 
 	mux.Route("/api/v2", func(r chi.Router) {
 		r.Route("/auth", func(r chi.Router) {

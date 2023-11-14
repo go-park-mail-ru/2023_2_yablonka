@@ -1,40 +1,64 @@
 package middleware
 
 import (
-	"context"
-	"log"
 	"net/http"
 	"server/internal/apperrors"
 	"server/internal/pkg/dto"
 	"server/internal/service"
+
+	"github.com/sirupsen/logrus"
 )
 
 func CSRFMiddleware(cs service.ICSRFService) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			log.Println("************Verifying CSRF************")
+			logger := r.Context().Value(dto.LoggerKey).(*logrus.Logger)
+
+			logger.
+				WithFields(logrus.Fields{
+					"route_node": "middleware",
+					"function":   "CSRFMiddleware",
+				}).
+				Debug("Verifying CSRF")
 
 			rCtx := r.Context()
 
 			csrf := r.Header.Get("X-Csrf-Token")
 			if csrf == "" {
-				log.Println("CSRF header not set on incoming request")
-				log.Println("************CSRF INVALID************")
-				*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.GenericUnauthorizedResponse))
+				logger.Error("CSRF header not set on incoming request")
+				logger.
+					WithFields(logrus.Fields{
+						"route_node": "middleware",
+						"function":   "CSRFMiddleware",
+					}).
+					Debug("CSRF verification failed")
+
+				apperrors.ReturnError(apperrors.GenericUnauthorizedResponse, w, r)
 				return
 			}
 
-			log.Println("Received CSRF token", csrf)
+			logger.Debug("Received CSRF token", csrf)
 
 			err := cs.VerifyCSRF(rCtx, dto.CSRFToken{Value: csrf})
 			if err != nil {
-				log.Println(err)
-				log.Println("************CSRF INVALID************")
-				*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.GenericUnauthorizedResponse))
+				logger.Error("Failed to verify CSRF")
+				logger.
+					WithFields(logrus.Fields{
+						"route_node": "middleware",
+						"function":   "CSRFMiddleware",
+					}).
+					Debug("CSRF verification failed with error", err.Error())
+
+				apperrors.ReturnError(apperrors.GenericUnauthorizedResponse, w, r)
 				return
 			}
 
-			log.Println("************CSRF INVALID************")
+			logger.
+				WithFields(logrus.Fields{
+					"route_node": "middleware",
+					"function":   "CSRFMiddleware",
+				}).
+				Debug("CSRF verification succeeded")
 
 			next.ServeHTTP(w, r)
 		})

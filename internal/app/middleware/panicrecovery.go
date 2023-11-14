@@ -1,25 +1,24 @@
 package middleware
 
 import (
-	"log"
 	"net/http"
 	"server/internal/apperrors"
+	"server/internal/pkg/dto"
+
+	"github.com/sirupsen/logrus"
 )
 
 func PanicRecovery(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer func() {
 			if rcvr := recover(); rcvr != nil {
-				log.Println("************PANIC************")
+				logger := r.Context().Value(dto.LoggerKey).(*logrus.Logger)
+				logger.Error("***** PANIC *****")
+				logger.Error("Recovered from panic", rcvr)
 
-				log.Println("recovered from", rcvr)
+				apperrors.ReturnError(apperrors.InternalServerErrorResponse, w, r)
 
-				w.WriteHeader(http.StatusInternalServerError)
-				response := apperrors.ErrorJSON(apperrors.InternalServerErrorResponse)
-				_, _ = w.Write(response)
-
-				r.Body.Close()
-				log.Println("************CONTINUING************")
+				logger.Error("***** CONTINUING *****")
 			}
 		}()
 

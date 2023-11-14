@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/joho/godotenv"
+	logrus "github.com/sirupsen/logrus"
 	yaml "gopkg.in/yaml.v2"
 )
 
@@ -15,8 +16,16 @@ import (
 // структура для хранения параметров сервера
 type Config struct {
 	Session  *SessionConfig  `yaml:"-"`
+	Server   *ServerConfig   `yaml:"server"`
 	CORS     *CORSConfig     `yaml:"cors"`
 	Database *DatabaseConfig `yaml:"db"`
+	Logging  *LoggingConfig  `yaml:"logging"`
+}
+
+type ServerConfig struct {
+	BackendPort  uint   `yaml:"backend_port"`
+	FrontendPort uint   `yaml:"frontend_port"`
+	Host         string `yaml:"host"`
 }
 
 type CORSConfig struct {
@@ -42,6 +51,16 @@ type DatabaseConfig struct {
 	AppName           string `yaml:"app_name"`
 	Schema            string `yaml:"schema"`
 	ConnectionTimeout uint64 `yaml:"connection_timeout"`
+}
+
+type LoggingConfig struct {
+	Logger                 *logrus.Logger `yaml:"-"`
+	Level                  string         `yaml:"level"`
+	DisableTimestamp       bool           `yaml:"disable_timestamp"`
+	FullTimestamp          bool           `yaml:"full_timestamp"`
+	DisableLevelTruncation bool           `yaml:"disable_level_truncation"`
+	LevelBasedReport       bool           `yaml:"level_based_report"`
+	ReportCaller           bool           `yaml:"report_caller"`
 }
 
 // LoadConfig
@@ -71,6 +90,11 @@ func LoadConfig(envPath string, configPath string) (*Config, error) {
 
 	if err != nil {
 		return nil, apperrors.ErrEnvNotFound
+	}
+
+	config.Logging.Logger, err = setupLogger(config.Logging)
+	if err != nil {
+		return nil, err
 	}
 
 	config.Session, err = NewSessionConfig()
@@ -111,6 +135,27 @@ func NewSessionConfig() (*SessionConfig, error) {
 	}
 
 	return &config, nil
+}
+
+func setupLogger(lc *LoggingConfig) (*logrus.Logger, error) {
+	logLevel, err := logrus.ParseLevel(lc.Level)
+	if err != nil {
+		return nil, apperrors.ErrInvalidLoggingLevel
+	}
+
+	logger := &logrus.Logger{
+		Out:   os.Stderr,
+		Level: logLevel,
+		ReportCaller: (lc.LevelBasedReport && logLevel == logrus.TraceLevel) ||
+			(!lc.LevelBasedReport && lc.ReportCaller),
+		Formatter: &logrus.TextFormatter{
+			DisableTimestamp:       lc.DisableTimestamp,
+			FullTimestamp:          lc.FullTimestamp,
+			DisableLevelTruncation: lc.DisableLevelTruncation,
+		},
+	}
+
+	return logger, nil
 }
 
 // getDBConnectionHost

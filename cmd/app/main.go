@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -37,30 +38,31 @@ func main() {
 	if err != nil {
 		log.Fatal(err.Error())
 	}
-	log.Println("config loaded")
+	logger := config.Logging.Logger
+	logger.Info("Config loaded")
 
 	dbConnection, err := postgresql.GetDBConnection(*config.Database)
 	if err != nil {
-		log.Fatal(err.Error())
+		logger.Fatal(err.Error())
 	}
 	defer dbConnection.Close()
-	log.Println("database connected")
+	logger.Info("Database connection established")
 
 	handlerManager := handlers.NewHandlerManager(dbConnection, *config.Session)
-	log.Println("handlers configured")
+	logger.Info("Handlers configured")
 
-	mux, err := app.GetChiMux(*handlerManager, *config.CORS)
+	mux, err := app.GetChiMux(*handlerManager, *config)
 	if err != nil {
-		log.Fatal(err.Error())
+		logger.Fatal(err.Error())
 	}
-	log.Println("router configured")
+	logger.Info("Router configured")
 
 	var server = http.Server{
-		Addr:    ":8080",
+		Addr:    fmt.Sprintf(":%d", config.Server.BackendPort),
 		Handler: mux,
 	}
 
-	log.Println("server is running")
+	logger.Info("Server is running")
 
 	idleConnsClosed := make(chan struct{})
 	go func() {
@@ -71,14 +73,14 @@ func main() {
 		// We received an interrupt signal, shut down.
 		if err := server.Shutdown(context.Background()); err != nil {
 			// Error from closing listeners, or context timeout:
-			log.Printf("HTTP server Shutdown: %v", err)
+			logger.Infof("HTTP server Shutdown: %v", err)
 		}
 		close(idleConnsClosed)
 	}()
 
 	if err := server.ListenAndServe(); err != http.ErrServerClosed {
 		// Error starting or closing listener:
-		log.Fatalf("HTTP server ListenAndServe: %v", err)
+		logger.Fatalf("HTTP server ListenAndServe: %v", err)
 	}
 
 	<-idleConnsClosed
