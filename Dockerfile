@@ -2,12 +2,19 @@
 
 FROM golang:1.21.1 AS build-stage
 WORKDIR /app
+
+# Always needed, never changes => should be done first for caching purposes
+RUN go install github.com/jackc/tern/v2@latest 
+# Copy package management files to the WORKDIR
 COPY go.mod go.sum ./
+# Install dependencies
 RUN go mod download
+# Copy the rest of the project to the WORKDIR
 COPY ./. ./
 
+# Build the binary to copy it to the slim image
 RUN CGO_ENABLED=0 GOOS=linux go build -o yablonka-backend ./cmd/app/main.go
-RUN go install github.com/jackc/tern/v2@latest
+
 
 FROM alpine:latest AS build-release-stage
 
