@@ -93,9 +93,9 @@ type PasswordChangeInfo struct {
 // DTO для изменения профиля
 type UserProfileInfo struct {
 	UserID      uint64  `json:"-" valid:"-"`
-	Name        string  `json:"name" valid:"type(string),stringlength(0|100)"`
-	Surname     *string `json:"surname" valid:"type(string),stringlength(0|100)"`
-	Description *string `json:"description" valid:"type(string),stringlength(0|256)"`
+	Name        string  `json:"name" valid:"stringlength(0|100)"`
+	Surname     *string `json:"surname" valid:"stringlength(0|100)"`
+	Description *string `json:"description" valid:"stringlength(0|256)"`
 }
 
 // UserProfileInfo
