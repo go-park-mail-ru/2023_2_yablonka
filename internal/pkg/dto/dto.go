@@ -84,7 +84,7 @@ type AuthInfo struct {
 // PasswordChangeInfo
 // DTO для смены пароля
 type PasswordChangeInfo struct {
-	UserID      uint64 `json:"user_id"`
+	UserID      uint64 `json:"-"`
 	OldPassword string `json:"old_password" valid:"type(string),stringlength(8|32)"`
 	NewPassword string `json:"new_password" valid:"type(string),stringlength(8|32)"`
 }
