@@ -17,7 +17,7 @@ import (
 
 // GetChiMux
 // возвращает mux, реализованный с помощью модуля chi
-func GetChiMux(manager handlers.HandlerManager, config config.Config) (http.Handler, error) {
+func GetChiMux(manager handlers.Handlers, config config.Config) (http.Handler, error) {
 	mux := chi.NewRouter()
 
 	mux.Use(middleware.SetLogger(*config.Logging))

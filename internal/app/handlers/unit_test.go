@@ -66,7 +66,7 @@ func createMux(mockAuthService *mock_service.MockIAuthService,
 	mockBoardService *mock_service.MockIBoardService,
 	mockWorkspaceService *mock_service.MockIWorkspaceService) (http.Handler, error) {
 
-	mockHandlerManager := handlers.HandlerManager{
+	mockHandlerManager := handlers.Handlers{
 		UserHandler:      *handlers.NewUserHandler(mockUserService),
 		WorkspaceHandler: *handlers.NewWorkspaceHandler(mockWorkspaceService),
 		BoardHandler:     *handlers.NewBoardHandler(mockAuthService, mockBoardService),

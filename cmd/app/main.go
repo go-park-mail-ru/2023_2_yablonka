@@ -10,6 +10,8 @@ import (
 	"server/internal/app"
 	"server/internal/app/handlers"
 	config "server/internal/config"
+	"server/internal/service"
+	"server/internal/storage"
 	"server/internal/storage/postgresql"
 
 	"github.com/asaskevich/govalidator"
@@ -48,10 +50,16 @@ func main() {
 	defer dbConnection.Close()
 	logger.Info("Database connection established")
 
-	handlerManager := handlers.NewHandlerManager(dbConnection, *config.Session)
+	storages := storage.NewPostgresStorages(dbConnection)
+	logger.Info("Storages configured")
+
+	services := service.NewServices(storages, *config.Session)
+	logger.Info("Services configured")
+
+	handlers := handlers.NewHandlers(services)
 	logger.Info("Handlers configured")
 
-	mux, err := app.GetChiMux(*handlerManager, *config)
+	mux, err := app.GetChiMux(*handlers, *config)
 	if err != nil {
 		logger.Fatal(err.Error())
 	}
