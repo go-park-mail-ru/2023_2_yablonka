@@ -135,7 +135,7 @@ var WrongLoginResponse = ErrorResponse{
 // заглушка для ответа 401 без разглашения имплементации чувствительных процессов
 var BadRequestResponse = ErrorResponse{
 	Code:    http.StatusBadRequest,
-	Message: "Ошибка авторизации",
+	Message: "Ошибка запроса",
 }
 
 // GenericUnauthorizedResponse
