@@ -50,8 +50,8 @@ type IndividualBoardRequest struct {
 // AvatarChangeInfo
 // структура для изменения аватарки
 type AvatarChangeInfo struct {
-	UserID uint64 `json:"user_id"`
-	Avatar []byte `json:"avatar"`
+	UserID uint64 `json:"-" valid:"-"`
+	Avatar []byte `json:"avatar" valid:"-"`
 }
 
 // ImageRequest
@@ -92,10 +92,10 @@ type PasswordChangeInfo struct {
 // UserProfileInfo
 // DTO для изменения профиля
 type UserProfileInfo struct {
-	UserID      uint64  `json:"user_id"`
-	Name        string  `json:"name"`
-	Surname     *string `json:"surname"`
-	Description *string `json:"description"`
+	UserID      uint64  `json:"-" valid:"-"`
+	Name        string  `json:"name" valid:"type(string),stringlength(0|100)"`
+	Surname     *string `json:"surname" valid:"type(string),stringlength(0|100)"`
+	Description *string `json:"description" valid:"type(string),stringlength(0|256)"`
 }
 
 // UserProfileInfo

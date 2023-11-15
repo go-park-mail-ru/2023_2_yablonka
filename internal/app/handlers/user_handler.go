@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 
 	apperrors "server/internal/apperrors"
@@ -50,7 +49,7 @@ func (uh UserHandler) ChangePassword(w http.ResponseWriter, r *http.Request) {
 		apperrors.ReturnError(apperrors.BadRequestResponse, w, r)
 		return
 	}
-	handlerDebugLog(logger, funcName, "JSON Decoded")
+	handlerDebugLog(logger, funcName, "JSON decoded")
 
 	_, err = govalidator.ValidateStruct(passwords)
 	if err != nil {
@@ -107,7 +106,7 @@ func (uh UserHandler) ChangePassword(w http.ResponseWriter, r *http.Request) {
 // @Accept  json
 // @Produce  json
 //
-// @Param newProfileInfo body dto.UserProfileInfo true "id пользователя, имя, фамилия, описание пользователя"
+// @Param newProfileInfo body dto.UserProfileInfo true "Имя, фамилия, описание пользователя"
 //
 // @Success 200  {string} string "no content"
 // @Failure 500  {object}  apperrors.ErrorResponse
@@ -115,37 +114,51 @@ func (uh UserHandler) ChangePassword(w http.ResponseWriter, r *http.Request) {
 // @Router /user/edit/ [post]
 func (uh UserHandler) ChangeProfile(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
+	funcName := "ChangeProfile"
+
+	logger := rCtx.Value(dto.LoggerKey).(*logrus.Logger)
+	logger.Info("Changing user info")
 
 	var newProfileInfo dto.UserProfileInfo
 
 	user, ok := rCtx.Value(dto.UserObjKey).(*entities.User)
 	if !ok {
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.GenericUnauthorizedResponse))
+		logger.Error("User info change failed")
+		handlerDebugLog(logger, funcName, "Changing user info failed -- no user passed in context")
+		apperrors.ReturnError(apperrors.GenericUnauthorizedResponse, w, r)
 		return
 	}
+	handlerDebugLog(logger, funcName, "User object acquired from context")
 
 	err := json.NewDecoder(r.Body).Decode(&newProfileInfo)
 	if err != nil {
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.BadRequestResponse))
+		logger.Error("User info change failed")
+		handlerDebugLog(logger, funcName, "Changing user info failed with error "+err.Error())
+		apperrors.ReturnError(apperrors.BadRequestResponse, w, r)
 		return
 	}
-	log.Println("request struct decoded")
+	handlerDebugLog(logger, funcName, "JSON decoded")
 
-	// _, err = govalidator.ValidateStruct(newProfileInfo)
-	// if err != nil {
-	// 	*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.GenericUnauthorizedResponse))
-	// 	return
-	// }
-	// log.Println("request struct validated")
+	_, err = govalidator.ValidateStruct(newProfileInfo)
+	if err != nil {
+		logger.Error("User info change failed")
+		handlerDebugLog(logger, funcName, "Changing user info failed with error "+err.Error())
+		apperrors.ReturnError(apperrors.BadRequestResponse, w, r)
+		return
+	}
+	handlerDebugLog(logger, funcName, "Request data validated")
 
 	newProfileInfo.UserID = user.ID
 
+	handlerDebugLog(logger, funcName, fmt.Sprintf("Updating profile info for user ID %d", newProfileInfo.UserID))
 	err = uh.us.UpdateProfile(rCtx, newProfileInfo)
 	if err != nil {
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.ErrorMap[err]))
+		logger.Error("User info change failed")
+		handlerDebugLog(logger, funcName, "Changing user info failed with error "+err.Error())
+		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
 		return
 	}
-	log.Println("user profile updated")
+	handlerDebugLog(logger, funcName, "User info updated")
 
 	response := dto.JSONResponse{
 		Body: dto.JSONMap{},
@@ -153,20 +166,22 @@ func (uh UserHandler) ChangeProfile(w http.ResponseWriter, r *http.Request) {
 
 	jsonResponse, err := json.Marshal(response)
 	if err != nil {
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.InternalServerErrorResponse))
+		logger.Error("User info change failed")
+		handlerDebugLog(logger, funcName, "Changing user info failed with error "+err.Error())
+		apperrors.ReturnError(apperrors.InternalServerErrorResponse, w, r)
 		return
 	}
-	log.Println("json response generated")
+	handlerDebugLog(logger, funcName, "JSON response generated")
 
 	_, err = w.Write(jsonResponse)
 	if err != nil {
 		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.InternalServerErrorResponse))
 		return
 	}
-	log.Println("response written")
-
 	r.Body.Close()
-	log.Println("response closed")
+
+	handlerDebugLog(logger, funcName, "Response written")
+	logger.Info("Finished changing user info")
 }
 
 // @Summary Поменять аватарку
@@ -184,33 +199,50 @@ func (uh UserHandler) ChangeProfile(w http.ResponseWriter, r *http.Request) {
 // @Router /user/edit/change_avatar/ [post]
 func (uh UserHandler) ChangeAvatar(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
+	funcName := "ChangeAvatar"
+
+	logger := rCtx.Value(dto.LoggerKey).(*logrus.Logger)
+	logger.Info("Changing user avatar")
 
 	var avatarChangeInfo dto.AvatarChangeInfo
 
+	user, ok := rCtx.Value(dto.UserObjKey).(*entities.User)
+	if !ok {
+		logger.Error("User avatar change failed")
+		handlerDebugLog(logger, funcName, "Changing user avatar failed -- no user passed in context")
+		apperrors.ReturnError(apperrors.GenericUnauthorizedResponse, w, r)
+		return
+	}
+	handlerDebugLog(logger, funcName, "User object acquired from context")
+
 	err := json.NewDecoder(r.Body).Decode(&avatarChangeInfo)
 	if err != nil {
-		log.Println("Handler -- Failed to decode incoming avatar with error", err.Error())
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.BadRequestResponse))
+		logger.Error("User avatar change failed")
+		handlerDebugLog(logger, funcName, "Changing user avatar failed with error "+err.Error())
+		apperrors.ReturnError(apperrors.BadRequestResponse, w, r)
+	}
+	handlerDebugLog(logger, funcName, "JSON decoded")
+
+	_, err = govalidator.ValidateStruct(avatarChangeInfo)
+	if err != nil {
+		logger.Error("User avatar change failed")
+		handlerDebugLog(logger, funcName, "Changing user avatar failed with error "+err.Error())
+		apperrors.ReturnError(apperrors.BadRequestResponse, w, r)
 		return
 	}
-	log.Println("request struct decoded")
+	handlerDebugLog(logger, funcName, "Request data validated")
 
-	// _, err = govalidator.ValidateStruct(avatarChangeInfo)
-	// if err != nil {
-	// 	*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.GenericUnauthorizedResponse))
-	// 	return
-	// }
-	// log.Println("request struct validated")
+	avatarChangeInfo.UserID = user.ID
 
-	avatarChangeInfo.UserID = rCtx.Value(dto.UserObjKey).(*entities.User).ID
-
+	handlerDebugLog(logger, funcName, fmt.Sprintf("Updating avatar for user ID %d", avatarChangeInfo.UserID))
 	url, err := uh.us.UpdateAvatar(rCtx, avatarChangeInfo)
 	if err != nil {
-		log.Println("Handler -- Failed to update avatar with error", err.Error())
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.ErrorMap[err]))
+		logger.Error("User avatar change failed")
+		handlerDebugLog(logger, funcName, "Changing user avatar failed with error "+err.Error())
+		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
 		return
 	}
-	log.Println("Handler -- avatar uploaded")
+	handlerDebugLog(logger, funcName, "User avatar updated")
 
 	response := dto.JSONResponse{
 		Body: dto.JSONMap{
@@ -220,18 +252,22 @@ func (uh UserHandler) ChangeAvatar(w http.ResponseWriter, r *http.Request) {
 
 	jsonResponse, err := json.Marshal(response)
 	if err != nil {
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.InternalServerErrorResponse))
+		logger.Error("User avatar change failed")
+		handlerDebugLog(logger, funcName, "Changing user avatar failed with error "+err.Error())
+		apperrors.ReturnError(apperrors.InternalServerErrorResponse, w, r)
 		return
 	}
-	log.Println("json response generated")
+	handlerDebugLog(logger, funcName, "JSON response marshaled")
 
 	_, err = w.Write(jsonResponse)
 	if err != nil {
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.InternalServerErrorResponse))
+		logger.Error("User avatar change failed")
+		handlerDebugLog(logger, funcName, "Changing user avatar failed with error "+err.Error())
+		apperrors.ReturnError(apperrors.InternalServerErrorResponse, w, r)
 		return
 	}
-	log.Println("response written")
-
 	r.Body.Close()
-	log.Println("response closed")
+
+	handlerDebugLog(logger, funcName, "Response written")
+	logger.Info("Finished updating user profile")
 }
