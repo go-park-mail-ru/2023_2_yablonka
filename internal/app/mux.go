@@ -22,7 +22,7 @@ func GetChiMux(manager handlers.Handlers, config config.Config) (http.Handler, e
 
 	mux.Use(middleware.SetLogger(*config.Logging))
 	mux.Use(middleware.PanicRecovery)
-	mux.Use(middleware.GetCors(*config.CORS))
+	mux.Use(middleware.GetCors(*config.CORS, *config.Logging))
 	mux.Use(middleware.JsonHeader)
 
 	// Testing in-place error handling

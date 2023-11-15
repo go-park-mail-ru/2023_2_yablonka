@@ -442,7 +442,6 @@ func (ah AuthHandler) VerifyAuthEndpoint(w http.ResponseWriter, r *http.Request)
 		logger.Error("Verification failed")
 		handlerDebugLog(logger, funcName, "Verifying user failed with error "+err.Error())
 		w.Header().Set("X-Csrf-Token", "")
-
 		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
 		return
 	}
