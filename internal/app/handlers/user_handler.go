@@ -57,6 +57,9 @@ func (uh UserHandler) ChangePassword(w http.ResponseWriter, r *http.Request) {
 	}
 	log.Println("request struct validated")
 
+	userID := rCtx.Value(dto.UserObjKey).(*entities.User).ID
+	passwords.UserID = userID
+
 	err = uh.us.UpdatePassword(rCtx, passwords)
 	if err != nil {
 		log.Println(err)
