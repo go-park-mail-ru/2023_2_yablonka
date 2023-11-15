@@ -58,7 +58,7 @@ func (ah AuthHandler) LogIn(w http.ResponseWriter, r *http.Request) {
 	err := json.NewDecoder(r.Body).Decode(&authInfo)
 	if err != nil {
 		logger.Error("Login failed")
-		handlerDebugLog(logger, funcName, "Logging user in failed with error"+err.Error())
+		handlerDebugLog(logger, funcName, "Logging user in failed with error "+err.Error())
 		apperrors.ReturnError(apperrors.BadRequestResponse, w, r)
 		return
 	}
@@ -67,7 +67,7 @@ func (ah AuthHandler) LogIn(w http.ResponseWriter, r *http.Request) {
 	_, err = govalidator.ValidateStruct(authInfo)
 	if err != nil {
 		logger.Error("Login failed")
-		handlerDebugLog(logger, funcName, "Logging user in failed with error"+err.Error())
+		handlerDebugLog(logger, funcName, "Logging user in failed with error "+err.Error())
 		apperrors.ReturnError(apperrors.BadRequestResponse, w, r)
 		return
 	}
@@ -76,7 +76,7 @@ func (ah AuthHandler) LogIn(w http.ResponseWriter, r *http.Request) {
 	user, err := ah.us.CheckPassword(rCtx, authInfo)
 	if err != nil {
 		logger.Error("Login failed")
-		handlerDebugLog(logger, funcName, "Logging user in failed with error"+err.Error())
+		handlerDebugLog(logger, funcName, "Logging user in failed with error "+err.Error())
 		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
 		return
 	}
@@ -90,7 +90,7 @@ func (ah AuthHandler) LogIn(w http.ResponseWriter, r *http.Request) {
 	session, err := ah.as.AuthUser(rCtx, userID)
 	if err != nil {
 		logger.Error("Login failed")
-		handlerDebugLog(logger, funcName, "Logging user in failed with error"+err.Error())
+		handlerDebugLog(logger, funcName, "Logging user in failed with error "+err.Error())
 		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
 		return
 	}
@@ -112,7 +112,7 @@ func (ah AuthHandler) LogIn(w http.ResponseWriter, r *http.Request) {
 	csrfToken, err := ah.cs.SetupCSRF(rCtx, userID)
 	if err != nil {
 		logger.Error("Login failed")
-		handlerDebugLog(logger, funcName, "Logging user in failed with error"+err.Error())
+		handlerDebugLog(logger, funcName, "Logging user in failed with error "+err.Error())
 		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
 		return
 	}
@@ -139,7 +139,7 @@ func (ah AuthHandler) LogIn(w http.ResponseWriter, r *http.Request) {
 	jsonResponse, err := json.Marshal(response)
 	if err != nil {
 		logger.Error("Login failed")
-		handlerDebugLog(logger, funcName, "Logging user in failed with error"+err.Error())
+		handlerDebugLog(logger, funcName, "Logging user in failed with error "+err.Error())
 		apperrors.ReturnError(apperrors.InternalServerErrorResponse, w, r)
 		return
 	}
@@ -148,7 +148,7 @@ func (ah AuthHandler) LogIn(w http.ResponseWriter, r *http.Request) {
 	_, err = w.Write(jsonResponse)
 	if err != nil {
 		logger.Error("Login failed")
-		handlerDebugLog(logger, funcName, "Logging user in failed with error"+err.Error())
+		handlerDebugLog(logger, funcName, "Logging user in failed with error "+err.Error())
 		apperrors.ReturnError(apperrors.InternalServerErrorResponse, w, r)
 		return
 	}
@@ -186,7 +186,7 @@ func (ah AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 	err := json.NewDecoder(r.Body).Decode(&signup)
 	if err != nil {
 		logger.Error("Signup failed")
-		handlerDebugLog(logger, funcName, "Signing user up failed with error"+err.Error())
+		handlerDebugLog(logger, funcName, "Signing user up failed with error "+err.Error())
 		apperrors.ReturnError(apperrors.BadRequestResponse, w, r)
 		return
 	}
@@ -195,7 +195,7 @@ func (ah AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 	_, err = govalidator.ValidateStruct(signup)
 	if err != nil {
 		logger.Error("Signup failed")
-		handlerDebugLog(logger, funcName, "Signing user up failed with error"+err.Error())
+		handlerDebugLog(logger, funcName, "Signing user up failed with error "+err.Error())
 		apperrors.ReturnError(apperrors.BadRequestResponse, w, r)
 		return
 	}
@@ -204,7 +204,7 @@ func (ah AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 	user, err := ah.us.RegisterUser(rCtx, signup)
 	if err != nil {
 		logger.Error("Signup failed")
-		handlerDebugLog(logger, funcName, "Signing user up failed with error"+err.Error())
+		handlerDebugLog(logger, funcName, "Signing user up failed with error "+err.Error())
 		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
 		return
 	}
@@ -218,7 +218,7 @@ func (ah AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 	session, err := ah.as.AuthUser(rCtx, userID)
 	if err != nil {
 		logger.Error("Signup failed")
-		handlerDebugLog(logger, funcName, "Signing user up failed with error"+err.Error())
+		handlerDebugLog(logger, funcName, "Signing user up failed with error "+err.Error())
 		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
 		return
 	}
@@ -240,7 +240,7 @@ func (ah AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 	csrfToken, err := ah.cs.SetupCSRF(rCtx, userID)
 	if err != nil {
 		logger.Error("Signup failed")
-		handlerDebugLog(logger, funcName, "Signing user up failed with error"+err.Error())
+		handlerDebugLog(logger, funcName, "Signing user up failed with error "+err.Error())
 		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
 		return
 	}
@@ -267,7 +267,7 @@ func (ah AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 	jsonResponse, err := json.Marshal(response)
 	if err != nil {
 		logger.Error("Signup failed")
-		handlerDebugLog(logger, funcName, "Signing user up failed with error"+err.Error())
+		handlerDebugLog(logger, funcName, "Signing user up failed with error "+err.Error())
 		apperrors.ReturnError(apperrors.InternalServerErrorResponse, w, r)
 		return
 	}
@@ -276,7 +276,7 @@ func (ah AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 	_, err = w.Write(jsonResponse)
 	if err != nil {
 		logger.Error("Signup failed")
-		handlerDebugLog(logger, funcName, "Signing user up failed with error"+err.Error())
+		handlerDebugLog(logger, funcName, "Signing user up failed with error "+err.Error())
 		apperrors.ReturnError(apperrors.InternalServerErrorResponse, w, r)
 		return
 	}
@@ -309,7 +309,7 @@ func (ah AuthHandler) LogOut(w http.ResponseWriter, r *http.Request) {
 	cookie, err := r.Cookie("tabula_user")
 	if err != nil {
 		logger.Error("Logout failed")
-		handlerDebugLog(logger, funcName, "Logging user out failed with error"+err.Error())
+		handlerDebugLog(logger, funcName, "Logging user out failed with error "+err.Error())
 		apperrors.ReturnError(apperrors.GenericUnauthorizedResponse, w, r)
 		return
 	}
@@ -322,7 +322,7 @@ func (ah AuthHandler) LogOut(w http.ResponseWriter, r *http.Request) {
 	user, err := ah.as.VerifyAuth(rCtx, token)
 	if err != nil {
 		logger.Error("Logout failed")
-		handlerDebugLog(logger, funcName, "Logging user out failed with error"+err.Error())
+		handlerDebugLog(logger, funcName, "Logging user out failed with error "+err.Error())
 		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
 		return
 	}
@@ -332,7 +332,7 @@ func (ah AuthHandler) LogOut(w http.ResponseWriter, r *http.Request) {
 	err = ah.as.LogOut(rCtx, token)
 	if err != nil {
 		logger.Error("Logout failed")
-		handlerDebugLog(logger, funcName, "Logging user out failed with error"+err.Error())
+		handlerDebugLog(logger, funcName, "Logging user out failed with error "+err.Error())
 		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
 		return
 	}
@@ -357,7 +357,7 @@ func (ah AuthHandler) LogOut(w http.ResponseWriter, r *http.Request) {
 	jsonResponse, err := json.Marshal(response)
 	if err != nil {
 		logger.Error("Logout failed")
-		handlerDebugLog(logger, funcName, "Logging user out failed with error"+err.Error())
+		handlerDebugLog(logger, funcName, "Logging user out failed with error "+err.Error())
 		apperrors.ReturnError(apperrors.InternalServerErrorResponse, w, r)
 		return
 	}
@@ -366,7 +366,7 @@ func (ah AuthHandler) LogOut(w http.ResponseWriter, r *http.Request) {
 	_, err = w.Write(jsonResponse)
 	if err != nil {
 		logger.Error("Logout failed")
-		handlerDebugLog(logger, funcName, "Logging user out failed with error"+err.Error())
+		handlerDebugLog(logger, funcName, "Logging user out failed with error "+err.Error())
 		apperrors.ReturnError(apperrors.InternalServerErrorResponse, w, r)
 		return
 	}
@@ -398,7 +398,7 @@ func (ah AuthHandler) VerifyAuthEndpoint(w http.ResponseWriter, r *http.Request)
 	cookie, err := r.Cookie("tabula_user")
 	if err != nil {
 		logger.Error("Verification failed")
-		handlerDebugLog(logger, funcName, "Verifying user failed with error"+err.Error())
+		handlerDebugLog(logger, funcName, "Verifying user failed with error "+err.Error())
 		w.Header().Set("X-Csrf-Token", "")
 		apperrors.ReturnError(apperrors.GenericUnauthorizedResponse, w, r)
 		return
@@ -412,7 +412,7 @@ func (ah AuthHandler) VerifyAuthEndpoint(w http.ResponseWriter, r *http.Request)
 	userID, err := ah.as.VerifyAuth(rCtx, token)
 	if err != nil {
 		logger.Error("Verification failed")
-		handlerDebugLog(logger, funcName, "Verifying user failed with error"+err.Error())
+		handlerDebugLog(logger, funcName, "Verifying user failed with error "+err.Error())
 		w.Header().Set("X-Csrf-Token", "")
 		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
 		return
@@ -423,13 +423,13 @@ func (ah AuthHandler) VerifyAuthEndpoint(w http.ResponseWriter, r *http.Request)
 	user, err := ah.us.GetWithID(rCtx, userID)
 	if err == apperrors.ErrUserNotFound {
 		logger.Error("Verification failed")
-		handlerDebugLog(logger, funcName, "Verifying user failed with error"+err.Error())
+		handlerDebugLog(logger, funcName, "Verifying user failed with error "+err.Error())
 		w.Header().Set("X-Csrf-Token", "")
 		apperrors.ReturnError(apperrors.GenericUnauthorizedResponse, w, r)
 		return
 	} else if err != nil {
 		logger.Error("Verification failed")
-		handlerDebugLog(logger, funcName, "Verifying user failed with error"+err.Error())
+		handlerDebugLog(logger, funcName, "Verifying user failed with error "+err.Error())
 		w.Header().Set("X-Csrf-Token", "")
 		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
 		return
@@ -440,7 +440,7 @@ func (ah AuthHandler) VerifyAuthEndpoint(w http.ResponseWriter, r *http.Request)
 	csrfToken, err := ah.cs.SetupCSRF(rCtx, userID)
 	if err != nil {
 		logger.Error("Verification failed")
-		handlerDebugLog(logger, funcName, "Verifying user failed with error"+err.Error())
+		handlerDebugLog(logger, funcName, "Verifying user failed with error "+err.Error())
 		w.Header().Set("X-Csrf-Token", "")
 
 		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
@@ -470,7 +470,7 @@ func (ah AuthHandler) VerifyAuthEndpoint(w http.ResponseWriter, r *http.Request)
 	jsonResponse, err := json.Marshal(response)
 	if err != nil {
 		logger.Error("Verification failed")
-		handlerDebugLog(logger, funcName, "Verifying user failed with error"+err.Error())
+		handlerDebugLog(logger, funcName, "Verifying user failed with error "+err.Error())
 		handlerDebugLog(logger, funcName, "Setting empty CSRF token response header")
 		w.Header().Set("X-Csrf-Token", "")
 		handlerDebugLog(logger, funcName, "Empty CSRF token response header set")
@@ -483,7 +483,7 @@ func (ah AuthHandler) VerifyAuthEndpoint(w http.ResponseWriter, r *http.Request)
 	_, err = w.Write(jsonResponse)
 	if err != nil {
 		logger.Error("Verification failed")
-		handlerDebugLog(logger, funcName, "Verifying user failed with error"+err.Error())
+		handlerDebugLog(logger, funcName, "Verifying user failed with error "+err.Error())
 		handlerDebugLog(logger, funcName, "Setting empty CSRF token response header")
 		w.Header().Set("X-Csrf-Token", "")
 		handlerDebugLog(logger, funcName, "Empty CSRF token response header set")

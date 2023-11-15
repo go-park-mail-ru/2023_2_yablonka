@@ -5,8 +5,6 @@ import (
 	"net/http"
 	"server/internal/config"
 	"server/internal/pkg/dto"
-
-	"github.com/sirupsen/logrus"
 )
 
 func SetLogger(config config.LoggingConfig) func(http.Handler) http.Handler {
@@ -14,14 +12,10 @@ func SetLogger(config config.LoggingConfig) func(http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			rCtx := r.Context()
 			logger := config.Logger
+			funcName := "SetLogger"
 
-			logger.
-				WithFields(logrus.Fields{
-					"route_node": "middleware",
-					"function":   "SetLogger",
-				}).
-				Debug("Added logger to context")
 			logger.Info(r.URL.Path)
+			middlewareDebugLog(logger, funcName, "Added logger to context")
 
 			next.ServeHTTP(w, r.WithContext(context.WithValue(rCtx, dto.LoggerKey, logger)))
 		})
