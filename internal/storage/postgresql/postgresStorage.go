@@ -6,6 +6,7 @@ import (
 	"server/internal/config"
 
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/sirupsen/logrus"
 )
 
 func GetDBConnection(conf config.DatabaseConfig) (*pgxpool.Pool, error) {
@@ -32,4 +33,22 @@ func GetDBConnection(conf config.DatabaseConfig) (*pgxpool.Pool, error) {
 	}
 
 	return dbpool, nil
+}
+
+func storageDebugLog(logger *logrus.Logger, function string, message string) {
+	logger.
+		WithFields(logrus.Fields{
+			"route_node": "storage",
+			"function":   function,
+		}).
+		Debug(message)
+}
+
+func storageWarnLog(logger *logrus.Logger, function string, message string) {
+	logger.
+		WithFields(logrus.Fields{
+			"route_node": "storage",
+			"function":   function,
+		}).
+		Warn(message)
 }

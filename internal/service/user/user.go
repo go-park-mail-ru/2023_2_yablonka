@@ -11,6 +11,8 @@ import (
 	"server/internal/pkg/entities"
 	"server/internal/storage"
 	"strconv"
+
+	"github.com/sirupsen/logrus"
 )
 
 type UserService struct {
@@ -29,15 +31,18 @@ func NewUserService(storage storage.IUserStorage) *UserService {
 // создает нового пользователя по данным
 // или возвращает ошибку apperrors.ErrUserAlreadyExists (409)
 func (us UserService) RegisterUser(ctx context.Context, info dto.AuthInfo) (*entities.User, error) {
-	log.Println("Service -- Registering")
+	funcName := "RegisterUser"
+	logger := ctx.Value(dto.LoggerKey).(*logrus.Logger)
+
 	_, err := us.storage.GetWithLogin(ctx, dto.UserLogin{Value: info.Email})
 
 	if err == nil {
-		log.Println("User exists")
+		logger.Warn("User exists")
 		return nil, apperrors.ErrUserAlreadyExists
 	}
-	log.Println("User doesnt exists")
+	userServiceDebugLog(logger, funcName, "User doesn't exist")
 
+	userServiceDebugLog(logger, funcName, "Creating user")
 	return us.storage.Create(ctx, dto.SignupInfo{
 		Email:        info.Email,
 		PasswordHash: hashFromAuthInfo(info.Email, info.Password),
@@ -48,15 +53,21 @@ func (us UserService) RegisterUser(ctx context.Context, info dto.AuthInfo) (*ent
 // проверяет пароль пользователя по почте
 // или возвращает ошибки apperrors.ErrUserNotFound (401), apperrors.ErrWrongPassword (401)
 func (us UserService) CheckPassword(ctx context.Context, info dto.AuthInfo) (*entities.User, error) {
+	funcName := "RegisterUser"
+	logger := ctx.Value(dto.LoggerKey).(*logrus.Logger)
+
 	user, err := us.storage.GetWithLogin(ctx, dto.UserLogin{Value: info.Email})
 	if err != nil {
+		logger.Warn("User not found")
 		return nil, err
 	}
 
 	if user.PasswordHash != hashFromAuthInfo(info.Email, info.Password) {
+		logger.Warn("Wrong password")
 		return nil, apperrors.ErrWrongPassword
 	}
 
+	userServiceDebugLog(logger, funcName, "Returning user")
 	return user, nil
 }
 
@@ -71,15 +82,24 @@ func (us UserService) GetWithID(ctx context.Context, id dto.UserID) (*entities.U
 // меняет пароль пользователя
 // или возвращает ошибку apperrors.ErrUserNotFound (409)
 func (us UserService) UpdatePassword(ctx context.Context, info dto.PasswordChangeInfo) error {
+	funcName := "UpdatePassword"
+	logger := ctx.Value(dto.LoggerKey).(*logrus.Logger)
+
+	userServiceDebugLog(logger, funcName, fmt.Sprintf("Fetching login info for user ID %d", info.UserID))
 	oldLoginInfo, err := us.storage.GetLoginInfoWithID(ctx, dto.UserID{Value: info.UserID})
-	if err == nil {
+	if err != nil {
+		logger.Warn("User not found")
 		return apperrors.ErrUserNotFound
 	}
+	userServiceDebugLog(logger, funcName, "User found")
 
 	if oldLoginInfo.PasswordHash != hashFromAuthInfo(oldLoginInfo.Email, info.OldPassword) {
+		logger.Warn("Wrong password")
 		return apperrors.ErrWrongPassword
 	}
+	userServiceDebugLog(logger, funcName, "Password verified")
 
+	userServiceDebugLog(logger, funcName, "Updating password")
 	return us.storage.UpdatePassword(ctx, dto.PasswordHashesInfo{
 		UserID:          info.UserID,
 		NewPasswordHash: hashFromAuthInfo(oldLoginInfo.Email, info.NewPassword),
@@ -144,4 +164,22 @@ func hashFromAuthInfo(email string, password string) string {
 	hasher := sha256.New()
 	hasher.Write([]byte(email + password))
 	return fmt.Sprintf("%x", hasher.Sum(nil))
+}
+
+func userServiceDebugLog(logger *logrus.Logger, function string, message string) {
+	logger.
+		WithFields(logrus.Fields{
+			"route_node": "service",
+			"function":   function,
+		}).
+		Debug(message)
+}
+
+func userServiceWarnLog(logger *logrus.Logger, function string, message string) {
+	logger.
+		WithFields(logrus.Fields{
+			"route_node": "service",
+			"function":   function,
+		}).
+		Warn(message)
 }

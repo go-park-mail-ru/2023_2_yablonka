@@ -3,6 +3,7 @@ package handlers
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 
@@ -13,6 +14,7 @@ import (
 	"server/internal/service"
 
 	"github.com/asaskevich/govalidator"
+	"github.com/sirupsen/logrus"
 )
 
 type UserHandler struct {
@@ -20,54 +22,57 @@ type UserHandler struct {
 }
 
 // @Summary Поменять пароль
-// @Description Получает старый и новый пароли, а также id пользователя
+// @Description Получает старый и новый пароли
 // @Tags user
 //
 // @Accept  json
 // @Produce  json
 //
-// @Param passwords body dto.PasswordChangeInfo true "id, старый и новый пароли пользователя"
+// @Param passwords body dto.PasswordChangeInfo true "Старый и новый пароли пользователя"
 //
 // @Success 200  {string} string "no content"
 // @Failure 500  {object}  apperrors.ErrorResponse
 //
 // @Router /user/edit/change_password/ [post]
 func (uh UserHandler) ChangePassword(w http.ResponseWriter, r *http.Request) {
-	log.Println("--------------UserHandler.ChangePassword Endpoint START--------------")
-
 	rCtx := r.Context()
+	funcName := "ChangePassword"
+
+	logger := rCtx.Value(dto.LoggerKey).(*logrus.Logger)
+	logger.Info("Changing user password")
 
 	var passwords dto.PasswordChangeInfo
 
 	err := json.NewDecoder(r.Body).Decode(&passwords)
 	if err != nil {
-		log.Println(err)
-		log.Println("--------------UserHandler.ChangePassword Endpoint FAIL--------------")
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.BadRequestResponse))
+		logger.Error("Password change failed")
+		handlerDebugLog(logger, funcName, "Changing user password failed with error "+err.Error())
+		apperrors.ReturnError(apperrors.BadRequestResponse, w, r)
 		return
 	}
-	log.Println("request struct decoded")
+	handlerDebugLog(logger, funcName, "JSON Decoded")
 
 	_, err = govalidator.ValidateStruct(passwords)
 	if err != nil {
-		log.Println(err)
-		log.Println("--------------UserHandler.ChangePassword Endpoint FAIL--------------")
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.GenericUnauthorizedResponse))
+		logger.Error("Password change failed")
+		handlerDebugLog(logger, funcName, "Changing user password failed with error "+err.Error())
+		apperrors.ReturnError(apperrors.BadRequestResponse, w, r)
 		return
 	}
-	log.Println("request struct validated")
+	handlerDebugLog(logger, funcName, "Request data validated")
 
 	userID := rCtx.Value(dto.UserObjKey).(*entities.User).ID
 	passwords.UserID = userID
 
+	handlerDebugLog(logger, funcName, fmt.Sprintf("Updating password for user ID %d", passwords.UserID))
 	err = uh.us.UpdatePassword(rCtx, passwords)
 	if err != nil {
-		log.Println(err)
-		log.Println("--------------UserHandler.ChangePassword Endpoint FAIL--------------")
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.ErrorMap[err]))
+		logger.Error("Password change failed")
+		handlerDebugLog(logger, funcName, "Changing user password failed with error "+err.Error())
+		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
 		return
 	}
-	log.Println("password updated")
+	handlerDebugLog(logger, funcName, "Password updated")
 
 	response := dto.JSONResponse{
 		Body: dto.JSONMap{},
@@ -75,24 +80,24 @@ func (uh UserHandler) ChangePassword(w http.ResponseWriter, r *http.Request) {
 
 	jsonResponse, err := json.Marshal(response)
 	if err != nil {
-		log.Println(err)
-		log.Println("--------------UserHandler.ChangePassword Endpoint FAIL--------------")
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.InternalServerErrorResponse))
+		logger.Error("Password change failed")
+		handlerDebugLog(logger, funcName, "Changing user password failed with error "+err.Error())
+		apperrors.ReturnError(apperrors.InternalServerErrorResponse, w, r)
 		return
 	}
-	log.Println("json response marshalled")
+	handlerDebugLog(logger, funcName, "JSON response marshaled")
 
 	_, err = w.Write(jsonResponse)
 	if err != nil {
-		log.Println(err)
-		log.Println("--------------UserHandler.ChangePassword Endpoint FAIL--------------")
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.InternalServerErrorResponse))
+		logger.Error("Password change failed")
+		handlerDebugLog(logger, funcName, "Changing user password failed with error "+err.Error())
+		apperrors.ReturnError(apperrors.InternalServerErrorResponse, w, r)
 		return
 	}
 	r.Body.Close()
-	log.Println("response written")
 
-	log.Println("--------------UserHandler.ChangePassword Endpoint SUCCESS--------------")
+	handlerDebugLog(logger, funcName, "Response written")
+	logger.Info("Finished changing user password")
 }
 
 // @Summary Поменять данные профиля

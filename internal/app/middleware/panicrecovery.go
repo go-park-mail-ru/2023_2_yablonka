@@ -14,7 +14,7 @@ func PanicRecovery(next http.Handler) http.Handler {
 			if rcvr := recover(); rcvr != nil {
 				logger := r.Context().Value(dto.LoggerKey).(*logrus.Logger)
 				logger.Error("***** PANIC *****")
-				logger.Error("Recovered from panic", rcvr)
+				logger.Error("Recovered from panic ", rcvr)
 
 				apperrors.ReturnError(apperrors.InternalServerErrorResponse, w, r)
 

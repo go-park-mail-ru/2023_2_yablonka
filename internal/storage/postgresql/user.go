@@ -10,6 +10,7 @@ import (
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/sirupsen/logrus"
 )
 
 // LocalUserStorage
@@ -97,6 +98,9 @@ func (s *PostgresUserStorage) GetWithID(ctx context.Context, id dto.UserID) (*en
 // находит данные логина пользователя в БД по id
 // или возвращает ошибки ...
 func (s *PostgresUserStorage) GetLoginInfoWithID(ctx context.Context, id dto.UserID) (*dto.LoginInfo, error) {
+	funcName := "GetLoginInfoWithID"
+	logger := ctx.Value(dto.LoggerKey).(*logrus.Logger)
+
 	sql, args, err := sq.
 		Select("email", "password_hash").
 		From("public.user").
@@ -105,17 +109,22 @@ func (s *PostgresUserStorage) GetLoginInfoWithID(ctx context.Context, id dto.Use
 		ToSql()
 
 	if err != nil {
+		storageDebugLog(logger, funcName, "Failed to build DB query with error "+err.Error())
 		return nil, apperrors.ErrCouldNotBuildQuery
 	}
-	log.Printf("query created")
+	storageDebugLog(logger, funcName,
+		fmt.Sprintf("Built query\n\t%s\n with args\n\t%s", sql, args),
+	)
 
 	row := s.db.QueryRow(ctx, sql, args...)
 
 	loginInfo := dto.LoginInfo{}
-	err = row.Scan(&loginInfo)
+	err = row.Scan(&loginInfo.Email, &loginInfo.PasswordHash)
 	if err != nil {
+		storageDebugLog(logger, funcName, "Failed to get result with error "+err.Error())
 		return nil, apperrors.ErrUserNotFound
 	}
+	storageDebugLog(logger, funcName, "Parsed result, returning")
 
 	return &loginInfo, nil
 }
