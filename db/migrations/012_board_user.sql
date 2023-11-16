@@ -2,6 +2,7 @@ CREATE TABLE IF NOT EXISTS public.board_user
 (
     id_board serial NOT NULL,
     id_user serial NOT NULL,
+    role roles_enum,
     CONSTRAINT board_user_pkey PRIMARY KEY (id_board, id_user),
     CONSTRAINT board_user_id_board_fkey FOREIGN KEY (id_board)
         REFERENCES public.board (id) MATCH SIMPLE

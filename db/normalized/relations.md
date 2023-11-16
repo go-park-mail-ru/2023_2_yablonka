@@ -79,11 +79,11 @@
         USER_WORKSPACE {
             int id_user PK, FK
             int id_workspace PK, FK
-            int id_role FK
         }
         BOARD_USER {
             int id_user PK, FK
             int id_board PK, FK
+            roles_enum role
         }
         TASK_USER {
             int id_user PK, FK
@@ -278,12 +278,12 @@
 Связующая таблица отношения М2М между пользователем и рабочими пространствоми, также позволяет добавить пользователю его роли в них.
     id_user                     
     id_workspace                
-    id_role                     
 
 ## board_user
 Связующая таблица отношения М2М между пользователем и досками, к которым у него есть доступ.
     id_user                     
-    id_board                    
+    id_board              
+    role                           
 
 ## task_user
 Связующая таблица отношения М2М между пользователем и порученным ему заданием.
@@ -376,9 +376,6 @@
     {workspace.id} -> workspace.date_created
     {workspace.id} -> workspace.description
 
-## role user-a по его id и связанному workspace-у:
-    {user.id, workspace.id} -> role.id
-
 ## Таблица board:
     {board.id} -> board.id
     {board.id} -> board.name
@@ -397,11 +394,6 @@
 
 ## Принадлежность list к одному board-у:
     {list.id} -> board.id
-
-## Таблица role:
-    {role.id} -> role.id
-    {role.id} -> role.name
-    {role.id} -> role.description
 
 ## Таблица task:
     {task.id} -> task.id
