@@ -125,7 +125,7 @@ func (us UserService) UpdateAvatar(ctx context.Context, info dto.AvatarChangeInf
 		Url: url,
 	}
 	log.Println("Service -- Full url to file", avatarUrlInfo.Url)
-	f, err := os.Create("./" + fileLocation)
+	f, err := os.Create(fileLocation)
 	if err != nil {
 		log.Println("Service -- Failed to create file with error", err)
 		return nil, err
@@ -141,10 +141,10 @@ func (us UserService) UpdateAvatar(ctx context.Context, info dto.AvatarChangeInf
 
 	err = us.storage.UpdateAvatarUrl(ctx, avatarUrlInfo)
 	if err != nil {
-		errDelete := os.Remove("./" + fileLocation)
+		errDelete := os.Remove(fileLocation)
 		for errDelete != nil {
 			log.Println("Service -- Failed to remove file after unsuccessful update with error", err)
-			errDelete = os.Remove("./" + fileLocation)
+			errDelete = os.Remove(fileLocation)
 		}
 		return nil, err
 	}
