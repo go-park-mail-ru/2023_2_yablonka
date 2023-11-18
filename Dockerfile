@@ -33,7 +33,7 @@ COPY --from=build-stage ./app/config/.env ./config/.env
 COPY --from=build-stage ./app/config/config.yml ./config/config.yml
 
 RUN mkdir -p /img
-RUN chown nonroot /img 
+RUN chown -R nonroot:nonroot /img 
 
 EXPOSE 8080
 EXPOSE 5432
