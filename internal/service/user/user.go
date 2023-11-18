@@ -122,7 +122,7 @@ func (us UserService) UpdateAvatar(ctx context.Context, info dto.AvatarChangeInf
 	log.Println("Service -- File location:", fileLocation)
 	avatarUrlInfo := dto.ImageUrlInfo{
 		ID:  info.UserID,
-		Url: url,
+		Url: info.BaseURL + "/" + fileLocation,
 	}
 	log.Println("Service -- Full url to file", avatarUrlInfo.Url)
 	f, err := os.Create(fileLocation)
