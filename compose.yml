@@ -19,7 +19,7 @@ services:
     env_file:
       - ./config/.env
     volumes:
-      - img/:img/
+      - ./img/:/img/
   
   db:
     image: postgres:latest
