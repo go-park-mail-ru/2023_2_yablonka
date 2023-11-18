@@ -20,7 +20,7 @@ import (
 func GetChiMux(manager handlers.Handlers, config config.Config) (http.Handler, error) {
 	mux := chi.NewRouter()
 
-	mux.Use(middleware.SetLogger(*config.Logging))
+	mux.Use(middleware.SetLogger(*config.Logging, *config.Server))
 	mux.Use(middleware.PanicRecovery)
 	mux.Use(middleware.GetCors(*config.CORS, *config.Logging))
 	mux.Use(middleware.JsonHeader)
