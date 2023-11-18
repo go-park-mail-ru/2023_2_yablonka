@@ -6,6 +6,7 @@ import (
 	"server/internal/apperrors"
 	"server/internal/pkg/dto"
 	"server/internal/pkg/entities"
+	"strconv"
 
 	sq "github.com/Masterminds/squirrel"
 	pgx "github.com/jackc/pgx/v5"
@@ -53,7 +54,6 @@ func (s *PostgreSQLBoardStorage) GetById(ctx context.Context, id dto.BoardID) (*
 		err = rows.Scan(
 			&board.ID,
 			&board.Name,
-			&board.Description,
 			&list.ID,
 			&list.Name,
 			&list.Description,
@@ -68,7 +68,6 @@ func (s *PostgreSQLBoardStorage) GetById(ctx context.Context, id dto.BoardID) (*
 			err = rows.Scan(
 				&board.ID,
 				&board.Name,
-				&board.Description,
 				&list.ID,
 				&list.Name,
 				&list.Description,
@@ -124,10 +123,13 @@ func (s *PostgreSQLBoardStorage) GetUsers(ctx context.Context, id dto.BoardID) (
 }
 
 func (s *PostgreSQLBoardStorage) Create(ctx context.Context, info dto.NewBoardInfo) (*entities.Board, error) {
+	user, _ := ctx.Value(dto.UserObjKey).(*entities.User)
+	baseURL := ctx.Value(dto.BaseURLKey).(string)
+
 	query1, args, err := sq.
 		Insert("public.board").
-		Columns("id_workspace", "name", "description").
-		Values(info.WorkspaceID, info.Name, info.Description).
+		Columns("id_workspace", "name").
+		Values(info.WorkspaceID, info.Name).
 		PlaceholderFormat(sq.Dollar).
 		Suffix("RETURNING id").
 		ToSql()
@@ -158,6 +160,38 @@ func (s *PostgreSQLBoardStorage) Create(ctx context.Context, info dto.NewBoardIn
 	}
 
 	log.Println("Storage -- Board created")
+
+	var url string
+	if info.ThumbnailURL != nil {
+		url = *info.ThumbnailURL
+	} else {
+		url = baseURL + "img/board_thumbnails/" + strconv.Itoa(boardID) + ".png"
+	}
+
+	query3, args, err := sq.
+		Insert("public.board").
+		Columns("thumbnail_url").
+		Values(url).
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
+
+	if err != nil {
+		log.Println("Storage -- Failed to build query")
+		return nil, apperrors.ErrCouldNotBuildQuery
+	}
+
+	log.Println("Built board query\n\t", query1, "\nwith args\n\t", args)
+
+	row = tx.QueryRow(ctx, query3, args...)
+	log.Println("Storage -- DB queried")
+	if err := row.Scan(); err != nil {
+		log.Println("Storage -- Board insert failed with error", err.Error())
+		err = tx.Rollback(ctx)
+		for err != nil {
+			err = tx.Rollback(ctx)
+		}
+		return nil, apperrors.ErrBoardNotCreated
+	}
 
 	query2, args, err := sq.
 		Insert("public.board_user").
@@ -196,11 +230,21 @@ func (s *PostgreSQLBoardStorage) Create(ctx context.Context, info dto.NewBoardIn
 
 	newBoard := entities.Board{
 		ID:   uint64(boardID),
-		Name: *info.Name,
+		Name: info.Name,
 		Owner: dto.UserID{
 			Value: info.OwnerID,
 		},
-		Description: info.Description,
+		Users: []dto.UserPublicInfo{
+			{
+				ID:          user.ID,
+				Email:       user.Email,
+				Name:        user.Name,
+				Surname:     user.Surname,
+				Description: user.Description,
+				AvatarURL:   user.AvatarURL,
+			},
+		},
+		ThumbnailURL: &url,
 	}
 
 	log.Println("Storage -- Committed changes")

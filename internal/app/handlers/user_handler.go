@@ -233,7 +233,6 @@ func (uh UserHandler) ChangeAvatar(w http.ResponseWriter, r *http.Request) {
 	handlerDebugLog(logger, funcName, "Request data validated")
 
 	avatarChangeInfo.UserID = user.ID
-	avatarChangeInfo.BaseURL = r.URL.Scheme + "://" + r.URL.Host
 
 	handlerDebugLog(logger, funcName, fmt.Sprintf("Updating avatar for user ID %d", avatarChangeInfo.UserID))
 	url, err := uh.us.UpdateAvatar(rCtx, avatarChangeInfo)

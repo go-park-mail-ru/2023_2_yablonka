@@ -2,11 +2,12 @@ package postgresql
 
 import (
 	"context"
-	"github.com/jackc/pgx/v5/pgxpool"
 	"reflect"
 	"server/internal/pkg/dto"
 	"server/internal/pkg/entities"
 	"testing"
+
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 func TestNewBoardStorage(t *testing.T) {

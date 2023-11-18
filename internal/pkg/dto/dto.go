@@ -50,9 +50,8 @@ type IndividualBoardRequest struct {
 // AvatarChangeInfo
 // структура для изменения аватарки
 type AvatarChangeInfo struct {
-	UserID  uint64 `json:"-" valid:"-"`
-	Avatar  []byte `json:"avatar" valid:"-"`
-	BaseURL string `json:"-" valid:"-"`
+	UserID uint64 `json:"-" valid:"-"`
+	Avatar []byte `json:"avatar" valid:"-"`
 }
 
 // ImageRequest
@@ -95,8 +94,8 @@ type PasswordChangeInfo struct {
 type UserProfileInfo struct {
 	UserID      uint64 `json:"-" valid:"-"`
 	Name        string `json:"name" valid:"stringlength(0|100)"`
-	Surname     string `json:"surname" valid:"omitempty,stringlength(0|100)"`
-	Description string `json:"description" valid:"omitempty,stringlength(0|256)"`
+	Surname     string `json:"surname,omitempty" valid:"optional,stringlength(0|100)"`
+	Description string `json:"description,omitempty" valid:"optional,stringlength(0|256)"`
 }
 
 // UserProfileInfo
@@ -157,22 +156,20 @@ type IndividualBoardInfo struct {
 // NewBoardInfo
 // DTO для новой доски
 type NewBoardInfo struct {
-	Name        *string          `json:"name"`
-	OwnerID     uint64           `json:"owner_id"`
-	WorkspaceID uint64           `json:"workspace_id"`
-	Description *string          `json:"description"`
-	Thumbnail   []byte           `json:"thumbnail"`
-	Users       []UserPublicInfo `json:"user"`
+	Name         string  `json:"name" valid:"type(string)"`
+	WorkspaceID  uint64  `json:"workspace_id" valid:"type(int)"`
+	OwnerID      uint64  `json:"owner_id" valid:"type(int)"`
+	Thumbnail    *[]byte `json:"thumbnail,omitempty" valid:"optional"`
+	ThumbnailURL *string
+	Users        []UserPublicInfo `json:"user"`
 }
 
 // NewBoardRequest
 // DTO для запроса новой доски
 type NewBoardRequest struct {
-	Name        *string `json:"name"`
-	OwnerID     uint64  `json:"owner_id"`
-	WorkspaceID uint64  `json:"workspace_id"`
-	Description *string `json:"description"`
-	Thumbnail   []byte  `json:"thumbnail"`
+	Name        string  `json:"name" valid:"type(string)"`
+	WorkspaceID uint64  `json:"workspace_id" valid:"type(int)"`
+	Thumbnail   *[]byte `json:"thumbnail,omitempty" valid:"optional"`
 }
 
 // WorkspaceID
@@ -373,4 +370,5 @@ const (
 	ErrorKey
 	SIDLengthKey
 	LoggerKey
+	BaseURLKey
 )

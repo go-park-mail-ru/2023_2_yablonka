@@ -465,8 +465,8 @@ func TestUserHandler_ChangeProfile(t *testing.T) {
 		oldUserName    string
 		newUserName    string
 		oldUserSurname string
-		newUserSurname *string
-		newDescription *string
+		newUserSurname string
+		newDescription string
 		successful     bool
 		expiredCookie  bool
 		expectedStatus int
@@ -478,8 +478,8 @@ func TestUserHandler_ChangeProfile(t *testing.T) {
 			token:          "session",
 			oldUserName:    "Old name",
 			newUserName:    "New name",
-			newUserSurname: &newSurname,
-			newDescription: &newDescription,
+			newUserSurname: newSurname,
+			newDescription: newDescription,
 			successful:     true,
 			expectedStatus: http.StatusOK,
 		},
@@ -516,7 +516,7 @@ func TestUserHandler_ChangeProfile(t *testing.T) {
 
 			body := bytes.NewReader([]byte(
 				fmt.Sprintf(`{"user_id":%d, "name":"%s", "surname":"%s", "description":"%s"}`,
-					test.userID, test.newUserName, *test.newUserSurname, *test.newDescription),
+					test.userID, test.newUserName, test.newUserSurname, test.newDescription),
 			))
 
 			r := httptest.NewRequest("POST", "/api/v2/user/edit", body)

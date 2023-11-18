@@ -117,12 +117,12 @@ func (us UserService) UpdateProfile(ctx context.Context, info dto.UserProfileInf
 // обновляет аватарку пользователя
 // или возвращает ошибку apperrors.ErrUserNotFound (409)
 func (us UserService) UpdateAvatar(ctx context.Context, info dto.AvatarChangeInfo) (*dto.UrlObj, error) {
-	url := "user_avatars/" + strconv.FormatUint(info.UserID, 10) + ".png"
-	fileLocation := "img/" + url
+	baseURL := ctx.Value(dto.BaseURLKey).(string)
+	fileLocation := "img/user_avatars/" + strconv.FormatUint(info.UserID, 10) + ".png"
 	log.Println("Service -- File location:", fileLocation)
 	avatarUrlInfo := dto.ImageUrlInfo{
 		ID:  info.UserID,
-		Url: info.BaseURL + "/" + fileLocation,
+		Url: baseURL + fileLocation,
 	}
 	log.Println("Service -- Full url to file", avatarUrlInfo.Url)
 	f, err := os.Create(fileLocation)
@@ -175,11 +175,11 @@ func userServiceDebugLog(logger *logrus.Logger, function string, message string)
 		Debug(message)
 }
 
-func userServiceWarnLog(logger *logrus.Logger, function string, message string) {
-	logger.
-		WithFields(logrus.Fields{
-			"route_node": "service",
-			"function":   function,
-		}).
-		Warn(message)
-}
+// func userServiceWarnLog(logger *logrus.Logger, function string, message string) {
+// 	logger.
+// 		WithFields(logrus.Fields{
+// 			"route_node": "service",
+// 			"function":   function,
+// 		}).
+// 		Warn(message)
+// }

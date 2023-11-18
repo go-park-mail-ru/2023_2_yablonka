@@ -44,11 +44,11 @@ func storageDebugLog(logger *logrus.Logger, function string, message string) {
 		Debug(message)
 }
 
-func storageWarnLog(logger *logrus.Logger, function string, message string) {
-	logger.
-		WithFields(logrus.Fields{
-			"route_node": "storage",
-			"function":   function,
-		}).
-		Warn(message)
-}
+// func storageWarnLog(logger *logrus.Logger, function string, message string) {
+// 	logger.
+// 		WithFields(logrus.Fields{
+// 			"route_node": "storage",
+// 			"function":   function,
+// 		}).
+// 		Warn(message)
+// }

@@ -10,6 +10,9 @@ import (
 	"server/internal/pkg/dto"
 	"server/internal/pkg/entities"
 	"server/internal/service"
+
+	"github.com/asaskevich/govalidator"
+	"github.com/sirupsen/logrus"
 )
 
 type BoardHandler struct {
@@ -111,42 +114,45 @@ func (bh BoardHandler) GetFullBoard(w http.ResponseWriter, r *http.Request) {
 //
 // @Router /board/create/ [post]
 func (bh BoardHandler) Create(w http.ResponseWriter, r *http.Request) {
-	log.Println("--------------BoardHandler.Create Endpoint START--------------")
-
 	rCtx := r.Context()
+	funcName := "Create"
+
+	logger := rCtx.Value(dto.LoggerKey).(*logrus.Logger)
+	logger.Info("Creating a new board")
 
 	var newBoardRequest dto.NewBoardRequest
 	err := json.NewDecoder(r.Body).Decode(&newBoardRequest)
 	if err != nil {
-		log.Println("Failed to decode incoming JSON")
-		log.Println(err)
-		log.Println("--------------BoardHandler.Create Endpoint FAIL--------------")
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.BadRequestResponse))
+		logger.Error("Creating a new board failed")
+		handlerDebugLog(logger, funcName, "Creating a new board failed with error "+err.Error())
+		apperrors.ReturnError(apperrors.BadRequestResponse, w, r)
 		return
 	}
-	log.Println("request struct decoded")
+	handlerDebugLog(logger, funcName, "JSON Decoded")
 
 	user, ok := rCtx.Value(dto.UserObjKey).(*entities.User)
 	if !ok {
-		log.Println("user not found")
-		log.Println("--------------BoardHandler.Create Endpoint FAIL--------------")
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.GenericUnauthorizedResponse))
+		logger.Error("User avatar change failed")
+		handlerDebugLog(logger, funcName, "Changing user avatar failed -- no user passed in context")
+		apperrors.ReturnError(apperrors.GenericUnauthorizedResponse, w, r)
 		return
 	}
-	log.Println("user found")
+	handlerDebugLog(logger, funcName, "User object acquired from context")
 
-	// // _, err = govalidator.ValidateStruct(newBoardInfo)
-	// // if err != nil {
-	// // 	*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.BadRequestResponse))
-	// // 	return
-	// // }
+	_, err = govalidator.ValidateStruct(newBoardRequest)
+	if err != nil {
+		logger.Error("Creating a new board failed")
+		handlerDebugLog(logger, funcName, "Creating a new board failed with error "+err.Error())
+		apperrors.ReturnError(apperrors.BadRequestResponse, w, r)
+		return
+	}
+	handlerDebugLog(logger, funcName, "New board data validated")
 
 	newBoardInfo := dto.NewBoardInfo{
 		Name:        newBoardRequest.Name,
-		Description: newBoardRequest.Description,
-		Thumbnail:   newBoardRequest.Thumbnail,
 		WorkspaceID: newBoardRequest.WorkspaceID,
 		OwnerID:     user.ID,
+		Thumbnail:   newBoardRequest.Thumbnail,
 	}
 
 	board, err := bh.bs.Create(rCtx, newBoardInfo)
@@ -291,6 +297,8 @@ func (bh BoardHandler) UpdateThumbnail(w http.ResponseWriter, r *http.Request) {
 	// 	*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.BadRequestResponse))
 	// 	return
 	// }
+
+	boardInfo.BaseURL = r.URL.Scheme + "://" + r.URL.Host
 
 	urlObj, err := bh.bs.UpdateThumbnail(rCtx, boardInfo)
 	if err != nil {

@@ -50,7 +50,6 @@ type Board struct {
 	ID           uint64               `json:"board_id"`
 	Name         string               `json:"name"`
 	Owner        dto.UserID           `json:"owner"`
-	Description  *string              `json:"description"`
 	ThumbnailURL *string              `json:"thumbnail_url"`
 	DateCreated  time.Time            `json:"date_created"`
 	Users        []dto.UserPublicInfo `json:"users"`
