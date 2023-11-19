@@ -24,7 +24,7 @@ var (
 	// }
 
 	allWorkspaceAndBoardFields = []string{
-		"public.workspace.id", "public.workspace.name", "public.workspace.description", "public.workspace.date_created", "public.workspace.thumbnail_url",
+		"public.workspace.id", "public.workspace.name", "public.workspace.description", "public.workspace.date_created",
 		"public.board.id", "public.board.name", "public.board.description", "public.board.date_created", "public.board.thumbnail_url",
 	}
 

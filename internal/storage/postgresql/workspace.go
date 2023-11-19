@@ -129,9 +129,10 @@ func (s PostgresWorkspaceStorage) GetUserOwnedWorkspaces(ctx context.Context, us
 
 	for _, boardRow := range boardRows {
 		board := dto.WorkspaceBoardInfo{
-			ID:          boardRow.ID,
-			Name:        boardRow.Name,
-			Description: boardRow.Description,
+			ID:           boardRow.ID,
+			Name:         boardRow.Name,
+			Description:  boardRow.Description,
+			ThumbnailURL: boardRow.ThumbnailURL,
 		}
 		ws := workspaces[boardRow.WorkspaceID]
 		ws.Boards = append(ws.Boards, board)
@@ -231,9 +232,10 @@ func (s PostgresWorkspaceStorage) GetUserGuestWorkspaces(ctx context.Context, us
 
 	for _, boardRow := range boardRows {
 		board := dto.WorkspaceBoardInfo{
-			ID:          boardRow.ID,
-			Name:        boardRow.Name,
-			Description: boardRow.Description,
+			ID:           boardRow.ID,
+			Name:         boardRow.Name,
+			Description:  boardRow.Description,
+			ThumbnailURL: boardRow.ThumbnailURL,
 		}
 		ws := workspaces[boardRow.WorkspaceID]
 		ws.Boards = append(ws.Boards, board)
