@@ -175,7 +175,7 @@ func (s *PostgreSQLBoardStorage) Create(ctx context.Context, info dto.NewBoardIn
 	query2, args, err := sq.
 		Update("public.board").
 		Set("thumbnail_url", url).
-		Where(sq.Eq{"board.id_workspace": info.WorkspaceID}).
+		Where(sq.Eq{"id_workspace": info.WorkspaceID}).
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
 	if err != nil {
