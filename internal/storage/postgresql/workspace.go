@@ -98,7 +98,7 @@ func (s PostgresWorkspaceStorage) GetUserOwnedWorkspaces(ctx context.Context, us
 	}
 
 	boardQuery, args, err := sq.
-		Select("id_workspace", "id", "name", "description").
+		Select("id_workspace", "id", "name", "description", "thumbnail_url").
 		From("public.board").
 		Where(sq.Eq{"id_workspace": ownedID}).
 		OrderBy("public.board.date_created").
@@ -200,7 +200,7 @@ func (s PostgresWorkspaceStorage) GetUserGuestWorkspaces(ctx context.Context, us
 	}
 
 	boardQuery, args, err := sq.
-		Select("id_workspace", "id", "name", "description").
+		Select("id_workspace", "id", "name", "description", "thumbnail_url").
 		From("public.board").
 		Where(sq.Eq{"id_workspace": guestID}).
 		OrderBy("public.board.date_created").

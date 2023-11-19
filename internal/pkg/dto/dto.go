@@ -310,9 +310,10 @@ type ChangeWorkspaceThumbnailInfo struct {
 // ChangeWorkspaceThumbnailInfo
 // DTO для изменения картинки рабочего пространства
 type WorkspaceBoardInfo struct {
-	ID          uint64  `json:"id"`
-	Name        string  `json:"name"`
-	Description *string `json:"description"`
+	ID           uint64  `json:"id"`
+	Name         string  `json:"name"`
+	Description  *string `json:"description"`
+	ThumbnailURL *string `json:"thumbnail_url"`
 }
 
 // UserOwnedWorkspaceInfo
