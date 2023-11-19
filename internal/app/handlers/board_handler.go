@@ -298,7 +298,7 @@ func (bh BoardHandler) UpdateThumbnail(w http.ResponseWriter, r *http.Request) {
 	// 	return
 	// }
 
-	boardInfo.BaseURL = r.URL.Scheme + "://" + r.URL.Host
+	//boardInfo.BaseURL = r.URL.Scheme + "://" + r.URL.Host
 
 	urlObj, err := bh.bs.UpdateThumbnail(rCtx, boardInfo)
 	if err != nil {
