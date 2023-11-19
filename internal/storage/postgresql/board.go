@@ -136,8 +136,8 @@ func (s *PostgreSQLBoardStorage) Create(ctx context.Context, info dto.NewBoardIn
 
 	query1, args, err := sq.
 		Insert("public.board").
-		Columns("id_workspace", "name", "id_owner").
-		Values(info.WorkspaceID, info.Name, info.OwnerID).
+		Columns("id_workspace", "name").
+		Values(info.WorkspaceID, info.Name).
 		PlaceholderFormat(sq.Dollar).
 		Suffix("RETURNING id").
 		ToSql()
