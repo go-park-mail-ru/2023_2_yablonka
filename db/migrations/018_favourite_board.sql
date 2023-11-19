@@ -7,12 +7,12 @@ CREATE TABLE IF NOT EXISTS public.favourite_boards
     CONSTRAINT favourite_boards_id_board_fkey FOREIGN KEY (id_board)
         REFERENCES public.board (id) MATCH SIMPLE
         ON UPDATE NO ACTION
-        ON DELETE NO ACTION
+        ON DELETE CASCADE
         NOT VALID,
     CONSTRAINT favourite_boards_id_user_fkey FOREIGN KEY (id_user)
         REFERENCES public."user" (id) MATCH SIMPLE
         ON UPDATE NO ACTION
-        ON DELETE NO ACTION
+        ON DELETE CASCADE
         NOT VALID
 )
 

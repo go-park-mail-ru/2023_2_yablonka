@@ -8,12 +8,12 @@ CREATE TABLE IF NOT EXISTS public.reaction
     CONSTRAINT reaction_id_comment_fkey FOREIGN KEY (id_comment)
         REFERENCES public.comment (id) MATCH SIMPLE
         ON UPDATE NO ACTION
-        ON DELETE NO ACTION
+        ON DELETE CASCADE
         NOT VALID,
     CONSTRAINT reaction_id_user_fkey FOREIGN KEY (id_user)
         REFERENCES public."user" (id) MATCH SIMPLE
         ON UPDATE NO ACTION
-        ON DELETE NO ACTION
+        ON DELETE SET NULL
         NOT VALID,
     CONSTRAINT reaction_content_length_check CHECK (length(content) <= 2) NOT VALID
 )

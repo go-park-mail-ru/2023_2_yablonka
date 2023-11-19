@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS public.csrf
     CONSTRAINT csrf_id_user_fkey FOREIGN KEY (id_user)
         REFERENCES public."user" (id) MATCH SIMPLE
         ON UPDATE NO ACTION
-        ON DELETE NO ACTION
+        ON DELETE CASCADE
 )
 
 ---- create above / drop below ----

@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS public.checklist_item
     CONSTRAINT checklist_item_id_checklist_fkey FOREIGN KEY (id_checklist)
         REFERENCES public.checklist (id) MATCH SIMPLE
         ON UPDATE NO ACTION
-        ON DELETE NO ACTION
+        ON DELETE CASCADE
         NOT VALID,
     CONSTRAINT checklist_item_list_position_check CHECK (list_position >= 0) NOT VALID
 )

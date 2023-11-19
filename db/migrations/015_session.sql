@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS public.session
     CONSTRAINT session_id_user_fkey FOREIGN KEY (id_user)
         REFERENCES public."user" (id) MATCH SIMPLE
         ON UPDATE NO ACTION
-        ON DELETE NO ACTION
+        ON DELETE CASCADE
         NOT VALID,
     CONSTRAINT session_id_session_length_check CHECK (length(id_session) <= 64) NOT VALID
 )

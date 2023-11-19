@@ -9,12 +9,12 @@ CREATE TABLE IF NOT EXISTS public.comment
     CONSTRAINT comment_id_task_fkey FOREIGN KEY (id_task)
         REFERENCES public.task (id) MATCH SIMPLE
         ON UPDATE NO ACTION
-        ON DELETE NO ACTION
+        ON DELETE CASCADE
         NOT VALID,
     CONSTRAINT comment_id_user_fkey FOREIGN KEY (id_user)
         REFERENCES public."user" (id) MATCH SIMPLE
         ON UPDATE NO ACTION
-        ON DELETE NO ACTION
+        ON DELETE SET NULL
         NOT VALID,
     CONSTRAINT content_length_check CHECK (length(content) <= 2000) NOT VALID
 )

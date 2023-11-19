@@ -6,12 +6,12 @@ CREATE TABLE IF NOT EXISTS public.comment_embedding
     CONSTRAINT comment_embedding_id_embedding_fkey FOREIGN KEY (id_embedding)
         REFERENCES public.embedding (id) MATCH SIMPLE
         ON UPDATE NO ACTION
-        ON DELETE NO ACTION
+        ON DELETE CASCADE
         NOT VALID,
     CONSTRAINT comment_embedding_id_comment_fkey FOREIGN KEY (id_comment)
         REFERENCES public.comment (id) MATCH SIMPLE
         ON UPDATE NO ACTION
-        ON DELETE NO ACTION
+        ON DELETE CASCADE
         NOT VALID
 )
 

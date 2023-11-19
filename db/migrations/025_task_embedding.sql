@@ -6,12 +6,12 @@ CREATE TABLE IF NOT EXISTS public.task_embedding
     CONSTRAINT task_embedding_id_embedding_fkey FOREIGN KEY (id_embedding)
         REFERENCES public.embedding (id) MATCH SIMPLE
         ON UPDATE NO ACTION
-        ON DELETE NO ACTION
+        ON DELETE CASCADE
         NOT VALID,
     CONSTRAINT task_embedding_id_task_fkey FOREIGN KEY (id_task)
         REFERENCES public.task (id) MATCH SIMPLE
         ON UPDATE NO ACTION
-        ON DELETE NO ACTION
+        ON DELETE CASCADE
         NOT VALID
 )
 

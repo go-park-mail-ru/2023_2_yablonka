@@ -6,7 +6,7 @@ CREATE TABLE IF NOT EXISTS public.user_workspace
     CONSTRAINT user_workspace_id_user_fkey FOREIGN KEY (id_user)
         REFERENCES public."user" (id) MATCH SIMPLE
         ON UPDATE NO ACTION
-        ON DELETE NO ACTION
+        ON DELETE SET NULL
         NOT VALID,
     CONSTRAINT user_workspace_id_workspace_fkey FOREIGN KEY (id_workspace)
         REFERENCES public.workspace (id) MATCH SIMPLE

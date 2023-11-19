@@ -6,12 +6,12 @@ CREATE TABLE IF NOT EXISTS public.tag_task
     CONSTRAINT tag_task_id_tag_fkey FOREIGN KEY (id_tag)
         REFERENCES public.tag (id) MATCH SIMPLE
         ON UPDATE NO ACTION
-        ON DELETE NO ACTION
+        ON DELETE CASCADE
         NOT VALID,
     CONSTRAINT tag_task_id_task_fkey FOREIGN KEY (id_task)
         REFERENCES public.task (id) MATCH SIMPLE
         ON UPDATE NO ACTION
-        ON DELETE NO ACTION
+        ON DELETE CASCADE
         NOT VALID
 )
 
