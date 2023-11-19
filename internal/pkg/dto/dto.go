@@ -168,7 +168,7 @@ type NewBoardInfo struct {
 // DTO для запроса новой доски
 type NewBoardRequest struct {
 	Name        string  `json:"name" valid:"type(string)"`
-	WorkspaceID uint64  `json:"workspace_id" valid:"type(int)"`
+	WorkspaceID uint64  `json:"workspace_id" valid:"type(uint64)"`
 	Thumbnail   *[]byte `json:"thumbnail,omitempty" valid:"optional"`
 }
 
