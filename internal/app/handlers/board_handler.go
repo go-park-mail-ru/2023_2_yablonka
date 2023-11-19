@@ -139,7 +139,6 @@ func (bh BoardHandler) Create(w http.ResponseWriter, r *http.Request) {
 	}
 	handlerDebugLog(logger, funcName, "User object acquired from context")
 
-	log.Println(newBoardRequest)
 	_, err = govalidator.ValidateStruct(newBoardRequest)
 	if err != nil {
 		logger.Error("Creating a new board failed")

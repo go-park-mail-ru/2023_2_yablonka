@@ -70,7 +70,8 @@ var (
 // Ошибки, связанные с сервером
 var (
 	// ErrCouldNotBuildQuery ошибка: не удалось сформировать SQL запрос
-	ErrCouldNotBuildQuery = errors.New("error building an SQL query")
+	ErrCouldNotBuildQuery       = errors.New("error building an SQL query")
+	ErrCouldNotStartTransaction = errors.New("error starting a transaction")
 )
 
 // Ошибки, связанные с BoardService
