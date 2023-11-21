@@ -164,6 +164,44 @@ type NewBoardInfo struct {
 	Users        []UserPublicInfo `json:"user"`
 }
 
+type SingleBoardInfo struct {
+	ID           uint64           `json:"board_id"`
+	Name         string           `json:"name"`
+	ThumbnailURL *string          `json:"thumbnail_url"`
+	DateCreated  time.Time        `json:"date_created"`
+	Users        []UserPublicInfo `json:"users"`
+	Lists        []uint64         `json:"lists"`
+}
+
+type SingleListInfo struct {
+	ID           uint64   `json:"id"`
+	BoardID      uint64   `json:"board_id"`
+	Name         string   `json:"name"`
+	Description  *string  `json:"description"`
+	ListPosition uint64   `json:"list_position"`
+	Tasks        []uint64 `json:"cards"`
+}
+
+type SingleTaskInfo struct {
+	ID           uint64           `json:"id"`
+	ListID       uint64           `json:"list_id"`
+	DateCreated  time.Time        `json:"date_created"`
+	Name         string           `json:"name"`
+	Description  *string          `json:"description"`
+	ListPosition uint64           `json:"list_position"`
+	Start        *time.Time       `json:"start"`
+	End          *time.Time       `json:"end"`
+	Users        []UserPublicInfo `json:"users"`
+	// Comments
+	// Checklists
+}
+
+type FullBoardResult struct {
+	Board SingleBoardInfo  `json:"board"`
+	Lists []SingleListInfo `json:"lists"`
+	Tasks []SingleTaskInfo `json:"cards"`
+}
+
 // NewBoardRequest
 // DTO для запроса новой доски
 type NewBoardRequest struct {

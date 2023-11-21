@@ -21,6 +21,15 @@ type PostgreSQLBoardStorage struct {
 	db *pgxpool.Pool
 }
 
+type BoardListReturn struct {
+	ID           uint64
+	BoardID      uint64
+	Name         string
+	Description  *string
+	ListPosition uint64
+	Task         uint64
+}
+
 func NewBoardStorage(db *pgxpool.Pool) *PostgreSQLBoardStorage {
 	return &PostgreSQLBoardStorage{
 		db: db,
@@ -31,69 +40,93 @@ func NewBoardStorage(db *pgxpool.Pool) *PostgreSQLBoardStorage {
 // GetById
 // находит доску и связанные с ней списки и задания по id
 // или возвращает ошибки ...
-func (s *PostgreSQLBoardStorage) GetById(ctx context.Context, id dto.BoardID) (*entities.Board, error) {
+func (s *PostgreSQLBoardStorage) GetById(ctx context.Context, id dto.BoardID) (*dto.FullBoardResult, error) {
 	funcName := "GetById"
 	logger := ctx.Value(dto.LoggerKey).(*logrus.Logger)
 
-	sql, args, err := sq.Select(append(allBoardFields, append(allListFields, allTaskFields...)...)...).
+	// user, ok := ctx.Value(dto.UserObjKey).(*entities.User)
+	// if !ok {
+	// 	log.Println("Storage -- Failed to get user")
+	// 	return nil, apperrors.ErrCouldNotBuildQuery
+	// }
+
+	// sql, args, err := sq.Select(allBoardFields...).
+	// 	From("public.board").
+	// 	Join("public.list ON public.board.id = public.list.id_board").
+	// 	Join("public.task ON public.list.id = public.task.id_list").
+	// 	Where(sq.Eq{"public.board.id": id}).
+	// 	PlaceholderFormat(sq.Dollar).
+	// 	ToSql()
+
+	boardSql, args, err := sq.Select(allBoardListFields...).
 		From("public.board").
-		Join("public.list ON public.board.id = public.list.id_board").
-		Join("public.task ON public.list.id = public.task.id_list").
-		Where(sq.Eq{"public.board.id": id}).
+		Where(sq.Eq{"public.board.id": id.Value}).
+		Join("public.list ON public.list.id_board = " + strconv.FormatUint(id.Value, 10)).
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
 
 	if err != nil {
 		return nil, apperrors.ErrCouldNotBuildQuery
 	}
-	boardStorageDebugLog(logger, funcName, "Built query\n\t"+sql+"\nwith args\n\t"+fmt.Sprintf("%+v", args))
+	boardStorageDebugLog(logger, funcName, "Built query\n\t"+boardSql+"\nwith args\n\t"+fmt.Sprintf("%+v", args))
 
-	rows, err := s.db.Query(context.Background(), sql, args...)
+	rows, err := s.db.Query(context.Background(), boardSql, args...)
 	if err != nil {
 		boardStorageDebugLog(logger, funcName, "Failed to get board with error "+err.Error())
 		return nil, apperrors.ErrCouldNotGetBoard
 	}
 	defer rows.Close()
-	boardStorageDebugLog(logger, funcName, "Got board users")
+	boardStorageDebugLog(logger, funcName, "Got board info rows")
 
-	var board entities.Board
-	for rows.Next() {
-		var list entities.List
-
-		err = rows.Scan(
-			&board.ID,
-			&board.Name,
-			&list.ID,
-			&list.Name,
-			&list.Description,
-		)
-		if err != nil {
-			return nil, apperrors.ErrCouldNotGetBoard
-		}
-
-		for rows.Next() {
-			var task entities.Task
-
-			err = rows.Scan(
-				&board.ID,
-				&board.Name,
-				&list.ID,
-				&list.Name,
-				&list.Description,
-				&task.ID,
-				&task.Name,
-				&task.Description,
-			)
-			if err != nil {
-				return nil, apperrors.ErrCouldNotGetBoard
-			}
-			list.Tasks = append(list.Tasks, task)
-		}
-
-		board.Lists = append(board.Lists, list)
+	boardRows, err := pgx.CollectRows(rows, pgx.RowToStructByPos[BoardListReturn])
+	if err != nil {
+		boardStorageDebugLog(logger, funcName, "Failed to collect rows with error "+err.Error())
+		return nil, apperrors.ErrCouldNotGetBoard
 	}
 
-	return &board, nil
+	result := dto.FullBoardResult{
+		Board: dto.SingleBoardInfo{
+			ID:   id.Value,
+			Name: boardRows[0].Name,
+			// ThumbnailURL: boardRows[0].,
+			Lists: []uint64{},
+		},
+	}
+
+	// 	err = rows.Scan(
+	// 		&board.ID,
+	// 		&board.Name,
+	// 		&list.ID,
+	// 		&list.Name,
+	// 		&list.Description,
+	// 	)
+	// 	if err != nil {
+	// 		return nil, apperrors.ErrCouldNotGetBoard
+	// 	}
+
+	// 	for rows.Next() {
+	// 		var task entities.Task
+
+	// 		err = rows.Scan(
+	// 			&board.ID,
+	// 			&board.Name,
+	// 			&list.ID,
+	// 			&list.Name,
+	// 			&list.Description,
+	// 			&task.ID,
+	// 			&task.Name,
+	// 			&task.Description,
+	// 		)
+	// 		if err != nil {
+	// 			return nil, apperrors.ErrCouldNotGetBoard
+	// 		}
+	// 		list.Tasks = append(list.Tasks, task)
+	// 	}
+
+	// 	board.Lists = append(board.Lists, list)
+	// }
+
+	return &result, nil
 }
 
 // GetUsers

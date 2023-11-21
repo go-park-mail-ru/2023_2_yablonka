@@ -10,8 +10,12 @@ var (
 
 	// allWorkspaceFields = []string{"id", "id_creator", "name", "date_created", "description"}
 
-	allBoardFields   = []string{"id", "id_workspace", "name", "date_created", "thumbnail_url"}
-	allListFields    = []string{"id", "id_board", "name", "description", "list_position"}
+	allBoardFields     = []string{"id", "id_workspace", "name", "date_created", "thumbnail_url"}
+	allBoardListFields = []string{"public.board.id", "public.board.id_workspace", "public.board.name", "public.board.date_created", "public.board.thumbnail_url", "public.list.id"}
+
+	allListFields       = []string{"id", "id_board", "name", "description", "list_position"}
+	allPublicListFields = []string{"id", "id_board", "name", "description", "list_position"}
+
 	allTaskFields    = []string{"id", "id_list", "date_created", "name", "description", "list_position", "task_start", "task_end"}
 	newTaskFields    = []string{"id_list", "name", "description", "list_position", "task_start", "task_end"}
 	allSessionFields = []string{"id_user", "expiration_date"}

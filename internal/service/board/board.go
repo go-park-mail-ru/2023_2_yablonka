@@ -27,7 +27,7 @@ func NewBoardService(storage storage.IBoardStorage) *BoardService {
 
 // GetFullBoard
 // возвращает доску со связанными пользователями, списками и заданиями
-func (bs BoardService) GetFullBoard(ctx context.Context, info dto.IndividualBoardRequest) (*entities.Board, error) {
+func (bs BoardService) GetFullBoard(ctx context.Context, info dto.IndividualBoardRequest) (*dto.FullBoardResult, error) {
 	funcName := "GetFullBoard"
 	logger := ctx.Value(dto.LoggerKey).(*logrus.Logger)
 
@@ -62,7 +62,7 @@ func (bs BoardService) GetFullBoard(ctx context.Context, info dto.IndividualBoar
 	}
 	boardServiceDebugLog(logger, funcName, "Got board")
 
-	board.Users = *boardUsers
+	board.Board.Users = *boardUsers
 
 	return board, nil
 }

@@ -78,15 +78,41 @@ type Role struct {
 // Workspace
 // структура для хранения доски
 type Task struct {
-	ID           uint64     `json:"id"`
-	ListID       uint64     `json:"list_id"`
-	DateCreated  time.Time  `json:"date_created"`
-	Name         string     `json:"name"`
-	Description  *string    `json:"description"`
-	ListPosition uint64     `json:"list_position"`
-	Start        *time.Time `json:"start"`
-	End          *time.Time `json:"end"`
-	Users        []User     `json:"users"`
+	ID           uint64      `json:"id"`
+	ListID       uint64      `json:"list_id"`
+	DateCreated  time.Time   `json:"date_created"`
+	Name         string      `json:"name"`
+	Description  *string     `json:"description"`
+	ListPosition uint64      `json:"list_position"`
+	Start        *time.Time  `json:"start"`
+	End          *time.Time  `json:"end"`
+	Users        []User      `json:"users"`
+	Checklists   []Checklist `json:"checklists"`
+	Comments     []Comment   `json:"comments"`
+}
+
+type Comment struct {
+	ID          uint64    `json:"id"`
+	UserID      uint64    `json:"user_id"`
+	TaskID      uint64    `json:"task_id"`
+	Text        string    `json:"text"`
+	DateCreated time.Time `json:"date_created"`
+}
+
+type Checklist struct {
+	ID           uint64          `json:"id"`
+	TaskID       uint64          `json:"task_id"`
+	Name         string          `json:"name"`
+	ListPosition uint64          `json:"list_position"`
+	Items        []ChecklistItem `json:"items"`
+}
+
+type ChecklistItem struct {
+	ID           uint64 `json:"id"`
+	ChecklistID  uint64 `json:"checklist_id"`
+	Name         string `json:"name"`
+	Done         bool   `json:"done"`
+	ListPosition uint64 `json:"list_position"`
 }
 
 func (u *User) TableName() string {

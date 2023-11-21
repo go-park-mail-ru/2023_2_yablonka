@@ -9,7 +9,7 @@ import (
 type IBoardService interface {
 	// GetFullBoard
 	// возвращает доску со связанными пользователями, списками и заданиями
-	GetFullBoard(context.Context, dto.IndividualBoardRequest) (*entities.Board, error)
+	GetFullBoard(context.Context, dto.IndividualBoardRequest) (*dto.FullBoardResult, error)
 	// Create
 	// создаёт доску и связь с пользователем-создателем
 	Create(context.Context, dto.NewBoardInfo) (*entities.Board, error)
