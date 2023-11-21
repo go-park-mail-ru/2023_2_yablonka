@@ -69,21 +69,6 @@ func (mr *MockIListServiceMockRecorder) Delete(arg0, arg1 any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockIListService)(nil).Delete), arg0, arg1)
 }
 
-// ReadListsInBoard mocks base method.
-func (m *MockIListService) ReadListsInBoard(arg0 context.Context, arg1 dto.BoardID) (*[]entities.List, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ReadListsInBoard", arg0, arg1)
-	ret0, _ := ret[0].(*[]entities.List)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// ReadListsInBoard indicates an expected call of ReadListsInBoard.
-func (mr *MockIListServiceMockRecorder) ReadListsInBoard(arg0, arg1 any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReadListsInBoard", reflect.TypeOf((*MockIListService)(nil).ReadListsInBoard), arg0, arg1)
-}
-
 // Update mocks base method.
 func (m *MockIListService) Update(arg0 context.Context, arg1 dto.UpdatedListInfo) error {
 	m.ctrl.T.Helper()

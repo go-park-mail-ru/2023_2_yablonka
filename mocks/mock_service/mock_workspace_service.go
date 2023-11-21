@@ -99,7 +99,7 @@ func (mr *MockIWorkspaceServiceMockRecorder) GetWorkspace(arg0, arg1 any) *gomoc
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetWorkspace", reflect.TypeOf((*MockIWorkspaceService)(nil).GetWorkspace), arg0, arg1)
 }
 
-// Update mocks base method.
+// UpdateData mocks base method.
 func (m *MockIWorkspaceService) UpdateData(arg0 context.Context, arg1 dto.UpdatedWorkspaceInfo) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UpdateData", arg0, arg1)
@@ -107,7 +107,13 @@ func (m *MockIWorkspaceService) UpdateData(arg0 context.Context, arg1 dto.Update
 	return ret0
 }
 
-// Update mocks base method.
+// UpdateData indicates an expected call of UpdateData.
+func (mr *MockIWorkspaceServiceMockRecorder) UpdateData(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateData", reflect.TypeOf((*MockIWorkspaceService)(nil).UpdateData), arg0, arg1)
+}
+
+// UpdateUsers mocks base method.
 func (m *MockIWorkspaceService) UpdateUsers(arg0 context.Context, arg1 dto.ChangeWorkspaceGuestsInfo) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UpdateUsers", arg0, arg1)
@@ -115,29 +121,8 @@ func (m *MockIWorkspaceService) UpdateUsers(arg0 context.Context, arg1 dto.Chang
 	return ret0
 }
 
-// Update indicates an expected call of Update.
+// UpdateUsers indicates an expected call of UpdateUsers.
 func (mr *MockIWorkspaceServiceMockRecorder) UpdateUsers(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateUsers", reflect.TypeOf((*MockIWorkspaceService)(nil).UpdateData), arg0, arg1)
-}
-
-// Update mocks base method.
-func (m *MockIWorkspaceService) UpdateThumbnail(arg0 context.Context, arg1 dto.ChangeWorkspaceThumbnailInfo) (*dto.UrlObj, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateThumbnail", arg0, arg1)
-	ret0, _ := ret[0].(*dto.UrlObj)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// Update indicates an expected call of Update.
-func (mr *MockIWorkspaceServiceMockRecorder) UpdateData(arg0, arg1 any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateData", reflect.TypeOf((*MockIWorkspaceService)(nil).UpdateData), arg0, arg1)
-}
-
-// Update indicates an expected call of Update.
-func (mr *MockIWorkspaceServiceMockRecorder) UpdateThumbnail(arg0, arg1 any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateThumbnail", reflect.TypeOf((*MockIWorkspaceService)(nil).UpdateThumbnail), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateUsers", reflect.TypeOf((*MockIWorkspaceService)(nil).UpdateUsers), arg0, arg1)
 }

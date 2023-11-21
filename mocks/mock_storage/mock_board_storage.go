@@ -70,10 +70,10 @@ func (mr *MockIBoardStorageMockRecorder) Delete(arg0, arg1 any) *gomock.Call {
 }
 
 // GetById mocks base method.
-func (m *MockIBoardStorage) GetById(arg0 context.Context, arg1 dto.BoardID) (*entities.Board, error) {
+func (m *MockIBoardStorage) GetById(arg0 context.Context, arg1 dto.BoardID) (*dto.FullBoardResult, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetById", arg0, arg1)
-	ret0, _ := ret[0].(*entities.Board)
+	ret0, _ := ret[0].(*dto.FullBoardResult)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -84,47 +84,45 @@ func (mr *MockIBoardStorageMockRecorder) GetById(arg0, arg1 any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetById", reflect.TypeOf((*MockIBoardStorage)(nil).GetById), arg0, arg1)
 }
 
-// GetUserGuestBoards mocks base method.
-func (m *MockIBoardStorage) GetUserGuestBoards(arg0 context.Context, arg1 dto.UserID) (*[]entities.Board, error) {
+// GetUsers mocks base method.
+func (m *MockIBoardStorage) GetUsers(arg0 context.Context, arg1 dto.BoardID) (*[]dto.UserPublicInfo, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetUserGuestBoards", arg0, arg1)
-	ret0, _ := ret[0].(*[]entities.Board)
+	ret := m.ctrl.Call(m, "GetUsers", arg0, arg1)
+	ret0, _ := ret[0].(*[]dto.UserPublicInfo)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetUserGuestBoards indicates an expected call of GetUserGuestBoards.
-func (mr *MockIBoardStorageMockRecorder) GetUserGuestBoards(arg0, arg1 any) *gomock.Call {
+// GetUsers indicates an expected call of GetUsers.
+func (mr *MockIBoardStorageMockRecorder) GetUsers(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserGuestBoards", reflect.TypeOf((*MockIBoardStorage)(nil).GetUserGuestBoards), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUsers", reflect.TypeOf((*MockIBoardStorage)(nil).GetUsers), arg0, arg1)
 }
 
-// GetUserOwnedBoards mocks base method.
-func (m *MockIBoardStorage) GetUserOwnedBoards(arg0 context.Context, arg1 dto.UserID) (*[]entities.Board, error) {
+// UpdateData mocks base method.
+func (m *MockIBoardStorage) UpdateData(arg0 context.Context, arg1 dto.UpdatedBoardInfo) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetUserOwnedBoards", arg0, arg1)
-	ret0, _ := ret[0].(*[]entities.Board)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	ret := m.ctrl.Call(m, "UpdateData", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
 }
 
-// GetUserOwnedBoards indicates an expected call of GetUserOwnedBoards.
-func (mr *MockIBoardStorageMockRecorder) GetUserOwnedBoards(arg0, arg1 any) *gomock.Call {
+// UpdateData indicates an expected call of UpdateData.
+func (mr *MockIBoardStorageMockRecorder) UpdateData(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserOwnedBoards", reflect.TypeOf((*MockIBoardStorage)(nil).GetUserOwnedBoards), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateData", reflect.TypeOf((*MockIBoardStorage)(nil).UpdateData), arg0, arg1)
 }
 
-// Update mocks base method.
-func (m *MockIBoardStorage) Update(arg0 context.Context, arg1 dto.IndividualBoardInfo) (*entities.Board, error) {
+// UpdateThumbnailUrl mocks base method.
+func (m *MockIBoardStorage) UpdateThumbnailUrl(arg0 context.Context, arg1 dto.ImageUrlInfo) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Update", arg0, arg1)
-	ret0, _ := ret[0].(*entities.Board)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	ret := m.ctrl.Call(m, "UpdateThumbnailUrl", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
 }
 
-// Update indicates an expected call of Update.
-func (mr *MockIBoardStorageMockRecorder) Update(arg0, arg1 any) *gomock.Call {
+// UpdateThumbnailUrl indicates an expected call of UpdateThumbnailUrl.
+func (mr *MockIBoardStorageMockRecorder) UpdateThumbnailUrl(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockIBoardStorage)(nil).Update), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateThumbnailUrl", reflect.TypeOf((*MockIBoardStorage)(nil).UpdateThumbnailUrl), arg0, arg1)
 }

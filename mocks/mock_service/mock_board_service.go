@@ -63,17 +63,17 @@ func (m *MockIBoardService) Delete(arg0 context.Context, arg1 dto.BoardID) error
 	return ret0
 }
 
-// Delete indicates an expected call of Create.
+// Delete indicates an expected call of Delete.
 func (mr *MockIBoardServiceMockRecorder) Delete(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockIBoardService)(nil).Create), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockIBoardService)(nil).Delete), arg0, arg1)
 }
 
 // GetFullBoard mocks base method.
-func (m *MockIBoardService) GetFullBoard(arg0 context.Context, arg1 dto.IndividualBoardRequest) (*entities.Board, error) {
+func (m *MockIBoardService) GetFullBoard(arg0 context.Context, arg1 dto.IndividualBoardRequest) (*dto.FullBoardResult, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetFullBoard", arg0, arg1)
-	ret0, _ := ret[0].(*entities.Board)
+	ret0, _ := ret[0].(*dto.FullBoardResult)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

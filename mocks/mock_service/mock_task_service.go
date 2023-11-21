@@ -69,6 +69,21 @@ func (mr *MockITaskServiceMockRecorder) Delete(arg0, arg1 any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockITaskService)(nil).Delete), arg0, arg1)
 }
 
+// Read mocks base method.
+func (m *MockITaskService) Read(arg0 context.Context, arg1 dto.TaskID) (*entities.Task, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Read", arg0, arg1)
+	ret0, _ := ret[0].(*entities.Task)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Read indicates an expected call of Read.
+func (mr *MockITaskServiceMockRecorder) Read(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Read", reflect.TypeOf((*MockITaskService)(nil).Read), arg0, arg1)
+}
+
 // Update mocks base method.
 func (m *MockITaskService) Update(arg0 context.Context, arg1 dto.UpdatedTaskInfo) error {
 	m.ctrl.T.Helper()
