@@ -296,6 +296,8 @@ func (s PostgresWorkspaceStorage) GetWorkspace(ctx context.Context, id dto.Works
 // создает новоt рабочее пространство в БД по данным
 // или возвращает ошибки ...
 func (s PostgresWorkspaceStorage) Create(ctx context.Context, info dto.NewWorkspaceInfo) (*entities.Workspace, error) {
+	user := ctx.Value(dto.UserObjKey).(*entities.User)
+
 	query1, args, err := sq.
 		Insert("public.workspace").
 		Columns("name", "description", "id_creator").
@@ -319,7 +321,16 @@ func (s PostgresWorkspaceStorage) Create(ctx context.Context, info dto.NewWorksp
 	workspace := entities.Workspace{
 		Name:        *info.Name,
 		Description: info.Description,
-		Boards:      []entities.Board{},
+		Users: []dto.UserPublicInfo{
+			{
+				ID:          user.ID,
+				Email:       user.Email,
+				Name:        user.Name,
+				Surname:     user.Surname,
+				Description: user.Description,
+				AvatarURL:   user.AvatarURL,
+			},
+		},
 	}
 
 	row := tx.QueryRow(ctx, query1, args...)
@@ -337,8 +348,8 @@ func (s PostgresWorkspaceStorage) Create(ctx context.Context, info dto.NewWorksp
 
 	query2, args, err := sq.
 		Insert("user_workspace").
-		Columns("id_workspace", "id_user", "id_role").
-		Values(workspace.ID, info.OwnerID, 1).
+		Columns("id_workspace", "id_user").
+		Values(workspace.ID, info.OwnerID).
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
 
