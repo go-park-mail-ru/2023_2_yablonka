@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"os"
 	"server/internal/pkg/dto"
@@ -27,14 +28,19 @@ func NewBoardService(storage storage.IBoardStorage) *BoardService {
 // GetFullBoard
 // возвращает доску со связанными пользователями, списками и заданиями
 func (bs BoardService) GetFullBoard(ctx context.Context, info dto.IndividualBoardRequest) (*entities.Board, error) {
+	funcName := "GetFullBoard"
+	logger := ctx.Value(dto.LoggerKey).(*logrus.Logger)
+
 	boardID := dto.BoardID{
 		Value: info.BoardID,
 	}
 
 	boardUsers, err := bs.storage.GetUsers(ctx, boardID)
 	if err != nil {
+		boardServiceDebugLog(logger, funcName, "Failed to get board users with error "+err.Error())
 		return nil, err
 	}
+	boardServiceDebugLog(logger, funcName, "Got board users")
 
 	userHasAccessToBoard := false
 	for _, user := range *boardUsers {
@@ -44,13 +50,17 @@ func (bs BoardService) GetFullBoard(ctx context.Context, info dto.IndividualBoar
 	}
 
 	if !userHasAccessToBoard {
+		logger.Warn(fmt.Sprintf("Requesting user (ID %d) doesn't have access to the board (ID %d)", info.UserID, info.BoardID))
 		return nil, err
 	}
+	boardServiceDebugLog(logger, funcName, "User has access to board")
 
 	board, err := bs.storage.GetById(ctx, boardID)
 	if err != nil {
+		boardServiceDebugLog(logger, funcName, "Failed to get board from storage with error "+err.Error())
 		return nil, err
 	}
+	boardServiceDebugLog(logger, funcName, "Got board")
 
 	board.Users = *boardUsers
 

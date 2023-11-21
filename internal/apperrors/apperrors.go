@@ -84,6 +84,8 @@ var (
 	ErrBoardNotDeleted = errors.New("board couldn't be deleted")
 	// ErrCouldNotGetBoard ошибка: доски с полученным ID не существует
 	ErrCouldNotGetBoard = errors.New("could not retrieve board")
+	// ErrCouldNotGetBoardUsers ошибка: пользователей у доски с полученным ID не существует
+	ErrCouldNotGetBoardUsers = errors.New("could not retrieve board users")
 )
 
 // Ошибки, связанные с WorkspaceService

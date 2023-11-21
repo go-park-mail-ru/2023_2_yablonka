@@ -5,7 +5,8 @@ const (
 )
 
 var (
-	allUserFields = []string{"id", "email", "password_hash", "name", "surname", "avatar_url", "description"}
+	allUserFields       = []string{"id", "email", "password_hash", "name", "surname", "avatar_url", "description"}
+	allPublicUserFields = []string{"public.user.id", "public.user.email", "public.user.name", "public.user.surname", "public.user.description", "public.user.avatar_url"}
 
 	// allWorkspaceFields = []string{"id", "id_creator", "name", "date_created", "description"}
 

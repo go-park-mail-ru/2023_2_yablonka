@@ -36,26 +36,30 @@ type BoardHandler struct {
 //
 // @Router /board/ [post]
 func (bh BoardHandler) GetFullBoard(w http.ResponseWriter, r *http.Request) {
-	log.Println("--------------BoardHandler.GetFullBoard Endpoint START--------------")
-
 	rCtx := r.Context()
+	funcName := "GetFullBoard"
 
-	user, ok := rCtx.Value(dto.UserObjKey).(*entities.User)
-	if !ok {
-		log.Println("user not found")
-		log.Println("--------------BoardHandler.GetFullBoard Endpoint FAIL--------------")
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.GenericUnauthorizedResponse))
-		return
-	}
+	logger := rCtx.Value(dto.LoggerKey).(*logrus.Logger)
+	logger.Info("Getting a board")
 
 	var boardID dto.BoardID
 	err := json.NewDecoder(r.Body).Decode(&boardID)
 	if err != nil {
-		log.Println(err)
-		log.Println("--------------BoardHandler.GetFullBoard Endpoint FAIL--------------")
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.BadRequestResponse))
+		logger.Error("Getting a board failed")
+		handlerDebugLog(logger, funcName, "Getting a board failed with error "+err.Error())
+		apperrors.ReturnError(apperrors.BadRequestResponse, w, r)
 		return
 	}
+	handlerDebugLog(logger, funcName, "JSON Decoded")
+
+	user, ok := rCtx.Value(dto.UserObjKey).(*entities.User)
+	if !ok {
+		logger.Error("Getting a board failed")
+		handlerDebugLog(logger, funcName, "Getting a board failed -- no user passed in context")
+		apperrors.ReturnError(apperrors.GenericUnauthorizedResponse, w, r)
+		return
+	}
+	handlerDebugLog(logger, funcName, "User object acquired from context")
 
 	boardRequest := dto.IndividualBoardRequest{
 		UserID:  user.ID,
@@ -64,11 +68,12 @@ func (bh BoardHandler) GetFullBoard(w http.ResponseWriter, r *http.Request) {
 
 	board, err := bh.bs.GetFullBoard(rCtx, boardRequest)
 	if err != nil {
-		log.Println(err)
-		log.Println("--------------BoardHandler.GetFullBoard Endpoint FAIL--------------")
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.ErrorMap[err]))
+		logger.Error("Getting a board failed")
+		handlerDebugLog(logger, funcName, "Getting a board failed with error "+err.Error())
+		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
 		return
 	}
+	handlerDebugLog(logger, funcName, "Got board")
 
 	response := dto.JSONResponse{
 		Body: dto.JSONMap{
@@ -78,24 +83,24 @@ func (bh BoardHandler) GetFullBoard(w http.ResponseWriter, r *http.Request) {
 
 	jsonResponse, err := json.Marshal(response)
 	if err != nil {
-		log.Println(err)
-		log.Println("--------------BoardHandler.GetFullBoard Endpoint FAIL--------------")
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.InternalServerErrorResponse))
+		logger.Error("Getting a board failed")
+		handlerDebugLog(logger, funcName, "Getting a board failed with error "+err.Error())
+		apperrors.ReturnError(apperrors.InternalServerErrorResponse, w, r)
 		return
 	}
-	log.Println("json response marshalleed")
+	handlerDebugLog(logger, funcName, "JSON response marshaled")
 
 	_, err = w.Write(jsonResponse)
 	if err != nil {
-		log.Println(err)
-		log.Println("--------------BoardHandler.GetFullBoard Endpoint FAIL--------------")
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.InternalServerErrorResponse))
+		logger.Error("Getting a board failed")
+		handlerDebugLog(logger, funcName, "Getting a board failed with error "+err.Error())
+		apperrors.ReturnError(apperrors.InternalServerErrorResponse, w, r)
 		return
 	}
 	r.Body.Close()
-	log.Println("response written")
 
-	log.Println("--------------BoardHandler.GetFullBoard Endpoint SUCCESS--------------")
+	handlerDebugLog(logger, funcName, "Response written")
+	logger.Info("Finished getting board")
 }
 
 // @Summary Создать доску
@@ -132,8 +137,8 @@ func (bh BoardHandler) Create(w http.ResponseWriter, r *http.Request) {
 
 	user, ok := rCtx.Value(dto.UserObjKey).(*entities.User)
 	if !ok {
-		logger.Error("User avatar change failed")
-		handlerDebugLog(logger, funcName, "Changing user avatar failed -- no user passed in context")
+		logger.Error("Creating a new board failed")
+		handlerDebugLog(logger, funcName, "Creating a new board failed failed -- no user passed in context")
 		apperrors.ReturnError(apperrors.GenericUnauthorizedResponse, w, r)
 		return
 	}
@@ -157,12 +162,12 @@ func (bh BoardHandler) Create(w http.ResponseWriter, r *http.Request) {
 
 	board, err := bh.bs.Create(rCtx, newBoardInfo)
 	if err != nil {
-		log.Println(err)
-		log.Println("--------------BoardHandler.Create Endpoint FAIL--------------")
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.ErrorMap[err]))
+		logger.Error("Creating a new board failed")
+		handlerDebugLog(logger, funcName, "Creating a new board failed with error "+err.Error())
+		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
 		return
 	}
-	log.Println("board created")
+	handlerDebugLog(logger, funcName, "Board created")
 
 	response := dto.JSONResponse{
 		Body: dto.JSONMap{
@@ -172,24 +177,24 @@ func (bh BoardHandler) Create(w http.ResponseWriter, r *http.Request) {
 
 	jsonResponse, err := json.Marshal(response)
 	if err != nil {
-		log.Println(err)
-		log.Println("--------------BoardHandler.Create Endpoint FAIL--------------")
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.InternalServerErrorResponse))
+		logger.Error("Creating a new board failed")
+		handlerDebugLog(logger, funcName, "Creating a new board failed with error "+err.Error())
+		apperrors.ReturnError(apperrors.InternalServerErrorResponse, w, r)
 		return
 	}
-	log.Println("json response marshalled")
+	handlerDebugLog(logger, funcName, "JSON response marshaled")
 
 	_, err = w.Write(jsonResponse)
 	if err != nil {
-		log.Println(err)
-		log.Println("--------------BoardHandler.Create Endpoint FAIL--------------")
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.InternalServerErrorResponse))
+		logger.Error("Creating a new board failed")
+		handlerDebugLog(logger, funcName, "Creating a new board failed with error "+err.Error())
+		apperrors.ReturnError(apperrors.InternalServerErrorResponse, w, r)
 		return
 	}
 	r.Body.Close()
-	log.Println("response written")
 
-	log.Println("--------------BoardHandler.Create Endpoint SUCCESS--------------")
+	handlerDebugLog(logger, funcName, "Response written")
+	logger.Info("Finished creating board")
 }
 
 // @Summary Обновить доску
