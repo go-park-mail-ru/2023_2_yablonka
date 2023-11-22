@@ -283,7 +283,7 @@ type NewListInfo struct {
 type NewTaskInfo struct {
 	ListID       uint64     `json:"list_id"`
 	Name         string     `json:"name"`
-	Description  *string    `json:"description"`
+	Description  string     `json:"description"`
 	Start        *time.Time `json:"start"`
 	End          *time.Time `json:"end"`
 	ListPosition uint64     `json:"list_position"`

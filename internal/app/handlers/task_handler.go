@@ -9,6 +9,8 @@ import (
 	_ "server/internal/pkg/doc_structs"
 	"server/internal/pkg/dto"
 	"server/internal/service"
+
+	"github.com/sirupsen/logrus"
 )
 
 type TaskHandler struct {
@@ -31,36 +33,39 @@ type TaskHandler struct {
 //
 // @Router /task/create/ [post]
 func (th TaskHandler) Create(w http.ResponseWriter, r *http.Request) {
-	log.Println("--------------TaskHandler.Create Endpoint START--------------")
-
 	rCtx := r.Context()
+	funcName := "Create"
+
+	logger := rCtx.Value(dto.LoggerKey).(*logrus.Logger)
+	logger.Info("Creating a new task")
 
 	var newTaskInfo dto.NewTaskInfo
 	err := json.NewDecoder(r.Body).Decode(&newTaskInfo)
 	if err != nil {
-		log.Println(err)
-		log.Println("--------------TaskHandler.Create Endpoint FAIL--------------")
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.BadRequestResponse))
+		logger.Error("Creating a new task failed")
+		handlerDebugLog(logger, funcName, "Creating a new task failed with error "+err.Error())
+		apperrors.ReturnError(apperrors.BadRequestResponse, w, r)
 		return
 	}
-	log.Println("request struct decoded")
+	handlerDebugLog(logger, funcName, "JSON Decoded")
 
 	// _, err = govalidator.ValidateStruct(newTaskInfo)
 	// if err != nil {
-	// 	log.Println("Failed to validate struct")
-	// 	log.Println("Error:", err.Error())
-	// 	*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.BadRequestResponse))
+	// 	logger.Error("Creating a new board failed")
+	// 	handlerDebugLog(logger, funcName, "Creating a new board failed with error "+err.Error())
+	// 	apperrors.ReturnError(apperrors.BadRequestResponse, w, r)
 	// 	return
 	// }
+	// handlerDebugLog(logger, funcName, "New task data validated")
 
 	task, err := th.ts.Create(rCtx, newTaskInfo)
 	if err != nil {
-		log.Println(err)
-		log.Println("--------------TaskHandler.Create Endpoint FAIL--------------")
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.ErrorMap[err]))
+		logger.Error("Creating a new task failed")
+		handlerDebugLog(logger, funcName, "Creating a new task failed with error "+err.Error())
+		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
 		return
 	}
-	log.Println("task created")
+	handlerDebugLog(logger, funcName, "Task created")
 
 	response := dto.JSONResponse{
 		Body: dto.JSONMap{
@@ -70,24 +75,24 @@ func (th TaskHandler) Create(w http.ResponseWriter, r *http.Request) {
 
 	jsonResponse, err := json.Marshal(response)
 	if err != nil {
-		log.Println(err)
-		log.Println("--------------TaskHandler.Create Endpoint FAIL--------------")
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.InternalServerErrorResponse))
+		logger.Error("Creating a new task failed")
+		handlerDebugLog(logger, funcName, "Creating a new task failed with error "+err.Error())
+		apperrors.ReturnError(apperrors.InternalServerErrorResponse, w, r)
 		return
 	}
-	log.Println("json response marshalled")
+	handlerDebugLog(logger, funcName, "JSON response marshaled")
 
 	_, err = w.Write(jsonResponse)
 	if err != nil {
-		log.Println(err)
-		log.Println("--------------TaskHandler.Create Endpoint FAIL--------------")
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.InternalServerErrorResponse))
+		logger.Error("Creating a new task failed")
+		handlerDebugLog(logger, funcName, "Creating a new task failed with error "+err.Error())
+		apperrors.ReturnError(apperrors.InternalServerErrorResponse, w, r)
 		return
 	}
 	r.Body.Close()
-	log.Println("response written")
 
-	log.Println("--------------TaskHandler.Create Endpoint SUCCESS--------------")
+	handlerDebugLog(logger, funcName, "Response written")
+	logger.Info("Finished creating task")
 }
 
 // @Summary Получить задание

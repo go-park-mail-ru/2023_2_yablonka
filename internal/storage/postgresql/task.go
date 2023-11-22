@@ -55,7 +55,7 @@ func (s PostgresTaskStorage) Create(ctx context.Context, info dto.NewTaskInfo) (
 		End:          info.End,
 	}
 
-	log.Println("Storage -- Querying DB", err.Error())
+	log.Println("Storage -- Querying DB")
 	query := s.db.QueryRow(ctx, sql, args...)
 
 	err = query.Scan(&task.ID, &task.DateCreated)
