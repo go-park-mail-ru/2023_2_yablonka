@@ -63,8 +63,8 @@ func (s *PostgreSQLBoardStorage) GetById(ctx context.Context, id dto.BoardID) (*
 	boardSql, args, err := sq.Select(allBoardListAggFields...).
 		From("public.board").
 		Where(sq.Eq{"public.board.id": id.Value}).
-		Join("public.list ON public.list.id_board = " + strconv.FormatUint(id.Value, 10)).
-		Join("public.workspace ON public.board.id_workspace = public.workspace.id").
+		LeftJoin("public.list ON public.list.id_board = public.board.id").
+		LeftJoin("public.workspace ON public.board.id_workspace = public.workspace.id").
 		GroupBy(allBoardListFields...).
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
