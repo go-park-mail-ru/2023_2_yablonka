@@ -41,3 +41,7 @@ type WorkspaceResponse struct {
 type ListResponse struct {
 	List entities.List `json:"list"`
 }
+
+type CommentResponse struct {
+	Comment entities.Comment `json:"comment"`
+}

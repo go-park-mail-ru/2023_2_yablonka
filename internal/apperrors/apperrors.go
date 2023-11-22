@@ -67,11 +67,18 @@ var (
 	ErrCSRFNotFound = errors.New("provided CSRF not found in storage")
 )
 
+// Ошибки, связанные с Commentervice
+var (
+	// ErrCouldNotGetTaskComments ошибка: нельзя получить комментарии задания
+	ErrCouldNotGetTaskComments = errors.New("couldn't get the comments from task")
+)
+
 // Ошибки, связанные с сервером
 var (
 	// ErrCouldNotBuildQuery ошибка: не удалось сформировать SQL запрос
 	ErrCouldNotBuildQuery       = errors.New("error building an SQL query")
 	ErrCouldNotStartTransaction = errors.New("error starting a transaction")
+	ErrCouldNotCollectRows      = errors.New("couldn't collect rows")
 )
 
 // Ошибки, связанные с BoardService

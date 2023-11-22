@@ -55,4 +55,12 @@ var (
 		"public.workspace.id", "public.workspace.name", "public.workspace.date_created",
 		"public.user.id", "public.user.email", "public.user.name", "public.user.surname",
 	}
+
+	newCommentFields = []string{
+		"id_task", "id_user", "content",
+	}
+
+	allCommentFields = []string{
+		"id", "id_user", "content", "date_created",
+	}
 )

@@ -4,6 +4,12 @@ import (
 	"time"
 )
 
+type AuthDTO struct {
+	VerifiedAuthInfo struct {
+		UserID uint64
+	}
+}
+
 // VerifiedAuthInfo
 // DTO, подтверждающее личность на основе сессии, полученных при регистрации
 type VerifiedAuthInfo struct {
@@ -183,14 +189,6 @@ type SingleListInfo struct {
 	Tasks        []uint64 `json:"cards"`
 }
 
-type CommentInfo struct {
-	ID          uint64    `json:"id"`
-	UserID      uint64    `json:"user_id"`
-	TaskID      uint64    `json:"task_id"`
-	Text        string    `json:"text"`
-	DateCreated time.Time `json:"date_created"`
-}
-
 type SingleTaskInfo struct {
 	ID           uint64           `json:"id"`
 	ListID       uint64           `json:"list_id"`
@@ -275,6 +273,34 @@ type ListID struct {
 // DTO для id задач
 type TaskID struct {
 	Value uint64 `json:"id"`
+}
+
+// CommentID
+// DTO для id комментария
+type CommentID struct {
+	Value uint64 `json:"id"`
+}
+
+type ReplyInfo struct {
+	OriginalID uint64 `json:"original_id"`
+	CommentInfo
+}
+
+// CommentInfo
+// DTO для данных комментария в задаче
+type CommentInfo struct {
+	ID          uint64    `json:"id"`
+	UserID      uint64    `json:"user_id"`
+	Text        string    `json:"text"`
+	DateCreated time.Time `json:"date_created"`
+}
+
+// NewCommentInfo
+// DTO для данных нового комментария в задаче
+type NewCommentInfo struct {
+	UserID uint64 `json:"user_id"`
+	TaskID uint64 `json:"task_id"`
+	Text   string `json:"text"`
 }
 
 // NewListInfo
