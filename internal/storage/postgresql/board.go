@@ -344,8 +344,10 @@ func (s *PostgreSQLBoardStorage) UpdateData(ctx context.Context, info dto.Update
 		ToSql()
 
 	if err != nil {
+		log.Println("Storage -- Failed to build query")
 		return apperrors.ErrCouldNotBuildQuery
 	}
+	log.Println("Built board query\n\t", sql, "\nwith args\n\t", args)
 
 	_, err = s.db.Exec(ctx, sql, args...)
 

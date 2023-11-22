@@ -46,7 +46,7 @@ func (bh BoardHandler) GetFullBoard(w http.ResponseWriter, r *http.Request) {
 	err := json.NewDecoder(r.Body).Decode(&boardID)
 	if err != nil {
 		logger.Error("Getting a board failed")
-		handlerDebugLog(logger, funcName, "Getting a board failed with error "+err.Error())
+		handlerDebugLog(logger, funcName, "Getting a board failed with error: "+err.Error())
 		apperrors.ReturnError(apperrors.BadRequestResponse, w, r)
 		return
 	}
