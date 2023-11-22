@@ -76,9 +76,7 @@ func (bh BoardHandler) GetFullBoard(w http.ResponseWriter, r *http.Request) {
 	handlerDebugLog(logger, funcName, "Got board")
 
 	response := dto.JSONResponse{
-		Body: dto.JSONMap{
-			"board": board,
-		},
+		Body: board,
 	}
 
 	jsonResponse, err := json.Marshal(response)

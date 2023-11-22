@@ -8,6 +8,7 @@ import (
 	"server/internal/pkg/dto"
 	"server/internal/pkg/entities"
 	"strconv"
+	"time"
 
 	sq "github.com/Masterminds/squirrel"
 	pgx "github.com/jackc/pgx/v5"
@@ -22,12 +23,21 @@ type PostgreSQLBoardStorage struct {
 }
 
 type BoardListReturn struct {
+	ID               uint64
+	WorkspaceID      uint64
+	WorkspaceOwnerID uint64
+	Name             string
+	DateCreated      time.Time
+	ThumbnailURL     *string
+	Lists            []*uint64
+}
+
+type ListTaskReturn struct {
 	ID           uint64
 	BoardID      uint64
 	Name         string
-	Description  *string
 	ListPosition uint64
-	Task         uint64
+	Tasks        []*uint64
 }
 
 func NewBoardStorage(db *pgxpool.Pool) *PostgreSQLBoardStorage {
@@ -58,10 +68,12 @@ func (s *PostgreSQLBoardStorage) GetById(ctx context.Context, id dto.BoardID) (*
 	// 	PlaceholderFormat(sq.Dollar).
 	// 	ToSql()
 
-	boardSql, args, err := sq.Select(allBoardListFields...).
+	boardSql, args, err := sq.Select(allBoardListAggFields...).
 		From("public.board").
 		Where(sq.Eq{"public.board.id": id.Value}).
 		Join("public.list ON public.list.id_board = " + strconv.FormatUint(id.Value, 10)).
+		Join("public.workspace ON public.board.id_workspace = public.workspace.id").
+		GroupBy(allBoardListFields...).
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
 
@@ -83,48 +95,50 @@ func (s *PostgreSQLBoardStorage) GetById(ctx context.Context, id dto.BoardID) (*
 		boardStorageDebugLog(logger, funcName, "Failed to collect rows with error "+err.Error())
 		return nil, apperrors.ErrCouldNotGetBoard
 	}
+	boardStorageDebugLog(logger, funcName, "Collected board info rows")
 
 	result := dto.FullBoardResult{
 		Board: dto.SingleBoardInfo{
-			ID:   id.Value,
-			Name: boardRows[0].Name,
-			// ThumbnailURL: boardRows[0].,
-			Lists: []uint64{},
+			ID:           boardRows[0].ID,
+			Name:         boardRows[0].Name,
+			WorkspaceID:  boardRows[0].WorkspaceID,
+			OwnerID:      boardRows[0].WorkspaceOwnerID,
+			ThumbnailURL: boardRows[0].ThumbnailURL,
+			DateCreated:  boardRows[0].DateCreated,
+			Lists:        boardRows[0].Lists,
 		},
 	}
+	listIDs := result.Board.Lists
 
-	// 	err = rows.Scan(
-	// 		&board.ID,
-	// 		&board.Name,
-	// 		&list.ID,
-	// 		&list.Name,
-	// 		&list.Description,
-	// 	)
-	// 	if err != nil {
-	// 		return nil, apperrors.ErrCouldNotGetBoard
-	// 	}
+	listSql, args, err := sq.Select(allListTaskAggFields...).
+		From("public.list").
+		Where(sq.Eq{"public.list.id": listIDs}).
+		LeftJoin("public.task ON public.task.id_list = public.list.id").
+		GroupBy(allListTaskFields...).
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
 
-	// 	for rows.Next() {
-	// 		var task entities.Task
+	if err != nil {
+		return nil, apperrors.ErrCouldNotBuildQuery
+	}
+	boardStorageDebugLog(logger, funcName, "Built query\n\t"+listSql+"\nwith args\n\t"+fmt.Sprintf("%+v", args))
 
-	// 		err = rows.Scan(
-	// 			&board.ID,
-	// 			&board.Name,
-	// 			&list.ID,
-	// 			&list.Name,
-	// 			&list.Description,
-	// 			&task.ID,
-	// 			&task.Name,
-	// 			&task.Description,
-	// 		)
-	// 		if err != nil {
-	// 			return nil, apperrors.ErrCouldNotGetBoard
-	// 		}
-	// 		list.Tasks = append(list.Tasks, task)
-	// 	}
+	rows, err = s.db.Query(context.Background(), listSql, args...)
+	if err != nil {
+		boardStorageDebugLog(logger, funcName, "Failed to get lists with error "+err.Error())
+		return nil, apperrors.ErrCouldNotGetBoard
+	}
+	defer rows.Close()
+	boardStorageDebugLog(logger, funcName, "Got list info rows")
 
-	// 	board.Lists = append(board.Lists, list)
-	// }
+	lists, err := pgx.CollectRows(rows, pgx.RowToStructByPos[dto.SingleListInfo])
+	if err != nil {
+		boardStorageDebugLog(logger, funcName, "Failed to collect rows with error "+err.Error())
+		return nil, apperrors.ErrCouldNotGetBoard
+	}
+	boardStorageDebugLog(logger, funcName, "Collected list info rows")
+
+	result.Lists = lists
 
 	return &result, nil
 }
