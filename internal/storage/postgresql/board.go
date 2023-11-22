@@ -87,7 +87,8 @@ func (s *PostgreSQLBoardStorage) GetById(ctx context.Context, id dto.BoardID) (*
 		boardStorageDebugLog(logger, funcName, "Failed to collect rows with error "+err.Error())
 		return nil, apperrors.ErrCouldNotGetBoard
 	}
-	boardStorageDebugLog(logger, funcName, "Collected board info rows")
+	boardStorageDebugLog(logger, funcName, "Collected "+fmt.Sprintf("%d", len(boardRows))+" board info rows")
+	boardStorageDebugLog(logger, funcName, fmt.Sprintf("%+v", boardRows))
 
 	result := dto.FullBoardResult{
 		Board: dto.SingleBoardInfo{
