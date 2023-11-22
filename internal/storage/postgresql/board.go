@@ -29,7 +29,7 @@ type BoardListReturn struct {
 	Name             string
 	DateCreated      time.Time
 	ThumbnailURL     *string
-	Lists            []*uint64
+	Lists            []uint64
 }
 
 type ListTaskReturn struct {
@@ -37,7 +37,7 @@ type ListTaskReturn struct {
 	BoardID      uint64
 	Name         string
 	ListPosition uint64
-	Tasks        []*uint64
+	Tasks        []uint64
 }
 
 func NewBoardStorage(db *pgxpool.Pool) *PostgreSQLBoardStorage {
@@ -59,14 +59,6 @@ func (s *PostgreSQLBoardStorage) GetById(ctx context.Context, id dto.BoardID) (*
 	// 	log.Println("Storage -- Failed to get user")
 	// 	return nil, apperrors.ErrCouldNotBuildQuery
 	// }
-
-	// sql, args, err := sq.Select(allBoardFields...).
-	// 	From("public.board").
-	// 	Join("public.list ON public.board.id = public.list.id_board").
-	// 	Join("public.task ON public.list.id = public.task.id_list").
-	// 	Where(sq.Eq{"public.board.id": id}).
-	// 	PlaceholderFormat(sq.Dollar).
-	// 	ToSql()
 
 	boardSql, args, err := sq.Select(allBoardListAggFields...).
 		From("public.board").
@@ -139,6 +131,42 @@ func (s *PostgreSQLBoardStorage) GetById(ctx context.Context, id dto.BoardID) (*
 	boardStorageDebugLog(logger, funcName, "Collected list info rows")
 
 	result.Lists = lists
+	taskIDs := []uint64{}
+
+	for _, list := range lists {
+		taskIDs = append(taskIDs, list.Tasks...)
+	}
+
+	taskSql, args, err := sq.Select(allTaskAggFields...).
+		From("public.task").
+		Where(sq.Eq{"public.task.id": taskIDs}).
+		LeftJoin("public.task_user ON public.task_user.id_task = public.task.id").
+		LeftJoin("public.user ON public.task_user.id_user = public.user.id").
+		GroupBy("public.task.id").
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
+
+	if err != nil {
+		return nil, apperrors.ErrCouldNotBuildQuery
+	}
+	boardStorageDebugLog(logger, funcName, "Built query\n\t"+taskSql+"\nwith args\n\t"+fmt.Sprintf("%+v", args))
+
+	rows, err = s.db.Query(context.Background(), taskSql, args...)
+	if err != nil {
+		boardStorageDebugLog(logger, funcName, "Failed to get tasks with error "+err.Error())
+		return nil, apperrors.ErrCouldNotGetBoard
+	}
+	defer rows.Close()
+	boardStorageDebugLog(logger, funcName, "Got task info rows")
+
+	tasks, err := pgx.CollectRows(rows, pgx.RowToStructByPos[dto.SingleTaskInfo])
+	if err != nil {
+		boardStorageDebugLog(logger, funcName, "Failed to collect rows with error "+err.Error())
+		return nil, apperrors.ErrCouldNotGetBoard
+	}
+	boardStorageDebugLog(logger, funcName, "Collected task info rows")
+
+	result.Tasks = tasks
 
 	return &result, nil
 }

@@ -172,15 +172,23 @@ type SingleBoardInfo struct {
 	ThumbnailURL *string          `json:"thumbnail_url"`
 	DateCreated  time.Time        `json:"date_created"`
 	Users        []UserPublicInfo `json:"users"`
-	Lists        []*uint64        `json:"lists"`
+	Lists        []uint64         `json:"lists"`
 }
 
 type SingleListInfo struct {
-	ID           uint64    `json:"id"`
-	BoardID      uint64    `json:"board_id"`
-	Name         string    `json:"name"`
-	ListPosition uint64    `json:"list_position"`
-	Tasks        []*uint64 `json:"cards"`
+	ID           uint64   `json:"id"`
+	BoardID      uint64   `json:"board_id"`
+	Name         string   `json:"name"`
+	ListPosition uint64   `json:"list_position"`
+	Tasks        []uint64 `json:"cards"`
+}
+
+type CommentInfo struct {
+	ID          uint64    `json:"id"`
+	UserID      uint64    `json:"user_id"`
+	TaskID      uint64    `json:"task_id"`
+	Text        string    `json:"text"`
+	DateCreated time.Time `json:"date_created"`
 }
 
 type SingleTaskInfo struct {
@@ -193,7 +201,7 @@ type SingleTaskInfo struct {
 	Start        *time.Time       `json:"start"`
 	End          *time.Time       `json:"end"`
 	Users        []UserPublicInfo `json:"users"`
-	// Comments
+	// Commments    []CommentInfo    `json:"comments"`
 	// Checklists
 }
 

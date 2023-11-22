@@ -86,6 +86,8 @@ var (
 	ErrCouldNotGetBoard = errors.New("could not retrieve board")
 	// ErrCouldNotGetBoardUsers ошибка: пользователей у доски с полученным ID не существует
 	ErrCouldNotGetBoardUsers = errors.New("could not retrieve board users")
+	// ErrNoBoardAccess ошибка: у запрашивающего пользователя нет доступа к полученной доске
+	ErrNoBoardAccess = errors.New("user has no access to board")
 )
 
 // Ошибки, связанные с WorkspaceService
@@ -135,7 +137,7 @@ var WrongLoginResponse = ErrorResponse{
 }
 
 // BadRequestResponse
-// заглушка для ответа 401 без разглашения имплементации чувствительных процессов
+// заглушка для ответа 400 без разглашения имплементации чувствительных процессов
 var BadRequestResponse = ErrorResponse{
 	Code:    http.StatusBadRequest,
 	Message: "Ошибка запроса",
@@ -148,6 +150,13 @@ var GenericUnauthorizedResponse = ErrorResponse{
 	Message: "Ошибка авторизации",
 }
 
+// ForbiddenResponse
+// заглушка для ответа 403 без разглашения имплементации чувствительных процессов
+var ForbiddenResponse = ErrorResponse{
+	Code:    http.StatusForbidden,
+	Message: "Ошибка доступа",
+}
+
 // InternalServerErrorResponse
 // заглушка для ответа 500 без разглашения имплементации чувствительных процессов
 var InternalServerErrorResponse = ErrorResponse{
@@ -155,7 +164,7 @@ var InternalServerErrorResponse = ErrorResponse{
 	Message: "Ошибка сервера",
 }
 
-// InternalServerErrorResponse
+// StatusConflictResponse
 // заглушка для ответа 409 без разглашения имплементации чувствительных процессов
 var StatusConflictResponse = ErrorResponse{
 	Code:    http.StatusConflict,
@@ -190,6 +199,7 @@ var ErrorMap = map[error]ErrorResponse{
 	ErrBoardNotUpdated:        InternalServerErrorResponse,
 	ErrBoardNotDeleted:        InternalServerErrorResponse,
 	ErrCouldNotGetBoard:       InternalServerErrorResponse,
+	ErrNoBoardAccess:          ForbiddenResponse,
 	ErrTaskNotCreated:         InternalServerErrorResponse,
 	ErrTaskNotUpdated:         InternalServerErrorResponse,
 	ErrTaskNotDeleted:         InternalServerErrorResponse,

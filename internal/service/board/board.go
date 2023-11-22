@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"server/internal/apperrors"
 	"server/internal/pkg/dto"
 	"server/internal/pkg/entities"
 	"server/internal/storage"
@@ -51,7 +52,7 @@ func (bs BoardService) GetFullBoard(ctx context.Context, info dto.IndividualBoar
 
 	if !userHasAccessToBoard {
 		logger.Warn(fmt.Sprintf("Requesting user (ID %d) doesn't have access to the board (ID %d)", info.UserID, info.BoardID))
-		return nil, err
+		return nil, apperrors.ErrNoBoardAccess
 	}
 	boardServiceDebugLog(logger, funcName, "User has access to board")
 
