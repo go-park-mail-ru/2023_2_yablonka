@@ -343,7 +343,6 @@ func (s *PostgreSQLBoardStorage) UpdateData(ctx context.Context, info dto.Update
 	sql, args, err := sq.
 		Update("public.board").
 		Set("name", info.Name).
-		Set("description", info.Description).
 		Where(sq.Eq{"id": info.ID}).
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
