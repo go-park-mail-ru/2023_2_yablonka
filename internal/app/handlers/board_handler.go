@@ -410,3 +410,125 @@ func (bh BoardHandler) Delete(w http.ResponseWriter, r *http.Request) {
 
 	log.Println("--------------LogIn Endpoint SUCCESS--------------")
 }
+
+func (bh BoardHandler) AddUser(w http.ResponseWriter, r *http.Request) {
+	rCtx := r.Context()
+	funcName := "AddUser"
+
+	logger := rCtx.Value(dto.LoggerKey).(*logrus.Logger)
+	logger.Info("Adding user to board")
+
+	var info dto.AddBoardUserRequest
+	err := json.NewDecoder(r.Body).Decode(&info)
+	if err != nil {
+		logger.Error("Adding user to board failed")
+		handlerDebugLog(logger, funcName, "Adding user to board failed with error: "+err.Error())
+		apperrors.ReturnError(apperrors.BadRequestResponse, w, r)
+		return
+	}
+	handlerDebugLog(logger, funcName, "JSON Decoded")
+
+	_, ok := rCtx.Value(dto.UserObjKey).(*entities.User)
+	if !ok {
+		logger.Error("Adding user to board failed")
+		handlerDebugLog(logger, funcName, "Adding user to board failed -- no user passed in context")
+		apperrors.ReturnError(apperrors.GenericUnauthorizedResponse, w, r)
+		return
+	}
+	handlerDebugLog(logger, funcName, "User object acquired from context")
+
+	err = bh.bs.AddUser(rCtx, info)
+	if err != nil {
+		logger.Error("Adding user to board failed")
+		handlerDebugLog(logger, funcName, "Adding user to board failed with error "+err.Error())
+		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
+		return
+	}
+	handlerDebugLog(logger, funcName, "User added")
+
+	response := dto.JSONResponse{
+		Body: dto.JSONMap{},
+	}
+
+	jsonResponse, err := json.Marshal(response)
+	if err != nil {
+		logger.Error("Adding user to board failed")
+		handlerDebugLog(logger, funcName, "Adding user to board failed with error "+err.Error())
+		apperrors.ReturnError(apperrors.InternalServerErrorResponse, w, r)
+		return
+	}
+	handlerDebugLog(logger, funcName, "JSON response marshaled")
+
+	_, err = w.Write(jsonResponse)
+	if err != nil {
+		logger.Error("Adding user to board failed")
+		handlerDebugLog(logger, funcName, "Adding user to board failed with error "+err.Error())
+		apperrors.ReturnError(apperrors.InternalServerErrorResponse, w, r)
+		return
+	}
+	r.Body.Close()
+
+	handlerDebugLog(logger, funcName, "Response written")
+	logger.Info("Finished adding user to board")
+}
+
+func (bh BoardHandler) RemoveUser(w http.ResponseWriter, r *http.Request) {
+	rCtx := r.Context()
+	funcName := "RemoveUser"
+
+	logger := rCtx.Value(dto.LoggerKey).(*logrus.Logger)
+	logger.Info("Removing user from board")
+
+	var info dto.RemoveBoardUserInfo
+	err := json.NewDecoder(r.Body).Decode(&info)
+	if err != nil {
+		logger.Error("Removing user from board failed")
+		handlerDebugLog(logger, funcName, "Removing user from board failed with error: "+err.Error())
+		apperrors.ReturnError(apperrors.BadRequestResponse, w, r)
+		return
+	}
+	handlerDebugLog(logger, funcName, "JSON Decoded")
+
+	_, ok := rCtx.Value(dto.UserObjKey).(*entities.User)
+	if !ok {
+		logger.Error("Removing user from board failed")
+		handlerDebugLog(logger, funcName, "Removing user from board failed -- no user passed in context")
+		apperrors.ReturnError(apperrors.GenericUnauthorizedResponse, w, r)
+		return
+	}
+	handlerDebugLog(logger, funcName, "User object acquired from context")
+
+	err = bh.bs.RemoveUser(rCtx, info)
+	if err != nil {
+		logger.Error("Removing user from board failed")
+		handlerDebugLog(logger, funcName, "Removing user from board failed with error "+err.Error())
+		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
+		return
+	}
+	handlerDebugLog(logger, funcName, "User removed")
+
+	response := dto.JSONResponse{
+		Body: dto.JSONMap{},
+	}
+
+	jsonResponse, err := json.Marshal(response)
+	if err != nil {
+		logger.Error("Removing user from board failed")
+		handlerDebugLog(logger, funcName, "Removing user from board failed with error "+err.Error())
+		apperrors.ReturnError(apperrors.InternalServerErrorResponse, w, r)
+		return
+	}
+	handlerDebugLog(logger, funcName, "JSON response marshaled")
+
+	_, err = w.Write(jsonResponse)
+	if err != nil {
+		logger.Error("Removing user from board failed")
+		handlerDebugLog(logger, funcName, "Removing user from board failed with error "+err.Error())
+		apperrors.ReturnError(apperrors.InternalServerErrorResponse, w, r)
+		return
+	}
+	r.Body.Close()
+
+	handlerDebugLog(logger, funcName, "Response written")
+	logger.Info("Finished Removing user from board")
+}

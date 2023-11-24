@@ -95,6 +95,10 @@ var (
 	ErrCouldNotGetBoardUsers = errors.New("could not retrieve board users")
 	// ErrNoBoardAccess ошибка: у запрашивающего пользователя нет доступа к полученной доске
 	ErrNoBoardAccess = errors.New("user has no access to board")
+	// ErrCouldNotAddBoardUser ошибка: не удалось добавить пользователя на доску
+	ErrCouldNotAddBoardUser = errors.New("couldn't add user to board")
+	// ErrCouldNotRemoveBoardUser ошибка: не удалось добавить пользователя на доску
+	ErrCouldNotRemoveBoardUser = errors.New("couldn't remove user from board")
 )
 
 // Ошибки, связанные с WorkspaceService

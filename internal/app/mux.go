@@ -59,6 +59,10 @@ func GetChiMux(manager handlers.Handlers, config config.Config) (http.Handler, e
 			r.Post("/create/", manager.BoardHandler.Create)
 			r.Post("/update/", manager.BoardHandler.UpdateData)
 			r.Post("/update/change_thumbnail/", manager.BoardHandler.UpdateThumbnail)
+			r.Route("/user", func(r chi.Router) {
+				r.Post("/add/", manager.BoardHandler.AddUser)
+				r.Post("/remove/", manager.BoardHandler.RemoveUser)
+			})
 			r.Delete("/delete/", manager.BoardHandler.Delete)
 		})
 		r.Route("/list", func(r chi.Router) {

@@ -159,6 +159,27 @@ type IndividualBoardInfo struct {
 	ThumbnailURL *string `json:"thumbnail_url"`
 }
 
+// AddBoardUserRequest
+// DTO для запроса добавления пользователя в доску
+type AddBoardUserRequest struct {
+	UserEmail string `json:"user_email"`
+	BoardID   uint64 `json:"board_id"`
+}
+
+// AddBoardUserInfo
+// DTO для добавления пользователя в доску
+type AddBoardUserInfo struct {
+	UserID  uint64 `json:"user_id"`
+	BoardID uint64 `json:"board_id"`
+}
+
+// RemoveBoardUserInfo
+// DTO для удаления пользователя из доски
+type RemoveBoardUserInfo struct {
+	UserID  uint64 `json:"user_id"`
+	BoardID uint64 `json:"board_id"`
+}
+
 // NewBoardInfo
 // DTO для новой доски
 type NewBoardInfo struct {

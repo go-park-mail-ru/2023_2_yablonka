@@ -41,7 +41,7 @@ func (m *MockIBoardStorage) EXPECT() *MockIBoardStorageMockRecorder {
 }
 
 // AddUser mocks base method.
-func (m *MockIBoardStorage) AddUser(arg0 context.Context, arg1 dto.UserBoardInfo) error {
+func (m *MockIBoardStorage) AddUser(arg0 context.Context, arg1 dto.AddBoardUserInfo) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AddUser", arg0, arg1)
 	ret0, _ := ret[0].(error)
@@ -114,7 +114,7 @@ func (mr *MockIBoardStorageMockRecorder) GetUsers(arg0, arg1 any) *gomock.Call {
 }
 
 // RemoveUser mocks base method.
-func (m *MockIBoardStorage) RemoveUser(arg0 context.Context, arg1 dto.UserBoardInfo) error {
+func (m *MockIBoardStorage) RemoveUser(arg0 context.Context, arg1 dto.RemoveBoardUserInfo) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "RemoveUser", arg0, arg1)
 	ret0, _ := ret[0].(error)

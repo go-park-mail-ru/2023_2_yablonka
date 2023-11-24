@@ -41,7 +41,7 @@ func (m *MockIBoardService) EXPECT() *MockIBoardServiceMockRecorder {
 }
 
 // AddUser mocks base method.
-func (m *MockIBoardService) AddUser(arg0 context.Context, arg1 dto.UserBoardInfo) error {
+func (m *MockIBoardService) AddUser(arg0 context.Context, arg1 dto.AddBoardUserRequest) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AddUser", arg0, arg1)
 	ret0, _ := ret[0].(error)
@@ -99,7 +99,7 @@ func (mr *MockIBoardServiceMockRecorder) GetFullBoard(arg0, arg1 any) *gomock.Ca
 }
 
 // RemoveUser mocks base method.
-func (m *MockIBoardService) RemoveUser(arg0 context.Context, arg1 dto.UserBoardInfo) error {
+func (m *MockIBoardService) RemoveUser(arg0 context.Context, arg1 dto.RemoveBoardUserInfo) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "RemoveUser", arg0, arg1)
 	ret0, _ := ret[0].(error)

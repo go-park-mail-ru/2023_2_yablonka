@@ -30,8 +30,6 @@ func NewUserStorage(db *pgxpool.Pool) *PostgresUserStorage {
 // или возвращает ошибки ...
 func (s *PostgresUserStorage) GetWithLogin(ctx context.Context, login dto.UserLogin) (*entities.User, error) {
 	log.Println("Looking for user with login", login.Value)
-	email := "'" + login.Value + "'"
-	log.Println("Wrapped string:", email)
 
 	sql, args, err := sq.
 		Select(allUserFields...).

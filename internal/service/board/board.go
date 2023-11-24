@@ -15,14 +15,16 @@ import (
 )
 
 type BoardService struct {
-	storage storage.IBoardStorage
+	boardStorage storage.IBoardStorage
+	userStorage  storage.IUserStorage
 }
 
 // NewBoardService
 // возвращает BoardService с инициализированным хранилищем
-func NewBoardService(storage storage.IBoardStorage) *BoardService {
+func NewBoardService(bs storage.IBoardStorage, us storage.IUserStorage) *BoardService {
 	return &BoardService{
-		storage: storage,
+		boardStorage: bs,
+		userStorage:  us,
 	}
 }
 
@@ -36,7 +38,7 @@ func (bs BoardService) GetFullBoard(ctx context.Context, info dto.IndividualBoar
 		Value: info.BoardID,
 	}
 
-	boardUsers, err := bs.storage.GetUsers(ctx, boardID)
+	boardUsers, err := bs.boardStorage.GetUsers(ctx, boardID)
 	if err != nil {
 		boardServiceDebugLog(logger, funcName, "Failed to get board users with error "+err.Error())
 		return nil, err
@@ -56,7 +58,7 @@ func (bs BoardService) GetFullBoard(ctx context.Context, info dto.IndividualBoar
 	}
 	boardServiceDebugLog(logger, funcName, "User has access to board")
 
-	board, err := bs.storage.GetById(ctx, boardID)
+	board, err := bs.boardStorage.GetById(ctx, boardID)
 	if err != nil {
 		boardServiceDebugLog(logger, funcName, "Failed to get board from storage with error "+err.Error())
 		return nil, err
@@ -80,7 +82,7 @@ func (bs BoardService) Create(ctx context.Context, board dto.NewBoardInfo) (*ent
 		logger.Info("No thumbnail was provided, using the default thumbnail")
 		board.ThumbnailURL = &defaultURL
 	}
-	newBoard, err := bs.storage.Create(ctx, board)
+	newBoard, err := bs.boardStorage.Create(ctx, board)
 
 	fileLocation := "img/board_thumbnails/" + strconv.FormatUint(newBoard.ID, 10) + ".png"
 	boardServiceDebugLog(logger, funcName, "Thumbnail location: "+fileLocation)
@@ -99,7 +101,7 @@ func (bs BoardService) Create(ctx context.Context, board dto.NewBoardInfo) (*ent
 // UpdateData
 // возвращает доску со связанными пользователями, списками и заданиями
 func (bs BoardService) UpdateData(ctx context.Context, info dto.UpdatedBoardInfo) error {
-	return bs.storage.UpdateData(ctx, info)
+	return bs.boardStorage.UpdateData(ctx, info)
 }
 
 // UpdateThumbnail
@@ -118,7 +120,7 @@ func (bs BoardService) UpdateThumbnail(ctx context.Context, info dto.UpdatedBoar
 	}
 	defer f.Close()
 
-	err = bs.storage.UpdateThumbnailUrl(ctx, thumbnailUrlInfo)
+	err = bs.boardStorage.UpdateThumbnailUrl(ctx, thumbnailUrlInfo)
 	if err != nil {
 		errDelete := os.Remove(thumbnailUrlInfo.Url)
 		for errDelete != nil {
@@ -133,7 +135,51 @@ func (bs BoardService) UpdateThumbnail(ctx context.Context, info dto.UpdatedBoar
 // Delete
 // удаляет доску
 func (bs BoardService) Delete(ctx context.Context, id dto.BoardID) error {
-	return bs.storage.Delete(ctx, id)
+	return bs.boardStorage.Delete(ctx, id)
+}
+
+// AddUser
+// добавляет пользователя на доску
+func (bs BoardService) AddUser(ctx context.Context, request dto.AddBoardUserRequest) error {
+	funcName := "AddUser"
+	logger := ctx.Value(dto.LoggerKey).(*logrus.Logger)
+
+	requestingUserID := ctx.Value(dto.UserObjKey).(*entities.User).ID
+
+	if !hasAccess(bs.boardStorage, ctx, requestingUserID, request.BoardID) {
+		logger.Warn(fmt.Sprintf("Requesting user (ID %d) doesn't have access to the board (ID %d)", requestingUserID, request.BoardID))
+		return apperrors.ErrNoBoardAccess
+	}
+
+	targetUser, err := bs.userStorage.GetWithLogin(ctx, dto.UserLogin{Value: request.UserEmail})
+	if err != nil {
+		return err
+	}
+
+	info := dto.AddBoardUserInfo{
+		UserID:  targetUser.ID,
+		BoardID: request.BoardID,
+	}
+
+	boardServiceDebugLog(logger, funcName, "Adding user")
+	return bs.boardStorage.AddUser(ctx, info)
+}
+
+// RemoveUser
+// добавляет пользователя на доску
+func (bs BoardService) RemoveUser(ctx context.Context, info dto.RemoveBoardUserInfo) error {
+	funcName := "RemoveUser"
+	logger := ctx.Value(dto.LoggerKey).(*logrus.Logger)
+
+	requestingUserID := ctx.Value(dto.UserObjKey).(*entities.User).ID
+
+	if !hasAccess(bs.boardStorage, ctx, requestingUserID, info.BoardID) {
+		logger.Warn(fmt.Sprintf("Requesting user (ID %d) doesn't have access to the board (ID %d)", requestingUserID, info.BoardID))
+		return apperrors.ErrNoBoardAccess
+	}
+
+	boardServiceDebugLog(logger, funcName, "Removing user")
+	return bs.boardStorage.RemoveUser(ctx, info)
 }
 
 func boardServiceDebugLog(logger *logrus.Logger, function string, message string) {
@@ -143,4 +189,28 @@ func boardServiceDebugLog(logger *logrus.Logger, function string, message string
 			"function":   function,
 		}).
 		Debug(message)
+}
+
+func hasAccess(storage storage.IBoardStorage, ctx context.Context, userID uint64, boardID uint64) bool {
+	hasAccess := false
+
+	funcName := "hasAccess"
+	logger := ctx.Value(dto.LoggerKey).(*logrus.Logger)
+
+	boardUsers, err := storage.GetUsers(ctx, dto.BoardID{Value: boardID})
+	if err != nil {
+		boardServiceDebugLog(logger, funcName, "Failed to get board users with error "+err.Error())
+		return hasAccess
+	}
+	boardServiceDebugLog(logger, funcName, fmt.Sprintf("Got %d board users", len(*boardUsers)))
+
+	for _, user := range *boardUsers {
+		boardServiceDebugLog(logger, funcName, fmt.Sprintf("User ID %v", user.ID))
+		if user.ID == userID {
+			boardServiceDebugLog(logger, funcName, "Match")
+			hasAccess = true
+		}
+	}
+
+	return hasAccess
 }
