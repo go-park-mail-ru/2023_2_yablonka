@@ -7,7 +7,6 @@ import (
 	"server/internal/apperrors"
 	"server/internal/pkg/dto"
 	"server/internal/pkg/entities"
-	"strconv"
 	"time"
 
 	sq "github.com/Masterminds/squirrel"
@@ -156,9 +155,12 @@ func (s PostgresWorkspaceStorage) GetUserGuestWorkspaces(ctx context.Context, us
 		Select(userGuestWorkspaceFields...).
 		Distinct().
 		From("public.workspace").
-		Join("public.user_workspace ON public.user_workspace.id_user = " + strconv.FormatUint(uint64(userID.Value), 10)).
+		Join("public.user_workspace ON public.user_workspace.id_workspace = public.workspace.id").
 		Join("public.user ON public.user.id = public.workspace.id_creator").
-		Where(sq.NotEq{"public.workspace.id_creator": userID.Value}).
+		Where(sq.And{
+			sq.NotEq{"public.workspace.id_creator": userID.Value},
+			sq.Eq{"public.user_workspace.id_user": userID.Value},
+		}).
 		OrderBy("public.workspace.date_created").
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
