@@ -40,6 +40,20 @@ func (m *MockIBoardStorage) EXPECT() *MockIBoardStorageMockRecorder {
 	return m.recorder
 }
 
+// AddUser mocks base method.
+func (m *MockIBoardStorage) AddUser(arg0 context.Context, arg1 dto.UserBoardInfo) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AddUser", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AddUser indicates an expected call of AddUser.
+func (mr *MockIBoardStorageMockRecorder) AddUser(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddUser", reflect.TypeOf((*MockIBoardStorage)(nil).AddUser), arg0, arg1)
+}
+
 // Create mocks base method.
 func (m *MockIBoardStorage) Create(arg0 context.Context, arg1 dto.NewBoardInfo) (*entities.Board, error) {
 	m.ctrl.T.Helper()
@@ -97,6 +111,20 @@ func (m *MockIBoardStorage) GetUsers(arg0 context.Context, arg1 dto.BoardID) (*[
 func (mr *MockIBoardStorageMockRecorder) GetUsers(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUsers", reflect.TypeOf((*MockIBoardStorage)(nil).GetUsers), arg0, arg1)
+}
+
+// RemoveUser mocks base method.
+func (m *MockIBoardStorage) RemoveUser(arg0 context.Context, arg1 dto.UserBoardInfo) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RemoveUser", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// RemoveUser indicates an expected call of RemoveUser.
+func (mr *MockIBoardStorageMockRecorder) RemoveUser(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveUser", reflect.TypeOf((*MockIBoardStorage)(nil).RemoveUser), arg0, arg1)
 }
 
 // UpdateData mocks base method.

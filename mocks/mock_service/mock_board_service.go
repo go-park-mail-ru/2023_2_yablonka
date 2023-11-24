@@ -40,6 +40,20 @@ func (m *MockIBoardService) EXPECT() *MockIBoardServiceMockRecorder {
 	return m.recorder
 }
 
+// AddUser mocks base method.
+func (m *MockIBoardService) AddUser(arg0 context.Context, arg1 dto.UserBoardInfo) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AddUser", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AddUser indicates an expected call of AddUser.
+func (mr *MockIBoardServiceMockRecorder) AddUser(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddUser", reflect.TypeOf((*MockIBoardService)(nil).AddUser), arg0, arg1)
+}
+
 // Create mocks base method.
 func (m *MockIBoardService) Create(arg0 context.Context, arg1 dto.NewBoardInfo) (*entities.Board, error) {
 	m.ctrl.T.Helper()
@@ -82,6 +96,20 @@ func (m *MockIBoardService) GetFullBoard(arg0 context.Context, arg1 dto.Individu
 func (mr *MockIBoardServiceMockRecorder) GetFullBoard(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFullBoard", reflect.TypeOf((*MockIBoardService)(nil).GetFullBoard), arg0, arg1)
+}
+
+// RemoveUser mocks base method.
+func (m *MockIBoardService) RemoveUser(arg0 context.Context, arg1 dto.UserBoardInfo) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RemoveUser", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// RemoveUser indicates an expected call of RemoveUser.
+func (mr *MockIBoardServiceMockRecorder) RemoveUser(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveUser", reflect.TypeOf((*MockIBoardService)(nil).RemoveUser), arg0, arg1)
 }
 
 // UpdateData mocks base method.
