@@ -6,6 +6,9 @@ import (
 	"server/internal/pkg/entities"
 )
 
+// Интерфейс для сервиса пользователей
+//
+//go:generate mockgen -source=$GOFILE -destination=../../mocks/mock_service/$GOFILE -package=mock_service
 type IUserService interface {
 	// RegisterUser
 	// создает нового пользователя по данным

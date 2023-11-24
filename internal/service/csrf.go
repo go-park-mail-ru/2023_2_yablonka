@@ -6,7 +6,9 @@ import (
 	"time"
 )
 
-// Интерфейс для аутентификации
+// Интерфейс для сервиса проверки на CSRF
+//
+//go:generate mockgen -source=$GOFILE -destination=../../mocks/mock_service/$GOFILE -package=mock_service
 type ICSRFService interface {
 	// AuthUser
 	// возвращает уникальную строку CSRF и её длительность

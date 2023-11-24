@@ -6,6 +6,9 @@ import (
 	"server/internal/pkg/entities"
 )
 
+// Интерфейс для хранилища рабочих пространств
+//
+//go:generate mockgen -source=$GOFILE -destination=../../mocks/mock_storage/$GOFILE -package=mock_storage
 type IWorkspaceStorage interface {
 	// GetUserOwnedWorkspaces
 	// находит все рабочие пространства, созданные пользователем

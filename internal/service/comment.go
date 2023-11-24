@@ -6,6 +6,9 @@ import (
 	"server/internal/pkg/entities"
 )
 
+// Интерфейс для сервиса комментариев
+//
+//go:generate mockgen -source=$GOFILE -destination=../../mocks/mock_service/$GOFILE -package=mock_service
 type ICommentService interface {
 	// Create
 	// создает новый комментарий

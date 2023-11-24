@@ -6,6 +6,9 @@ import (
 	"server/internal/pkg/entities"
 )
 
+// Интерфейс для сервиса списков заданий
+//
+//go:generate mockgen -source=$GOFILE -destination=../../mocks/mock_service/$GOFILE -package=mock_service
 type IListService interface {
 	// Create
 	// создает новый список

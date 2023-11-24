@@ -8,6 +8,9 @@ import (
 	"server/internal/pkg/entities"
 )
 
+// Интерфейс для хранилища досок
+//
+//go:generate mockgen -source=$GOFILE -destination=../../mocks/mock_storage/$GOFILE -package=mock_storage
 type IBoardStorage interface {
 	// GetUsers
 	// находит пользователей, у которых есть доступ к доске

@@ -6,6 +6,7 @@ import (
 	"server/internal/pkg/entities"
 )
 
+//go:generate mockgen -source=$GOFILE -destination=../../mocks/mock_service/$GOFILE -package=mock_service
 type IBoardService interface {
 	// GetFullBoard
 	// возвращает доску со связанными пользователями, списками и заданиями

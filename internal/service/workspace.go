@@ -6,6 +6,9 @@ import (
 	"server/internal/pkg/entities"
 )
 
+// Интерфейс для сервиса рабочих пространств
+//
+//go:generate mockgen -source=$GOFILE -destination=../../mocks/mock_service/$GOFILE -package=mock_service
 type IWorkspaceService interface {
 	// GetUserWorkspaces
 	// находит пользователя по почте

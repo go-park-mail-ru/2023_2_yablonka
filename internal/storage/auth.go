@@ -6,6 +6,9 @@ import (
 	"server/internal/pkg/entities"
 )
 
+// Интерфейс для хранилища аутентификации
+//
+//go:generate mockgen -source=$GOFILE -destination=../../mocks/mock_storage/$GOFILE -package=mock_storage
 type IAuthStorage interface {
 	// CreateSession
 	// сохраняет сессию в хранилище, возвращает ID сесссии для куки

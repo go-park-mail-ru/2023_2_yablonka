@@ -6,7 +6,9 @@ import (
 	"time"
 )
 
-// Интерфейс для аутентификации
+// Интерфейс для сервиса аутентификации
+//
+//go:generate mockgen -source=$GOFILE -destination=../../mocks/mock_service/$GOFILE -package=mock_service
 type IAuthService interface {
 	// AuthUser
 	// возвращает уникальную строку авторизации и её длительность

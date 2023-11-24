@@ -6,6 +6,9 @@ import (
 	"server/internal/pkg/entities"
 )
 
+// Интерфейс для хранилища CSRF
+//
+//go:generate mockgen -source=$GOFILE -destination=../../mocks/mock_storage/$GOFILE -package=mock_storage
 type ICSRFStorage interface {
 	// Create
 	// сохраняет CSRF в хранилище, возвращает токен
