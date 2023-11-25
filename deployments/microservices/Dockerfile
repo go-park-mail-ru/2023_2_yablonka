@@ -15,7 +15,6 @@ COPY ./. ./
 # Build the binary to copy it to the slim image
 RUN CGO_ENABLED=0 GOOS=linux go build -o yablonka-microservices ./cmd/microservices/main.go
 
-
 FROM alpine:latest AS build-release-stage
 
 RUN apk --no-cache add  \
