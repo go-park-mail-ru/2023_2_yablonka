@@ -1,7 +1,0 @@
-syntax = "proto3";
-
-option go_package = "./;microservice";
-
-message Error {
-    string Error = 1;
-}

@@ -4,6 +4,7 @@ package microservice
 
 import (
 	context "context"
+	empty "github.com/golang/protobuf/ptypes/empty"
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
@@ -18,7 +19,7 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type CSATSAnswerServiceClient interface {
-	Create(ctx context.Context, in *NewCSATAnswer, opts ...grpc.CallOption) (*Error, error)
+	Create(ctx context.Context, in *NewCSATAnswer, opts ...grpc.CallOption) (*empty.Empty, error)
 }
 
 type cSATSAnswerServiceClient struct {
@@ -29,8 +30,8 @@ func NewCSATSAnswerServiceClient(cc grpc.ClientConnInterface) CSATSAnswerService
 	return &cSATSAnswerServiceClient{cc}
 }
 
-func (c *cSATSAnswerServiceClient) Create(ctx context.Context, in *NewCSATAnswer, opts ...grpc.CallOption) (*Error, error) {
-	out := new(Error)
+func (c *cSATSAnswerServiceClient) Create(ctx context.Context, in *NewCSATAnswer, opts ...grpc.CallOption) (*empty.Empty, error) {
+	out := new(empty.Empty)
 	err := c.cc.Invoke(ctx, "/service.CSATSAnswerService/Create", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -42,7 +43,7 @@ func (c *cSATSAnswerServiceClient) Create(ctx context.Context, in *NewCSATAnswer
 // All implementations must embed UnimplementedCSATSAnswerServiceServer
 // for forward compatibility
 type CSATSAnswerServiceServer interface {
-	Create(context.Context, *NewCSATAnswer) (*Error, error)
+	Create(context.Context, *NewCSATAnswer) (*empty.Empty, error)
 	mustEmbedUnimplementedCSATSAnswerServiceServer()
 }
 
@@ -50,7 +51,7 @@ type CSATSAnswerServiceServer interface {
 type UnimplementedCSATSAnswerServiceServer struct {
 }
 
-func (UnimplementedCSATSAnswerServiceServer) Create(context.Context, *NewCSATAnswer) (*Error, error) {
+func (UnimplementedCSATSAnswerServiceServer) Create(context.Context, *NewCSATAnswer) (*empty.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Create not implemented")
 }
 func (UnimplementedCSATSAnswerServiceServer) mustEmbedUnimplementedCSATSAnswerServiceServer() {}

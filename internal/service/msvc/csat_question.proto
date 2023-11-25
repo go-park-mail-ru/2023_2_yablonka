@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-import "common.proto";
+import "google/protobuf/empty.proto";
 
 // protoc --go_out=. --go-grpc_out=. --go-grpc_opt=paths=source_relative --go_opt=paths=source_relative *.proto  
 option go_package = "./;microservice";
@@ -21,25 +21,21 @@ message NewCSATAnswerInfo {
     uint64 Rating = 2;
 }
 
-message CSATQuestion {
+message CSATQuestionFull {
     uint64 ID = 1;
     string Type = 2;
     string Content = 3;
 }
 
-message UpdatedCSATQuestion {
-    string Content = 1;
-    string Type = 2;
-}
-
-message CreateReturn {
-    CSATQuestion question = 1;
-    Error error = 2;
+message UpdatedCSATQuestionInfo {
+    uint64 ID = 1;
+    string Content = 2;
+    string Type = 3;
 }
 
 service CSATQuestionService {
-	rpc CheckRating (NewCSATAnswerInfo) returns (Error) {}
-    rpc Create (NewCSATQuestionInfo) returns (CreateReturn) {}
-    rpc Update (UpdatedCSATQuestion) returns (Error) {}
-    rpc Delete (CSATQuestionID) returns (Error) {}
+	rpc CheckRating (NewCSATAnswerInfo) returns (google.protobuf.Empty) {}
+    rpc Create (NewCSATQuestionInfo) returns (CSATQuestionFull) {}
+    rpc Update (UpdatedCSATQuestionInfo) returns (google.protobuf.Empty) {}
+    rpc Delete (CSATQuestionID) returns (google.protobuf.Empty) {}
 }

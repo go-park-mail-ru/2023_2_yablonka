@@ -4,6 +4,7 @@ package microservice
 
 import (
 	context "context"
+	empty "github.com/golang/protobuf/ptypes/empty"
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
@@ -18,10 +19,10 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type CSATQuestionServiceClient interface {
-	CheckRating(ctx context.Context, in *NewCSATAnswerInfo, opts ...grpc.CallOption) (*Error, error)
-	Create(ctx context.Context, in *NewCSATQuestionInfo, opts ...grpc.CallOption) (*CreateReturn, error)
-	Update(ctx context.Context, in *UpdatedCSATQuestion, opts ...grpc.CallOption) (*Error, error)
-	Delete(ctx context.Context, in *CSATQuestionID, opts ...grpc.CallOption) (*Error, error)
+	CheckRating(ctx context.Context, in *NewCSATAnswerInfo, opts ...grpc.CallOption) (*empty.Empty, error)
+	Create(ctx context.Context, in *NewCSATQuestionInfo, opts ...grpc.CallOption) (*CSATQuestionFull, error)
+	Update(ctx context.Context, in *UpdatedCSATQuestionInfo, opts ...grpc.CallOption) (*empty.Empty, error)
+	Delete(ctx context.Context, in *CSATQuestionID, opts ...grpc.CallOption) (*empty.Empty, error)
 }
 
 type cSATQuestionServiceClient struct {
@@ -32,8 +33,8 @@ func NewCSATQuestionServiceClient(cc grpc.ClientConnInterface) CSATQuestionServi
 	return &cSATQuestionServiceClient{cc}
 }
 
-func (c *cSATQuestionServiceClient) CheckRating(ctx context.Context, in *NewCSATAnswerInfo, opts ...grpc.CallOption) (*Error, error) {
-	out := new(Error)
+func (c *cSATQuestionServiceClient) CheckRating(ctx context.Context, in *NewCSATAnswerInfo, opts ...grpc.CallOption) (*empty.Empty, error) {
+	out := new(empty.Empty)
 	err := c.cc.Invoke(ctx, "/service.CSATQuestionService/CheckRating", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -41,8 +42,8 @@ func (c *cSATQuestionServiceClient) CheckRating(ctx context.Context, in *NewCSAT
 	return out, nil
 }
 
-func (c *cSATQuestionServiceClient) Create(ctx context.Context, in *NewCSATQuestionInfo, opts ...grpc.CallOption) (*CreateReturn, error) {
-	out := new(CreateReturn)
+func (c *cSATQuestionServiceClient) Create(ctx context.Context, in *NewCSATQuestionInfo, opts ...grpc.CallOption) (*CSATQuestionFull, error) {
+	out := new(CSATQuestionFull)
 	err := c.cc.Invoke(ctx, "/service.CSATQuestionService/Create", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -50,8 +51,8 @@ func (c *cSATQuestionServiceClient) Create(ctx context.Context, in *NewCSATQuest
 	return out, nil
 }
 
-func (c *cSATQuestionServiceClient) Update(ctx context.Context, in *UpdatedCSATQuestion, opts ...grpc.CallOption) (*Error, error) {
-	out := new(Error)
+func (c *cSATQuestionServiceClient) Update(ctx context.Context, in *UpdatedCSATQuestionInfo, opts ...grpc.CallOption) (*empty.Empty, error) {
+	out := new(empty.Empty)
 	err := c.cc.Invoke(ctx, "/service.CSATQuestionService/Update", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -59,8 +60,8 @@ func (c *cSATQuestionServiceClient) Update(ctx context.Context, in *UpdatedCSATQ
 	return out, nil
 }
 
-func (c *cSATQuestionServiceClient) Delete(ctx context.Context, in *CSATQuestionID, opts ...grpc.CallOption) (*Error, error) {
-	out := new(Error)
+func (c *cSATQuestionServiceClient) Delete(ctx context.Context, in *CSATQuestionID, opts ...grpc.CallOption) (*empty.Empty, error) {
+	out := new(empty.Empty)
 	err := c.cc.Invoke(ctx, "/service.CSATQuestionService/Delete", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -72,10 +73,10 @@ func (c *cSATQuestionServiceClient) Delete(ctx context.Context, in *CSATQuestion
 // All implementations must embed UnimplementedCSATQuestionServiceServer
 // for forward compatibility
 type CSATQuestionServiceServer interface {
-	CheckRating(context.Context, *NewCSATAnswerInfo) (*Error, error)
-	Create(context.Context, *NewCSATQuestionInfo) (*CreateReturn, error)
-	Update(context.Context, *UpdatedCSATQuestion) (*Error, error)
-	Delete(context.Context, *CSATQuestionID) (*Error, error)
+	CheckRating(context.Context, *NewCSATAnswerInfo) (*empty.Empty, error)
+	Create(context.Context, *NewCSATQuestionInfo) (*CSATQuestionFull, error)
+	Update(context.Context, *UpdatedCSATQuestionInfo) (*empty.Empty, error)
+	Delete(context.Context, *CSATQuestionID) (*empty.Empty, error)
 	mustEmbedUnimplementedCSATQuestionServiceServer()
 }
 
@@ -83,16 +84,16 @@ type CSATQuestionServiceServer interface {
 type UnimplementedCSATQuestionServiceServer struct {
 }
 
-func (UnimplementedCSATQuestionServiceServer) CheckRating(context.Context, *NewCSATAnswerInfo) (*Error, error) {
+func (UnimplementedCSATQuestionServiceServer) CheckRating(context.Context, *NewCSATAnswerInfo) (*empty.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CheckRating not implemented")
 }
-func (UnimplementedCSATQuestionServiceServer) Create(context.Context, *NewCSATQuestionInfo) (*CreateReturn, error) {
+func (UnimplementedCSATQuestionServiceServer) Create(context.Context, *NewCSATQuestionInfo) (*CSATQuestionFull, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Create not implemented")
 }
-func (UnimplementedCSATQuestionServiceServer) Update(context.Context, *UpdatedCSATQuestion) (*Error, error) {
+func (UnimplementedCSATQuestionServiceServer) Update(context.Context, *UpdatedCSATQuestionInfo) (*empty.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Update not implemented")
 }
-func (UnimplementedCSATQuestionServiceServer) Delete(context.Context, *CSATQuestionID) (*Error, error) {
+func (UnimplementedCSATQuestionServiceServer) Delete(context.Context, *CSATQuestionID) (*empty.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Delete not implemented")
 }
 func (UnimplementedCSATQuestionServiceServer) mustEmbedUnimplementedCSATQuestionServiceServer() {}
@@ -145,7 +146,7 @@ func _CSATQuestionService_Create_Handler(srv interface{}, ctx context.Context, d
 }
 
 func _CSATQuestionService_Update_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(UpdatedCSATQuestion)
+	in := new(UpdatedCSATQuestionInfo)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -157,7 +158,7 @@ func _CSATQuestionService_Update_Handler(srv interface{}, ctx context.Context, d
 		FullMethod: "/service.CSATQuestionService/Update",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CSATQuestionServiceServer).Update(ctx, req.(*UpdatedCSATQuestion))
+		return srv.(CSATQuestionServiceServer).Update(ctx, req.(*UpdatedCSATQuestionInfo))
 	}
 	return interceptor(ctx, in, info, handler)
 }
