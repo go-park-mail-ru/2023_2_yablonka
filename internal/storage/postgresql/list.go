@@ -55,7 +55,7 @@ func (s PostgresListStorage) Create(ctx context.Context, info dto.NewListInfo) (
 
 	if err := query.Scan(&list.ID); err != nil {
 		log.Println("Storage -- Failed to create list")
-		return nil, apperrors.ErrWorkspaceNotCreated
+		return nil, apperrors.ErrListNotCreated
 	}
 
 	log.Println("Storage -- List created")
