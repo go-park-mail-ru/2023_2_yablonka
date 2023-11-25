@@ -46,6 +46,10 @@ type CommentResponse struct {
 	Comment entities.Comment `json:"comment"`
 }
 
-type QuestionsResponse struct {
-	Questions []entities.CSATQuestion `json:"questions"`
+type AllQuestionsResponse struct {
+	Questions []dto.CSATQuestionFull `json:"questions"`
+}
+
+type QuestionResponse struct {
+	Question dto.CSATQuestionFull `json:"questions"`
 }

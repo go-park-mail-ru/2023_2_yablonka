@@ -33,8 +33,9 @@ type CSATAnswerHandler struct {
 //
 // @Router /csat/answer/ [post]
 func (ah CSATAnswerHandler) Create(w http.ResponseWriter, r *http.Request) {
-	rCtx := r.Context()
 	funcName := "CreateCSATAnswer"
+
+	rCtx := r.Context()
 
 	logger := rCtx.Value(dto.LoggerKey).(*logrus.Logger)
 
@@ -47,14 +48,6 @@ func (ah CSATAnswerHandler) Create(w http.ResponseWriter, r *http.Request) {
 	}
 	handlerDebugLog(logger, funcName, "request struct decoded")
 
-	user, ok := rCtx.Value(dto.UserObjKey).(*entities.User)
-	if !ok {
-		handlerDebugLog(logger, funcName, "Creating a CSAT answer failed -- "+err.Error())
-		apperrors.ReturnError(apperrors.GenericUnauthorizedResponse, w, r)
-		return
-	}
-	handlerDebugLog(logger, funcName, "User object acquired from context")
-
 	err = ah.qs.CheckRating(rCtx, CSATAnswerInfo)
 	if err != nil {
 		handlerDebugLog(logger, funcName, "Creating a CSAT answer failed -- "+err.Error())
@@ -62,6 +55,14 @@ func (ah CSATAnswerHandler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	handlerDebugLog(logger, funcName, "Rating checked")
+
+	user, ok := rCtx.Value(dto.UserObjKey).(*entities.User)
+	if !ok {
+		handlerDebugLog(logger, funcName, "Creating a CSAT answer failed -- "+err.Error())
+		apperrors.ReturnError(apperrors.GenericUnauthorizedResponse, w, r)
+		return
+	}
+	handlerDebugLog(logger, funcName, "User object acquired from context")
 
 	CSATAnswer := dto.NewCSATAnswer{
 		UserID:     user.ID,

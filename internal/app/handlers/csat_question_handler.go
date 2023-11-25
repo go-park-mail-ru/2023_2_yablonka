@@ -22,7 +22,7 @@ type CSATQuestionHandler struct {
 // @Accept  json
 // @Produce  json
 //
-// @Success 200  {object}  doc_structs.QuestionsResponse "все вопросы"
+// @Success 200  {object}  doc_structs.AllQuestionsResponse "все вопросы"
 // @Failure 400  {object}  apperrors.ErrorResponse
 // @Failure 401  {object}  apperrors.ErrorResponse
 // @Failure 500  {object}  apperrors.ErrorResponse
