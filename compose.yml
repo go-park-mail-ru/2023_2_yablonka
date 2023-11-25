@@ -10,10 +10,13 @@ services:
         condition: service_healthy
     links:
       - db
+    # "echo 'Migrating CSAT database' &&
+    # ./tern migrate -c db/migrations/csat/tern.conf -m db/migrations/csat/ &&
+    # echo 'Finished CSAT database migrations' &&
     command: >
-        sh -c "echo "Migrating" &&
-              ./tern migrate -c db/migrations/tern.conf -m db/migrations/ &&
-              echo 'Finished migrations' &&
+        sh -c "echo 'Migrating main database' &&
+              ./tern migrate -c db/migrations/public/tern.conf -m db/migrations/public/ &&
+              echo 'Finished main database migrations' &&
               echo 'Starting backend' &&
               ./yablonka-backend"
     env_file:
