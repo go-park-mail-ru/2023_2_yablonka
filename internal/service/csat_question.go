@@ -10,10 +10,10 @@ import (
 //
 //go:generate mockgen -source=$GOFILE -destination=../../mocks/mock_service/$GOFILE -package=mock_service
 type ICSATQuestionService interface {
-	// GetQuestionType
-	// возвращает тип CSAT вопроса по его id
+	// CheckRating
+	// проверка рейтинга на соответствие ограничениям типа
 	// или возвращает ошибки ...
-	GetQuestionType(context.Context, dto.CSATQuestionID) (*entities.QuestionType, error)
+	CheckRating(context.Context, dto.NewCSATAnswerInfo) error
 	// Create
 	// создает новый список
 	// или возвращает ошибки ...

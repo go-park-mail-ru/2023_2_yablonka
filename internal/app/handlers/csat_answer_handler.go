@@ -1,9 +1,7 @@
 package handlers
 
 import (
-	"context"
 	"encoding/json"
-	"log"
 	"net/http"
 	"server/internal/apperrors"
 	_ "server/internal/pkg/doc_structs"
@@ -36,7 +34,7 @@ type CSATAnswerHandler struct {
 // @Router /csat/answer/ [post]
 func (ah CSATAnswerHandler) Create(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
-	funcName := "GetFullBoard"
+	funcName := "CreateCSATAnswer"
 
 	logger := rCtx.Value(dto.LoggerKey).(*logrus.Logger)
 
@@ -44,7 +42,7 @@ func (ah CSATAnswerHandler) Create(w http.ResponseWriter, r *http.Request) {
 	err := json.NewDecoder(r.Body).Decode(&CSATAnswerInfo)
 	if err != nil {
 		handlerDebugLog(logger, funcName, "Creating a CSAT answer failed -- "+err.Error())
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.BadRequestResponse))
+		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
 		return
 	}
 	handlerDebugLog(logger, funcName, "request struct decoded")
@@ -57,18 +55,13 @@ func (ah CSATAnswerHandler) Create(w http.ResponseWriter, r *http.Request) {
 	}
 	handlerDebugLog(logger, funcName, "User object acquired from context")
 
-	qustionType, err := ah.qs.GetQuestionType(rCtx, dto.CSATQuestionID{Value: CSATAnswerInfo.QuestionID})
+	err = ah.qs.CheckRating(rCtx, CSATAnswerInfo)
 	if err != nil {
 		handlerDebugLog(logger, funcName, "Creating a CSAT answer failed -- "+err.Error())
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.ErrorMap[err]))
+		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
 		return
 	}
-
-	if CSATAnswerInfo.Rating < 0 || CSATAnswerInfo.Rating > qustionType.MaxRating {
-		handlerDebugLog(logger, funcName, "Creating a CSAT answer failed -- "+err.Error())
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.ErrorMap[err]))
-		return
-	}
+	handlerDebugLog(logger, funcName, "Rating checked")
 
 	CSATAnswer := dto.NewCSATAnswer{
 		UserID:     user.ID,
@@ -78,27 +71,26 @@ func (ah CSATAnswerHandler) Create(w http.ResponseWriter, r *http.Request) {
 	err = ah.as.Create(rCtx, CSATAnswer)
 	if err != nil {
 		handlerDebugLog(logger, funcName, "Creating a CSAT answer failed -- "+err.Error())
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.ErrorMap[err]))
+		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
 		return
 	}
-	log.Println("list created")
+	handlerDebugLog(logger, funcName, "Answer created")
 
 	response := dto.JSONResponse{
 		Body: dto.JSONMap{},
 	}
-
 	jsonResponse, err := json.Marshal(response)
 	if err != nil {
 		handlerDebugLog(logger, funcName, "Creating a CSAT answer failed -- "+err.Error())
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.InternalServerErrorResponse))
+		apperrors.ReturnError(apperrors.InternalServerErrorResponse, w, r)
 		return
 	}
-	log.Println("json response marshalled")
+	handlerDebugLog(logger, funcName, "Json response marshalled")
 
 	_, err = w.Write(jsonResponse)
 	if err != nil {
 		handlerDebugLog(logger, funcName, "Creating a CSAT answer failed -- "+err.Error())
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.InternalServerErrorResponse))
+		apperrors.ReturnError(apperrors.InternalServerErrorResponse, w, r)
 		return
 	}
 	r.Body.Close()

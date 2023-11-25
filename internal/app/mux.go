@@ -89,10 +89,10 @@ func GetChiMux(manager handlers.Handlers, config config.Config) (http.Handler, e
 		r.Use(middleware.AuthMiddleware(manager.AuthHandler.GetAuthService(), manager.AuthHandler.GetUserService()))
 		r.Use(middleware.CSRFMiddleware(manager.AuthHandler.GetCSRFService()))
 		r.Route("/question", func(r chi.Router) {
-			r.Get("/", manager.CSATQuestionHandler.GetQuestions)
+			r.Get("/all", manager.CSATQuestionHandler.GetQuestions)
 			r.Post("/create/", manager.CSATQuestionHandler.Create)
 			r.Post("/edit/", manager.CSATQuestionHandler.Update)
-			r.Delete("/delete/", manager.CSATQuestionHandler.Delete)
+			r.Delete("/delete/", manager.TaskHandler.Delete)
 		})
 		r.Post("/answer", manager.CSATAnswerHandler.Create)
 	})

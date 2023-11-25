@@ -22,8 +22,16 @@ func NewCSATQuestionService(storage storage.ICSATQuestionStorage) *CSATQuestionS
 // GetQuestionType
 // возвращает тип CSAT вопроса по его id
 // или возвращает ошибки ...
-func (cs CSATQuestionService) GetQuestionType(ctx context.Context, id dto.CSATQuestionID) (*entities.QuestionType, error) {
-	return cs.storage.GetQuestionType(ctx, id)
+func (cs CSATQuestionService) CheckRating(ctx context.Context, info dto.NewCSATAnswerInfo) error {
+	questionType, err := cs.storage.GetQuestionType(ctx, dto.CSATQuestionID{Value: info.QuestionID})
+	if err != nil {
+		return nil
+	}
+
+	if questionType.MaxRating > questionType.MaxRating {
+		return err
+	}
+	return nil
 }
 
 // Create
