@@ -1,4 +1,3 @@
-BEGIN
 CREATE TABLE IF NOT EXISTS public.question_type
 (
     id serial NOT NULL,
@@ -13,8 +12,6 @@ INSERT INTO public.question_type
 	VALUES 
     ('NSP', 5),
 	('CSI', 10);
-
-END;
 
 ---- create above / drop below ----
 

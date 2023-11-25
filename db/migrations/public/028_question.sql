@@ -1,4 +1,3 @@
-BEGIN
 CREATE TABLE IF NOT EXISTS public.question
 (
     id serial NOT NULL,
@@ -19,7 +18,6 @@ INSERT INTO public.question(
 	        ('Оцените концепцию существования собак', 2),
             ('Нравится ли вам наш сервис?', 1);
 
-END;
 
 ---- create above / drop below ----
 
