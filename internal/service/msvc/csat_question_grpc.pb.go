@@ -20,6 +20,8 @@ const _ = grpc.SupportPackageIsVersion7
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type CSATQuestionServiceClient interface {
 	CheckRating(ctx context.Context, in *NewCSATAnswerInfo, opts ...grpc.CallOption) (*empty.Empty, error)
+	GetAll(ctx context.Context, in *empty.Empty, opts ...grpc.CallOption) (*AllQuestionStats, error)
+	GetStats(ctx context.Context, in *empty.Empty, opts ...grpc.CallOption) (*AllQuestionsWithStats, error)
 	Create(ctx context.Context, in *NewCSATQuestionInfo, opts ...grpc.CallOption) (*CSATQuestionFull, error)
 	Update(ctx context.Context, in *UpdatedCSATQuestionInfo, opts ...grpc.CallOption) (*empty.Empty, error)
 	Delete(ctx context.Context, in *CSATQuestionID, opts ...grpc.CallOption) (*empty.Empty, error)
@@ -36,6 +38,24 @@ func NewCSATQuestionServiceClient(cc grpc.ClientConnInterface) CSATQuestionServi
 func (c *cSATQuestionServiceClient) CheckRating(ctx context.Context, in *NewCSATAnswerInfo, opts ...grpc.CallOption) (*empty.Empty, error) {
 	out := new(empty.Empty)
 	err := c.cc.Invoke(ctx, "/service.CSATQuestionService/CheckRating", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *cSATQuestionServiceClient) GetAll(ctx context.Context, in *empty.Empty, opts ...grpc.CallOption) (*AllQuestionStats, error) {
+	out := new(AllQuestionStats)
+	err := c.cc.Invoke(ctx, "/service.CSATQuestionService/GetAll", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *cSATQuestionServiceClient) GetStats(ctx context.Context, in *empty.Empty, opts ...grpc.CallOption) (*AllQuestionsWithStats, error) {
+	out := new(AllQuestionsWithStats)
+	err := c.cc.Invoke(ctx, "/service.CSATQuestionService/GetStats", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -74,6 +94,8 @@ func (c *cSATQuestionServiceClient) Delete(ctx context.Context, in *CSATQuestion
 // for forward compatibility
 type CSATQuestionServiceServer interface {
 	CheckRating(context.Context, *NewCSATAnswerInfo) (*empty.Empty, error)
+	GetAll(context.Context, *empty.Empty) (*AllQuestionStats, error)
+	GetStats(context.Context, *empty.Empty) (*AllQuestionsWithStats, error)
 	Create(context.Context, *NewCSATQuestionInfo) (*CSATQuestionFull, error)
 	Update(context.Context, *UpdatedCSATQuestionInfo) (*empty.Empty, error)
 	Delete(context.Context, *CSATQuestionID) (*empty.Empty, error)
@@ -86,6 +108,12 @@ type UnimplementedCSATQuestionServiceServer struct {
 
 func (UnimplementedCSATQuestionServiceServer) CheckRating(context.Context, *NewCSATAnswerInfo) (*empty.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CheckRating not implemented")
+}
+func (UnimplementedCSATQuestionServiceServer) GetAll(context.Context, *empty.Empty) (*AllQuestionStats, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetAll not implemented")
+}
+func (UnimplementedCSATQuestionServiceServer) GetStats(context.Context, *empty.Empty) (*AllQuestionsWithStats, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetStats not implemented")
 }
 func (UnimplementedCSATQuestionServiceServer) Create(context.Context, *NewCSATQuestionInfo) (*CSATQuestionFull, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Create not implemented")
@@ -123,6 +151,42 @@ func _CSATQuestionService_CheckRating_Handler(srv interface{}, ctx context.Conte
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(CSATQuestionServiceServer).CheckRating(ctx, req.(*NewCSATAnswerInfo))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _CSATQuestionService_GetAll_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(empty.Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CSATQuestionServiceServer).GetAll(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/service.CSATQuestionService/GetAll",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CSATQuestionServiceServer).GetAll(ctx, req.(*empty.Empty))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _CSATQuestionService_GetStats_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(empty.Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CSATQuestionServiceServer).GetStats(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/service.CSATQuestionService/GetStats",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CSATQuestionServiceServer).GetStats(ctx, req.(*empty.Empty))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -191,6 +255,14 @@ var CSATQuestionService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "CheckRating",
 			Handler:    _CSATQuestionService_CheckRating_Handler,
+		},
+		{
+			MethodName: "GetAll",
+			Handler:    _CSATQuestionService_GetAll_Handler,
+		},
+		{
+			MethodName: "GetStats",
+			Handler:    _CSATQuestionService_GetStats_Handler,
 		},
 		{
 			MethodName: "Create",

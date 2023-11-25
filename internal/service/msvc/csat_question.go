@@ -40,8 +40,49 @@ func (cs CSATQuestionService) CheckRating(ctx context.Context, info *NewCSATAnsw
 // GetAll
 // возвращает все вопросы CSAT
 // или возвращает ошибки ...
-func (cs CSATQuestionService) GetAll(ctx context.Context) (*[]dto.CSATQuestionFull, error) {
-	return cs.storage.GetAll(ctx)
+func (cs CSATQuestionService) GetAll(ctx context.Context, empty *emptypb.Empty) (*AllQuestionStats, error) {
+	questionStats, err := cs.storage.GetAll(ctx)
+	convertedQuestions := []*CSATQuestionFull{}
+	for _, question := range *questionStats {
+		convertedQuestions = append(convertedQuestions, &CSATQuestionFull{
+			ID:      question.ID,
+			Type:    question.Type,
+			Content: question.Content,
+		})
+	}
+	convertedStats := &AllQuestionStats{
+		Questions: convertedQuestions,
+	}
+	return convertedStats, err
+}
+
+// GetStats
+// возвращает статистику по вопросам
+// или возвращает ошибки ...
+func (cs CSATQuestionService) GetStats(ctx context.Context, empty *emptypb.Empty) (*AllQuestionsWithStats, error) {
+	stats, err := cs.storage.GetStats(ctx)
+	convertedQuestions := []*QuestionWithStats{}
+	for _, question := range *stats {
+		convertedRatings := []*RatingStats{}
+		for _, rating := range question.Stats {
+			convertedRatings = append(convertedRatings, &RatingStats{
+				Rating:  rating.Rating,
+				Average: rating.Average,
+				Count:   rating.Count,
+			})
+		}
+		convertedQuestions = append(convertedQuestions, &QuestionWithStats{
+			ID:      question.ID,
+			Type:    question.Type,
+			Content: question.Content,
+			Stats:   convertedRatings,
+		})
+	}
+	convertedStats := AllQuestionsWithStats{
+		Questions: convertedQuestions,
+	}
+
+	return &convertedStats, err
 }
 
 // Create
