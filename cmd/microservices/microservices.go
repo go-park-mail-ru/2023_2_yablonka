@@ -5,7 +5,6 @@ import (
 	"log"
 	"net"
 	"server/internal/config"
-	"server/internal/services/microservice"
 
 	"github.com/asaskevich/govalidator"
 	"google.golang.org/grpc"
@@ -31,7 +30,7 @@ func main() {
 	server := grpc.NewServer()
 
 	// microservice.RegisterCSATSAnswerServiceServer(server, NewCSATAnswerService())
-	microservice.RegisterCSATSAnswerServiceServer(server)
+	//microservice.RegisterCSATSAnswerServiceServer(server)
 
 	server.Serve(lstn)
 }
