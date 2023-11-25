@@ -67,6 +67,22 @@ type List struct {
 	Tasks        []Task  `json:"tasks"`
 }
 
+// QuestionType
+// структура для хранения типа вопроса
+type QuestionType struct {
+	ID        uint64 `json:"id"`
+	Name      string `json:"name"`
+	MaxRating uint64 `json:"max_rating"`
+}
+
+// CSATQuestion
+// структура для CSAT ответа
+type CSATQuestion struct {
+	ID      uint64 `json:"id"`
+	Type    string `json:"type"`
+	Content string `json:"content"`
+}
+
 // Role
 // структура для хранения роли пользователя
 type Role struct {

@@ -7,23 +7,27 @@ import (
 )
 
 type Storages struct {
-	Auth      IAuthStorage
-	User      IUserStorage
-	Board     IBoardStorage
-	CSRF      ICSRFStorage
-	List      IListStorage
-	Task      ITaskStorage
-	Workspace IWorkspaceStorage
+	Auth         IAuthStorage
+	User         IUserStorage
+	Board        IBoardStorage
+	CSRF         ICSRFStorage
+	List         IListStorage
+	Task         ITaskStorage
+	Workspace    IWorkspaceStorage
+	CSATAnswer   ICSATAnswerStorage
+	CSATQuestion ICSATQuestionStorage
 }
 
 func NewPostgresStorages(dbConnection *pgxpool.Pool) *Storages {
 	return &Storages{
-		Auth:      postgresql.NewAuthStorage(dbConnection),
-		User:      postgresql.NewUserStorage(dbConnection),
-		Board:     postgresql.NewBoardStorage(dbConnection),
-		CSRF:      postgresql.NewCSRFStorage(dbConnection),
-		List:      postgresql.NewListStorage(dbConnection),
-		Task:      postgresql.NewTaskStorage(dbConnection),
-		Workspace: postgresql.NewWorkspaceStorage(dbConnection),
+		Auth:         postgresql.NewAuthStorage(dbConnection),
+		User:         postgresql.NewUserStorage(dbConnection),
+		Board:        postgresql.NewBoardStorage(dbConnection),
+		CSRF:         postgresql.NewCSRFStorage(dbConnection),
+		List:         postgresql.NewListStorage(dbConnection),
+		Task:         postgresql.NewTaskStorage(dbConnection),
+		Workspace:    postgresql.NewWorkspaceStorage(dbConnection),
+		CSATAnswer:   postgresql.NewCSATAnswerStorage(dbConnection),
+		CSATQuestion: postgresql.NewCSATQuestionStorage(dbConnection),
 	}
 }

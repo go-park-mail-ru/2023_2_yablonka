@@ -15,6 +15,7 @@ type Handlers struct {
 	WorkspaceHandler
 	ListHandler
 	TaskHandler
+	CSATHandler
 }
 
 // NewHandlers
@@ -27,6 +28,7 @@ func NewHandlers(services *service.Services) *Handlers {
 		WorkspaceHandler: *NewWorkspaceHandler(services.Workspace),
 		ListHandler:      *NewListHandler(services.List),
 		TaskHandler:      *NewTaskHandler(services.Task),
+		CSATHandler:      *NewCSATHandler(services.CSAT),
 	}
 }
 
@@ -36,6 +38,14 @@ func NewAuthHandler(as service.IAuthService, us service.IUserService, cs service
 	return &AuthHandler{
 		as: as,
 		us: us,
+		cs: cs,
+	}
+}
+
+// NewCSATHandler
+// возвращает CSATHandler с необходимыми сервисами
+func NewCSATHandler(cs service.ICSATSAnswerService) *CSATHandler {
+	return &CSATHandler{
 		cs: cs,
 	}
 }

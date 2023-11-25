@@ -16,6 +16,48 @@ type VerifiedAuthInfo struct {
 	UserID uint64
 }
 
+// NewCSATAnswerInfo
+// DTO с данными ответа на вопрос
+type NewCSATAnswerInfo struct {
+	QuestionID uint64 `json:"id_question"`
+	Rating     uint64 `json:"rating"`
+}
+
+// NewCSATAnswer
+// DTO с данными ответа на вопрос и пользователем, ответившим на него
+type NewCSATAnswer struct {
+	UserID     uint64
+	QuestionID uint64
+	Rating     uint64
+}
+
+// CSATQuestionID
+// DTO с ID CSAT вопроса
+type CSATQuestionID struct {
+	ID uint64
+}
+
+// NewCSATQuestionInfo
+// DTO с новыми данными CSAT вопроса
+type NewCSATQuestionInfo struct {
+	Content string `json:"content"`
+	Type    string `json:"type"`
+}
+
+// NewCSATQuestion
+// DTO с новыми данными CSAT вопроса для БД
+type NewCSATQuestion struct {
+	Content string `json:"content"`
+	Type    uint64 `json:"type"`
+}
+
+// UpdatedCSATQuestion
+// DTO с новыми данными CSAT вопроса для БД
+type UpdatedCSATQuestion struct {
+	Content string `json:"content"`
+	Type    uint64 `json:"type"`
+}
+
 // VerifiedAuthInfo
 // DTO, подтверждающее личность на основе сессии, полученных при регистрации
 type UserEmail struct {
