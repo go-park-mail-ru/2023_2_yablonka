@@ -24,7 +24,7 @@ type ICSATQuestionService interface {
 	// Update
 	// обновляет список
 	// или возвращает ошибки ...
-	Update(context.Context, dto.UpdatedCSATQuestion) error
+	Update(context.Context, dto.UpdatedCSATQuestionInfo) error
 	// Delete
 	// удаляет список по id
 	// или возвращает ошибки ...

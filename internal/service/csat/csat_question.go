@@ -42,24 +42,43 @@ func (cs CSATQuestionService) GetAll(ctx context.Context) (*[]dto.CSATQuestionFu
 }
 
 // Create
-// создает новый список
+// создает новый вопрос CSAT
 // или возвращает ошибки ...
 func (cs CSATQuestionService) Create(ctx context.Context, info dto.NewCSATQuestionInfo) (*dto.CSATQuestionFull, error) {
+	questionType, err := cs.storage.GetQuestionTypeWithName(ctx, dto.CSATQuestionTypeName{Value: info.Type})
+	if err != nil {
+		return nil, err
+	}
 	verifiedInfo := dto.NewCSATQuestion{
 		Content: info.Content,
+		TypeID:  questionType.ID,
 	}
-	return cs.storage.Create(ctx, verifiedInfo)
+	question, err := cs.storage.Create(ctx, verifiedInfo)
+	if err != nil {
+		return nil, err
+	}
+	question.Type = info.Type
+	return question, nil
 }
 
 // Update
-// обновляет список
+// обновляет вопрос CSAT
 // или возвращает ошибки ...
-func (cs CSATQuestionService) Update(ctx context.Context, info dto.UpdatedCSATQuestion) error {
-	return cs.storage.Update(ctx, info)
+func (cs CSATQuestionService) Update(ctx context.Context, info dto.UpdatedCSATQuestionInfo) error {
+	questionType, err := cs.storage.GetQuestionType(ctx, dto.CSATQuestionID{Value: info.ID})
+	if err != nil {
+		return nil
+	}
+	updatedQuestion := dto.UpdatedCSATQuestion{
+		ID:      info.ID,
+		Content: info.Content,
+		Type:    questionType.ID,
+	}
+	return cs.storage.Update(ctx, updatedQuestion)
 }
 
 // Delete
-// удаляет список по id
+// удаляет вопрос CSAT по id
 // или возвращает ошибки ...
 func (cs CSATQuestionService) Delete(ctx context.Context, id dto.CSATQuestionID) error {
 	return cs.storage.Delete(ctx, id)

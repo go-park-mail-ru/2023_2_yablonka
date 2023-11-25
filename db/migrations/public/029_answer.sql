@@ -16,6 +16,11 @@ CREATE TABLE IF NOT EXISTS public.answer
         ON DELETE NO ACTION
 )
 
+INSERT INTO csat_db.question_type(
+	name, max_score)
+	VALUES  ('NSP', 5),
+	        ('CSI', 10);
+
 ---- create above / drop below ----
 
 DROP TABLE IF EXISTS public.answer;

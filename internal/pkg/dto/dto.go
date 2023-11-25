@@ -37,6 +37,12 @@ type CSATQuestionID struct {
 	Value uint64
 }
 
+// CSATQuestionTypeName
+// DTO с названием CSAT вопроса
+type CSATQuestionTypeName struct {
+	Value string `json:"type"`
+}
+
 // CSATRatingCheck
 // DTO с данными для проверки границ рейтинга
 type CSATRatingCheck struct {
@@ -63,14 +69,23 @@ type NewCSATQuestionInfo struct {
 // DTO с новыми данными CSAT вопроса для БД
 type NewCSATQuestion struct {
 	Content string `json:"content"`
-	Type    uint64 `json:"type"`
+	TypeID  uint64 `json:"type"`
 }
 
 // UpdatedCSATQuestion
 // DTO с новыми данными CSAT вопроса для БД
 type UpdatedCSATQuestion struct {
+	ID      uint64 `json:"id"`
 	Content string `json:"content"`
 	Type    uint64 `json:"type"`
+}
+
+// UpdatedCSATQuestionInfo
+// DTO с новыми данными CSAT вопроса для БД
+type UpdatedCSATQuestionInfo struct {
+	ID      uint64 `json:"id"`
+	Content string `json:"content"`
+	Type    string `json:"type"`
 }
 
 // VerifiedAuthInfo

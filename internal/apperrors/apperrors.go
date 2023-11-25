@@ -47,8 +47,16 @@ var (
 
 // Ошибки, связанные с CSAT
 var (
+	// ErrCouldNotCreateQuestion ошибка: не удалось создать вопрос CSAT в БД
+	ErrCouldNotCreateQuestion = errors.New("couldn't create question")
 	// ErrCouldNotGetQuestions ошибка: не удалось получить все вопросы CSAT в БД
 	ErrCouldNotGetQuestions = errors.New("couldn't get all questions")
+	// ErrCouldNotGetQuestionType ошибка: не удалось получить тип вопроса CSAT в БД
+	ErrCouldNotGetQuestionType = errors.New("couldn't get question type")
+	// ErrCouldNotGetQuestionType ошибка: не удалось обновить вопрос CSAT в БД
+	ErrQuestionNotUpdated = errors.New("couldn't обновить question")
+	// ErrCouldNotGetQuestionType ошибка: не удалось удалить вопрос CSAT в БД
+	ErrQuestionNotDeleted = errors.New("couldn't delete question")
 )
 
 // Ошибки, связанные с AuthService

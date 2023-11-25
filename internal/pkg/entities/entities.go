@@ -79,7 +79,7 @@ type QuestionType struct {
 // структура для CSAT ответа
 type CSATQuestion struct {
 	ID      uint64 `json:"id"`
-	Type    string `json:"type"`
+	TypeID  string `json:"type"`
 	Content string `json:"content"`
 }
 

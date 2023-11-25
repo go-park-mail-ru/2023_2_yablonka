@@ -7,6 +7,11 @@ CREATE TABLE IF NOT EXISTS public.question_type
     CONSTRAINT question_type_name_key UNIQUE (name)
 )
 
+INSERT INTO csat_db.question_type(
+	name, max_score)
+	VALUES  ('NSP', 5),
+	        ('CSI', 10);
+
 ---- create above / drop below ----
 
 DROP TABLE IF EXISTS public.question_type;

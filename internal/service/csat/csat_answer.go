@@ -19,7 +19,7 @@ func NewCSATAnswerService(storage storage.ICSATAnswerStorage) *CSATAnswerService
 }
 
 // Create
-// создает новый список
+// создает новый ответ CSAT
 // или возвращает ошибки ...
 func (cs CSATAnswerService) Create(ctx context.Context, info dto.NewCSATAnswer) error {
 	return cs.storage.Create(ctx, info)

@@ -14,6 +14,10 @@ type ICSATQuestionStorage interface {
 	// возвращает тип CSAT вопроса по его id
 	// или возвращает ошибки ...
 	GetQuestionType(context.Context, dto.CSATQuestionID) (*entities.QuestionType, error)
+	// GetQuestionTypeWithName
+	// возвращает тип CSAT вопроса по его названию
+	// или возвращает ошибки ...
+	GetQuestionTypeWithName(context.Context, dto.CSATQuestionTypeName) (*entities.QuestionType, error)
 	// GetAll
 	// возвращает все вопросы из БД
 	// или возвращает ошибки ...
