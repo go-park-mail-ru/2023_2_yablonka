@@ -11,6 +11,12 @@ CREATE TABLE IF NOT EXISTS public.question
         NOT VALID
 )
 
+INSERT INTO csat_db.question(
+	content, id_type)
+	VALUES  ('Как прошел ваш день?', 1),
+	        ('Оцените концепцию существования собак', 1),
+            ('Нравится ли вам наш сервис?', 1);
+
 ---- create above / drop below ----
 
 DROP TABLE IF EXISTS public.question;
