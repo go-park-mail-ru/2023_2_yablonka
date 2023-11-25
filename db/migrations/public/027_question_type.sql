@@ -1,6 +1,6 @@
 CREATE TABLE IF NOT EXISTS public.question_type
 (
-    id integer NOT NULL DEFAULT nextval('public.question_type_id_seq'::regclass),
+    id serial NOT NULL,
     name text COLLATE pg_catalog."default" NOT NULL,
     max_score smallint NOT NULL,
     CONSTRAINT question_type_pkey PRIMARY KEY (id),

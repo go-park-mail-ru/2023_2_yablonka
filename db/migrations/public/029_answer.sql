@@ -1,7 +1,7 @@
 CREATE TABLE IF NOT EXISTS public.answer
 (
-    id integer NOT NULL DEFAULT nextval('public.response_id_seq'::regclass),
-    id_user integer NOT NULL DEFAULT nextval('public.response_id_user_seq'::regclass),
+    id serial NOT NULL,
+    id_user serial NOT NULL,
     score smallint NOT NULL DEFAULT 0,
     id_question integer NOT NULL DEFAULT nextval('public.response_id_question_seq'::regclass),
     CONSTRAINT response_pkey PRIMARY KEY (id),

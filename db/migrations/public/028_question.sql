@@ -1,8 +1,8 @@
 CREATE TABLE IF NOT EXISTS public.question
 (
-    id integer NOT NULL DEFAULT nextval('public.question_id_seq'::regclass),
+    id serial NOT NULL,
     content text COLLATE pg_catalog."default" NOT NULL,
-    id_type integer NOT NULL DEFAULT nextval('public.question_id_type_seq'::regclass),
+    id_type serial NOT NULL,
     CONSTRAINT question_pkey PRIMARY KEY (id),
     CONSTRAINT question_id_type_fkey FOREIGN KEY (id_type)
         REFERENCES public.question_type (id) MATCH SIMPLE
