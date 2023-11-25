@@ -1,6 +1,8 @@
 services:
   server:
-    build: .
+    build: 
+      context: .
+      dockerfile: ./deployments/backend/Dockerfile
     container_name: backend
     ports: 
       - 8080:8080
@@ -23,6 +25,28 @@ services:
       - ./config/.env
     volumes:
       - ./img/:/img/
+
+  microservices:
+    build: 
+      context: .
+      dockerfile: ./deployments/microservices/Dockerfile
+    container_name: micro
+    env_file:
+      - ./config/.env
+    ports:
+      - 8082:8082
+    tty: true
+    depends_on:
+      db:
+        condition: service_healthy
+    links:
+      - db
+    command: >
+        sh -c "echo 'Migrating main database' &&
+              ./tern migrate -c db/migrations/public/tern.conf -m db/migrations/public/ &&
+              echo 'Finished main database migrations' &&
+              echo 'Starting microservices' &&
+              ./yablonka-microservices"
   
   db:
     image: postgres:latest
