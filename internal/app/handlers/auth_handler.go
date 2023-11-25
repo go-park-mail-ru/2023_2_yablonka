@@ -51,10 +51,10 @@ func (ah AuthHandler) LogIn(w http.ResponseWriter, r *http.Request) {
 	funcName := "LogIn"
 
 	logger := rCtx.Value(dto.LoggerKey).(*logrus.Logger)
+
 	logger.Info("Logging user in")
 
 	var authInfo dto.AuthInfo
-
 	err := json.NewDecoder(r.Body).Decode(&authInfo)
 	if err != nil {
 		logger.Error("Login failed")
@@ -85,7 +85,6 @@ func (ah AuthHandler) LogIn(w http.ResponseWriter, r *http.Request) {
 	userID := dto.UserID{
 		Value: user.ID,
 	}
-
 	handlerDebugLog(logger, funcName, fmt.Sprintf("Creating session for user ID %d", userID.Value))
 	session, err := ah.as.AuthUser(rCtx, userID)
 	if err != nil {
@@ -104,11 +103,9 @@ func (ah AuthHandler) LogIn(w http.ResponseWriter, r *http.Request) {
 		Expires:  session.ExpirationDate,
 		Path:     "/api/v2/",
 	}
-
 	http.SetCookie(w, authCookie)
 	handlerDebugLog(logger, funcName, "Cookie set")
 
-	handlerDebugLog(logger, funcName, fmt.Sprintf("Setting up CSRF for user ID %d", userID.Value))
 	csrfToken, err := ah.cs.SetupCSRF(rCtx, userID)
 	if err != nil {
 		logger.Error("Login failed")
@@ -116,10 +113,8 @@ func (ah AuthHandler) LogIn(w http.ResponseWriter, r *http.Request) {
 		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
 		return
 	}
+	w.Header().Add("X-Csrf-Token", csrfToken.Token)
 	handlerDebugLog(logger, funcName, "CSRF set up")
-
-	w.Header().Set("X-Csrf-Token", csrfToken.Token)
-	handlerDebugLog(logger, funcName, "CSRF token response header set")
 
 	publicUserInfo := dto.UserPublicInfo{
 		ID:          user.ID,
@@ -232,11 +227,9 @@ func (ah AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 		Expires:  session.ExpirationDate,
 		Path:     "/api/v2/",
 	}
-
 	http.SetCookie(w, cookie)
 	handlerDebugLog(logger, funcName, "Cookie set")
 
-	handlerDebugLog(logger, funcName, fmt.Sprintf("Setting up CSRF for user ID %d", userID.Value))
 	csrfToken, err := ah.cs.SetupCSRF(rCtx, userID)
 	if err != nil {
 		logger.Error("Signup failed")
@@ -244,10 +237,8 @@ func (ah AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
 		return
 	}
+	w.Header().Add("X-Csrf-Token", csrfToken.Token)
 	handlerDebugLog(logger, funcName, "CSRF set up")
-
-	w.Header().Set("X-Csrf-Token", csrfToken.Token)
-	handlerDebugLog(logger, funcName, "CSRF token response header set")
 
 	publicUserInfo := dto.UserPublicInfo{
 		ID:          user.ID,
@@ -389,17 +380,18 @@ func (ah AuthHandler) LogOut(w http.ResponseWriter, r *http.Request) {
 //
 // @Router /auth/verify [get]
 func (ah AuthHandler) VerifyAuthEndpoint(w http.ResponseWriter, r *http.Request) {
-	rCtx := r.Context()
 	funcName := "VerifyAuthEndpoint"
 
+	rCtx := r.Context()
 	logger := rCtx.Value(dto.LoggerKey).(*logrus.Logger)
-	logger.Info("Verifying user's authentication")
+
+	logger.Info("Verifying user")
 
 	cookie, err := r.Cookie("tabula_user")
 	if err != nil {
 		logger.Error("Verification failed")
 		handlerDebugLog(logger, funcName, "Verifying user failed with error "+err.Error())
-		w.Header().Set("X-Csrf-Token", "")
+		w.Header().Add("X-Csrf-Token", "")
 		apperrors.ReturnError(apperrors.GenericUnauthorizedResponse, w, r)
 		return
 	}
@@ -408,47 +400,36 @@ func (ah AuthHandler) VerifyAuthEndpoint(w http.ResponseWriter, r *http.Request)
 	token := dto.SessionToken{
 		ID: cookie.Value,
 	}
-
 	userID, err := ah.as.VerifyAuth(rCtx, token)
 	if err != nil {
 		logger.Error("Verification failed")
 		handlerDebugLog(logger, funcName, "Verifying user failed with error "+err.Error())
-		w.Header().Set("X-Csrf-Token", "")
+		w.Header().Add("X-Csrf-Token", "")
 		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
 		return
 	}
 	handlerDebugLog(logger, funcName, "Session verified")
 
-	handlerDebugLog(logger, funcName, fmt.Sprintf("Getting user info for user ID %d", userID.Value))
 	user, err := ah.us.GetWithID(rCtx, userID)
-	if err == apperrors.ErrUserNotFound {
+	if err != nil {
 		logger.Error("Verification failed")
 		handlerDebugLog(logger, funcName, "Verifying user failed with error "+err.Error())
-		w.Header().Set("X-Csrf-Token", "")
-		apperrors.ReturnError(apperrors.GenericUnauthorizedResponse, w, r)
-		return
-	} else if err != nil {
-		logger.Error("Verification failed")
-		handlerDebugLog(logger, funcName, "Verifying user failed with error "+err.Error())
-		w.Header().Set("X-Csrf-Token", "")
+		w.Header().Add("X-Csrf-Token", "")
 		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
 		return
 	}
 	handlerDebugLog(logger, funcName, "Got user object")
 
-	handlerDebugLog(logger, funcName, fmt.Sprintf("Setting up CSRF for user ID %d", userID.Value))
 	csrfToken, err := ah.cs.SetupCSRF(rCtx, userID)
 	if err != nil {
 		logger.Error("Verification failed")
 		handlerDebugLog(logger, funcName, "Verifying user failed with error "+err.Error())
-		w.Header().Set("X-Csrf-Token", "")
+		w.Header().Add("X-Csrf-Token", "")
 		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
 		return
 	}
+	w.Header().Add("X-Csrf-Token", csrfToken.Token)
 	handlerDebugLog(logger, funcName, "CSRF set up")
-
-	w.Header().Set("X-Csrf-Token", csrfToken.Token)
-	handlerDebugLog(logger, funcName, "CSRF token response header set")
 
 	publicUserInfo := dto.UserPublicInfo{
 		ID:          user.ID,
@@ -465,7 +446,6 @@ func (ah AuthHandler) VerifyAuthEndpoint(w http.ResponseWriter, r *http.Request)
 		},
 	}
 
-	handlerDebugLog(logger, funcName, "Marshaling JSON response")
 	jsonResponse, err := json.Marshal(response)
 	if err != nil {
 		logger.Error("Verification failed")
@@ -478,7 +458,6 @@ func (ah AuthHandler) VerifyAuthEndpoint(w http.ResponseWriter, r *http.Request)
 	}
 	handlerDebugLog(logger, funcName, "JSON response marshaled")
 
-	handlerDebugLog(logger, funcName, "Writing JSON response")
 	_, err = w.Write(jsonResponse)
 	if err != nil {
 		logger.Error("Verification failed")
