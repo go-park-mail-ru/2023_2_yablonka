@@ -391,7 +391,7 @@ func (ah AuthHandler) VerifyAuthEndpoint(w http.ResponseWriter, r *http.Request)
 	if err != nil {
 		logger.Error("Verification failed")
 		handlerDebugLog(logger, funcName, "Verifying user failed with error "+err.Error())
-		w.Header().Add("X-Csrf-Token", "")
+		w.Header().Set("X-Csrf-Token", "")
 		apperrors.ReturnError(apperrors.GenericUnauthorizedResponse, w, r)
 		return
 	}
@@ -404,7 +404,7 @@ func (ah AuthHandler) VerifyAuthEndpoint(w http.ResponseWriter, r *http.Request)
 	if err != nil {
 		logger.Error("Verification failed")
 		handlerDebugLog(logger, funcName, "Verifying user failed with error "+err.Error())
-		w.Header().Add("X-Csrf-Token", "")
+		w.Header().Set("X-Csrf-Token", "")
 		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
 		return
 	}
@@ -414,7 +414,7 @@ func (ah AuthHandler) VerifyAuthEndpoint(w http.ResponseWriter, r *http.Request)
 	if err != nil {
 		logger.Error("Verification failed")
 		handlerDebugLog(logger, funcName, "Verifying user failed with error "+err.Error())
-		w.Header().Add("X-Csrf-Token", "")
+		w.Header().Set("X-Csrf-Token", "")
 		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
 		return
 	}
@@ -424,11 +424,11 @@ func (ah AuthHandler) VerifyAuthEndpoint(w http.ResponseWriter, r *http.Request)
 	if err != nil {
 		logger.Error("Verification failed")
 		handlerDebugLog(logger, funcName, "Verifying user failed with error "+err.Error())
-		w.Header().Add("X-Csrf-Token", "")
+		w.Header().Set("X-Csrf-Token", "")
 		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
 		return
 	}
-	w.Header().Add("X-Csrf-Token", csrfToken.Token)
+	w.Header().Set("X-Csrf-Token", csrfToken.Token)
 	handlerDebugLog(logger, funcName, "CSRF set up")
 
 	publicUserInfo := dto.UserPublicInfo{
