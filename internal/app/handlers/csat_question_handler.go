@@ -203,3 +203,54 @@ func (qh CSATQuestionHandler) Update(w http.ResponseWriter, r *http.Request) {
 	handlerDebugLog(logger, funcName, "Response written")
 	logger.Info("Finished updating CSAT question")
 }
+
+// @Summary Статистика ответов CSAT
+// @Description Получить количество и среднее ответов на опросы CSAT
+// @Tags csat
+//
+// @Accept  json
+// @Produce  json
+//
+// @Success 200  {object}  doc_structs.StatsResponse "вопрос CSAT"
+// @Failure 400  {object}  apperrors.ErrorResponse
+// @Failure 401  {object}  apperrors.ErrorResponse
+// @Failure 500  {object}  apperrors.ErrorResponse
+//
+// @Router /csat/stats [get]
+func (qh CSATQuestionHandler) GetStats(w http.ResponseWriter, r *http.Request) {
+	funcName := "GetStats"
+
+	rCtx := r.Context()
+
+	logger := rCtx.Value(dto.LoggerKey).(*logrus.Logger)
+
+	answers, err := qh.qs.GetStats(rCtx)
+	if err != nil {
+		handlerDebugLog(logger, funcName, "Getting stats failed -- "+err.Error())
+		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
+		return
+	}
+	handlerDebugLog(logger, funcName, "Stats received")
+
+	response := dto.JSONResponse{
+		Body: dto.JSONMap{
+			"questions": answers,
+		},
+	}
+	jsonResponse, err := json.Marshal(response)
+	if err != nil {
+		handlerDebugLog(logger, funcName, "Getting stats failed -- "+err.Error())
+		apperrors.ReturnError(apperrors.InternalServerErrorResponse, w, r)
+		return
+	}
+	handlerDebugLog(logger, funcName, "Json response marshalled")
+
+	_, err = w.Write(jsonResponse)
+	if err != nil {
+		handlerDebugLog(logger, funcName, "Getting stats failed -- "+err.Error())
+		apperrors.ReturnError(apperrors.InternalServerErrorResponse, w, r)
+		return
+	}
+	r.Body.Close()
+	handlerDebugLog(logger, funcName, "Response written")
+}

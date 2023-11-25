@@ -17,6 +17,10 @@ type ICSATQuestionService interface {
 	// возвращает все вопросы
 	// или возвращает ошибки ...
 	GetAll(context.Context) (*[]dto.CSATQuestionFull, error)
+	// GetStats
+	// возвращает статистику по вопросам
+	// или возвращает ошибки ...
+	GetStats(context.Context) (*[]dto.QuestionWithStats, error)
 	// Create
 	// создает новый список
 	// или возвращает ошибки ...

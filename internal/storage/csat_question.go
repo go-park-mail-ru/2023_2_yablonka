@@ -22,6 +22,10 @@ type ICSATQuestionStorage interface {
 	// возвращает все вопросы из БД
 	// или возвращает ошибки ...
 	GetAll(context.Context) (*[]dto.CSATQuestionFull, error)
+	// GetStats
+	// возвращает статистику по вопросам
+	// или возвращает ошибки ...
+	GetStats(context.Context) (*[]dto.QuestionWithStats, error)
 	// Create
 	// создает новый CSAT вопрос в БД по данным
 	// или возвращает ошибки ...

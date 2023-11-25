@@ -50,6 +50,10 @@ type AllQuestionsResponse struct {
 	Questions []dto.CSATQuestionFull `json:"questions"`
 }
 
+type StatsResponse struct {
+	Questions []dto.QuestionWithStats `json:"questions"`
+}
+
 type QuestionResponse struct {
-	Question dto.CSATQuestionFull `json:"questions"`
+	Question dto.CSATQuestionFull `json:"question"`
 }

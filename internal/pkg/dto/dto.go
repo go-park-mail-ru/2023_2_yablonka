@@ -19,8 +19,10 @@ type VerifiedAuthInfo struct {
 // NewCSATAnswerInfo
 // DTO с данными ответа на вопрос
 type NewCSATAnswerInfo struct {
+	ID         uint64 `json:"id"`
 	QuestionID uint64 `json:"id_question"`
 	Rating     uint64 `json:"rating"`
+	//DateCreated time.Time `json:"date_created"`
 }
 
 // NewCSATAnswer
@@ -29,6 +31,32 @@ type NewCSATAnswer struct {
 	UserID     uint64
 	QuestionID uint64
 	Rating     uint64
+}
+
+// RatingStats
+// DTO со статистикой одного рейтинга в вопросе
+type RatingStats struct {
+	Rating  uint64 `json:"rating"`
+	Count   uint64 `json:"count"`
+	Average uint64 `json:"average"`
+}
+
+// RatingStatsWithQuestionID
+// DTO со статистикой одного рейтинга в вопросе
+type RatingStatsWithQuestionID struct {
+	QuestionID uint64 `json:"question_id"`
+	Rating     uint64 `json:"rating"`
+	Count      uint64 `json:"count"`
+	Average    uint64 `json:"average"`
+}
+
+// QuestionWithStats
+// DTO со статистикой одного вопроса
+type QuestionWithStats struct {
+	ID      uint64        `json:"question_id"`
+	Content string        `json:"content"`
+	Type    string        `json:"type"`
+	Stats   []RatingStats `json:"stats"`
 }
 
 // CSATQuestionID
@@ -55,6 +83,14 @@ type CSATRatingCheck struct {
 type CSATQuestionFull struct {
 	ID      uint64 `json:"question_id"`
 	Content string `json:"content"`
+	Type    string `json:"type"`
+}
+
+// CSATRatingCheck
+// DTO с данными для проверки границ рейтинга
+type CSATAnswerFull struct {
+	ID      uint64 `json:"answer_id"`
+	Content string `json:"rating"`
 	Type    string `json:"type"`
 }
 

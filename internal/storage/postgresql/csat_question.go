@@ -2,12 +2,14 @@ package postgresql
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"server/internal/apperrors"
 	"server/internal/pkg/dto"
 	"server/internal/pkg/entities"
 
 	sq "github.com/Masterminds/squirrel"
+	pgx "github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -91,6 +93,99 @@ func (s PostgresCSATQuestionStorage) GetAll(ctx context.Context) (*[]dto.CSATQue
 	}
 
 	return &questions, nil
+}
+
+// GetStats
+// возвращает вопросы со статистикой по их ответам
+// или возвращает ошибки ...
+func (s PostgresCSATQuestionStorage) GetStats(ctx context.Context) (*[]dto.QuestionWithStats, error) {
+	questionQuery, args, err := sq.
+		Select("public.question.id", "public.question.content", "public.question_type.name").
+		From("public.question").
+		Join("public.question_type ON public.question_type.id = public.question.id_type").
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
+
+	if err != nil {
+		return nil, apperrors.ErrCouldNotBuildQuery
+	}
+	log.Println("Built questions query\n\t", questionQuery, "\nwith args\n\t", args)
+
+	rows, err := s.db.Query(context.Background(), questionQuery, args...)
+	if err != nil {
+		log.Println("Storage -- DB questions query failed with error", err.Error())
+		return nil, err
+	}
+	log.Println("questions got")
+	defer rows.Close()
+
+	questions := map[uint64]dto.QuestionWithStats{}
+	var questionsID []uint64
+	for rows.Next() {
+		var question dto.QuestionWithStats
+
+		err = rows.Scan(
+			&question.ID,
+			&question.Content,
+			&question.Type,
+		)
+		if err != nil {
+			fmt.Println("Scanning failed due to error", err.Error())
+			return nil, err
+		}
+		questions[question.ID] = question
+		questionsID = append(questionsID, question.ID)
+	}
+
+	statsQuery, args, err := sq.
+		Select("id_question", "score", "COUNT(score)").
+		From("public.answer").
+		Join("public.question ON public.answer.id_question = public.question.id").
+		Where(sq.Eq{"id_question": questionsID}).
+		OrderBy("score").
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
+
+	if err != nil {
+		log.Println("Storage -- Failed to build query")
+		return nil, apperrors.ErrCouldNotBuildQuery
+	}
+
+	log.Println("Built boards query\n\t", statsQuery, "\nwith args\n\t", args)
+
+	rows, err = s.db.Query(context.Background(), statsQuery, args...)
+	if err != nil {
+		log.Println("Storage -- DB stats query failed with error", err.Error())
+		return nil, err
+	}
+	log.Println("Stats got")
+	defer rows.Close()
+
+	statRows, err := pgx.CollectRows(rows, pgx.RowToStructByPos[dto.RatingStatsWithQuestionID])
+	if err != nil {
+		fmt.Println("Failed collecting stats with error:", err.Error())
+		return nil, apperrors.ErrCouldNotGetBoard
+	}
+	log.Println("Stats collected")
+
+	for _, statRow := range statRows {
+		board := dto.RatingStats{
+			Rating:  statRow.Rating,
+			Count:   statRow.Count,
+			Average: statRow.Average,
+		}
+		question := questions[statRow.QuestionID]
+		question.Stats = append(question.Stats, board)
+		questions[statRow.QuestionID] = question
+	}
+	log.Println("Stats appended to workspaces")
+
+	var result []dto.QuestionWithStats
+	for _, value := range questions {
+		result = append(result, value)
+	}
+
+	return &result, nil
 }
 
 // Update

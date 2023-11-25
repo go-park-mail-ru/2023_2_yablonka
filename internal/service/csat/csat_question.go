@@ -61,6 +61,13 @@ func (cs CSATQuestionService) Create(ctx context.Context, info dto.NewCSATQuesti
 	return question, nil
 }
 
+// GetStats
+// возвращает статистику по вопросам
+// или возвращает ошибки ...
+func (cs CSATQuestionService) GetStats(ctx context.Context) (*[]dto.QuestionWithStats, error) {
+	return cs.storage.GetStats(ctx)
+}
+
 // Update
 // обновляет вопрос CSAT
 // или возвращает ошибки ...

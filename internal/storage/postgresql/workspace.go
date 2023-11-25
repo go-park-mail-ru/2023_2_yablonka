@@ -67,18 +67,6 @@ func (s PostgresWorkspaceStorage) GetUserOwnedWorkspaces(ctx context.Context, us
 	log.Println("Workspaces got")
 	defer rows.Close()
 
-	// workspaceQuery, args, err := sq.
-	// 	Select(allWorkspaceFields...).
-	// 	From("public.workspace").
-	// 	Join("public.user_workspace ON public.user_workspace.id_workspace = public.workspace.id").
-	// 	Join("public.user ON public.user_workspace.id_user = public.user.id").
-	// 	Join("public.board ON public.board.id_workspace = public.workspace.id").
-	// 	Join("public.board_user ON public.board_user.id_board = public.board.id").
-	// 	Where(sq.Eq{"public.user_workspace.id_user": userID.Value}).
-	// 	PlaceholderFormat(sq.Dollar).
-	// 	ToSql()
-
-	// var workspaces []dto.UserOwnedWorkspaceInfo
 	workspaces := map[uint64]dto.UserOwnedWorkspaceInfo{}
 	var ownedID []uint64
 	for rows.Next() {

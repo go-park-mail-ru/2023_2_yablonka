@@ -475,6 +475,296 @@ const docTemplate = `{
                 }
             }
         },
+        "/comment/create/": {
+            "post": {
+                "description": "Создать комментарий в каком-то задании",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "comments"
+                ],
+                "summary": "Создать комментарий",
+                "parameters": [
+                    {
+                        "description": "данные нового комментария",
+                        "name": "newCommentInfo",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.NewCommentInfo"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "объект комментария",
+                        "schema": {
+                            "$ref": "#/definitions/doc_structs.CommentResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/csat/answer/": {
+            "post": {
+                "description": "Создать ответит на опрос CSAT",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "csat"
+                ],
+                "summary": "Ответить на опрос CSAT",
+                "parameters": [
+                    {
+                        "description": "данные ответа CSAT",
+                        "name": "CSATAnswerInfo",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.NewCSATAnswerInfo"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "все вопросы",
+                        "schema": {
+                            "$ref": "#/definitions/doc_structs.AllQuestionsResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/csat/question/all": {
+            "get": {
+                "description": "Получить вопросы CSAT",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "csat"
+                ],
+                "summary": "Получить вопросы CSAT",
+                "responses": {
+                    "200": {
+                        "description": "все вопросы",
+                        "schema": {
+                            "$ref": "#/definitions/doc_structs.AllQuestionsResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/csat/question/create/": {
+            "post": {
+                "description": "Создать вопрос CSAT",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "csat"
+                ],
+                "summary": "Создать вопрос CSAT",
+                "parameters": [
+                    {
+                        "description": "данные нового вопроса CSAT",
+                        "name": "newQuestionInfo",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.NewCSATQuestionInfo"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "вопрос CSAT",
+                        "schema": {
+                            "$ref": "#/definitions/doc_structs.QuestionResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/csat/question/update/": {
+            "post": {
+                "description": "Обновить вопрос CSAT",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "csat"
+                ],
+                "summary": "Обновить вопрос CSAT",
+                "parameters": [
+                    {
+                        "description": "данные обновленного вопроса CSAT",
+                        "name": "updatedQuestionInfo",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.UpdatedCSATQuestionInfo"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "no content",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/csat/stats": {
+            "get": {
+                "description": "Получить количество и среднее ответов на опросы CSAT",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "csat"
+                ],
+                "summary": "Статистика ответов CSAT",
+                "responses": {
+                    "200": {
+                        "description": "вопрос CSAT",
+                        "schema": {
+                            "$ref": "#/definitions/doc_structs.StatsResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/list/create/": {
             "post": {
                 "description": "Создать список",
@@ -854,7 +1144,7 @@ const docTemplate = `{
                 "summary": "Поменять данные профиля",
                 "parameters": [
                     {
-                        "description": "id пользователя, имя, фамилия, описание пользователя",
+                        "description": "Имя, фамилия, описание пользователя",
                         "name": "newProfileInfo",
                         "in": "body",
                         "required": true,
@@ -921,7 +1211,7 @@ const docTemplate = `{
         },
         "/user/edit/change_password/": {
             "post": {
-                "description": "Получает старый и новый пароли, а также id пользователя",
+                "description": "Получает старый и новый пароли",
                 "consumes": [
                     "application/json"
                 ],
@@ -934,7 +1224,7 @@ const docTemplate = `{
                 "summary": "Поменять пароль",
                 "parameters": [
                     {
-                        "description": "id, старый и новый пароли пользователя",
+                        "description": "Старый и новый пароли пользователя",
                         "name": "passwords",
                         "in": "body",
                         "required": true,
@@ -1218,6 +1508,17 @@ const docTemplate = `{
                 }
             }
         },
+        "doc_structs.AllQuestionsResponse": {
+            "type": "object",
+            "properties": {
+                "questions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.CSATQuestionFull"
+                    }
+                }
+            }
+        },
         "doc_structs.AllWorkspacesResponse": {
             "type": "object",
             "properties": {
@@ -1242,11 +1543,38 @@ const docTemplate = `{
                 }
             }
         },
+        "doc_structs.CommentResponse": {
+            "type": "object",
+            "properties": {
+                "comment": {
+                    "$ref": "#/definitions/entities.Comment"
+                }
+            }
+        },
         "doc_structs.ListResponse": {
             "type": "object",
             "properties": {
                 "list": {
                     "$ref": "#/definitions/entities.List"
+                }
+            }
+        },
+        "doc_structs.QuestionResponse": {
+            "type": "object",
+            "properties": {
+                "question": {
+                    "$ref": "#/definitions/dto.CSATQuestionFull"
+                }
+            }
+        },
+        "doc_structs.StatsResponse": {
+            "type": "object",
+            "properties": {
+                "questions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.QuestionWithStats"
+                    }
                 }
             }
         },
@@ -1310,9 +1638,6 @@ const docTemplate = `{
                     "items": {
                         "type": "integer"
                     }
-                },
-                "user_id": {
-                    "type": "integer"
                 }
             }
         },
@@ -1321,6 +1646,20 @@ const docTemplate = `{
             "properties": {
                 "board_id": {
                     "type": "integer"
+                }
+            }
+        },
+        "dto.CSATQuestionFull": {
+            "type": "object",
+            "properties": {
+                "content": {
+                    "type": "string"
+                },
+                "question_id": {
+                    "type": "integer"
+                },
+                "type": {
+                    "type": "string"
                 }
             }
         },
@@ -1335,14 +1674,8 @@ const docTemplate = `{
         "dto.NewBoardRequest": {
             "type": "object",
             "properties": {
-                "description": {
-                    "type": "string"
-                },
                 "name": {
                     "type": "string"
-                },
-                "owner_id": {
-                    "type": "integer"
                 },
                 "thumbnail": {
                     "type": "array",
@@ -1351,6 +1684,45 @@ const docTemplate = `{
                     }
                 },
                 "workspace_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.NewCSATAnswerInfo": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "id_question": {
+                    "type": "integer"
+                },
+                "rating": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.NewCSATQuestionInfo": {
+            "type": "object",
+            "properties": {
+                "content": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.NewCommentInfo": {
+            "type": "object",
+            "properties": {
+                "task_id": {
+                    "type": "integer"
+                },
+                "text": {
+                    "type": "string"
+                },
+                "user_id": {
                     "type": "integer"
                 }
             }
@@ -1417,8 +1789,39 @@ const docTemplate = `{
                 },
                 "old_password": {
                     "type": "string"
+                }
+            }
+        },
+        "dto.QuestionWithStats": {
+            "type": "object",
+            "properties": {
+                "content": {
+                    "type": "string"
                 },
-                "user_id": {
+                "question_id": {
+                    "type": "integer"
+                },
+                "stats": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.RatingStats"
+                    }
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.RatingStats": {
+            "type": "object",
+            "properties": {
+                "average": {
+                    "type": "integer"
+                },
+                "count": {
+                    "type": "integer"
+                },
+                "rating": {
                     "type": "integer"
                 }
             }
@@ -1434,9 +1837,6 @@ const docTemplate = `{
         "dto.UpdatedBoardInfo": {
             "type": "object",
             "properties": {
-                "description": {
-                    "type": "string"
-                },
                 "id": {
                     "type": "integer"
                 },
@@ -1456,6 +1856,20 @@ const docTemplate = `{
                     "items": {
                         "type": "integer"
                     }
+                }
+            }
+        },
+        "dto.UpdatedCSATQuestionInfo": {
+            "type": "object",
+            "properties": {
+                "content": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "type": {
+                    "type": "string"
                 }
             }
         },
@@ -1594,9 +2008,6 @@ const docTemplate = `{
                 },
                 "surname": {
                     "type": "string"
-                },
-                "user_id": {
-                    "type": "integer"
                 }
             }
         },
@@ -1634,6 +2045,9 @@ const docTemplate = `{
                 },
                 "name": {
                     "type": "string"
+                },
+                "thumbnail_url": {
+                    "type": "string"
                 }
             }
         },
@@ -1652,9 +2066,6 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "date_created": {
-                    "type": "string"
-                },
-                "description": {
                     "type": "string"
                 },
                 "lists": {
@@ -1677,6 +2088,69 @@ const docTemplate = `{
                     "items": {
                         "$ref": "#/definitions/dto.UserPublicInfo"
                     }
+                }
+            }
+        },
+        "entities.Checklist": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/entities.ChecklistItem"
+                    }
+                },
+                "list_position": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "task_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "entities.ChecklistItem": {
+            "type": "object",
+            "properties": {
+                "checklist_id": {
+                    "type": "integer"
+                },
+                "done": {
+                    "type": "boolean"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "list_position": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "entities.Comment": {
+            "type": "object",
+            "properties": {
+                "date_created": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "task_id": {
+                    "type": "integer"
+                },
+                "text": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "integer"
                 }
             }
         },
@@ -1709,6 +2183,18 @@ const docTemplate = `{
         "entities.Task": {
             "type": "object",
             "properties": {
+                "checklists": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/entities.Checklist"
+                    }
+                },
+                "comments": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/entities.Comment"
+                    }
+                },
                 "date_created": {
                     "type": "string"
                 },

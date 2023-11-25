@@ -26,7 +26,7 @@ type CSATAnswerHandler struct {
 //
 // @Param CSATAnswerInfo body dto.NewCSATAnswerInfo true "данные ответа CSAT"
 //
-// @Success 204  {string} string "no content"
+// @Success 200  {object}  doc_structs.AllQuestionsResponse "все вопросы"
 // @Failure 400  {object}  apperrors.ErrorResponse
 // @Failure 401  {object}  apperrors.ErrorResponse
 // @Failure 500  {object}  apperrors.ErrorResponse
