@@ -3,7 +3,8 @@
 server:
   backend_port: 8080
   frontend_port: 8081
-  microservice_port: 8082
+  swagger_port: 8082
+  microservice_port: 8083
   host: '213.219.215.40'
 
 cors:
