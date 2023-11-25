@@ -113,7 +113,7 @@ func (ah AuthHandler) LogIn(w http.ResponseWriter, r *http.Request) {
 		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
 		return
 	}
-	w.Header().Add("X-Csrf-Token", csrfToken.Token)
+	w.Header().Set("X-Csrf-Token", csrfToken.Token)
 	handlerDebugLog(logger, funcName, "CSRF set up")
 
 	publicUserInfo := dto.UserPublicInfo{
@@ -237,7 +237,7 @@ func (ah AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
 		return
 	}
-	w.Header().Add("X-Csrf-Token", csrfToken.Token)
+	w.Header().Set("X-Csrf-Token", csrfToken.Token)
 	handlerDebugLog(logger, funcName, "CSRF set up")
 
 	publicUserInfo := dto.UserPublicInfo{
