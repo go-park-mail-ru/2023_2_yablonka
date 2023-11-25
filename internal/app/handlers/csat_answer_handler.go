@@ -14,8 +14,9 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-type CSATHandler struct {
-	cs service.ICSATSAnswerService
+type CSATAnswerHandler struct {
+	as service.ICSATSAnswerService
+	qs service.ICSATQuestionService
 }
 
 // @Summary Ответить на опрос CSAT
@@ -33,7 +34,7 @@ type CSATHandler struct {
 // @Failure 500  {object}  apperrors.ErrorResponse
 //
 // @Router /csat/answer/ [post]
-func (ch CSATHandler) Create(w http.ResponseWriter, r *http.Request) {
+func (ah CSATAnswerHandler) Create(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
 	funcName := "GetFullBoard"
 
@@ -56,13 +57,25 @@ func (ch CSATHandler) Create(w http.ResponseWriter, r *http.Request) {
 	}
 	handlerDebugLog(logger, funcName, "User object acquired from context")
 
+	qustionType, err := ah.qs.GetQuestionType(rCtx, dto.CSATQuestionID{Value: CSATAnswerInfo.QuestionID})
+	if err != nil {
+		handlerDebugLog(logger, funcName, "Creating a CSAT answer failed -- "+err.Error())
+		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.ErrorMap[err]))
+		return
+	}
+
+	if CSATAnswerInfo.Rating < 0 || CSATAnswerInfo.Rating > qustionType.MaxRating {
+		handlerDebugLog(logger, funcName, "Creating a CSAT answer failed -- "+err.Error())
+		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.ErrorMap[err]))
+		return
+	}
+
 	CSATAnswer := dto.NewCSATAnswer{
 		UserID:     user.ID,
 		QuestionID: CSATAnswerInfo.QuestionID,
 		Rating:     CSATAnswerInfo.Rating,
 	}
-
-	err = ch.cs.Create(rCtx, CSATAnswer)
+	err = ah.as.Create(rCtx, CSATAnswer)
 	if err != nil {
 		handlerDebugLog(logger, funcName, "Creating a CSAT answer failed -- "+err.Error())
 		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.ErrorMap[err]))

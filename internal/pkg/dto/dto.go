@@ -34,7 +34,7 @@ type NewCSATAnswer struct {
 // CSATQuestionID
 // DTO с ID CSAT вопроса
 type CSATQuestionID struct {
-	ID uint64
+	Value uint64
 }
 
 // NewCSATQuestionInfo

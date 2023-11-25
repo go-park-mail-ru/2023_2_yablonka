@@ -19,10 +19,17 @@ func NewCSATQuestionService(storage storage.ICSATQuestionStorage) *CSATQuestionS
 	}
 }
 
+// GetQuestionType
+// возвращает тип CSAT вопроса по его id
+// или возвращает ошибки ...
+func (cs CSATQuestionService) GetQuestionType(ctx context.Context, id dto.CSATQuestionID) (*entities.QuestionType, error) {
+	return cs.storage.GetQuestionType(ctx, id)
+}
+
 // Create
 // создает новый список
 // или возвращает ошибки ...
-func (cs CSATQuestionService) Create(ctx context.Context, info dto.NewCSATQuestionInfo) (*entities.CSAT, error) {
+func (cs CSATQuestionService) Create(ctx context.Context, info dto.NewCSATQuestionInfo) (*entities.CSATQuestion, error) {
 	verifiedInfo := dto.NewCSATQuestion{
 		Content: info.Content,
 	}
@@ -32,13 +39,13 @@ func (cs CSATQuestionService) Create(ctx context.Context, info dto.NewCSATQuesti
 // Update
 // обновляет список
 // или возвращает ошибки ...
-func (cs CSATQuestionService) Update(ctx context.Context, info dto.UpdatedCSATInfo) error {
+func (cs CSATQuestionService) Update(ctx context.Context, info dto.UpdatedCSATQuestion) error {
 	return cs.storage.Update(ctx, info)
 }
 
 // Delete
 // удаляет список по id
 // или возвращает ошибки ...
-func (cs CSATQuestionService) Delete(ctx context.Context, id dto.CSATID) error {
+func (cs CSATQuestionService) Delete(ctx context.Context, id dto.CSATQuestionID) error {
 	return cs.storage.Delete(ctx, id)
 }

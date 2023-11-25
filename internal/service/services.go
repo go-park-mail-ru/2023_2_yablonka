@@ -21,7 +21,7 @@ type Services struct {
 	List         IListService
 	Task         ITaskService
 	Workspace    IWorkspaceService
-	CSATQuestion ICSATSAnswerService
+	CSATQuestion ICSATQuestionService
 	CSATAnswer   ICSATSAnswerService
 }
 

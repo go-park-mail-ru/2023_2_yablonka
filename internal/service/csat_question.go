@@ -17,13 +17,13 @@ type ICSATQuestionService interface {
 	// Create
 	// создает новый список
 	// или возвращает ошибки ...
-	Create(context.Context, dto.NewListInfo) (*entities.CSATQuestion, error)
+	Create(context.Context, dto.NewCSATQuestionInfo) (*entities.CSATQuestion, error)
 	// Update
 	// обновляет список
 	// или возвращает ошибки ...
-	Update(context.Context, dto.UpdatedListInfo) error
+	Update(context.Context, dto.UpdatedCSATQuestion) error
 	// Delete
 	// удаляет список по id
 	// или возвращает ошибки ...
-	Delete(context.Context, dto.ListID) error
+	Delete(context.Context, dto.CSATQuestionID) error
 }

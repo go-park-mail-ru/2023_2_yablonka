@@ -86,7 +86,7 @@ func GetChiMux(manager handlers.Handlers, config config.Config) (http.Handler, e
 			httpSwagger.URL("swagger/doc.json")))
 	})
 	mux.Route("/csat", func(r chi.Router) {
-		r.Post("/answer*", manager.CSATHandler.Create)
+		r.Post("/answer", manager.CSATAnswerHandler.Create)
 	})
 	return mux, nil
 }
