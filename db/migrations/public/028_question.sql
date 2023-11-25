@@ -16,7 +16,7 @@ CREATE TABLE IF NOT EXISTS public.question
 INSERT INTO public.question(
 	content, id_type)
 	VALUES  ('Как прошел ваш день?', 1),
-	        ('Оцените концепцию существования собак', 1),
+	        ('Оцените концепцию существования собак', 2),
             ('Нравится ли вам наш сервис?', 1);
 
 END;
