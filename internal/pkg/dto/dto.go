@@ -44,6 +44,14 @@ type CSATRatingCheck struct {
 	MaxRating  uint64 `json:"max_rating"`
 }
 
+// CSATRatingCheck
+// DTO с данными для проверки границ рейтинга
+type CSATQuestionFull struct {
+	ID      uint64 `json:"question_id"`
+	Content string `json:"content"`
+	Type    string `json:"type"`
+}
+
 // NewCSATQuestionInfo
 // DTO с новыми данными CSAT вопроса
 type NewCSATQuestionInfo struct {

@@ -3,7 +3,6 @@ package service
 import (
 	"context"
 	"server/internal/pkg/dto"
-	"server/internal/pkg/entities"
 )
 
 // Интерфейс для сервиса CSAT вопросов
@@ -14,10 +13,14 @@ type ICSATQuestionService interface {
 	// проверка рейтинга на соответствие ограничениям типа
 	// или возвращает ошибки ...
 	CheckRating(context.Context, dto.NewCSATAnswerInfo) error
+	// GetAll
+	// возвращает все вопросы
+	// или возвращает ошибки ...
+	GetAll(context.Context) (*[]dto.CSATQuestionFull, error)
 	// Create
 	// создает новый список
 	// или возвращает ошибки ...
-	Create(context.Context, dto.NewCSATQuestionInfo) (*entities.CSATQuestion, error)
+	Create(context.Context, dto.NewCSATQuestionInfo) (*dto.CSATQuestionFull, error)
 	// Update
 	// обновляет список
 	// или возвращает ошибки ...

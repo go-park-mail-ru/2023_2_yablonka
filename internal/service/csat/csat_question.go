@@ -3,7 +3,6 @@ package list
 import (
 	"context"
 	"server/internal/pkg/dto"
-	"server/internal/pkg/entities"
 	"server/internal/storage"
 )
 
@@ -28,16 +27,24 @@ func (cs CSATQuestionService) CheckRating(ctx context.Context, info dto.NewCSATA
 		return nil
 	}
 
-	if questionType.MaxRating > questionType.MaxRating {
+	if info.Rating > questionType.MaxRating {
 		return err
 	}
+
 	return nil
+}
+
+// GetAll
+// возвращает все вопросы CSAT
+// или возвращает ошибки ...
+func (cs CSATQuestionService) GetAll(ctx context.Context) (*[]dto.CSATQuestionFull, error) {
+	return cs.storage.GetAll(ctx)
 }
 
 // Create
 // создает новый список
 // или возвращает ошибки ...
-func (cs CSATQuestionService) Create(ctx context.Context, info dto.NewCSATQuestionInfo) (*entities.CSATQuestion, error) {
+func (cs CSATQuestionService) Create(ctx context.Context, info dto.NewCSATQuestionInfo) (*dto.CSATQuestionFull, error) {
 	verifiedInfo := dto.NewCSATQuestion{
 		Content: info.Content,
 	}

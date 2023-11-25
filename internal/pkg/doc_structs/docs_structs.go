@@ -45,3 +45,7 @@ type ListResponse struct {
 type CommentResponse struct {
 	Comment entities.Comment `json:"comment"`
 }
+
+type QuestionsResponse struct {
+	Questions []entities.CSATQuestion `json:"questions"`
+}

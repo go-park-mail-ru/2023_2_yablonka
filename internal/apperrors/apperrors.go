@@ -45,6 +45,12 @@ var (
 	ErrCouldNotGetUser = errors.New("couldn't get User")
 )
 
+// Ошибки, связанные с CSAT
+var (
+	// ErrCouldNotGetQuestions ошибка: не удалось получить все вопросы CSAT в БД
+	ErrCouldNotGetQuestions = errors.New("couldn't get all questions")
+)
+
 // Ошибки, связанные с AuthService
 var (
 	// ErrJWTWrongMethod ошибка: у полученного JWT неправильный метод подписи
