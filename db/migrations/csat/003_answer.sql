@@ -13,9 +13,7 @@ CREATE TABLE IF NOT EXISTS csat_db.answer
     CONSTRAINT response_id_user_fkey FOREIGN KEY (id_user)
         REFERENCES public."user" (id) MATCH SIMPLE
         ON UPDATE NO ACTION
-        ON DELETE NO ACTION,
-    CONSTRAINT response_score_left_limit_check CHECK (1 <= score),
-    CONSTRAINT response_score_right_limit_check CHECK (score <= 5) NOT VALID
+        ON DELETE NO ACTION
 )
 
 ---- create above / drop below ----
