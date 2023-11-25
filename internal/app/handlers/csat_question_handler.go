@@ -137,6 +137,21 @@ func (qh CSATQuestionHandler) Create(w http.ResponseWriter, r *http.Request) {
 	logger.Info("Finished creating CSAT question")
 }
 
+// @Summary Обновить вопрос CSAT
+// @Description Обновить вопрос CSAT
+// @Tags csat
+//
+// @Accept  json
+// @Produce  json
+//
+// @Param updatedQuestionInfo body dto.UpdatedCSATQuestionInfo true "данные обновленного вопроса CSAT"
+//
+// @Success 204  {string} string "no content"
+// @Failure 400  {object}  apperrors.ErrorResponse
+// @Failure 401  {object}  apperrors.ErrorResponse
+// @Failure 500  {object}  apperrors.ErrorResponse
+//
+// @Router /csat/question/update/ [post]
 func (qh CSATQuestionHandler) Update(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
 	funcName := "Update"
@@ -187,7 +202,4 @@ func (qh CSATQuestionHandler) Update(w http.ResponseWriter, r *http.Request) {
 
 	handlerDebugLog(logger, funcName, "Response written")
 	logger.Info("Finished updating CSAT question")
-}
-
-func (qh CSATQuestionHandler) Delete(w http.ResponseWriter, r *http.Request) {
 }

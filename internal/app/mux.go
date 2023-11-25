@@ -92,7 +92,6 @@ func GetChiMux(manager handlers.Handlers, config config.Config) (http.Handler, e
 			r.Get("/all", manager.CSATQuestionHandler.GetQuestions)
 			r.Post("/create/", manager.CSATQuestionHandler.Create)
 			r.Post("/edit/", manager.CSATQuestionHandler.Update)
-			r.Delete("/delete/", manager.TaskHandler.Delete)
 		})
 		r.Post("/answer", manager.CSATAnswerHandler.Create)
 	})
