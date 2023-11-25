@@ -2,8 +2,8 @@ CREATE TABLE IF NOT EXISTS public.answer
 (
     id serial NOT NULL,
     id_user serial NOT NULL,
+    id_question serial NOT NULL,
     score smallint NOT NULL DEFAULT 0,
-    id_question integer NOT NULL DEFAULT nextval('public.response_id_question_seq'::regclass),
     CONSTRAINT response_pkey PRIMARY KEY (id),
     CONSTRAINT answer_id_question_fkey FOREIGN KEY (id_question)
         REFERENCES public.question (id) MATCH SIMPLE
