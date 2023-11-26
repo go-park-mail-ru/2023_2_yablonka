@@ -142,6 +142,8 @@ func (s *PostgreSQLBoardStorage) GetLists(ctx context.Context, id dto.BoardID) (
 	funcName := "GetLists"
 	logger := ctx.Value(dto.LoggerKey).(*logrus.Logger)
 
+	storageDebugLog(logger, funcName, "Getting lists")
+
 	listSql, args, err := sq.Select(allListTaskAggFields...).
 		From("public.list").
 		LeftJoin("public.task ON public.task.id_list = public.list.id").
@@ -160,7 +162,7 @@ func (s *PostgreSQLBoardStorage) GetLists(ctx context.Context, id dto.BoardID) (
 		return nil, apperrors.ErrCouldNotGetList
 	}
 	defer rows.Close()
-	storageDebugLog(logger, funcName, "Got list info rows")
+	storageDebugLog(logger, funcName, "Got list rows")
 
 	lists := []dto.SingleListInfo{}
 	for rows.Next() {

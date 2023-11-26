@@ -309,11 +309,11 @@ type SingleBoardInfo struct {
 }
 
 type SingleListInfo struct {
-	ID           uint64   `json:"id"`
-	BoardID      uint64   `json:"board_id"`
-	Name         string   `json:"name"`
-	ListPosition uint64   `json:"list_position"`
-	Tasks        []uint64 `json:"cards"`
+	ID           uint64 `json:"id"`
+	BoardID      uint64 `json:"board_id"`
+	Name         string `json:"name"`
+	ListPosition uint64 `json:"list_position"`
+	Tasks        string `json:"cards"`
 }
 
 type SingleTaskInfo struct {

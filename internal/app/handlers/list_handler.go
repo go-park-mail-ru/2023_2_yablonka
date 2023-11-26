@@ -173,7 +173,7 @@ func (lh ListHandler) Delete(w http.ResponseWriter, r *http.Request) {
 
 	rCtx := r.Context()
 
-	var listID dto.ListID
+	var listID uint64
 	err := json.NewDecoder(r.Body).Decode(&listID)
 	if err != nil {
 		log.Println(err)
@@ -189,7 +189,11 @@ func (lh ListHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	// 	return
 	// }
 
-	err = lh.ls.Delete(rCtx, listID)
+	listIDObj := dto.ListID{
+		Value: listID,
+	}
+
+	err = lh.ls.Delete(rCtx, listIDObj)
 	if err != nil {
 		log.Println(err)
 		log.Println("--------------ListHandler.Delete Endpoint FAIL--------------")
