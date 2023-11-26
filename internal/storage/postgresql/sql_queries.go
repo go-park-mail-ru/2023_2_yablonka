@@ -11,13 +11,10 @@ var (
 	// allWorkspaceFields = []string{"id", "id_creator", "name", "date_created", "description"}
 
 	// allBoardFields     = []string{"id", "id_workspace", "name", "date_created", "thumbnail_url"}
-	allBoardListFields = []string{"public.board.id", "public.board.id_workspace", "public.workspace.id_creator",
-		"public.board.name", "public.board.date_created", "public.board.thumbnail_url"}
 	allBoardFields = []string{"public.board.id", "public.board.id_workspace", "public.workspace.id_creator",
-		"public.board.name", "public.board.date_created", "public.board.thumbnail_url", "array_remove(array_agg(public.list.id), NULL)"}
+		"public.board.name", "public.board.date_created", "public.board.thumbnail_url"}
 
 	// allListFields     = []string{"id", "id_board", "name", "list_position"}
-	allListTaskFields    = []string{"public.list.id", "public.list.id_board", "public.list.name", "public.list.list_position"}
 	allListTaskAggFields = []string{"public.list.id", "public.list.id_board", "public.list.name", "public.list.list_position", "array_remove(array_agg(public.task.id), NULL)"}
 
 	allTaskFields    = []string{"id", "id_list", "date_created", "name", "description", "list_position", "task_start", "task_end", "array_remove(array_agg(public.user.id), NULL)"}
