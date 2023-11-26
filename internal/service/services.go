@@ -35,7 +35,7 @@ func NewServices(storages *storage.Storages, config config.SessionConfig) *Servi
 	return &Services{
 		Auth:         auth.NewAuthService(config, storages.Auth),
 		User:         user.NewUserService(storages.User),
-		Board:        board.NewBoardService(storages.Board, storages.User),
+		Board:        board.NewBoardService(storages.Board, storages.List, storages.User),
 		CSRF:         csrf.NewCSRFService(config, storages.CSRF),
 		List:         list.NewListService(storages.List),
 		Task:         task.NewTaskService(storages.Task),

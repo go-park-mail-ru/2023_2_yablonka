@@ -17,7 +17,11 @@ type IBoardStorage interface {
 	GetUsers(context.Context, dto.BoardID) (*[]dto.UserPublicInfo, error)
 	// GetById
 	// находит доску и связанные с ней списки и задания по id
-	GetById(context.Context, dto.BoardID) (*dto.FullBoardResult, error)
+	GetById(context.Context, dto.BoardID) (*dto.SingleBoardInfo, error)
+	// GetLists
+	// находит списки в доске
+	// или возвращает ошибки ...
+	GetLists(context.Context, dto.BoardID) (*[]dto.SingleListInfo, error)
 	// UpdateData
 	// обновляет доску
 	UpdateData(context.Context, dto.UpdatedBoardInfo) error

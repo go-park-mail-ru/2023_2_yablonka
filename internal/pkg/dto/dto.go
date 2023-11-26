@@ -300,14 +300,12 @@ type NewBoardInfo struct {
 }
 
 type SingleBoardInfo struct {
-	ID               uint64           `json:"board_id"`
-	Name             string           `json:"name"`
-	WorkspaceID      uint64           `json:"workspace_id"`
-	WorkspaceOwnerID uint64           `json:"owner_id"`
-	ThumbnailURL     *string          `json:"thumbnail_url"`
-	DateCreated      time.Time        `json:"date_created"`
-	Users            []UserPublicInfo `json:"users"`
-	Lists            []uint64         `json:"lists"`
+	ID               uint64    `json:"board_id"`
+	Name             string    `json:"name"`
+	WorkspaceID      uint64    `json:"workspace_id"`
+	WorkspaceOwnerID uint64    `json:"owner_id"`
+	ThumbnailURL     *string   `json:"thumbnail_url"`
+	DateCreated      time.Time `json:"date_created"`
 }
 
 type SingleListInfo struct {
@@ -319,15 +317,15 @@ type SingleListInfo struct {
 }
 
 type SingleTaskInfo struct {
-	ID           uint64           `json:"id"`
-	ListID       uint64           `json:"list_id"`
-	DateCreated  time.Time        `json:"date_created"`
-	Name         string           `json:"name"`
-	Description  *string          `json:"description"`
-	ListPosition uint64           `json:"list_position"`
-	Start        *time.Time       `json:"start"`
-	End          *time.Time       `json:"end"`
-	Users        []UserPublicInfo `json:"users"`
+	ID           uint64     `json:"id"`
+	ListID       uint64     `json:"list_id"`
+	DateCreated  time.Time  `json:"date_created"`
+	Name         string     `json:"name"`
+	Description  *string    `json:"description"`
+	ListPosition uint64     `json:"list_position"`
+	Start        *time.Time `json:"start"`
+	End          *time.Time `json:"end"`
+	Users        []uint64   `json:"users"`
 	// Commments    []CommentInfo    `json:"comments"`
 	// Checklists
 }
@@ -336,6 +334,7 @@ type FullBoardResult struct {
 	Board SingleBoardInfo  `json:"board"`
 	Lists []SingleListInfo `json:"lists"`
 	Tasks []SingleTaskInfo `json:"cards"`
+	Users []UserPublicInfo `json:"users"`
 }
 
 // NewBoardRequest
@@ -396,6 +395,12 @@ type NewWorkspaceInfo struct {
 // DTO для id списка задач
 type ListID struct {
 	Value uint64 `json:"id"`
+}
+
+// ListID
+// DTO для id списов задач
+type ListIDs struct {
+	Values []uint64 `json:"ids"`
 }
 
 // TaskID

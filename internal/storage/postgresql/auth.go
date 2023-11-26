@@ -2,24 +2,24 @@ package postgresql
 
 import (
 	"context"
+	"database/sql"
 	"log"
 	"server/internal/apperrors"
 	"server/internal/pkg/dto"
 	"server/internal/pkg/entities"
 
 	sq "github.com/Masterminds/squirrel"
-	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 // PostgresAuthStorage
 // Хранилище данных в PostgreSQL
 type PostgresAuthStorage struct {
-	db *pgxpool.Pool
+	db *sql.DB
 }
 
 // NewLocalAuthStorage
 // возвращает локальное хранилище сессий
-func NewAuthStorage(db *pgxpool.Pool) *PostgresAuthStorage {
+func NewAuthStorage(db *sql.DB) *PostgresAuthStorage {
 	return &PostgresAuthStorage{
 		db: db,
 	}
@@ -45,7 +45,7 @@ func (s PostgresAuthStorage) CreateSession(ctx context.Context, session *entitie
 
 	log.Println("Query formed:", sql)
 
-	_, err = s.db.Exec(ctx, sql, args...)
+	_, err = s.db.Exec(sql, args...)
 
 	log.Println("Queried DB")
 
@@ -75,7 +75,7 @@ func (s PostgresAuthStorage) GetSession(ctx context.Context, token dto.SessionTo
 		return nil, apperrors.ErrCouldNotBuildQuery
 	}
 
-	row := s.db.QueryRow(ctx, sql, args...)
+	row := s.db.QueryRow(sql, args...)
 
 	session := entities.Session{}
 	err = row.Scan(
@@ -103,7 +103,7 @@ func (s PostgresAuthStorage) DeleteSession(ctx context.Context, token dto.Sessio
 		return apperrors.ErrCouldNotBuildQuery
 	}
 
-	_, err = s.db.Exec(ctx, sql, args...)
+	_, err = s.db.Exec(sql, args...)
 
 	if err != nil {
 		return apperrors.ErrSessionNotFound

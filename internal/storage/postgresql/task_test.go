@@ -2,7 +2,7 @@ package postgresql
 
 import (
 	"context"
-	"github.com/jackc/pgx/v5/pgxpool"
+	"database/sql"
 	"reflect"
 	"server/internal/pkg/dto"
 	"server/internal/pkg/entities"
@@ -11,7 +11,7 @@ import (
 
 func TestNewTaskStorage(t *testing.T) {
 	type args struct {
-		db *pgxpool.Pool
+		db *sql.DB
 	}
 	tests := []struct {
 		name string
@@ -31,7 +31,7 @@ func TestNewTaskStorage(t *testing.T) {
 
 func TestPostgresTaskStorage_Create(t *testing.T) {
 	type fields struct {
-		db *pgxpool.Pool
+		db *sql.DB
 	}
 	type args struct {
 		ctx  context.Context
@@ -65,7 +65,7 @@ func TestPostgresTaskStorage_Create(t *testing.T) {
 
 func TestPostgresTaskStorage_Delete(t *testing.T) {
 	type fields struct {
-		db *pgxpool.Pool
+		db *sql.DB
 	}
 	type args struct {
 		ctx context.Context
@@ -93,7 +93,7 @@ func TestPostgresTaskStorage_Delete(t *testing.T) {
 
 func TestPostgresTaskStorage_Read(t *testing.T) {
 	type fields struct {
-		db *pgxpool.Pool
+		db *sql.DB
 	}
 	type args struct {
 		ctx context.Context
@@ -127,7 +127,7 @@ func TestPostgresTaskStorage_Read(t *testing.T) {
 
 func TestPostgresTaskStorage_Update(t *testing.T) {
 	type fields struct {
-		db *pgxpool.Pool
+		db *sql.DB
 	}
 	type args struct {
 		ctx  context.Context

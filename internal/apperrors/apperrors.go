@@ -127,6 +127,8 @@ var (
 
 // Ошибки, связанные с ListService
 var (
+	// ErrListNotDeleted ошибка: не удалось получить список из БД
+	ErrCouldNotGetList = errors.New("could not get list")
 	// ErrListNotCreated ошибка: не удалось создать список в БД
 	ErrListNotCreated = errors.New("list couldn't be created")
 	// ErrListNotUpdated ошибка: не удалось получить список в БД

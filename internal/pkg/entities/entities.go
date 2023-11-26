@@ -102,7 +102,7 @@ type Task struct {
 	ListPosition uint64      `json:"list_position"`
 	Start        *time.Time  `json:"start"`
 	End          *time.Time  `json:"end"`
-	Users        []User      `json:"users"`
+	Users        []uint64    `json:"users"`
 	Checklists   []Checklist `json:"checklists"`
 	Comments     []Comment   `json:"comments"`
 }

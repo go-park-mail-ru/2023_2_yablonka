@@ -2,20 +2,19 @@ package postgresql
 
 import (
 	"context"
+	"database/sql"
 	"server/internal/pkg/dto"
-
-	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 // PostgresCSATAnswerStorage
 // Хранилище данных в PostgreSQL
 type PostgresCSATAnswerStorage struct {
-	db *pgxpool.Pool
+	db *sql.DB
 }
 
 // NewCSATAnswerStorage
 // возвращает PostgreSQL хранилище CSAT ответов
-func NewCSATAnswerStorage(db *pgxpool.Pool) *PostgresCSATAnswerStorage {
+func NewCSATAnswerStorage(db *sql.DB) *PostgresCSATAnswerStorage {
 	return &PostgresCSATAnswerStorage{
 		db: db,
 	}

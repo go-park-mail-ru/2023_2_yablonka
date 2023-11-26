@@ -2,17 +2,16 @@ package postgresql
 
 import (
 	"context"
+	"database/sql"
 	"reflect"
 	"server/internal/pkg/dto"
 	"server/internal/pkg/entities"
 	"testing"
-
-	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 func TestNewListStorage(t *testing.T) {
 	type args struct {
-		db *pgxpool.Pool
+		db *sql.DB
 	}
 	tests := []struct {
 		name string
@@ -32,7 +31,7 @@ func TestNewListStorage(t *testing.T) {
 
 func TestPostgresListStorage_Create(t *testing.T) {
 	type fields struct {
-		db *pgxpool.Pool
+		db *sql.DB
 	}
 	type args struct {
 		ctx  context.Context
@@ -66,7 +65,7 @@ func TestPostgresListStorage_Create(t *testing.T) {
 
 func TestPostgresListStorage_Delete(t *testing.T) {
 	type fields struct {
-		db *pgxpool.Pool
+		db *sql.DB
 	}
 	type args struct {
 		ctx context.Context
@@ -94,7 +93,7 @@ func TestPostgresListStorage_Delete(t *testing.T) {
 
 func TestPostgresListStorage_Update(t *testing.T) {
 	type fields struct {
-		db *pgxpool.Pool
+		db *sql.DB
 	}
 	type args struct {
 		ctx  context.Context

@@ -2,6 +2,7 @@ package postgresql
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"log"
 	"server/internal/apperrors"
@@ -9,19 +10,17 @@ import (
 	"server/internal/pkg/entities"
 
 	sq "github.com/Masterminds/squirrel"
-	pgx "github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 // PostgresCSATQuestionStorage
 // Хранилище данных в PostgreSQL
 type PostgresCSATQuestionStorage struct {
-	db *pgxpool.Pool
+	db *sql.DB
 }
 
 // NewCSATQuestionStorage
 // возвращает PostgreSQL хранилище CSAT вопросов
-func NewCSATQuestionStorage(db *pgxpool.Pool) *PostgresCSATQuestionStorage {
+func NewCSATQuestionStorage(db *sql.DB) *PostgresCSATQuestionStorage {
 	return &PostgresCSATQuestionStorage{
 		db: db,
 	}
@@ -49,7 +48,7 @@ func (s PostgresCSATQuestionStorage) Create(ctx context.Context, info dto.NewCSA
 		Content: info.Content,
 	}
 
-	query := s.db.QueryRow(ctx, sql, args...)
+	query := s.db.QueryRow(sql, args...)
 	if err := query.Scan(&question.ID); err != nil {
 		return nil, apperrors.ErrCouldNotCreateQuestion
 	}
@@ -72,7 +71,7 @@ func (s PostgresCSATQuestionStorage) GetAll(ctx context.Context) (*[]dto.CSATQue
 		return nil, apperrors.ErrCouldNotBuildQuery
 	}
 
-	rows, err := s.db.Query(ctx, sql, args...)
+	rows, err := s.db.Query(sql, args...)
 	if err != nil {
 		return nil, apperrors.ErrCouldNotGetQuestions
 	}
@@ -111,7 +110,7 @@ func (s PostgresCSATQuestionStorage) GetStats(ctx context.Context) (*[]dto.Quest
 	}
 	log.Println("Built questions query\n\t", questionQuery, "\nwith args\n\t", args)
 
-	rows, err := s.db.Query(context.Background(), questionQuery, args...)
+	rows, err := s.db.Query(questionQuery, args...)
 	if err != nil {
 		log.Println("Storage -- DB questions query failed with error", err.Error())
 		return nil, err
@@ -138,7 +137,7 @@ func (s PostgresCSATQuestionStorage) GetStats(ctx context.Context) (*[]dto.Quest
 	}
 
 	statsQuery, args, err := sq.
-		Select("id_question", "score", "COUNT(score)").
+		Select("id_question", "score", "COUNT(score)", "AVG(score)").
 		From("public.answer").
 		Join("public.question ON public.answer.id_question = public.question.id").
 		Where(sq.Eq{"id_question": questionsID}).
@@ -153,7 +152,7 @@ func (s PostgresCSATQuestionStorage) GetStats(ctx context.Context) (*[]dto.Quest
 
 	log.Println("Built boards query\n\t", statsQuery, "\nwith args\n\t", args)
 
-	rows, err = s.db.Query(context.Background(), statsQuery, args...)
+	rows, err = s.db.Query(statsQuery, args...)
 	if err != nil {
 		log.Println("Storage -- DB stats query failed with error", err.Error())
 		return nil, err
@@ -161,10 +160,21 @@ func (s PostgresCSATQuestionStorage) GetStats(ctx context.Context) (*[]dto.Quest
 	log.Println("Stats got")
 	defer rows.Close()
 
-	statRows, err := pgx.CollectRows(rows, pgx.RowToStructByPos[dto.RatingStatsWithQuestionID])
-	if err != nil {
-		fmt.Println("Failed collecting stats with error:", err.Error())
-		return nil, apperrors.ErrCouldNotGetBoard
+	statRows := []dto.RatingStatsWithQuestionID{}
+	for rows.Next() {
+		var board dto.RatingStatsWithQuestionID
+
+		err = rows.Scan(
+			&board.QuestionID,
+			&board.Rating,
+			&board.Count,
+			&board.Average,
+		)
+		if err != nil {
+			fmt.Println("Scanning failed due to error", err.Error())
+			return nil, err
+		}
+		statRows = append(statRows, board)
 	}
 	log.Println("Stats collected")
 
@@ -204,7 +214,7 @@ func (s PostgresCSATQuestionStorage) Update(ctx context.Context, info dto.Update
 		return apperrors.ErrCouldNotBuildQuery
 	}
 
-	if _, err = s.db.Exec(ctx, sql, args...); err != nil {
+	if _, err = s.db.Exec(sql, args...); err != nil {
 		return apperrors.ErrQuestionNotUpdated
 	}
 
@@ -225,7 +235,7 @@ func (s PostgresCSATQuestionStorage) Delete(ctx context.Context, id dto.CSATQues
 		return apperrors.ErrCouldNotBuildQuery
 	}
 
-	if _, err = s.db.Exec(ctx, sql, args...); err != nil {
+	if _, err = s.db.Exec(sql, args...); err != nil {
 		return apperrors.ErrQuestionNotDeleted
 	}
 
@@ -248,7 +258,7 @@ func (s PostgresCSATQuestionStorage) GetQuestionType(ctx context.Context, id dto
 		return nil, apperrors.ErrCouldNotBuildQuery
 	}
 
-	row := s.db.QueryRow(ctx, sql, args...)
+	row := s.db.QueryRow(sql, args...)
 	if err != nil {
 		return nil, apperrors.ErrCouldNotGetQuestionType
 	}
@@ -281,7 +291,7 @@ func (s PostgresCSATQuestionStorage) GetQuestionTypeWithName(ctx context.Context
 		return nil, apperrors.ErrCouldNotBuildQuery
 	}
 
-	row := s.db.QueryRow(ctx, sql, args...)
+	row := s.db.QueryRow(sql, args...)
 	if err != nil {
 		return nil, apperrors.ErrCouldNotGetQuestionType
 	}

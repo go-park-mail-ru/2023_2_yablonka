@@ -1,37 +1,18 @@
-package postgresql
+package postgresql_test
 
 import (
 	"context"
-	"github.com/jackc/pgx/v5/pgxpool"
+	"database/sql"
 	"reflect"
 	"server/internal/pkg/dto"
 	"server/internal/pkg/entities"
+	"server/internal/storage/postgresql"
 	"testing"
 )
 
-func TestNewAuthStorage(t *testing.T) {
-	type args struct {
-		db *pgxpool.Pool
-	}
-	tests := []struct {
-		name string
-		args args
-		want *PostgresAuthStorage
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := NewAuthStorage(tt.args.db); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("NewAuthStorage() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
 func TestPostgresAuthStorage_CreateSession(t *testing.T) {
 	type fields struct {
-		db *pgxpool.Pool
+		db *sql.DB
 	}
 	type args struct {
 		ctx     context.Context
@@ -42,24 +23,23 @@ func TestPostgresAuthStorage_CreateSession(t *testing.T) {
 		fields  fields
 		args    args
 		wantErr bool
-	}{
-		// TODO: Add test cases.
-	}
+	}{}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			s := PostgresAuthStorage{
-				db: tt.fields.db,
-			}
-			if err := s.CreateSession(tt.args.ctx, tt.args.session); (err != nil) != tt.wantErr {
-				t.Errorf("CreateSession() error = %v, wantErr %v", err, tt.wantErr)
-			}
+			/*
+				dbConnection, _ := pgxmock.NewConn()
+				s := postgresql.NewAuthStorage(dbConnection)
+				if err := s.CreateSession(tt.args.ctx, tt.args.session); (err != nil) != tt.wantErr {
+					t.Errorf("CreateSession() error = %v, wantErr %v", err, tt.wantErr)
+				}
+			*/
 		})
 	}
 }
 
 func TestPostgresAuthStorage_DeleteSession(t *testing.T) {
 	type fields struct {
-		db *pgxpool.Pool
+		db *sql.DB
 	}
 	type args struct {
 		ctx   context.Context
@@ -75,9 +55,7 @@ func TestPostgresAuthStorage_DeleteSession(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			s := PostgresAuthStorage{
-				db: tt.fields.db,
-			}
+			s := postgresql.NewAuthStorage(tt.fields.db)
 			if err := s.DeleteSession(tt.args.ctx, tt.args.token); (err != nil) != tt.wantErr {
 				t.Errorf("DeleteSession() error = %v, wantErr %v", err, tt.wantErr)
 			}
@@ -87,7 +65,7 @@ func TestPostgresAuthStorage_DeleteSession(t *testing.T) {
 
 func TestPostgresAuthStorage_GetSession(t *testing.T) {
 	type fields struct {
-		db *pgxpool.Pool
+		db *sql.DB
 	}
 	type args struct {
 		ctx   context.Context
@@ -104,9 +82,7 @@ func TestPostgresAuthStorage_GetSession(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			s := PostgresAuthStorage{
-				db: tt.fields.db,
-			}
+			s := postgresql.NewAuthStorage(tt.fields.db)
 			got, err := s.GetSession(tt.args.ctx, tt.args.token)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetSession() error = %v, wantErr %v", err, tt.wantErr)

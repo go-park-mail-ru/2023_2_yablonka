@@ -2,37 +2,16 @@ package postgresql
 
 import (
 	"context"
+	"database/sql"
 	"reflect"
 	"server/internal/pkg/dto"
 	"server/internal/pkg/entities"
 	"testing"
-
-	"github.com/jackc/pgx/v5/pgxpool"
 )
-
-func TestNewBoardStorage(t *testing.T) {
-	type args struct {
-		db *pgxpool.Pool
-	}
-	tests := []struct {
-		name string
-		args args
-		want *PostgreSQLBoardStorage
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := NewBoardStorage(tt.args.db); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("NewBoardStorage() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
 
 func TestPostgreSQLBoardStorage_Create(t *testing.T) {
 	type fields struct {
-		db *pgxpool.Pool
+		db *sql.DB
 	}
 	type args struct {
 		ctx  context.Context
@@ -66,7 +45,7 @@ func TestPostgreSQLBoardStorage_Create(t *testing.T) {
 
 func TestPostgreSQLBoardStorage_Delete(t *testing.T) {
 	type fields struct {
-		db *pgxpool.Pool
+		db *sql.DB
 	}
 	type args struct {
 		ctx context.Context
@@ -94,7 +73,7 @@ func TestPostgreSQLBoardStorage_Delete(t *testing.T) {
 
 func TestPostgreSQLBoardStorage_GetById(t *testing.T) {
 	type fields struct {
-		db *pgxpool.Pool
+		db *sql.DB
 	}
 	type args struct {
 		ctx context.Context
@@ -128,7 +107,7 @@ func TestPostgreSQLBoardStorage_GetById(t *testing.T) {
 
 func TestPostgreSQLBoardStorage_GetUsers(t *testing.T) {
 	type fields struct {
-		db *pgxpool.Pool
+		db *sql.DB
 	}
 	type args struct {
 		ctx context.Context
@@ -162,7 +141,7 @@ func TestPostgreSQLBoardStorage_GetUsers(t *testing.T) {
 
 func TestPostgreSQLBoardStorage_UpdateData(t *testing.T) {
 	type fields struct {
-		db *pgxpool.Pool
+		db *sql.DB
 	}
 	type args struct {
 		ctx  context.Context
@@ -190,7 +169,7 @@ func TestPostgreSQLBoardStorage_UpdateData(t *testing.T) {
 
 func TestPostgreSQLBoardStorage_UpdateThumbnailUrl(t *testing.T) {
 	type fields struct {
-		db *pgxpool.Pool
+		db *sql.DB
 	}
 	type args struct {
 		ctx  context.Context

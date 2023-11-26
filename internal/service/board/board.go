@@ -17,13 +17,19 @@ import (
 type BoardService struct {
 	boardStorage storage.IBoardStorage
 	userStorage  storage.IUserStorage
+	listStorage  storage.IListStorage
 }
 
 // NewBoardService
 // возвращает BoardService с инициализированным хранилищем
-func NewBoardService(bs storage.IBoardStorage, us storage.IUserStorage) *BoardService {
+func NewBoardService(
+	bs storage.IBoardStorage,
+	ls storage.IListStorage,
+	us storage.IUserStorage,
+) *BoardService {
 	return &BoardService{
 		boardStorage: bs,
+		listStorage:  ls,
 		userStorage:  us,
 	}
 }
@@ -38,7 +44,7 @@ func (bs BoardService) GetFullBoard(ctx context.Context, info dto.IndividualBoar
 		Value: info.BoardID,
 	}
 
-	boardUsers, err := bs.boardStorage.GetUsers(ctx, boardID)
+	users, err := bs.boardStorage.GetUsers(ctx, boardID)
 	if err != nil {
 		boardServiceDebugLog(logger, funcName, "Failed to get board users with error "+err.Error())
 		return nil, err
@@ -46,12 +52,11 @@ func (bs BoardService) GetFullBoard(ctx context.Context, info dto.IndividualBoar
 	boardServiceDebugLog(logger, funcName, "Got board users")
 
 	userHasAccessToBoard := false
-	for _, user := range *boardUsers {
+	for _, user := range *users {
 		if user.ID == info.UserID {
 			userHasAccessToBoard = true
 		}
 	}
-
 	if !userHasAccessToBoard {
 		logger.Warn(fmt.Sprintf("Requesting user (ID %d) doesn't have access to the board (ID %d)", info.UserID, info.BoardID))
 		return nil, apperrors.ErrNoBoardAccess
@@ -65,9 +70,31 @@ func (bs BoardService) GetFullBoard(ctx context.Context, info dto.IndividualBoar
 	}
 	boardServiceDebugLog(logger, funcName, "Got board")
 
-	board.Board.Users = *boardUsers
+	lists, err := bs.boardStorage.GetLists(ctx, boardID)
+	if err != nil {
+		boardServiceDebugLog(logger, funcName, "Failed to get board from storage with error "+err.Error())
+		return nil, err
+	}
+	boardServiceDebugLog(logger, funcName, "Got lists")
 
-	return board, nil
+	listIDs := dto.ListIDs{}
+	for _, list := range *lists {
+		listIDs.Values = append(listIDs.Values, list.ID)
+	}
+
+	tasks, err := bs.listStorage.GetTasksWithID(ctx, listIDs)
+	if err != nil {
+		boardServiceDebugLog(logger, funcName, "Failed to get board from storage with error "+err.Error())
+		return nil, err
+	}
+	boardServiceDebugLog(logger, funcName, "Got tasks")
+
+	return &dto.FullBoardResult{
+		Users: *users,
+		Board: *board,
+		Lists: *lists,
+		Tasks: *tasks,
+	}, nil
 }
 
 // Create

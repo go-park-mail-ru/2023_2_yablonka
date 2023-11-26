@@ -2,7 +2,7 @@ package postgresql
 
 import (
 	"context"
-	"github.com/jackc/pgx/v5/pgxpool"
+	"database/sql"
 	"reflect"
 	"server/internal/pkg/dto"
 	"server/internal/pkg/entities"
@@ -11,7 +11,7 @@ import (
 
 func TestNewUserStorage(t *testing.T) {
 	type args struct {
-		db *pgxpool.Pool
+		db *sql.DB
 	}
 	tests := []struct {
 		name string
@@ -31,7 +31,7 @@ func TestNewUserStorage(t *testing.T) {
 
 func TestPostgresUserStorage_Create(t *testing.T) {
 	type fields struct {
-		db *pgxpool.Pool
+		db *sql.DB
 	}
 	type args struct {
 		ctx  context.Context
@@ -65,7 +65,7 @@ func TestPostgresUserStorage_Create(t *testing.T) {
 
 func TestPostgresUserStorage_Delete(t *testing.T) {
 	type fields struct {
-		db *pgxpool.Pool
+		db *sql.DB
 	}
 	type args struct {
 		ctx context.Context
@@ -93,7 +93,7 @@ func TestPostgresUserStorage_Delete(t *testing.T) {
 
 func TestPostgresUserStorage_GetLoginInfoWithID(t *testing.T) {
 	type fields struct {
-		db *pgxpool.Pool
+		db *sql.DB
 	}
 	type args struct {
 		ctx context.Context
@@ -127,7 +127,7 @@ func TestPostgresUserStorage_GetLoginInfoWithID(t *testing.T) {
 
 func TestPostgresUserStorage_GetWithID(t *testing.T) {
 	type fields struct {
-		db *pgxpool.Pool
+		db *sql.DB
 	}
 	type args struct {
 		ctx context.Context
@@ -161,7 +161,7 @@ func TestPostgresUserStorage_GetWithID(t *testing.T) {
 
 func TestPostgresUserStorage_GetWithLogin(t *testing.T) {
 	type fields struct {
-		db *pgxpool.Pool
+		db *sql.DB
 	}
 	type args struct {
 		ctx   context.Context
@@ -195,7 +195,7 @@ func TestPostgresUserStorage_GetWithLogin(t *testing.T) {
 
 func TestPostgresUserStorage_UpdateAvatarUrl(t *testing.T) {
 	type fields struct {
-		db *pgxpool.Pool
+		db *sql.DB
 	}
 	type args struct {
 		ctx  context.Context
@@ -223,7 +223,7 @@ func TestPostgresUserStorage_UpdateAvatarUrl(t *testing.T) {
 
 func TestPostgresUserStorage_UpdatePassword(t *testing.T) {
 	type fields struct {
-		db *pgxpool.Pool
+		db *sql.DB
 	}
 	type args struct {
 		ctx  context.Context
@@ -251,7 +251,7 @@ func TestPostgresUserStorage_UpdatePassword(t *testing.T) {
 
 func TestPostgresUserStorage_UpdateProfile(t *testing.T) {
 	type fields struct {
-		db *pgxpool.Pool
+		db *sql.DB
 	}
 	type args struct {
 		ctx  context.Context

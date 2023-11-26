@@ -14,6 +14,10 @@ type IListStorage interface {
 	// создает новый список задач в БД по данным
 	// или возвращает ошибки ...
 	Create(context.Context, dto.NewListInfo) (*entities.List, error)
+	// Create
+	// GetWithID новый список задач в БД по данным
+	// или возвращает ошибки ...
+	GetTasksWithID(context.Context, dto.ListIDs) (*[]dto.SingleTaskInfo, error)
 	// Update
 	// обновляет списсок задач в БД
 	// или возвращает ошибки ...
