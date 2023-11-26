@@ -45,12 +45,6 @@ func (lh ListHandler) Create(w http.ResponseWriter, r *http.Request) {
 	}
 	log.Println("request struct decoded")
 
-	// _, err = govalidator.ValidateStruct(newListInfo)
-	// if err != nil {
-	// 	*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.BadRequestResponse))
-	// 	return
-	// }
-
 	list, err := lh.ls.Create(rCtx, newListInfo)
 	if err != nil {
 		log.Println(err)
