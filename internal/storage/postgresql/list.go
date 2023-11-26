@@ -51,6 +51,7 @@ func (s PostgresListStorage) Create(ctx context.Context, info dto.NewListInfo) (
 		BoardID:      info.BoardID,
 		Description:  info.Description,
 		ListPosition: info.ListPosition,
+		Tasks:        []entities.Task{},
 	}
 
 	query := s.db.QueryRow(sql, args...)
