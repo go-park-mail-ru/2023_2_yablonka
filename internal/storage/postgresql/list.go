@@ -132,16 +132,18 @@ func (s PostgresListStorage) Update(ctx context.Context, info dto.UpdatedListInf
 		Where(sq.Eq{"id": info.ID}).
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
-
 	if err != nil {
 		return apperrors.ErrCouldNotBuildQuery
 	}
+	log.Println("Built list query\n\t", sql, "\nwith args\n\t", args)
 
 	_, err = s.db.Exec(sql, args...)
 
 	if err != nil {
+		log.Println(err)
 		return apperrors.ErrListNotUpdated
 	}
+	log.Println("list updated")
 
 	return nil
 }

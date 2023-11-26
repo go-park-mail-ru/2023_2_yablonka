@@ -449,12 +449,9 @@ type NewListInfo struct {
 // NewTaskInfo
 // DTO для новой задачи
 type NewTaskInfo struct {
-	ListID       uint64     `json:"list_id"`
-	Name         string     `json:"name"`
-	Description  string     `json:"description"`
-	Start        *time.Time `json:"start"`
-	End          *time.Time `json:"end"`
-	ListPosition uint64     `json:"list_position"`
+	ListID       uint64 `json:"list_id"`
+	Name         string `json:"name"`
+	ListPosition uint64 `json:"list_position"`
 }
 
 // UpdatedTaskInfo
@@ -488,7 +485,7 @@ type UpdatedListInfo struct {
 	ID           uint64  `json:"id"`
 	Name         string  `json:"name"`
 	Description  *string `json:"description"`
-	ListPosition string  `json:"list_position"`
+	ListPosition uint64  `json:"list_position"`
 }
 
 // UpdatedWorkspaceInfo

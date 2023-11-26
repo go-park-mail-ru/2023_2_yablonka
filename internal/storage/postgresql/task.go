@@ -32,7 +32,7 @@ func (s PostgresTaskStorage) Create(ctx context.Context, info dto.NewTaskInfo) (
 	sql, args, err := sq.
 		Insert("public.task").
 		Columns(newTaskFields...).
-		Values(info.ListID, info.Name, info.Description, info.ListPosition, info.Start, info.End).
+		Values(info.ListID, info.Name, info.ListPosition).
 		PlaceholderFormat(sq.Dollar).
 		Suffix("RETURNING id, date_created").
 		ToSql()
@@ -47,10 +47,7 @@ func (s PostgresTaskStorage) Create(ctx context.Context, info dto.NewTaskInfo) (
 	task := entities.Task{
 		Name:         info.Name,
 		ListID:       info.ListID,
-		Description:  info.Description,
 		ListPosition: info.ListPosition,
-		Start:        info.Start,
-		End:          info.End,
 	}
 
 	log.Println("Storage -- Querying DB")
