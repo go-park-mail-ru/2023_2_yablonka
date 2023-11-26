@@ -74,9 +74,9 @@ func (s PostgresListStorage) GetTasksWithID(ctx context.Context, ids dto.ListIDs
 
 	taskSql, args, err := sq.Select(allTaskAggFields...).
 		From("public.task").
-		Where(sq.Eq{"public.task.id_list": ids}).
+		Where(sq.Eq{"public.task.id_list": ids.Values}).
 		LeftJoin("public.task_user ON public.task_user.id_task = public.task.id").
-		GroupBy("public.task.id_list").
+		GroupBy("public.task.id", "public.task.id_list").
 		OrderBy("list_position").
 		PlaceholderFormat(sq.Dollar).
 		ToSql()

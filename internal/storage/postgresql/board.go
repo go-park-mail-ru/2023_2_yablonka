@@ -144,9 +144,10 @@ func (s *PostgreSQLBoardStorage) GetLists(ctx context.Context, id dto.BoardID) (
 
 	listSql, args, err := sq.Select(allListTaskAggFields...).
 		From("public.list").
-		LeftJoin("public.task ON public.task.id_list = public.list.id").
-		Where(sq.Eq{"id_board": id.Value}).
-		OrderBy("list_position").
+		Join("public.task ON public.task.id_list = public.list.id").
+		Where(sq.Eq{"public.list.id_board": id.Value}).
+		GroupBy("public.list.id").
+		OrderBy("public.list.list_position").
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
 	if err != nil {

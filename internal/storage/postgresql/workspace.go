@@ -109,7 +109,7 @@ func (s PostgresWorkspaceStorage) GetUserOwnedWorkspaces(ctx context.Context, us
 		var board BoardReturn
 
 		err = rows.Scan(
-			&board.WorkspaceBoardInfo,
+			&board.WorkspaceID,
 			&board.ID,
 			&board.Name,
 			&board.Description,
