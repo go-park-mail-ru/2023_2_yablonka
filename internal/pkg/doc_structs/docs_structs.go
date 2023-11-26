@@ -32,7 +32,7 @@ type TaskResponse struct {
 }
 
 type BoardResponse struct {
-	Board entities.Board `json:"board"`
+	Board dto.FullBoardResult `json:"board"`
 }
 type WorkspaceResponse struct {
 	Workspace entities.Workspace `json:"workspace"`

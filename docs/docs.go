@@ -1539,7 +1539,7 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "board": {
-                    "$ref": "#/definitions/entities.Board"
+                    "$ref": "#/definitions/dto.FullBoardResult"
                 }
             }
         },
@@ -1660,6 +1660,32 @@ const docTemplate = `{
                 },
                 "type": {
                     "type": "string"
+                }
+            }
+        },
+        "dto.FullBoardResult": {
+            "type": "object",
+            "properties": {
+                "board": {
+                    "$ref": "#/definitions/dto.SingleBoardInfo"
+                },
+                "cards": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.SingleTaskInfo"
+                    }
+                },
+                "lists": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.SingleListInfo"
+                    }
+                },
+                "users": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.UserPublicInfo"
+                    }
                 }
             }
         },
@@ -1826,6 +1852,84 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.SingleBoardInfo": {
+            "type": "object",
+            "properties": {
+                "board_id": {
+                    "type": "integer"
+                },
+                "date_created": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "owner_id": {
+                    "type": "integer"
+                },
+                "thumbnail_url": {
+                    "type": "string"
+                },
+                "workspace_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.SingleListInfo": {
+            "type": "object",
+            "properties": {
+                "board_id": {
+                    "type": "integer"
+                },
+                "cards": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "list_position": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.SingleTaskInfo": {
+            "type": "object",
+            "properties": {
+                "date_created": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "end": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "list_id": {
+                    "type": "integer"
+                },
+                "list_position": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "start": {
+                    "type": "string"
+                },
+                "users": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                }
+            }
+        },
         "dto.TaskID": {
             "type": "object",
             "properties": {
@@ -1955,14 +2059,6 @@ const docTemplate = `{
                 }
             }
         },
-        "dto.UserID": {
-            "type": "object",
-            "properties": {
-                "user_id": {
-                    "type": "integer"
-                }
-            }
-        },
         "dto.UserOwnedWorkspaceInfo": {
             "type": "object",
             "properties": {
@@ -2056,38 +2152,6 @@ const docTemplate = `{
             "properties": {
                 "workspace_id": {
                     "type": "integer"
-                }
-            }
-        },
-        "entities.Board": {
-            "type": "object",
-            "properties": {
-                "board_id": {
-                    "type": "integer"
-                },
-                "date_created": {
-                    "type": "string"
-                },
-                "lists": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/entities.List"
-                    }
-                },
-                "name": {
-                    "type": "string"
-                },
-                "owner": {
-                    "$ref": "#/definitions/dto.UserID"
-                },
-                "thumbnail_url": {
-                    "type": "string"
-                },
-                "users": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/dto.UserPublicInfo"
-                    }
                 }
             }
         },

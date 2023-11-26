@@ -25,7 +25,7 @@ definitions:
   doc_structs.BoardResponse:
     properties:
       board:
-        $ref: '#/definitions/entities.Board'
+        $ref: '#/definitions/dto.FullBoardResult'
     type: object
   doc_structs.CommentResponse:
     properties:
@@ -102,6 +102,23 @@ definitions:
         type: integer
       type:
         type: string
+    type: object
+  dto.FullBoardResult:
+    properties:
+      board:
+        $ref: '#/definitions/dto.SingleBoardInfo'
+      cards:
+        items:
+          $ref: '#/definitions/dto.SingleTaskInfo'
+        type: array
+      lists:
+        items:
+          $ref: '#/definitions/dto.SingleListInfo'
+        type: array
+      users:
+        items:
+          $ref: '#/definitions/dto.UserPublicInfo'
+        type: array
     type: object
   dto.ListID:
     properties:
@@ -208,6 +225,57 @@ definitions:
       rating:
         type: integer
     type: object
+  dto.SingleBoardInfo:
+    properties:
+      board_id:
+        type: integer
+      date_created:
+        type: string
+      name:
+        type: string
+      owner_id:
+        type: integer
+      thumbnail_url:
+        type: string
+      workspace_id:
+        type: integer
+    type: object
+  dto.SingleListInfo:
+    properties:
+      board_id:
+        type: integer
+      cards:
+        type: string
+      id:
+        type: integer
+      list_position:
+        type: integer
+      name:
+        type: string
+    type: object
+  dto.SingleTaskInfo:
+    properties:
+      date_created:
+        type: string
+      description:
+        type: string
+      end:
+        type: string
+      id:
+        type: integer
+      list_id:
+        type: integer
+      list_position:
+        type: integer
+      name:
+        type: string
+      start:
+        type: string
+      users:
+        items:
+          type: integer
+        type: array
+    type: object
   dto.TaskID:
     properties:
       id:
@@ -291,11 +359,6 @@ definitions:
       workspace_owner:
         $ref: '#/definitions/dto.UserOwnerInfo'
     type: object
-  dto.UserID:
-    properties:
-      user_id:
-        type: integer
-    type: object
   dto.UserOwnedWorkspaceInfo:
     properties:
       boards:
@@ -357,27 +420,6 @@ definitions:
     properties:
       workspace_id:
         type: integer
-    type: object
-  entities.Board:
-    properties:
-      board_id:
-        type: integer
-      date_created:
-        type: string
-      lists:
-        items:
-          $ref: '#/definitions/entities.List'
-        type: array
-      name:
-        type: string
-      owner:
-        $ref: '#/definitions/dto.UserID'
-      thumbnail_url:
-        type: string
-      users:
-        items:
-          $ref: '#/definitions/dto.UserPublicInfo'
-        type: array
     type: object
   entities.Checklist:
     properties:
