@@ -162,7 +162,7 @@ func (s *PostgreSQLBoardStorage) GetLists(ctx context.Context, id dto.BoardID) (
 	defer rows.Close()
 	storageDebugLog(logger, funcName, "Got list info rows")
 
-	var lists []dto.SingleListInfo
+	lists := []dto.SingleListInfo{}
 	for rows.Next() {
 		var list dto.SingleListInfo
 
