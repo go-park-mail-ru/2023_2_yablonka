@@ -869,7 +869,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/list/update/": {
+        "/list/edit/": {
             "post": {
                 "description": "Обновить список",
                 "consumes": [
@@ -2222,34 +2222,8 @@ const docTemplate = `{
                 "users": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/entities.User"
+                        "type": "integer"
                     }
-                }
-            }
-        },
-        "entities.User": {
-            "type": "object",
-            "properties": {
-                "avatar_url": {
-                    "type": "string"
-                },
-                "description": {
-                    "type": "string"
-                },
-                "email": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "password_hash": {
-                    "type": "string"
-                },
-                "surname": {
-                    "type": "string"
-                },
-                "user_id": {
-                    "type": "integer"
                 }
             }
         }

@@ -465,25 +465,8 @@ definitions:
         type: string
       users:
         items:
-          $ref: '#/definitions/entities.User'
+          type: integer
         type: array
-    type: object
-  entities.User:
-    properties:
-      avatar_url:
-        type: string
-      description:
-        type: string
-      email:
-        type: string
-      name:
-        type: string
-      password_hash:
-        type: string
-      surname:
-        type: string
-      user_id:
-        type: integer
     type: object
 host: localhost:8080
 info:
@@ -1055,7 +1038,7 @@ paths:
       summary: Удалить список
       tags:
       - lists
-  /list/update/:
+  /list/edit/:
     post:
       consumes:
       - application/json

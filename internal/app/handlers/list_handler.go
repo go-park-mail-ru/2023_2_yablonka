@@ -96,7 +96,7 @@ func (lh ListHandler) Create(w http.ResponseWriter, r *http.Request) {
 // @Failure 401  {object}  apperrors.ErrorResponse
 // @Failure 500  {object}  apperrors.ErrorResponse
 //
-// @Router /list/update/ [post]
+// @Router /list/edit/ [post]
 func (lh ListHandler) Update(w http.ResponseWriter, r *http.Request) {
 	log.Println("--------------ListHandler.Update Endpoint START--------------")
 
