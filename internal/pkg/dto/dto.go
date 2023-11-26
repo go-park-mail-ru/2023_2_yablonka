@@ -300,14 +300,14 @@ type NewBoardInfo struct {
 }
 
 type SingleBoardInfo struct {
-	ID           uint64           `json:"board_id"`
-	Name         string           `json:"name"`
-	WorkspaceID  uint64           `json:"workspace_id"`
-	OwnerID      uint64           `json:"owner_id"`
-	ThumbnailURL *string          `json:"thumbnail_url"`
-	DateCreated  time.Time        `json:"date_created"`
-	Users        []UserPublicInfo `json:"users"`
-	Lists        []uint64         `json:"lists"`
+	ID               uint64           `json:"board_id"`
+	Name             string           `json:"name"`
+	WorkspaceID      uint64           `json:"workspace_id"`
+	WorkspaceOwnerID uint64           `json:"owner_id"`
+	ThumbnailURL     *string          `json:"thumbnail_url"`
+	DateCreated      time.Time        `json:"date_created"`
+	Users            []UserPublicInfo `json:"users"`
+	Lists            []uint64         `json:"lists"`
 }
 
 type SingleListInfo struct {
