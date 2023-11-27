@@ -48,6 +48,9 @@ func (s PostgresTaskStorage) Create(ctx context.Context, info dto.NewTaskInfo) (
 		Name:         info.Name,
 		ListID:       info.ListID,
 		ListPosition: info.ListPosition,
+		Users:        []uint64{},
+		Checklists:   []entities.Checklist{},
+		Comments:     []entities.Comment{},
 	}
 
 	log.Println("Storage -- Querying DB")

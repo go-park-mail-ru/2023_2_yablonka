@@ -42,7 +42,7 @@ func (th TaskHandler) Create(w http.ResponseWriter, r *http.Request) {
 	var newTaskInfo dto.NewTaskInfo
 	err := json.NewDecoder(r.Body).Decode(&newTaskInfo)
 	if err != nil {
-		handlerDebugLog(logger, funcName, "Creating a new task failed with error "+err.Error())
+		handlerDebugLog(logger, funcName, "ERROR: "+err.Error())
 		logger.Error("----------------- Creating a new task FAIL -----------------")
 		apperrors.ReturnError(apperrors.BadRequestResponse, w, r)
 		return
@@ -60,7 +60,7 @@ func (th TaskHandler) Create(w http.ResponseWriter, r *http.Request) {
 
 	task, err := th.ts.Create(rCtx, newTaskInfo)
 	if err != nil {
-		handlerDebugLog(logger, funcName, "Creating a new task failed with error "+err.Error())
+		handlerDebugLog(logger, funcName, "ERROR: "+err.Error())
 		logger.Error("----------------- Creating a new task FAIL -----------------")
 		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
 		return
@@ -75,7 +75,7 @@ func (th TaskHandler) Create(w http.ResponseWriter, r *http.Request) {
 
 	jsonResponse, err := json.Marshal(response)
 	if err != nil {
-		handlerDebugLog(logger, funcName, "Creating a new task failed with error "+err.Error())
+		handlerDebugLog(logger, funcName, "ERROR: "+err.Error())
 		logger.Error("----------------- Creating a new task FAIL -----------------")
 		apperrors.ReturnError(apperrors.InternalServerErrorResponse, w, r)
 		return
@@ -84,7 +84,7 @@ func (th TaskHandler) Create(w http.ResponseWriter, r *http.Request) {
 
 	_, err = w.Write(jsonResponse)
 	if err != nil {
-		handlerDebugLog(logger, funcName, "Creating a new task failed with error "+err.Error())
+		handlerDebugLog(logger, funcName, "ERROR: "+err.Error())
 		logger.Error("----------------- Creating a new task FAIL -----------------")
 		apperrors.ReturnError(apperrors.InternalServerErrorResponse, w, r)
 		return
