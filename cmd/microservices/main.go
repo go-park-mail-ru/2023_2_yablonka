@@ -5,10 +5,9 @@ import (
 	"log"
 	"net"
 	"server/internal/config"
-	"server/internal/service"
-	microservice "server/internal/service/msvc"
 	"server/internal/storage"
 	"server/internal/storage/postgresql"
+	csat "server/microservices/csat"
 
 	"github.com/asaskevich/govalidator"
 	"google.golang.org/grpc"
@@ -37,16 +36,15 @@ func main() {
 	logger.Info("Storages configured")
 
 	server := grpc.NewServer()
-
-	microservices := service.NewMicroServices(storages)
+	logger.Info("Server created")
 
 	lstn, err := net.Listen("tcp", fmt.Sprintf(":%v", config.Server.MicroservicePort))
 	if err != nil {
 		logger.Fatal("Can't listen to port, " + err.Error())
 	}
 
-	microservice.RegisterCSATSAnswerServiceServer(server, microservices.CSATAnswer)
-	microservice.RegisterCSATQuestionServiceServer(server, microservices.CSATQuestion)
+	csat.RegisterServices(storages, server, logger)
+	logger.Info("CSAT services registerd")
 
 	server.Serve(lstn)
 }

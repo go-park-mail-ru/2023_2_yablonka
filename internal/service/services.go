@@ -7,7 +7,6 @@ import (
 	csat "server/internal/service/csat"
 	csrf "server/internal/service/csrf"
 	list "server/internal/service/list"
-	msvc "server/internal/service/msvc"
 	task "server/internal/service/task"
 	user "server/internal/service/user"
 	workspace "server/internal/service/workspace"
@@ -26,11 +25,6 @@ type Services struct {
 	CSATAnswer   ICSATSAnswerService
 }
 
-type Microservices struct {
-	CSATQuestion msvc.CSATQuestionServiceServer
-	CSATAnswer   msvc.CSATSAnswerServiceServer
-}
-
 func NewServices(storages *storage.Storages, config config.SessionConfig) *Services {
 	return &Services{
 		Auth:         auth.NewAuthService(config, storages.Auth),
@@ -42,12 +36,5 @@ func NewServices(storages *storage.Storages, config config.SessionConfig) *Servi
 		Workspace:    workspace.NewWorkspaceService(storages.Workspace),
 		CSATAnswer:   csat.NewCSATAnswerService(storages.CSATAnswer),
 		CSATQuestion: csat.NewCSATQuestionService(storages.CSATQuestion),
-	}
-}
-
-func NewMicroServices(storages *storage.Storages) *Microservices {
-	return &Microservices{
-		CSATAnswer:   msvc.NewCSATAnswerService(storages.CSATAnswer),
-		CSATQuestion: msvc.NewCSATQuestionService(storages.CSATQuestion),
 	}
 }
