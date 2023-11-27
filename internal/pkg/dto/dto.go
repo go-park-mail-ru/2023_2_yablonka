@@ -325,7 +325,7 @@ type SingleTaskInfo struct {
 	ListPosition uint64     `json:"list_position"`
 	Start        *time.Time `json:"start"`
 	End          *time.Time `json:"end"`
-	Users        []uint64   `json:"users"`
+	Users        string     `json:"users"`
 	// Commments    []CommentInfo    `json:"comments"`
 	// Checklists
 }

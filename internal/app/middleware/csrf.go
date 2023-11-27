@@ -16,12 +16,14 @@ func CSRFMiddleware(cs service.ICSRFService) func(http.Handler) http.Handler {
 			logger := r.Context().Value(dto.LoggerKey).(*logrus.Logger)
 			funcName := "CSRFMiddleware"
 
+			logger.Info("***** VERIFYING CSRF *****")
+
 			rCtx := r.Context()
 
 			csrf := r.Header.Get("X-Csrf-Token")
 			if csrf == "" {
-				logger.Error("CSRF header not set on incoming request")
 				middlewareDebugLog(logger, funcName, "CSRF verification failed")
+				logger.Error("***** CSRF FAIL *****")
 				apperrors.ReturnError(apperrors.GenericUnauthorizedResponse, w, r)
 				return
 			}
@@ -30,13 +32,13 @@ func CSRFMiddleware(cs service.ICSRFService) func(http.Handler) http.Handler {
 
 			err := cs.VerifyCSRF(rCtx, dto.CSRFToken{Value: csrf})
 			if err != nil {
-				logger.Error("Failed to verify CSRF")
 				middlewareDebugLog(logger, funcName, "CSRF verification failed with error "+err.Error())
+				logger.Error("***** CSRF FAIL *****")
 				apperrors.ReturnError(apperrors.GenericUnauthorizedResponse, w, r)
 				return
 			}
 
-			middlewareDebugLog(logger, funcName, "CSRF verification succeeded")
+			logger.Info("***** CSRF SUCCESS *****")
 
 			next.ServeHTTP(w, r)
 		})

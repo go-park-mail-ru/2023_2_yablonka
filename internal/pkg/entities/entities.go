@@ -116,11 +116,11 @@ type Comment struct {
 }
 
 type Checklist struct {
-	ID           uint64          `json:"id"`
-	TaskID       uint64          `json:"task_id"`
-	Name         string          `json:"name"`
-	ListPosition uint64          `json:"list_position"`
-	Items        []ChecklistItem `json:"items"`
+	ID           uint64   `json:"id"`
+	TaskID       uint64   `json:"task_id"`
+	Name         string   `json:"name"`
+	ListPosition uint64   `json:"list_position"`
+	Items        []uint64 `json:"items"`
 }
 
 type ChecklistItem struct {
