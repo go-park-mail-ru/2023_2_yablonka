@@ -1,0 +1,65 @@
+syntax = "proto3";
+
+import "google/protobuf/empty.proto";
+
+// protoc --go_out=. --go-grpc_out=. --go-grpc_opt=paths=source_relative --go_opt=paths=source_relative *.proto  
+option go_package = "./;microservice";
+
+package service;
+
+message CSATQuestionID {
+    uint64 Value = 1;
+}
+
+message NewCSATQuestionInfo {
+    string Content = 1;
+    string Type = 2;
+}
+
+message NewCSATAnswerInfo {
+    uint64 QuestionID = 1;
+    uint64 Rating = 2;
+}
+
+message CSATQuestionFull {
+    uint64 ID = 1;
+    string Type = 2;
+    string Content = 3;
+}
+
+message UpdatedCSATQuestionInfo {
+    uint64 ID = 1;
+    string Content = 2;
+    string Type = 3;
+}
+
+message AllQuestionStats {
+    repeated CSATQuestionFull Questions = 1;
+}
+
+message RatingStats {
+	uint64 Rating = 1;
+	uint64 Count = 2;
+	uint64 Average = 3;
+}
+
+message QuestionWithStats {
+	uint64 ID = 1;
+	string Content = 2;
+	string Type = 3;
+	repeated RatingStats Stats = 4;
+}
+
+message AllQuestionsWithStats {
+    repeated QuestionWithStats Questions = 1;
+}
+
+
+service CSATQuestionService {
+	rpc CheckRating (NewCSATAnswerInfo) returns (google.protobuf.Empty) {}
+	rpc GetAll (google.protobuf.Empty) returns (AllQuestionStats) {}
+	rpc GetStats (google.protobuf.Empty) returns (AllQuestionsWithStats) {}
+    rpc Create (NewCSATQuestionInfo) returns (CSATQuestionFull) {}
+    rpc Update (UpdatedCSATQuestionInfo) returns (google.protobuf.Empty) {}
+    rpc Delete (CSATQuestionID) returns (google.protobuf.Empty) {}
+}

@@ -15,18 +15,22 @@ type Handlers struct {
 	WorkspaceHandler
 	ListHandler
 	TaskHandler
+	CSATAnswerHandler
+	CSATQuestionHandler
 }
 
 // NewHandlers
 // возвращает HandlerManager со всеми хэндлерами приложения
 func NewHandlers(services *service.Services) *Handlers {
 	return &Handlers{
-		AuthHandler:      *NewAuthHandler(services.Auth, services.User, services.CSRF),
-		UserHandler:      *NewUserHandler(services.User),
-		BoardHandler:     *NewBoardHandler(services.Auth, services.Board),
-		WorkspaceHandler: *NewWorkspaceHandler(services.Workspace),
-		ListHandler:      *NewListHandler(services.List),
-		TaskHandler:      *NewTaskHandler(services.Task),
+		AuthHandler:         *NewAuthHandler(services.Auth, services.User, services.CSRF),
+		UserHandler:         *NewUserHandler(services.User),
+		BoardHandler:        *NewBoardHandler(services.Auth, services.Board),
+		WorkspaceHandler:    *NewWorkspaceHandler(services.Workspace),
+		ListHandler:         *NewListHandler(services.List),
+		TaskHandler:         *NewTaskHandler(services.Task),
+		CSATAnswerHandler:   *NewCSATAnswerHandler(services.CSATAnswer, services.CSATQuestion),
+		CSATQuestionHandler: *NewCSATQuestionHandler(services.CSATQuestion),
 	}
 }
 
@@ -37,6 +41,23 @@ func NewAuthHandler(as service.IAuthService, us service.IUserService, cs service
 		as: as,
 		us: us,
 		cs: cs,
+	}
+}
+
+// NewCSATHandler
+// возвращает CSATHandler с необходимыми сервисами
+func NewCSATQuestionHandler(qs service.ICSATQuestionService) *CSATQuestionHandler {
+	return &CSATQuestionHandler{
+		qs: qs,
+	}
+}
+
+// NewCSATHandler
+// возвращает CSATHandler с необходимыми сервисами
+func NewCSATAnswerHandler(as service.ICSATSAnswerService, qs service.ICSATQuestionService) *CSATAnswerHandler {
+	return &CSATAnswerHandler{
+		as: as,
+		qs: qs,
 	}
 }
 

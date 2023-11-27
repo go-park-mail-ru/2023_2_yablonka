@@ -2,7 +2,7 @@ package postgresql
 
 import (
 	"context"
-	"github.com/jackc/pgx/v5/pgxpool"
+	"database/sql"
 	"reflect"
 	"server/internal/pkg/dto"
 	"server/internal/pkg/entities"
@@ -11,7 +11,7 @@ import (
 
 func TestNewWorkspaceStorage(t *testing.T) {
 	type args struct {
-		db *pgxpool.Pool
+		db *sql.DB
 	}
 	tests := []struct {
 		name string
@@ -31,7 +31,7 @@ func TestNewWorkspaceStorage(t *testing.T) {
 
 func TestPostgresWorkspaceStorage_Create(t *testing.T) {
 	type fields struct {
-		db *pgxpool.Pool
+		db *sql.DB
 	}
 	type args struct {
 		ctx  context.Context
@@ -65,7 +65,7 @@ func TestPostgresWorkspaceStorage_Create(t *testing.T) {
 
 func TestPostgresWorkspaceStorage_Delete(t *testing.T) {
 	type fields struct {
-		db *pgxpool.Pool
+		db *sql.DB
 	}
 	type args struct {
 		ctx context.Context
@@ -93,7 +93,7 @@ func TestPostgresWorkspaceStorage_Delete(t *testing.T) {
 
 func TestPostgresWorkspaceStorage_GetUserGuestWorkspaces(t *testing.T) {
 	type fields struct {
-		db *pgxpool.Pool
+		db *sql.DB
 	}
 	type args struct {
 		ctx    context.Context
@@ -127,7 +127,7 @@ func TestPostgresWorkspaceStorage_GetUserGuestWorkspaces(t *testing.T) {
 
 func TestPostgresWorkspaceStorage_GetUserOwnedWorkspaces(t *testing.T) {
 	type fields struct {
-		db *pgxpool.Pool
+		db *sql.DB
 	}
 	type args struct {
 		ctx    context.Context
@@ -161,7 +161,7 @@ func TestPostgresWorkspaceStorage_GetUserOwnedWorkspaces(t *testing.T) {
 
 func TestPostgresWorkspaceStorage_GetWorkspace(t *testing.T) {
 	type fields struct {
-		db *pgxpool.Pool
+		db *sql.DB
 	}
 	type args struct {
 		ctx context.Context
@@ -195,7 +195,7 @@ func TestPostgresWorkspaceStorage_GetWorkspace(t *testing.T) {
 
 func TestPostgresWorkspaceStorage_UpdateData(t *testing.T) {
 	type fields struct {
-		db *pgxpool.Pool
+		db *sql.DB
 	}
 	type args struct {
 		ctx  context.Context
@@ -223,7 +223,7 @@ func TestPostgresWorkspaceStorage_UpdateData(t *testing.T) {
 
 func TestPostgresWorkspaceStorage_UpdateUsers(t *testing.T) {
 	type fields struct {
-		db *pgxpool.Pool
+		db *sql.DB
 	}
 	type args struct {
 		ctx  context.Context

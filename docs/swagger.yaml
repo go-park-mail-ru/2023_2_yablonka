@@ -5,6 +5,13 @@ definitions:
       error_response:
         type: string
     type: object
+  doc_structs.AllQuestionsResponse:
+    properties:
+      questions:
+        items:
+          $ref: '#/definitions/dto.CSATQuestionFull'
+        type: array
+    type: object
   doc_structs.AllWorkspacesResponse:
     properties:
       workspaces:
@@ -18,12 +25,29 @@ definitions:
   doc_structs.BoardResponse:
     properties:
       board:
-        $ref: '#/definitions/entities.Board'
+        $ref: '#/definitions/dto.FullBoardResult'
+    type: object
+  doc_structs.CommentResponse:
+    properties:
+      comment:
+        $ref: '#/definitions/entities.Comment'
     type: object
   doc_structs.ListResponse:
     properties:
       list:
         $ref: '#/definitions/entities.List'
+    type: object
+  doc_structs.QuestionResponse:
+    properties:
+      question:
+        $ref: '#/definitions/dto.CSATQuestionFull'
+    type: object
+  doc_structs.StatsResponse:
+    properties:
+      questions:
+        items:
+          $ref: '#/definitions/dto.QuestionWithStats'
+        type: array
     type: object
   doc_structs.TaskResponse:
     properties:
@@ -64,13 +88,37 @@ definitions:
         items:
           type: integer
         type: array
-      user_id:
-        type: integer
     type: object
   dto.BoardID:
     properties:
       board_id:
         type: integer
+    type: object
+  dto.CSATQuestionFull:
+    properties:
+      content:
+        type: string
+      question_id:
+        type: integer
+      type:
+        type: string
+    type: object
+  dto.FullBoardResult:
+    properties:
+      board:
+        $ref: '#/definitions/dto.SingleBoardInfo'
+      cards:
+        items:
+          $ref: '#/definitions/dto.SingleTaskInfo'
+        type: array
+      lists:
+        items:
+          $ref: '#/definitions/dto.SingleListInfo'
+        type: array
+      users:
+        items:
+          $ref: '#/definitions/dto.UserPublicInfo'
+        type: array
     type: object
   dto.ListID:
     properties:
@@ -79,17 +127,38 @@ definitions:
     type: object
   dto.NewBoardRequest:
     properties:
-      description:
-        type: string
       name:
         type: string
-      owner_id:
-        type: integer
       thumbnail:
         items:
           type: integer
         type: array
       workspace_id:
+        type: integer
+    type: object
+  dto.NewCSATAnswerInfo:
+    properties:
+      id:
+        type: integer
+      id_question:
+        type: integer
+      rating:
+        type: integer
+    type: object
+  dto.NewCSATQuestionInfo:
+    properties:
+      content:
+        type: string
+      type:
+        type: string
+    type: object
+  dto.NewCommentInfo:
+    properties:
+      task_id:
+        type: integer
+      text:
+        type: string
+      user_id:
         type: integer
     type: object
   dto.NewListInfo:
@@ -133,8 +202,79 @@ definitions:
         type: string
       old_password:
         type: string
-      user_id:
+    type: object
+  dto.QuestionWithStats:
+    properties:
+      content:
+        type: string
+      question_id:
         type: integer
+      stats:
+        items:
+          $ref: '#/definitions/dto.RatingStats'
+        type: array
+      type:
+        type: string
+    type: object
+  dto.RatingStats:
+    properties:
+      average:
+        type: integer
+      count:
+        type: integer
+      rating:
+        type: integer
+    type: object
+  dto.SingleBoardInfo:
+    properties:
+      board_id:
+        type: integer
+      date_created:
+        type: string
+      name:
+        type: string
+      owner_id:
+        type: integer
+      thumbnail_url:
+        type: string
+      workspace_id:
+        type: integer
+    type: object
+  dto.SingleListInfo:
+    properties:
+      board_id:
+        type: integer
+      cards:
+        type: string
+      id:
+        type: integer
+      list_position:
+        type: integer
+      name:
+        type: string
+    type: object
+  dto.SingleTaskInfo:
+    properties:
+      date_created:
+        type: string
+      description:
+        type: string
+      end:
+        type: string
+      id:
+        type: integer
+      list_id:
+        type: integer
+      list_position:
+        type: integer
+      name:
+        type: string
+      start:
+        type: string
+      users:
+        items:
+          type: integer
+        type: array
     type: object
   dto.TaskID:
     properties:
@@ -143,8 +283,6 @@ definitions:
     type: object
   dto.UpdatedBoardInfo:
     properties:
-      description:
-        type: string
       id:
         type: integer
       name:
@@ -158,6 +296,15 @@ definitions:
         items:
           type: integer
         type: array
+    type: object
+  dto.UpdatedCSATQuestionInfo:
+    properties:
+      content:
+        type: string
+      id:
+        type: integer
+      type:
+        type: string
     type: object
   dto.UpdatedListInfo:
     properties:
@@ -212,11 +359,6 @@ definitions:
       workspace_owner:
         $ref: '#/definitions/dto.UserOwnerInfo'
     type: object
-  dto.UserID:
-    properties:
-      user_id:
-        type: integer
-    type: object
   dto.UserOwnedWorkspaceInfo:
     properties:
       boards:
@@ -247,8 +389,6 @@ definitions:
         type: string
       surname:
         type: string
-      user_id:
-        type: integer
     type: object
   dto.UserPublicInfo:
     properties:
@@ -273,34 +413,54 @@ definitions:
         type: integer
       name:
         type: string
+      thumbnail_url:
+        type: string
     type: object
   dto.WorkspaceID:
     properties:
       workspace_id:
         type: integer
     type: object
-  entities.Board:
+  entities.Checklist:
     properties:
-      board_id:
+      id:
         type: integer
-      date_created:
-        type: string
-      description:
-        type: string
-      lists:
+      items:
         items:
-          $ref: '#/definitions/entities.List'
+          $ref: '#/definitions/entities.ChecklistItem'
         type: array
+      list_position:
+        type: integer
       name:
         type: string
-      owner:
-        $ref: '#/definitions/dto.UserID'
-      thumbnail_url:
+      task_id:
+        type: integer
+    type: object
+  entities.ChecklistItem:
+    properties:
+      checklist_id:
+        type: integer
+      done:
+        type: boolean
+      id:
+        type: integer
+      list_position:
+        type: integer
+      name:
         type: string
-      users:
-        items:
-          $ref: '#/definitions/dto.UserPublicInfo'
-        type: array
+    type: object
+  entities.Comment:
+    properties:
+      date_created:
+        type: string
+      id:
+        type: integer
+      task_id:
+        type: integer
+      text:
+        type: string
+      user_id:
+        type: integer
     type: object
   entities.List:
     properties:
@@ -321,6 +481,14 @@ definitions:
     type: object
   entities.Task:
     properties:
+      checklists:
+        items:
+          $ref: '#/definitions/entities.Checklist'
+        type: array
+      comments:
+        items:
+          $ref: '#/definitions/entities.Comment'
+        type: array
       date_created:
         type: string
       description:
@@ -339,25 +507,8 @@ definitions:
         type: string
       users:
         items:
-          $ref: '#/definitions/entities.User'
+          type: integer
         type: array
-    type: object
-  entities.User:
-    properties:
-      avatar_url:
-        type: string
-      description:
-        type: string
-      email:
-        type: string
-      name:
-        type: string
-      password_hash:
-        type: string
-      surname:
-        type: string
-      user_id:
-        type: integer
     type: object
 host: localhost:8080
 info:
@@ -671,6 +822,196 @@ paths:
       summary: Обновить картинку доски
       tags:
       - boards
+  /comment/create/:
+    post:
+      consumes:
+      - application/json
+      description: Создать комментарий в каком-то задании
+      parameters:
+      - description: данные нового комментария
+        in: body
+        name: newCommentInfo
+        required: true
+        schema:
+          $ref: '#/definitions/dto.NewCommentInfo'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: объект комментария
+          schema:
+            $ref: '#/definitions/doc_structs.CommentResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+      summary: Создать комментарий
+      tags:
+      - comments
+  /csat/answer/:
+    post:
+      consumes:
+      - application/json
+      description: Создать ответит на опрос CSAT
+      parameters:
+      - description: данные ответа CSAT
+        in: body
+        name: CSATAnswerInfo
+        required: true
+        schema:
+          $ref: '#/definitions/dto.NewCSATAnswerInfo'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: все вопросы
+          schema:
+            $ref: '#/definitions/doc_structs.AllQuestionsResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+      summary: Ответить на опрос CSAT
+      tags:
+      - csat
+  /csat/question/all:
+    get:
+      consumes:
+      - application/json
+      description: Получить вопросы CSAT
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: все вопросы
+          schema:
+            $ref: '#/definitions/doc_structs.AllQuestionsResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+      summary: Получить вопросы CSAT
+      tags:
+      - csat
+  /csat/question/create/:
+    post:
+      consumes:
+      - application/json
+      description: Создать вопрос CSAT
+      parameters:
+      - description: данные нового вопроса CSAT
+        in: body
+        name: newQuestionInfo
+        required: true
+        schema:
+          $ref: '#/definitions/dto.NewCSATQuestionInfo'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: вопрос CSAT
+          schema:
+            $ref: '#/definitions/doc_structs.QuestionResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+      summary: Создать вопрос CSAT
+      tags:
+      - csat
+  /csat/question/update/:
+    post:
+      consumes:
+      - application/json
+      description: Обновить вопрос CSAT
+      parameters:
+      - description: данные обновленного вопроса CSAT
+        in: body
+        name: updatedQuestionInfo
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdatedCSATQuestionInfo'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: no content
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+      summary: Обновить вопрос CSAT
+      tags:
+      - csat
+  /csat/stats:
+    get:
+      consumes:
+      - application/json
+      description: Получить количество и среднее ответов на опросы CSAT
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: вопрос CSAT
+          schema:
+            $ref: '#/definitions/doc_structs.StatsResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+      summary: Статистика ответов CSAT
+      tags:
+      - csat
   /list/create/:
     post:
       consumes:
@@ -739,7 +1080,7 @@ paths:
       summary: Удалить список
       tags:
       - lists
-  /list/update/:
+  /list/edit/:
     post:
       consumes:
       - application/json
@@ -915,7 +1256,7 @@ paths:
       - application/json
       description: В ответ ничего не шлёт
       parameters:
-      - description: id пользователя, имя, фамилия, описание пользователя
+      - description: Имя, фамилия, описание пользователя
         in: body
         name: newProfileInfo
         required: true
@@ -965,9 +1306,9 @@ paths:
     post:
       consumes:
       - application/json
-      description: Получает старый и новый пароли, а также id пользователя
+      description: Получает старый и новый пароли
       parameters:
-      - description: id, старый и новый пароли пользователя
+      - description: Старый и новый пароли пользователя
         in: body
         name: passwords
         required: true

@@ -1,6 +1,8 @@
 services:
   server:
-    build: .
+    build: 
+      context: .
+      dockerfile: ./deployments/backend/Dockerfile
     container_name: backend
     ports: 
       - 8080:8080
@@ -10,16 +12,41 @@ services:
         condition: service_healthy
     links:
       - db
+    # "echo 'Migrating CSAT database' &&
+    # ./tern migrate -c db/migrations/csat/tern.conf -m db/migrations/csat/ &&
+    # echo 'Finished CSAT database migrations' &&
     command: >
-        sh -c "echo "Migrating" &&
-              ./tern migrate -c db/migrations/tern.conf -m db/migrations/ &&
-              echo 'Finished migrations' &&
+        sh -c "echo 'Migrating main database' &&
+              ./tern migrate -c db/migrations/public/tern.conf -m db/migrations/public/ &&
+              echo 'Finished main database migrations' &&
               echo 'Starting backend' &&
               ./yablonka-backend"
     env_file:
       - ./config/.env
     volumes:
       - ./img/:/img/
+
+  microservices:
+    build: 
+      context: .
+      dockerfile: ./deployments/microservices/Dockerfile
+    container_name: micro
+    env_file:
+      - ./config/.env
+    ports:
+      - 8083:8083
+    tty: true
+    depends_on:
+      db:
+        condition: service_healthy
+    links:
+      - db
+    command: >
+        sh -c "echo 'Migrating main database' &&
+              ./tern migrate -c db/migrations/public/tern.conf -m db/migrations/public/ &&
+              echo 'Finished main database migrations' &&
+              echo 'Starting microservices' &&
+              ./yablonka-microservices"
   
   db:
     image: postgres:latest

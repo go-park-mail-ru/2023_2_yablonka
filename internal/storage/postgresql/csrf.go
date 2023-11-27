@@ -2,24 +2,24 @@ package postgresql
 
 import (
 	"context"
+	"database/sql"
 	"log"
 	"server/internal/apperrors"
 	"server/internal/pkg/dto"
 	"server/internal/pkg/entities"
 
 	sq "github.com/Masterminds/squirrel"
-	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 // PostgresAuthStorage
 // Хранилище данных в PostgreSQL
 type PostgresCSRFStorage struct {
-	db *pgxpool.Pool
+	db *sql.DB
 }
 
 // NewCSRFStorage
 // возвращает локальное хранилище CSRF
-func NewCSRFStorage(db *pgxpool.Pool) *PostgresCSRFStorage {
+func NewCSRFStorage(db *sql.DB) *PostgresCSRFStorage {
 	return &PostgresCSRFStorage{
 		db: db,
 	}
@@ -45,7 +45,7 @@ func (s PostgresCSRFStorage) Create(ctx context.Context, csrf *entities.CSRF) er
 
 	log.Println("Query formed:", sql)
 
-	_, err = s.db.Exec(ctx, sql, args...)
+	_, err = s.db.Exec(sql, args...)
 
 	log.Println("Queried DB")
 
@@ -75,7 +75,7 @@ func (s PostgresCSRFStorage) Get(ctx context.Context, token dto.CSRFToken) (*ent
 		return nil, apperrors.ErrCouldNotBuildQuery
 	}
 
-	row := s.db.QueryRow(ctx, sql, args...)
+	row := s.db.QueryRow(sql, args...)
 
 	csrf := entities.CSRF{}
 	err = row.Scan(
@@ -104,7 +104,7 @@ func (s PostgresCSRFStorage) Delete(ctx context.Context, token dto.CSRFToken) er
 		return apperrors.ErrCouldNotBuildQuery
 	}
 
-	_, err = s.db.Exec(ctx, sql, args...)
+	_, err = s.db.Exec(sql, args...)
 
 	if err != nil {
 		return apperrors.ErrSessionNotFound

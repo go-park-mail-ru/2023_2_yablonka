@@ -16,6 +16,114 @@ type VerifiedAuthInfo struct {
 	UserID uint64
 }
 
+// NewCSATAnswerInfo
+// DTO с данными ответа на вопрос
+type NewCSATAnswerInfo struct {
+	ID         uint64 `json:"id"`
+	QuestionID uint64 `json:"id_question"`
+	Rating     uint64 `json:"rating"`
+	//DateCreated time.Time `json:"date_created"`
+}
+
+// NewCSATAnswer
+// DTO с данными ответа на вопрос и пользователем, ответившим на него
+type NewCSATAnswer struct {
+	UserID     uint64
+	QuestionID uint64
+	Rating     uint64
+}
+
+// RatingStats
+// DTO со статистикой одного рейтинга в вопросе
+type RatingStats struct {
+	Rating  uint64 `json:"rating"`
+	Count   uint64 `json:"count"`
+	Average uint64 `json:"average"`
+}
+
+// RatingStatsWithQuestionID
+// DTO со статистикой одного рейтинга в вопросе
+type RatingStatsWithQuestionID struct {
+	QuestionID uint64 `json:"question_id"`
+	Rating     uint64 `json:"rating"`
+	Count      uint64 `json:"count"`
+	Average    uint64 `json:"average"`
+}
+
+// QuestionWithStats
+// DTO со статистикой одного вопроса
+type QuestionWithStats struct {
+	ID      uint64        `json:"question_id"`
+	Content string        `json:"content"`
+	Type    string        `json:"type"`
+	Stats   []RatingStats `json:"stats"`
+}
+
+// CSATQuestionID
+// DTO с ID CSAT вопроса
+type CSATQuestionID struct {
+	Value uint64
+}
+
+// CSATQuestionTypeName
+// DTO с названием CSAT вопроса
+type CSATQuestionTypeName struct {
+	Value string `json:"type"`
+}
+
+// CSATRatingCheck
+// DTO с данными для проверки границ рейтинга
+type CSATRatingCheck struct {
+	QuestionID uint64 `json:"question_id"`
+	MaxRating  uint64 `json:"max_rating"`
+}
+
+// CSATRatingCheck
+// DTO с данными для проверки границ рейтинга
+type CSATQuestionFull struct {
+	ID      uint64 `json:"question_id"`
+	Content string `json:"content"`
+	Type    string `json:"type"`
+}
+
+// CSATRatingCheck
+// DTO с данными для проверки границ рейтинга
+type CSATAnswerFull struct {
+	ID      uint64 `json:"answer_id"`
+	Content string `json:"rating"`
+	Type    string `json:"type"`
+}
+
+// NewCSATQuestionInfo
+// DTO с новыми данными CSAT вопроса
+type NewCSATQuestionInfo struct {
+	Content string `json:"content"`
+	Type    string `json:"type"`
+}
+
+// NewCSATQuestion
+// DTO с новыми данными CSAT вопроса для БД
+type NewCSATQuestion struct {
+	Content string `json:"content"`
+	TypeID  uint64 `json:"type"`
+}
+
+// UpdatedCSATQuestion
+// DTO с новыми данными CSAT вопроса для БД
+type UpdatedCSATQuestion struct {
+	ID      uint64 `json:"id"`
+	Content string `json:"content"`
+	Type    uint64 `json:"type"`
+}
+
+// UpdatedCSATQuestionInfo
+// DTO с новыми данными CSAT вопроса для БД
+type UpdatedCSATQuestionInfo struct {
+	ID      uint64 `json:"id"`
+	Content string `json:"content"`
+	Type    string `json:"type"`
+}
+
 // VerifiedAuthInfo
 // DTO, подтверждающее личность на основе сессии, полученных при регистрации
 type UserEmail struct {
@@ -192,34 +300,32 @@ type NewBoardInfo struct {
 }
 
 type SingleBoardInfo struct {
-	ID           uint64           `json:"board_id"`
-	Name         string           `json:"name"`
-	WorkspaceID  uint64           `json:"workspace_id"`
-	OwnerID      uint64           `json:"owner_id"`
-	ThumbnailURL *string          `json:"thumbnail_url"`
-	DateCreated  time.Time        `json:"date_created"`
-	Users        []UserPublicInfo `json:"users"`
-	Lists        []uint64         `json:"lists"`
+	ID               uint64    `json:"board_id"`
+	Name             string    `json:"name"`
+	WorkspaceID      uint64    `json:"workspace_id"`
+	WorkspaceOwnerID uint64    `json:"owner_id"`
+	ThumbnailURL     *string   `json:"thumbnail_url"`
+	DateCreated      time.Time `json:"date_created"`
 }
 
 type SingleListInfo struct {
-	ID           uint64   `json:"id"`
-	BoardID      uint64   `json:"board_id"`
-	Name         string   `json:"name"`
-	ListPosition uint64   `json:"list_position"`
-	Tasks        []uint64 `json:"cards"`
+	ID           uint64 `json:"id"`
+	BoardID      uint64 `json:"board_id"`
+	Name         string `json:"name"`
+	ListPosition uint64 `json:"list_position"`
+	Tasks        string `json:"cards"`
 }
 
 type SingleTaskInfo struct {
-	ID           uint64           `json:"id"`
-	ListID       uint64           `json:"list_id"`
-	DateCreated  time.Time        `json:"date_created"`
-	Name         string           `json:"name"`
-	Description  *string          `json:"description"`
-	ListPosition uint64           `json:"list_position"`
-	Start        *time.Time       `json:"start"`
-	End          *time.Time       `json:"end"`
-	Users        []UserPublicInfo `json:"users"`
+	ID           uint64     `json:"id"`
+	ListID       uint64     `json:"list_id"`
+	DateCreated  time.Time  `json:"date_created"`
+	Name         string     `json:"name"`
+	Description  *string    `json:"description"`
+	ListPosition uint64     `json:"list_position"`
+	Start        *time.Time `json:"start"`
+	End          *time.Time `json:"end"`
+	Users        string     `json:"users"`
 	// Commments    []CommentInfo    `json:"comments"`
 	// Checklists
 }
@@ -228,6 +334,7 @@ type FullBoardResult struct {
 	Board SingleBoardInfo  `json:"board"`
 	Lists []SingleListInfo `json:"lists"`
 	Tasks []SingleTaskInfo `json:"cards"`
+	Users []UserPublicInfo `json:"users"`
 }
 
 // NewBoardRequest
@@ -290,6 +397,12 @@ type ListID struct {
 	Value uint64 `json:"id"`
 }
 
+// ListID
+// DTO для id списов задач
+type ListIDs struct {
+	Values []uint64 `json:"ids"`
+}
+
 // TaskID
 // DTO для id задач
 type TaskID struct {
@@ -336,12 +449,9 @@ type NewListInfo struct {
 // NewTaskInfo
 // DTO для новой задачи
 type NewTaskInfo struct {
-	ListID       uint64     `json:"list_id"`
-	Name         string     `json:"name"`
-	Description  string     `json:"description"`
-	Start        *time.Time `json:"start"`
-	End          *time.Time `json:"end"`
-	ListPosition uint64     `json:"list_position"`
+	ListID       uint64 `json:"list_id"`
+	Name         string `json:"name"`
+	ListPosition uint64 `json:"list_position"`
 }
 
 // UpdatedTaskInfo
@@ -375,7 +485,7 @@ type UpdatedListInfo struct {
 	ID           uint64  `json:"id"`
 	Name         string  `json:"name"`
 	Description  *string `json:"description"`
-	ListPosition string  `json:"list_position"`
+	ListPosition uint64  `json:"list_position"`
 }
 
 // UpdatedWorkspaceInfo

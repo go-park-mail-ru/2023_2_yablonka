@@ -2,6 +2,7 @@ package postgresql
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"log"
 	"server/internal/apperrors"
@@ -9,17 +10,16 @@ import (
 	"server/internal/pkg/entities"
 
 	sq "github.com/Masterminds/squirrel"
-	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/sirupsen/logrus"
 )
 
 // LocalUserStorage
 // Хранилище данных в PostgreSQL
 type PostgresUserStorage struct {
-	db *pgxpool.Pool
+	db *sql.DB
 }
 
-func NewUserStorage(db *pgxpool.Pool) *PostgresUserStorage {
+func NewUserStorage(db *sql.DB) *PostgresUserStorage {
 	return &PostgresUserStorage{
 		db: db,
 	}
@@ -44,7 +44,7 @@ func (s *PostgresUserStorage) GetWithLogin(ctx context.Context, login dto.UserLo
 
 	log.Println("Built query:", sql, "\nwith args:", args)
 
-	row := s.db.QueryRow(ctx, sql, args...)
+	row := s.db.QueryRow(sql, args...)
 
 	user := entities.User{}
 	err = row.Scan(
@@ -82,7 +82,7 @@ func (s *PostgresUserStorage) GetWithID(ctx context.Context, id dto.UserID) (*en
 		return nil, apperrors.ErrCouldNotBuildQuery
 	}
 
-	row := s.db.QueryRow(ctx, sql, args...)
+	row := s.db.QueryRow(sql, args...)
 
 	user := entities.User{}
 	if row.Scan(&user.ID, &user.Email, &user.PasswordHash, &user.Name, &user.Surname, &user.AvatarURL, &user.Description) != nil {
@@ -114,7 +114,7 @@ func (s *PostgresUserStorage) GetLoginInfoWithID(ctx context.Context, id dto.Use
 		fmt.Sprintf("Built query\n\t%s\n with args\n\t%s", sql, args),
 	)
 
-	row := s.db.QueryRow(ctx, sql, args...)
+	row := s.db.QueryRow(sql, args...)
 
 	loginInfo := dto.LoginInfo{}
 	err = row.Scan(&loginInfo.Email, &loginInfo.PasswordHash)
@@ -148,7 +148,7 @@ func (s *PostgresUserStorage) Create(ctx context.Context, info dto.SignupInfo) (
 		PasswordHash: info.PasswordHash,
 	}
 
-	query := s.db.QueryRow(ctx, sql, args...)
+	query := s.db.QueryRow(sql, args...)
 	err = query.Scan(&user.ID)
 	if err != nil {
 		return nil, apperrors.ErrUserNotCreated
@@ -172,7 +172,7 @@ func (s *PostgresUserStorage) UpdatePassword(ctx context.Context, info dto.Passw
 		return apperrors.ErrCouldNotBuildQuery
 	}
 
-	_, err = s.db.Exec(ctx, sql, args...)
+	_, err = s.db.Exec(sql, args...)
 
 	if err != nil {
 		return apperrors.ErrUserNotUpdated
@@ -200,7 +200,7 @@ func (s *PostgresUserStorage) UpdateProfile(ctx context.Context, info dto.UserPr
 
 	log.Println("Built query:", sql, "\nwith args:", args)
 
-	_, err = s.db.Exec(ctx, sql, args...)
+	_, err = s.db.Exec(sql, args...)
 
 	if err != nil {
 		log.Println("Storage -- Failed to execute query with error", err.Error())
@@ -225,7 +225,7 @@ func (s *PostgresUserStorage) UpdateAvatarUrl(ctx context.Context, info dto.Imag
 		return apperrors.ErrCouldNotBuildQuery
 	}
 
-	_, err = s.db.Exec(ctx, sql, args...)
+	_, err = s.db.Exec(sql, args...)
 
 	if err != nil {
 		return apperrors.ErrUserNotUpdated
@@ -248,7 +248,7 @@ func (s *PostgresUserStorage) Delete(ctx context.Context, id dto.UserID) error {
 		return apperrors.ErrCouldNotBuildQuery
 	}
 
-	_, err = s.db.Exec(ctx, sql, args...)
+	_, err = s.db.Exec(sql, args...)
 
 	if err != nil {
 		return apperrors.ErrUserNotDeleted

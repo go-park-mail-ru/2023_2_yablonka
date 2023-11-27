@@ -2,7 +2,7 @@ package postgresql
 
 import (
 	"context"
-	"github.com/jackc/pgx/v5/pgxpool"
+	"database/sql"
 	"reflect"
 	"server/internal/pkg/dto"
 	"server/internal/pkg/entities"
@@ -11,7 +11,7 @@ import (
 
 func TestNewCSRFStorage(t *testing.T) {
 	type args struct {
-		db *pgxpool.Pool
+		db *sql.DB
 	}
 	tests := []struct {
 		name string
@@ -31,7 +31,7 @@ func TestNewCSRFStorage(t *testing.T) {
 
 func TestPostgresCSRFStorage_Create(t *testing.T) {
 	type fields struct {
-		db *pgxpool.Pool
+		db *sql.DB
 	}
 	type args struct {
 		ctx  context.Context
@@ -59,7 +59,7 @@ func TestPostgresCSRFStorage_Create(t *testing.T) {
 
 func TestPostgresCSRFStorage_Delete(t *testing.T) {
 	type fields struct {
-		db *pgxpool.Pool
+		db *sql.DB
 	}
 	type args struct {
 		ctx   context.Context
@@ -87,7 +87,7 @@ func TestPostgresCSRFStorage_Delete(t *testing.T) {
 
 func TestPostgresCSRFStorage_Get(t *testing.T) {
 	type fields struct {
-		db *pgxpool.Pool
+		db *sql.DB
 	}
 	type args struct {
 		ctx   context.Context

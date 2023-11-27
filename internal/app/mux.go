@@ -46,7 +46,6 @@ func GetChiMux(manager handlers.Handlers, config config.Config) (http.Handler, e
 		r.Route("/workspace", func(r chi.Router) {
 			r.Use(middleware.AuthMiddleware(manager.AuthHandler.GetAuthService(), manager.AuthHandler.GetUserService()))
 			r.Use(middleware.CSRFMiddleware(manager.AuthHandler.GetCSRFService()))
-			mux.Use(middleware.PanicRecovery)
 			r.Post("/create/", manager.WorkspaceHandler.Create)
 			r.Post("/update/", manager.WorkspaceHandler.UpdateData)
 			r.Post("/update/change_users/", manager.WorkspaceHandler.ChangeGuests)
@@ -84,6 +83,17 @@ func GetChiMux(manager handlers.Handlers, config config.Config) (http.Handler, e
 	mux.Route("/swagger/", func(r chi.Router) {
 		r.Get("/*", httpSwagger.Handler(
 			httpSwagger.URL("swagger/doc.json")))
+	})
+	mux.Route("/csat", func(r chi.Router) {
+		r.Use(middleware.AuthMiddleware(manager.AuthHandler.GetAuthService(), manager.AuthHandler.GetUserService()))
+		r.Use(middleware.CSRFMiddleware(manager.AuthHandler.GetCSRFService()))
+		r.Route("/question", func(r chi.Router) {
+			r.Get("/all", manager.CSATQuestionHandler.GetQuestions)
+			r.Get("/stats", manager.CSATQuestionHandler.GetStats)
+			r.Post("/create/", manager.CSATQuestionHandler.Create)
+			r.Post("/edit/", manager.CSATQuestionHandler.Update)
+		})
+		r.Post("/answer", manager.CSATAnswerHandler.Create)
 	})
 	return mux, nil
 }

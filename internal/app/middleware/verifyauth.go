@@ -19,11 +19,11 @@ func AuthMiddleware(as service.IAuthService, us service.IUserService) func(http.
 			funcName := "AuthMiddleware"
 			logger := rCtx.Value(dto.LoggerKey).(*logrus.Logger)
 
-			logger.Info("Verifying user's authentication")
+			logger.Info("***** VERIFYING AUTH *****")
 
 			cookie, err := r.Cookie("tabula_user")
 			if err != nil {
-				logger.Error("Verification failed")
+				logger.Error("***** VERIFICATION FAIL *****")
 				middlewareDebugLog(logger, funcName, "Verifying user failed with error "+err.Error())
 				apperrors.ReturnError(apperrors.GenericUnauthorizedResponse, w, r)
 				return
@@ -36,7 +36,7 @@ func AuthMiddleware(as service.IAuthService, us service.IUserService) func(http.
 
 			userID, err := as.VerifyAuth(rCtx, token)
 			if err != nil {
-				logger.Error("Verification failed")
+				logger.Error("***** VERIFICATION FAIL *****")
 				middlewareDebugLog(logger, funcName, "Verifying user failed with error "+err.Error())
 				w.Header().Set("X-Csrf-Token", "")
 				apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
@@ -47,20 +47,20 @@ func AuthMiddleware(as service.IAuthService, us service.IUserService) func(http.
 			middlewareDebugLog(logger, funcName, fmt.Sprintf("Getting user info for user ID %d", userID.Value))
 			userObj, err := us.GetWithID(rCtx, userID)
 			if errors.Is(err, apperrors.ErrUserNotFound) {
-				logger.Error("Verification failed")
+				logger.Error("***** VERIFICATION FAIL *****")
 				middlewareDebugLog(logger, funcName, "Verifying user failed with error "+err.Error())
 				w.Header().Set("X-Csrf-Token", "")
 				apperrors.ReturnError(apperrors.GenericUnauthorizedResponse, w, r)
 				return
 			} else if err != nil {
-				logger.Error("Verification failed")
+				logger.Error("***** VERIFICATION FAIL *****")
 				middlewareDebugLog(logger, funcName, "Verifying user failed with error "+err.Error())
 				w.Header().Set("X-Csrf-Token", "")
 				apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
 				return
 			}
 
-			logger.Info("Finished verifying user")
+			logger.Info("***** VERIFICATION SUCCESS *****")
 
 			next.ServeHTTP(w, r.WithContext(context.WithValue(rCtx, dto.UserObjKey, userObj)))
 		})

@@ -1,29 +1,32 @@
 package storage
 
 import (
+	"database/sql"
 	"server/internal/storage/postgresql"
-
-	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type Storages struct {
-	Auth      IAuthStorage
-	User      IUserStorage
-	Board     IBoardStorage
-	CSRF      ICSRFStorage
-	List      IListStorage
-	Task      ITaskStorage
-	Workspace IWorkspaceStorage
+	Auth         IAuthStorage
+	User         IUserStorage
+	Board        IBoardStorage
+	CSRF         ICSRFStorage
+	List         IListStorage
+	Task         ITaskStorage
+	Workspace    IWorkspaceStorage
+	CSATAnswer   ICSATAnswerStorage
+	CSATQuestion ICSATQuestionStorage
 }
 
-func NewPostgresStorages(dbConnection *pgxpool.Pool) *Storages {
+func NewPostgresStorages(db *sql.DB) *Storages {
 	return &Storages{
-		Auth:      postgresql.NewAuthStorage(dbConnection),
-		User:      postgresql.NewUserStorage(dbConnection),
-		Board:     postgresql.NewBoardStorage(dbConnection),
-		CSRF:      postgresql.NewCSRFStorage(dbConnection),
-		List:      postgresql.NewListStorage(dbConnection),
-		Task:      postgresql.NewTaskStorage(dbConnection),
-		Workspace: postgresql.NewWorkspaceStorage(dbConnection),
+		Auth:         postgresql.NewAuthStorage(db),
+		User:         postgresql.NewUserStorage(db),
+		Board:        postgresql.NewBoardStorage(db),
+		CSRF:         postgresql.NewCSRFStorage(db),
+		List:         postgresql.NewListStorage(db),
+		Task:         postgresql.NewTaskStorage(db),
+		Workspace:    postgresql.NewWorkspaceStorage(db),
+		CSATAnswer:   postgresql.NewCSATAnswerStorage(db),
+		CSATQuestion: postgresql.NewCSATQuestionStorage(db),
 	}
 }

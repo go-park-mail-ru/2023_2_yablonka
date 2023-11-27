@@ -67,6 +67,22 @@ type List struct {
 	Tasks        []Task  `json:"tasks"`
 }
 
+// QuestionType
+// структура для хранения типа вопроса
+type QuestionType struct {
+	ID        uint64 `json:"id"`
+	Name      string `json:"name"`
+	MaxRating uint64 `json:"max_rating"`
+}
+
+// CSATQuestion
+// структура для CSAT ответа
+type CSATQuestion struct {
+	ID      uint64 `json:"id"`
+	TypeID  string `json:"type"`
+	Content string `json:"content"`
+}
+
 // Role
 // структура для хранения роли пользователя
 type Role struct {
@@ -86,7 +102,7 @@ type Task struct {
 	ListPosition uint64      `json:"list_position"`
 	Start        *time.Time  `json:"start"`
 	End          *time.Time  `json:"end"`
-	Users        []User      `json:"users"`
+	Users        []uint64    `json:"users"`
 	Checklists   []Checklist `json:"checklists"`
 	Comments     []Comment   `json:"comments"`
 }
@@ -100,11 +116,11 @@ type Comment struct {
 }
 
 type Checklist struct {
-	ID           uint64          `json:"id"`
-	TaskID       uint64          `json:"task_id"`
-	Name         string          `json:"name"`
-	ListPosition uint64          `json:"list_position"`
-	Items        []ChecklistItem `json:"items"`
+	ID           uint64   `json:"id"`
+	TaskID       uint64   `json:"task_id"`
+	Name         string   `json:"name"`
+	ListPosition uint64   `json:"list_position"`
+	Items        []uint64 `json:"items"`
 }
 
 type ChecklistItem struct {

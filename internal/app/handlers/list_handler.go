@@ -45,12 +45,6 @@ func (lh ListHandler) Create(w http.ResponseWriter, r *http.Request) {
 	}
 	log.Println("request struct decoded")
 
-	// _, err = govalidator.ValidateStruct(newListInfo)
-	// if err != nil {
-	// 	*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.BadRequestResponse))
-	// 	return
-	// }
-
 	list, err := lh.ls.Create(rCtx, newListInfo)
 	if err != nil {
 		log.Println(err)
@@ -102,7 +96,7 @@ func (lh ListHandler) Create(w http.ResponseWriter, r *http.Request) {
 // @Failure 401  {object}  apperrors.ErrorResponse
 // @Failure 500  {object}  apperrors.ErrorResponse
 //
-// @Router /list/update/ [post]
+// @Router /list/edit/ [post]
 func (lh ListHandler) Update(w http.ResponseWriter, r *http.Request) {
 	log.Println("--------------ListHandler.Update Endpoint START--------------")
 
@@ -179,7 +173,7 @@ func (lh ListHandler) Delete(w http.ResponseWriter, r *http.Request) {
 
 	rCtx := r.Context()
 
-	var listID dto.ListID
+	var listID uint64
 	err := json.NewDecoder(r.Body).Decode(&listID)
 	if err != nil {
 		log.Println(err)
@@ -195,7 +189,11 @@ func (lh ListHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	// 	return
 	// }
 
-	err = lh.ls.Delete(rCtx, listID)
+	listIDObj := dto.ListID{
+		Value: listID,
+	}
+
+	err = lh.ls.Delete(rCtx, listIDObj)
 	if err != nil {
 		log.Println(err)
 		log.Println("--------------ListHandler.Delete Endpoint FAIL--------------")

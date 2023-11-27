@@ -45,6 +45,20 @@ var (
 	ErrCouldNotGetUser = errors.New("couldn't get User")
 )
 
+// Ошибки, связанные с CSAT
+var (
+	// ErrCouldNotCreateQuestion ошибка: не удалось создать вопрос CSAT в БД
+	ErrCouldNotCreateQuestion = errors.New("couldn't create question")
+	// ErrCouldNotGetQuestions ошибка: не удалось получить все вопросы CSAT в БД
+	ErrCouldNotGetQuestions = errors.New("couldn't get all questions")
+	// ErrCouldNotGetQuestionType ошибка: не удалось получить тип вопроса CSAT в БД
+	ErrCouldNotGetQuestionType = errors.New("couldn't get question type")
+	// ErrCouldNotGetQuestionType ошибка: не удалось обновить вопрос CSAT в БД
+	ErrQuestionNotUpdated = errors.New("couldn't обновить question")
+	// ErrCouldNotGetQuestionType ошибка: не удалось удалить вопрос CSAT в БД
+	ErrQuestionNotDeleted = errors.New("couldn't delete question")
+)
+
 // Ошибки, связанные с AuthService
 var (
 	// ErrJWTWrongMethod ошибка: у полученного JWT неправильный метод подписи
@@ -113,6 +127,8 @@ var (
 
 // Ошибки, связанные с ListService
 var (
+	// ErrListNotDeleted ошибка: не удалось получить список из БД
+	ErrCouldNotGetList = errors.New("could not get list")
 	// ErrListNotCreated ошибка: не удалось создать список в БД
 	ErrListNotCreated = errors.New("list couldn't be created")
 	// ErrListNotUpdated ошибка: не удалось получить список в БД

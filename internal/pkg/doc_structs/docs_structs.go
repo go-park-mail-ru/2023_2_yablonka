@@ -32,7 +32,7 @@ type TaskResponse struct {
 }
 
 type BoardResponse struct {
-	Board entities.Board `json:"board"`
+	Board dto.FullBoardResult `json:"board"`
 }
 type WorkspaceResponse struct {
 	Workspace entities.Workspace `json:"workspace"`
@@ -44,4 +44,16 @@ type ListResponse struct {
 
 type CommentResponse struct {
 	Comment entities.Comment `json:"comment"`
+}
+
+type AllQuestionsResponse struct {
+	Questions []dto.CSATQuestionFull `json:"questions"`
+}
+
+type StatsResponse struct {
+	Questions []dto.QuestionWithStats `json:"questions"`
+}
+
+type QuestionResponse struct {
+	Question dto.CSATQuestionFull `json:"question"`
 }
