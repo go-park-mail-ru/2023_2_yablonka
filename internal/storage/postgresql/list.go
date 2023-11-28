@@ -11,6 +11,7 @@ import (
 	"server/internal/pkg/entities"
 
 	sq "github.com/Masterminds/squirrel"
+	"github.com/lib/pq"
 )
 
 // PostgresListStorage
@@ -106,7 +107,7 @@ func (s PostgresListStorage) GetTasksWithID(ctx context.Context, ids dto.ListIDs
 			&task.ListPosition,
 			&task.Start,
 			&task.End,
-			&task.UserIDs,
+			(*pq.StringArray)(&task.UserIDs),
 		)
 		if err != nil {
 			return nil, apperrors.ErrCouldNotGetBoard
