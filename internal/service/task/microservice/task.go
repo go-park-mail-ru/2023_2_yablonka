@@ -22,7 +22,7 @@ func NewTaskService(storage storage.ITaskStorage) *TaskService {
 // Read
 // возвращает задание
 // или возвращает ошибки ...
-func (ts TaskService) Read(ctx context.Context, id dto.TaskID) (*entities.Task, error) {
+func (ts TaskService) Read(ctx context.Context, id dto.TaskID) (*dto.SingleTaskInfo, error) {
 	return ts.storage.Read(ctx, id)
 }
 

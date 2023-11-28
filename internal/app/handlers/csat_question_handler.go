@@ -8,8 +8,6 @@ import (
 	_ "server/internal/pkg/doc_structs"
 	"server/internal/pkg/dto"
 	"server/internal/service/csat"
-
-	"github.com/sirupsen/logrus"
 )
 
 type CSATQuestionHandler struct {

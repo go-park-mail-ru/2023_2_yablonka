@@ -31,9 +31,9 @@ type Services struct {
 
 func NewEmbeddedServices(storages *storage.Storages, config config.SessionConfig) *Services {
 	return &Services{
-		Auth:  auth.NewEmbeddedAuthService(storages.Auth, config),
-		Board: board.NewEmbeddedBoardService(storages.Board, storages.Task, storages.User, storages.Comment),
-		// Comment:      comment.NewEmbeddedCommentService(storages.Comment),
+		Auth:         auth.NewEmbeddedAuthService(storages.Auth, config),
+		Board:        board.NewEmbeddedBoardService(storages.Board, storages.Task, storages.User, storages.Comment),
+		Comment:      comment.NewEmbeddedCommentService(storages.Comment),
 		CSATAnswer:   csat.NewEmbeddedCSATAnswerService(storages.CSATAnswer),
 		CSATQuestion: csat.NewEmbeddedCSATQuestionService(storages.CSATQuestion),
 		CSRF:         csrf.NewEmbeddedCSRFService(storages.CSRF, config),
@@ -46,9 +46,9 @@ func NewEmbeddedServices(storages *storage.Storages, config config.SessionConfig
 
 func NewMicroServices(storages *storage.Storages, config config.SessionConfig, connection *grpc.ClientConn) *Services {
 	return &Services{
-		Auth:  auth.NewMicroAuthService(storages.Auth, config, connection),
-		Board: board.NewMicroBoardService(storages.Board, storages.Task, storages.User, storages.Comment, connection),
-		// Comment:      comment.NewMicroCommentService(storages.Comment, connection),
+		Auth:         auth.NewMicroAuthService(storages.Auth, config, connection),
+		Board:        board.NewMicroBoardService(storages.Board, storages.Task, storages.User, storages.Comment, connection),
+		Comment:      comment.NewMicroCommentService(storages.Comment, connection),
 		CSATAnswer:   csat.NewMicroCSATAnswerService(storages.CSATAnswer, connection),
 		CSATQuestion: csat.NewMicroCSATQuestionService(storages.CSATQuestion, connection),
 		CSRF:         csrf.NewMicroCSRFService(storages.CSRF, config, connection),

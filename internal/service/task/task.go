@@ -23,7 +23,7 @@ type ITaskService interface {
 	// Read
 	// возвращает заание с привязанными пользователями
 	// или возвращает ошибки ...
-	Read(context.Context, dto.TaskID) (*entities.Task, error)
+	Read(context.Context, dto.TaskID) (*dto.SingleTaskInfo, error)
 	// Update
 	// обновляет задание
 	// или возвращает ошибки ...
