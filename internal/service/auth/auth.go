@@ -32,7 +32,7 @@ type IAuthService interface {
 	LogOut(context.Context, dto.SessionToken) error
 	// GetLifetime
 	// возвращает длительность авторизации
-	GetLifetime() time.Duration
+	GetLifetime(context.Context) time.Duration
 }
 
 func NewEmbeddedAuthService(authStorage storage.IAuthStorage, config config.SessionConfig) *embedded.AuthService {

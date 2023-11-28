@@ -80,7 +80,7 @@ func (a *AuthService) LogOut(ctx context.Context, token dto.SessionToken) error 
 
 // GetLifetime
 // возвращает длительность авторизации
-func (a *AuthService) GetLifetime() time.Duration {
+func (a *AuthService) GetLifetime(ctx context.Context) time.Duration {
 	return a.sessionDuration
 }
 

@@ -4,15 +4,14 @@ import (
 	"context"
 	"crypto/rand"
 	"math/big"
-	"server/internal/apperrors"
 	config "server/internal/config"
 	"server/internal/pkg/dto"
-	"server/internal/pkg/entities"
 	"server/internal/storage"
 	microservice "server/microservices/auth/auth"
 	"time"
 
 	"google.golang.org/grpc"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 type AuthService struct {
@@ -38,27 +37,14 @@ func NewAuthService(config config.SessionConfig, authStorage storage.IAuthStorag
 // возвращает уникальную строку авторизации и её длительность
 // или возвращает ошибки apperrors.ErrTokenNotGenerated (500)
 func (a *AuthService) AuthUser(ctx context.Context, id dto.UserID) (dto.SessionToken, error) {
-	expiresAt := time.Now().Add(a.sessionDuration)
-
-	sessionID, err := generateString(a.sessionIDLength)
+	sessionpb, err := a.client.AuthUser(ctx, &microservice.UserID{Value: id.Value})
 	if err != nil {
-		return dto.SessionToken{}, apperrors.ErrTokenNotGenerated
-	}
-
-	session := &entities.Session{
-		SessionID:  sessionID,
-		UserID:     id.Value,
-		ExpiryDate: expiresAt,
-	}
-
-	err = a.authStorage.CreateSession(ctx, session)
-	if err != nil {
-		return dto.SessionToken{}, err
+		return dto.SessionToken{}, nil
 	}
 
 	return dto.SessionToken{
-		ID:             sessionID,
-		ExpirationDate: expiresAt,
+		ID:             sessionpb.ID,
+		ExpirationDate: sessionpb.ExpirationDate.AsTime(),
 	}, nil
 }
 
@@ -66,28 +52,37 @@ func (a *AuthService) AuthUser(ctx context.Context, id dto.UserID) (dto.SessionT
 // проверяет состояние авторизации, возвращает ID авторизированного пользователя
 // или возвращает ошибки apperrors.ErrSessionNotFound (401)
 func (a *AuthService) VerifyAuth(ctx context.Context, token dto.SessionToken) (dto.UserID, error) {
-	sessionObj, err := a.authStorage.GetSession(ctx, token)
+	uidpb, err := a.client.VerifyAuth(ctx, &microservice.SessionToken{
+		ID:             token.ID,
+		ExpirationDate: timestamppb.New(token.ExpirationDate),
+	})
 	if err != nil {
 		return dto.UserID{}, err
 	}
 
-	if sessionObj.ExpiryDate.Before(time.Now()) {
-		return dto.UserID{}, apperrors.ErrSessionExpired
-	}
-	return dto.UserID{Value: sessionObj.UserID}, nil
+	return dto.UserID{Value: uidpb.Value}, nil
 }
 
 // LogOut
 // удаляет текущую сессию
 // или возвращает ошибку apperrors.ErrSessionNotFound (401)
 func (a *AuthService) LogOut(ctx context.Context, token dto.SessionToken) error {
-	return a.authStorage.DeleteSession(ctx, token)
+	_, err := a.client.LogOut(ctx, &microservice.SessionToken{
+		ID:             token.ID,
+		ExpirationDate: timestamppb.New(token.ExpirationDate),
+	})
+
+	return err
 }
 
 // GetLifetime
 // возвращает длительность авторизации
-func (a *AuthService) GetLifetime() time.Duration {
-	return a.sessionDuration
+func (a *AuthService) GetLifetime(ctx context.Context) time.Duration {
+	lifetimepb, err := a.client.GetLifetime(ctx, nil)
+	if err != nil {
+		return 0
+	}
+	return lifetimepb.AsDuration()
 }
 
 // generateString
