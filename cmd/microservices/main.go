@@ -7,6 +7,7 @@ import (
 	"server/internal/config"
 	"server/internal/storage"
 	"server/internal/storage/postgresql"
+	auth "server/microservices/auth"
 	csat "server/microservices/csat"
 
 	"github.com/asaskevich/govalidator"
@@ -44,6 +45,7 @@ func main() {
 	}
 
 	csat.RegisterServices(storages, server, logger)
+	auth.RegisterServices(config, storages, server, logger)
 	logger.Info("CSAT services registerd")
 
 	server.Serve(lstn)
