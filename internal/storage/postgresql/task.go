@@ -49,8 +49,8 @@ func (s PostgresTaskStorage) Create(ctx context.Context, info dto.NewTaskInfo) (
 		ListID:       info.ListID,
 		ListPosition: info.ListPosition,
 		Users:        []uint64{},
-		Checklists:   []entities.Checklist{},
-		Comments:     []entities.Comment{},
+		Checklists:   []uint64{},
+		Comments:     []uint64{},
 	}
 
 	log.Println("Storage -- Querying DB")
@@ -109,12 +109,17 @@ func (s *PostgresTaskStorage) Read(ctx context.Context, id dto.TaskID) (*entitie
 // обновляет задание в БД
 // или возвращает ошибки ...
 func (s PostgresTaskStorage) Update(ctx context.Context, info dto.UpdatedTaskInfo) error {
-	sql, args, err := sq.
-		Update("public.task").
+	query := sq.Update("public.task")
+	if info.Start != nil {
+		query = query.Set("start", &info.Start)
+	}
+	if info.End != nil {
+		query = query.Set("end", &info.End)
+	}
+
+	finalQuery, args, err := query.
 		Set("name", info.Name).
 		Set("description", info.Description).
-		Set("start", info.Start).
-		Set("end", info.End).
 		Set("list_position", info.ListPosition).
 		Where(sq.Eq{"id": info.ID}).
 		PlaceholderFormat(sq.Dollar).
@@ -123,10 +128,12 @@ func (s PostgresTaskStorage) Update(ctx context.Context, info dto.UpdatedTaskInf
 	if err != nil {
 		return apperrors.ErrCouldNotBuildQuery
 	}
+	log.Println("Formed query\n\t", finalQuery, "\nwith args\n\t", args)
 
-	_, err = s.db.Exec(sql, args...)
+	_, err = s.db.Exec(finalQuery, args...)
 
 	if err != nil {
+		log.Println(err)
 		return apperrors.ErrTaskNotUpdated
 	}
 

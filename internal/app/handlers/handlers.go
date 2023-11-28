@@ -1,9 +1,10 @@
 package handlers
 
 import (
+	"encoding/json"
+	"net/http"
+	"server/internal/pkg/dto"
 	"server/internal/service"
-
-	"github.com/sirupsen/logrus"
 )
 
 // Handlers
@@ -13,6 +14,7 @@ type Handlers struct {
 	UserHandler
 	BoardHandler
 	WorkspaceHandler
+	CommentHandler
 	ListHandler
 	TaskHandler
 	CSATAnswerHandler
@@ -25,6 +27,7 @@ func NewHandlers(services *service.Services) *Handlers {
 	return &Handlers{
 		AuthHandler:         *NewAuthHandler(services.Auth, services.User, services.CSRF),
 		UserHandler:         *NewUserHandler(services.User),
+		CommentHandler:      *NewCommentHandler(services.Comment),
 		BoardHandler:        *NewBoardHandler(services.Auth, services.Board),
 		WorkspaceHandler:    *NewWorkspaceHandler(services.Workspace),
 		ListHandler:         *NewListHandler(services.List),
@@ -40,6 +43,14 @@ func NewAuthHandler(as service.IAuthService, us service.IUserService, cs service
 	return &AuthHandler{
 		as: as,
 		us: us,
+		cs: cs,
+	}
+}
+
+// NewCommentHandler
+// возвращает AuthHandler с необходимыми сервисами
+func NewCommentHandler(cs service.ICommentService) *CommentHandler {
+	return &CommentHandler{
 		cs: cs,
 	}
 }
@@ -102,11 +113,20 @@ func NewTaskHandler(ts service.ITaskService) *TaskHandler {
 	}
 }
 
-func handlerDebugLog(logger *logrus.Logger, function string, message string) {
-	logger.
-		WithFields(logrus.Fields{
-			"route_node": "handler",
-			"function":   function,
-		}).
-		Debug(message)
+// NewCSATHandler
+// возвращает CSATHandler с необходимыми сервисами
+func WriteResponse(response dto.JSONResponse, w http.ResponseWriter, r *http.Request) error {
+	jsonResponse, err := json.Marshal(response)
+	if err != nil {
+		return err
+	}
+
+	_, err = w.Write(jsonResponse)
+	if err != nil {
+		return err
+	}
+
+	r.Body.Close()
+
+	return nil
 }

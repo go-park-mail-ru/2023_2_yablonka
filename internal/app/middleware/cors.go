@@ -4,11 +4,12 @@ import (
 	"net/http"
 	"server/internal/config"
 
+	logging "server/internal/logging"
+
 	"github.com/rs/cors"
-	"github.com/sirupsen/logrus"
 )
 
-func GetCors(cc config.CORSConfig, lc config.LoggingConfig) func(http.Handler) http.Handler {
+func GetCors(cc config.CORSConfig, logger logging.ILogger) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return cors.New(cors.Options{
 			AllowedHeaders:   cc.AllowedHeaders,
@@ -16,8 +17,8 @@ func GetCors(cc config.CORSConfig, lc config.LoggingConfig) func(http.Handler) h
 			AllowedOrigins:   cc.AllowedHosts,
 			AllowCredentials: cc.AllowCredentials,
 			AllowedMethods:   cc.AllowedMethods,
-			Debug:            lc.Logger.Level >= logrus.DebugLevel,
-			Logger:           lc.Logger,
+			Debug:            logger.Level() <= 1,
+			Logger:           logger,
 		}).Handler(next)
 	}
 }

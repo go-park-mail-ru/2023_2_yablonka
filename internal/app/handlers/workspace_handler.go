@@ -3,9 +3,9 @@ package handlers
 import (
 	"context"
 	"encoding/json"
-	"log"
 	"net/http"
 	"server/internal/apperrors"
+	logger "server/internal/logging"
 	_ "server/internal/pkg/doc_structs"
 	"server/internal/pkg/dto"
 	"server/internal/pkg/entities"
@@ -31,40 +31,51 @@ type WorkspaceHandler struct {
 // @Router /user/workspaces [get]
 func (wh WorkspaceHandler) GetUserWorkspaces(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
+	funcName := "WorkspaceHandler.GetUserWorkspaces"
+	nodeName := "handler"
+	errorMessage := "Getting user workspaces failed with error: "
+	failBorder := "----------------- Getting user workspaces FAIL -----------------"
+
+	logger := rCtx.Value(dto.LoggerKey).(logger.ILogger)
+
+	logger.Info("----------------- Getting user workspaces -----------------")
 
 	user, ok := rCtx.Value(dto.UserObjKey).(*entities.User)
 	if !ok {
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.GenericUnauthorizedResponse))
+		logger.Error(errorMessage + "User not found")
+		logger.Info(failBorder)
+		apperrors.ReturnError(apperrors.GenericUnauthorizedResponse, w, r)
 		return
 	}
+	logger.Debug("User found", funcName, nodeName)
 
 	userId := dto.UserID{
 		Value: user.ID,
 	}
-
 	workspaces, err := wh.ws.GetUserWorkspaces(rCtx, userId)
 	if err != nil {
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.ErrorMap[err]))
+		logger.Error(errorMessage + err.Error())
+		logger.Info(failBorder)
+		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
 		return
 	}
+	logger.Debug("User workspaces received", funcName, nodeName)
 
 	response := dto.JSONResponse{
 		Body: dto.JSONMap{
 			"workspaces": workspaces,
 		},
 	}
-	jsonResponse, err := json.Marshal(response)
+	err = WriteResponse(response, w, r)
 	if err != nil {
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.InternalServerErrorResponse))
+		logger.Error(errorMessage + err.Error())
+		logger.Info(failBorder)
+		apperrors.ReturnError(apperrors.InternalServerErrorResponse, w, r)
 		return
 	}
+	logger.Debug("response written", funcName, nodeName)
 
-	_, err = w.Write(jsonResponse)
-	if err != nil {
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.InternalServerErrorResponse))
-		return
-	}
-	r.Body.Close()
+	logger.Info("----------------- Getting user workspaces SUCCESS -----------------")
 }
 
 // @Summary Создать рабочее пространство
@@ -84,50 +95,49 @@ func (wh WorkspaceHandler) GetUserWorkspaces(w http.ResponseWriter, r *http.Requ
 // @Router /workspace/create/ [post]
 func (wh WorkspaceHandler) Create(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
+	funcName := "WorkspaceHandler.Create"
+	nodeName := "handler"
+	errorMessage := "Creating workspace failed with error: "
+	failBorder := "----------------- Creating workspace FAIL -----------------"
+
+	logger := rCtx.Value(dto.LoggerKey).(logger.ILogger)
+
+	logger.Info("----------------- Creating workspace -----------------")
 
 	var newWorkspaceInfo dto.NewWorkspaceInfo
 	err := json.NewDecoder(r.Body).Decode(&newWorkspaceInfo)
 	if err != nil {
-		log.Println("Handler -- Failed to decode incoming JSON")
-		log.Println("Error:", err.Error())
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.BadRequestResponse))
+		logger.Error(errorMessage + err.Error())
+		logger.Info(failBorder)
+		apperrors.ReturnError(apperrors.BadRequestResponse, w, r)
 		return
 	}
-
-	log.Println("Handler -- JSON parsed")
-	// _, err = govalidator.ValidateStruct(newWorkspaceInfo)
-	// if err != nil {
-	// 	*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.BadRequestResponse))
-	// 	return
-	// }
+	logger.Debug("JSON parsed", funcName, nodeName)
 
 	workspace, err := wh.ws.Create(rCtx, newWorkspaceInfo)
 	if err != nil {
-		log.Println("Handler -- Failed to create workspace")
-		log.Println("Error:", err.Error())
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.ErrorMap[err]))
+		logger.Error(errorMessage + err.Error())
+		logger.Info(failBorder)
+		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
 		return
 	}
+	logger.Debug("Workspace created", funcName, nodeName)
 
 	response := dto.JSONResponse{
 		Body: dto.JSONMap{
 			"workspace": workspace,
 		},
 	}
-
-	jsonResponse, err := json.Marshal(response)
+	err = WriteResponse(response, w, r)
 	if err != nil {
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.InternalServerErrorResponse))
+		logger.Error(errorMessage + err.Error())
+		logger.Info(failBorder)
+		apperrors.ReturnError(apperrors.InternalServerErrorResponse, w, r)
 		return
 	}
+	logger.Debug("response written", funcName, nodeName)
 
-	_, err = w.Write(jsonResponse)
-	if err != nil {
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.InternalServerErrorResponse))
-		return
-	}
-
-	r.Body.Close()
+	logger.Info("----------------- Creating workspace SUCCESS -----------------")
 }
 
 // @Summary Обновить рабочее пространство
@@ -147,6 +157,14 @@ func (wh WorkspaceHandler) Create(w http.ResponseWriter, r *http.Request) {
 // @Router /workspace/update/ [post]
 func (wh WorkspaceHandler) UpdateData(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
+	funcName := "WorkspaceHandler.UpdateData"
+	nodeName := "handler"
+	errorMessage := "Updating workspace data failed with error: "
+	failBorder := "----------------- Updating workspace data FAIL -----------------"
+
+	logger := rCtx.Value(dto.LoggerKey).(logger.ILogger)
+
+	logger.Info("----------------- Updating workspace data -----------------")
 
 	var workspaceInfo dto.UpdatedWorkspaceInfo
 	err := json.NewDecoder(r.Body).Decode(&workspaceInfo)
@@ -154,92 +172,28 @@ func (wh WorkspaceHandler) UpdateData(w http.ResponseWriter, r *http.Request) {
 		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.BadRequestResponse))
 		return
 	}
-
-	// _, err = govalidator.ValidateStruct(workspaceInfo)
-	// if err != nil {
-	// 	*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.BadRequestResponse))
-	// 	return
-	// }
+	logger.Debug("JSON parsed", funcName, nodeName)
 
 	err = wh.ws.UpdateData(rCtx, workspaceInfo)
 	if err != nil {
 		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.ErrorMap[err]))
 		return
 	}
+	logger.Debug("workspace data updated", funcName, nodeName)
 
 	response := dto.JSONResponse{
 		Body: dto.JSONMap{},
 	}
-
-	jsonResponse, err := json.Marshal(response)
+	err = WriteResponse(response, w, r)
 	if err != nil {
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.InternalServerErrorResponse))
+		logger.Error(errorMessage + err.Error())
+		logger.Info(failBorder)
+		apperrors.ReturnError(apperrors.InternalServerErrorResponse, w, r)
 		return
 	}
+	logger.Debug("response written", funcName, nodeName)
 
-	_, err = w.Write(jsonResponse)
-	if err != nil {
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.InternalServerErrorResponse))
-		return
-	}
-
-	r.Body.Close()
-}
-
-// @Summary Обновить гостей рабочего пространства
-// @Description Обновить гостей рабочего пространства
-// @Tags workspaces
-//
-// @Accept  json
-// @Produce  json
-//
-// @Param guestsInfo body dto.UpdatedWorkspaceInfo true "обновленный список пользователей"
-//
-// @Success 204  {string}  string "no content"
-// @Failure 400  {object}  apperrors.ErrorResponse
-// @Failure 401  {object}  apperrors.ErrorResponse
-// @Failure 500  {object}  apperrors.ErrorResponse
-//
-// @Router /workspace/update/change_users/ [post]
-func (wh WorkspaceHandler) ChangeGuests(w http.ResponseWriter, r *http.Request) {
-	rCtx := r.Context()
-
-	var guestsInfo dto.ChangeWorkspaceGuestsInfo
-	err := json.NewDecoder(r.Body).Decode(&guestsInfo)
-	if err != nil {
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.BadRequestResponse))
-		return
-	}
-
-	// _, err = govalidator.ValidateStruct(guestsInfo)
-	// if err != nil {
-	// 	*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.BadRequestResponse))
-	// 	return
-	// }
-
-	err = wh.ws.UpdateUsers(rCtx, guestsInfo)
-	if err != nil {
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.ErrorMap[err]))
-		return
-	}
-
-	response := dto.JSONResponse{
-		Body: dto.JSONMap{},
-	}
-
-	jsonResponse, err := json.Marshal(response)
-	if err != nil {
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.InternalServerErrorResponse))
-		return
-	}
-
-	_, err = w.Write(jsonResponse)
-	if err != nil {
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.InternalServerErrorResponse))
-		return
-	}
-
-	r.Body.Close()
+	logger.Info("----------------- Updating workspace data SUCCESS -----------------")
 }
 
 // @Summary Удалить рабочее пространство
@@ -259,43 +213,45 @@ func (wh WorkspaceHandler) ChangeGuests(w http.ResponseWriter, r *http.Request) 
 // @Router /workspace/delete/ [delete]
 func (wh WorkspaceHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
+	funcName := "WorkspaceHandler.Delete"
+	nodeName := "handler"
+	errorMessage := "Deleting workspace failed with error: "
+	failBorder := "----------------- Deleting workspace FAIL -----------------"
+
+	logger := rCtx.Value(dto.LoggerKey).(logger.ILogger)
+
+	logger.Info("----------------- Deleting workspace -----------------")
 
 	var workspaceID dto.WorkspaceID
 	err := json.NewDecoder(r.Body).Decode(&workspaceID)
 	if err != nil {
-		log.Println("Handler -- JSON parse failed with error", err.Error())
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.BadRequestResponse))
+		logger.Error(errorMessage + err.Error())
+		logger.Info(failBorder)
+		apperrors.ReturnError(apperrors.BadRequestResponse, w, r)
 		return
 	}
-
-	log.Println("Handler -- JSON parsed")
-	// _, err = govalidator.ValidateStruct(workspaceID)
-	// if err != nil {
-	// 	*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.BadRequestResponse))
-	// 	return
-	// }
+	logger.Debug("JSON parsed", funcName, nodeName)
 
 	err = wh.ws.Delete(rCtx, workspaceID)
 	if err != nil {
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.ErrorMap[err]))
+		logger.Error(errorMessage + err.Error())
+		logger.Info(failBorder)
+		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
 		return
 	}
+	logger.Debug("Workspace deleted", funcName, nodeName)
 
 	response := dto.JSONResponse{
 		Body: dto.JSONMap{},
 	}
-
-	jsonResponse, err := json.Marshal(response)
+	err = WriteResponse(response, w, r)
 	if err != nil {
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.InternalServerErrorResponse))
+		logger.Error(errorMessage + err.Error())
+		logger.Info(failBorder)
+		apperrors.ReturnError(apperrors.InternalServerErrorResponse, w, r)
 		return
 	}
+	logger.Debug("response written", funcName, nodeName)
 
-	_, err = w.Write(jsonResponse)
-	if err != nil {
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.InternalServerErrorResponse))
-		return
-	}
-
-	r.Body.Close()
+	logger.Info("----------------- Deleting workspace SUCCESS -----------------")
 }

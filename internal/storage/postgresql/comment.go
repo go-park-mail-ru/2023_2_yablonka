@@ -2,25 +2,24 @@ package postgresql
 
 import (
 	"context"
+	"database/sql"
 	"log"
 	"server/internal/apperrors"
 	"server/internal/pkg/dto"
 	"server/internal/pkg/entities"
 
 	sq "github.com/Masterminds/squirrel"
-	pgx "github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 // PostgresCommentStorage
 // Хранилище данных в PostgreSQL
 type PostgresCommentStorage struct {
-	db *pgxpool.Pool
+	db *sql.DB
 }
 
 // NewCommentStorage
 // возвращает PostgreSQL хранилище комментариев
-func NewCommentStorage(db *pgxpool.Pool) *PostgresCommentStorage {
+func NewCommentStorage(db *sql.DB) *PostgresCommentStorage {
 	return &PostgresCommentStorage{
 		db: db,
 	}
@@ -48,7 +47,7 @@ func (s PostgresCommentStorage) Create(ctx context.Context, info dto.NewCommentI
 		Text:   info.Text,
 	}
 
-	query := s.db.QueryRow(ctx, sql, args...)
+	query := s.db.QueryRow(sql, args...)
 	err = query.Scan(&comment.ID, &comment.DateCreated)
 	if err != nil {
 		return nil, apperrors.ErrCouldNotGetTaskComments
@@ -73,13 +72,28 @@ func (s *PostgresCommentStorage) GetFromTask(ctx context.Context, id dto.TaskID)
 	}
 	log.Println("Formed query\n\t", sql, "\nwith args\n\t", args)
 
-	rows, err := s.db.Query(context.Background(), sql, args...)
+	rows, err := s.db.Query(sql, args...)
 	if err != nil {
 		return nil, apperrors.ErrCouldNotGetTaskComments
 	}
 	defer rows.Close()
 
-	comments, err := pgx.CollectRows(rows, pgx.RowToStructByPos[dto.CommentInfo])
+	comments := []dto.CommentInfo{}
+	for rows.Next() {
+		var comment dto.CommentInfo
+
+		err = rows.Scan(
+			&comment.ID,
+			&comment.UserID,
+			&comment.Text,
+			&comment.DateCreated,
+		)
+		if err != nil {
+			return nil, apperrors.ErrCouldNotGetBoard
+		}
+		comments = append(comments, comment)
+	}
+
 	if err != nil {
 		return nil, apperrors.ErrCouldNotCollectRows
 	}

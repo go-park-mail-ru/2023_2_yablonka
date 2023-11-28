@@ -3,9 +3,9 @@ package handlers
 import (
 	"context"
 	"encoding/json"
-	"log"
 	"net/http"
 	"server/internal/apperrors"
+	logger "server/internal/logging"
 	_ "server/internal/pkg/doc_structs"
 	"server/internal/pkg/dto"
 	"server/internal/service"
@@ -31,55 +31,50 @@ type ListHandler struct {
 //
 // @Router /list/create/ [post]
 func (lh ListHandler) Create(w http.ResponseWriter, r *http.Request) {
-	log.Println("--------------ListHandler.Create Endpoint START--------------")
-
 	rCtx := r.Context()
+	funcName := "ListHandler.Create"
+	nodeName := "handler"
+	errorMessage := "Creating list failed with error: "
+	failBorder := "----------------- Creating list FAIL -----------------"
+
+	logger := rCtx.Value(dto.LoggerKey).(logger.ILogger)
+
+	logger.Info("----------------- Creating list -----------------")
 
 	var newListInfo dto.NewListInfo
 	err := json.NewDecoder(r.Body).Decode(&newListInfo)
 	if err != nil {
-		log.Println(err)
-		log.Println("--------------ListHandler.Create Endpoint FAIL--------------")
+		logger.Error(errorMessage + err.Error())
+		logger.Info(failBorder)
 		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.BadRequestResponse))
 		return
 	}
-	log.Println("request struct decoded")
+	logger.Debug("request struct decoded", funcName, nodeName)
 
 	list, err := lh.ls.Create(rCtx, newListInfo)
 	if err != nil {
-		log.Println(err)
-		log.Println("--------------ListHandler.Create Endpoint FAIL--------------")
+		logger.Error(errorMessage + err.Error())
+		logger.Info(failBorder)
 		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.ErrorMap[err]))
 		return
 	}
-	log.Println("list created")
+	logger.Debug("list created", funcName, nodeName)
 
 	response := dto.JSONResponse{
 		Body: dto.JSONMap{
 			"list": list,
 		},
 	}
-
-	jsonResponse, err := json.Marshal(response)
+	err = WriteResponse(response, w, r)
 	if err != nil {
-		log.Println(err)
-		log.Println("--------------ListHandler.Create Endpoint FAIL--------------")
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.InternalServerErrorResponse))
+		logger.Error(errorMessage + err.Error())
+		logger.Info(failBorder)
+		apperrors.ReturnError(apperrors.InternalServerErrorResponse, w, r)
 		return
 	}
-	log.Println("json response marshalled")
+	logger.Debug("response written", funcName, nodeName)
 
-	_, err = w.Write(jsonResponse)
-	if err != nil {
-		log.Println(err)
-		log.Println("--------------ListHandler.Create Endpoint FAIL--------------")
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.InternalServerErrorResponse))
-		return
-	}
-	r.Body.Close()
-	log.Println("response written")
-
-	log.Println("--------------ListHandler.Create Endpoint SUCCESS--------------")
+	logger.Info("----------------- Creating list FAIL -----------------")
 }
 
 // @Summary Обновить список
@@ -98,59 +93,48 @@ func (lh ListHandler) Create(w http.ResponseWriter, r *http.Request) {
 //
 // @Router /list/edit/ [post]
 func (lh ListHandler) Update(w http.ResponseWriter, r *http.Request) {
-	log.Println("--------------ListHandler.Update Endpoint START--------------")
-
 	rCtx := r.Context()
+	funcName := "ListHandler.Update"
+	nodeName := "handler"
+	errorMessage := "Updating failed with error: "
+	failBorder := "----------------- Updating list FAIL -----------------"
+
+	logger := rCtx.Value(dto.LoggerKey).(logger.ILogger)
+
+	logger.Info("----------------- Updating list -----------------")
 
 	var listInfo dto.UpdatedListInfo
 	err := json.NewDecoder(r.Body).Decode(&listInfo)
 	if err != nil {
-		log.Println(err)
-		log.Println("--------------ListHandler.Update Endpoint FAIL--------------")
+		logger.Error(errorMessage + err.Error())
+		logger.Info(failBorder)
 		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.BadRequestResponse))
 		return
 	}
-	log.Println("request struct decoded")
-
-	// _, err = govalidator.ValidateStruct(listInfo)
-	// if err != nil {
-	// 	*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.BadRequestResponse))
-	// 	return
-	// }
+	logger.Debug("request struct decoded", funcName, nodeName)
 
 	err = lh.ls.Update(rCtx, listInfo)
 	if err != nil {
-		log.Println(err)
-		log.Println("--------------ListHandler.Update Endpoint FAIL--------------")
+		logger.Error(errorMessage + err.Error())
+		logger.Info(failBorder)
 		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.ErrorMap[err]))
 		return
 	}
-	log.Println("list updated")
+	logger.Debug("list updated", funcName, nodeName)
 
 	response := dto.JSONResponse{
 		Body: dto.JSONMap{},
 	}
-
-	jsonResponse, err := json.Marshal(response)
+	err = WriteResponse(response, w, r)
 	if err != nil {
-		log.Println(err)
-		log.Println("--------------ListHandler.Update Endpoint FAIL--------------")
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.InternalServerErrorResponse))
+		logger.Error(errorMessage + err.Error())
+		logger.Info(failBorder)
+		apperrors.ReturnError(apperrors.InternalServerErrorResponse, w, r)
 		return
 	}
-	log.Println("json response marshalled")
+	logger.Debug("response written", funcName, nodeName)
 
-	_, err = w.Write(jsonResponse)
-	if err != nil {
-		log.Println(err)
-		log.Println("--------------ListHandler.Update Endpoint FAIL--------------")
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.InternalServerErrorResponse))
-		return
-	}
-	r.Body.Close()
-	log.Println("response written")
-
-	log.Println("--------------ListHandler.Update Endpoint SUCCESS--------------")
+	logger.Info("----------------- Updating list SUCCESS -----------------")
 }
 
 // @Summary Удалить список
@@ -169,61 +153,49 @@ func (lh ListHandler) Update(w http.ResponseWriter, r *http.Request) {
 //
 // @Router /list/delete/ [delete]
 func (lh ListHandler) Delete(w http.ResponseWriter, r *http.Request) {
-	log.Println("--------------ListHandler.Delete Endpoint START--------------")
-
 	rCtx := r.Context()
+	funcName := "ListHandler.Delete"
+	nodeName := "handler"
+	errorMessage := "Deleting failed with error: "
+	failBorder := "----------------- Deleting list FAIL -----------------"
+
+	logger := rCtx.Value(dto.LoggerKey).(logger.ILogger)
+
+	logger.Info("----------------- Deleting list -----------------")
 
 	var listID uint64
 	err := json.NewDecoder(r.Body).Decode(&listID)
 	if err != nil {
-		log.Println(err)
-		log.Println("--------------ListHandler.Delete Endpoint FAIL--------------")
+		logger.Error(errorMessage + err.Error())
+		logger.Info(failBorder)
 		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.BadRequestResponse))
 		return
 	}
-	log.Println("request struct decoded")
-
-	// _, err = govalidator.ValidateStruct(listID)
-	// if err != nil {
-	// 	*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.BadRequestResponse))
-	// 	return
-	// }
+	logger.Debug("request struct decoded", funcName, nodeName)
 
 	listIDObj := dto.ListID{
 		Value: listID,
 	}
-
 	err = lh.ls.Delete(rCtx, listIDObj)
 	if err != nil {
-		log.Println(err)
-		log.Println("--------------ListHandler.Delete Endpoint FAIL--------------")
+		logger.Error(errorMessage + err.Error())
+		logger.Info(failBorder)
 		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.ErrorMap[err]))
 		return
 	}
-	log.Println("list deleted")
+	logger.Debug("list deleted", funcName, nodeName)
 
 	response := dto.JSONResponse{
 		Body: dto.JSONMap{},
 	}
-
-	jsonResponse, err := json.Marshal(response)
+	err = WriteResponse(response, w, r)
 	if err != nil {
-		log.Println(err)
-		log.Println("--------------ListHandler.Delete Endpoint FAIL--------------")
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.InternalServerErrorResponse))
+		logger.Error(errorMessage + err.Error())
+		logger.Info(failBorder)
+		apperrors.ReturnError(apperrors.InternalServerErrorResponse, w, r)
 		return
 	}
-	log.Println("json response marshalled")
+	logger.Debug("response written", funcName, nodeName)
 
-	_, err = w.Write(jsonResponse)
-	if err != nil {
-		log.Println(err)
-		log.Println("--------------ListHandler.Delete Endpoint FAIL--------------")
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.InternalServerErrorResponse))
-		return
-	}
-	r.Body.Close()
-	log.Println("response written")
-
-	log.Println("--------------ListHandler.Delete Endpoint SUCCESS--------------")
+	logger.Info("----------------- Deleting list SUCCESS -----------------")
 }

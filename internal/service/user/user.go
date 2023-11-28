@@ -4,16 +4,16 @@ import (
 	"context"
 	"crypto/sha256"
 	"fmt"
-	"log"
 	"os"
 	"server/internal/apperrors"
+	logger "server/internal/logging"
 	"server/internal/pkg/dto"
 	"server/internal/pkg/entities"
 	"server/internal/storage"
 	"strconv"
-
-	"github.com/sirupsen/logrus"
 )
+
+const nodeName string = "service"
 
 type UserService struct {
 	storage storage.IUserStorage
@@ -31,18 +31,16 @@ func NewUserService(storage storage.IUserStorage) *UserService {
 // создает нового пользователя по данным
 // или возвращает ошибку apperrors.ErrUserAlreadyExists (409)
 func (us UserService) RegisterUser(ctx context.Context, info dto.AuthInfo) (*entities.User, error) {
-	funcName := "RegisterUser"
-	logger := ctx.Value(dto.LoggerKey).(*logrus.Logger)
+	funcName := "BoardService.UpdateThumbnail"
+	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
 
 	_, err := us.storage.GetWithLogin(ctx, dto.UserLogin{Value: info.Email})
 
 	if err == nil {
-		logger.Warn("User exists")
 		return nil, apperrors.ErrUserAlreadyExists
 	}
-	userServiceDebugLog(logger, funcName, "User doesn't exist")
+	logger.Debug("User doesn't exist", funcName, nodeName)
 
-	userServiceDebugLog(logger, funcName, "Creating user")
 	return us.storage.Create(ctx, dto.SignupInfo{
 		Email:        info.Email,
 		PasswordHash: hashFromAuthInfo(info.Email, info.Password),
@@ -53,21 +51,20 @@ func (us UserService) RegisterUser(ctx context.Context, info dto.AuthInfo) (*ent
 // проверяет пароль пользователя по почте
 // или возвращает ошибки apperrors.ErrUserNotFound (401), apperrors.ErrWrongPassword (401)
 func (us UserService) CheckPassword(ctx context.Context, info dto.AuthInfo) (*entities.User, error) {
-	funcName := "RegisterUser"
-	logger := ctx.Value(dto.LoggerKey).(*logrus.Logger)
+	funcName := "BoardService.UpdateThumbnail"
+	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
 
 	user, err := us.storage.GetWithLogin(ctx, dto.UserLogin{Value: info.Email})
 	if err != nil {
-		logger.Warn("User not found")
 		return nil, err
 	}
+	logger.Debug("got user", funcName, nodeName)
 
 	if user.PasswordHash != hashFromAuthInfo(info.Email, info.Password) {
-		logger.Warn("Wrong password")
 		return nil, apperrors.ErrWrongPassword
 	}
+	logger.Debug("passwords match", funcName, nodeName)
 
-	userServiceDebugLog(logger, funcName, "Returning user")
 	return user, nil
 }
 
@@ -82,24 +79,20 @@ func (us UserService) GetWithID(ctx context.Context, id dto.UserID) (*entities.U
 // меняет пароль пользователя
 // или возвращает ошибку apperrors.ErrUserNotFound (409)
 func (us UserService) UpdatePassword(ctx context.Context, info dto.PasswordChangeInfo) error {
-	funcName := "UpdatePassword"
-	logger := ctx.Value(dto.LoggerKey).(*logrus.Logger)
+	funcName := "BoardService.UpdateThumbnail"
+	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
 
-	userServiceDebugLog(logger, funcName, fmt.Sprintf("Fetching login info for user ID %d", info.UserID))
 	oldLoginInfo, err := us.storage.GetLoginInfoWithID(ctx, dto.UserID{Value: info.UserID})
 	if err != nil {
-		logger.Warn("User not found")
 		return apperrors.ErrUserNotFound
 	}
-	userServiceDebugLog(logger, funcName, "User found")
+	logger.Debug("got user", funcName, nodeName)
 
 	if oldLoginInfo.PasswordHash != hashFromAuthInfo(oldLoginInfo.Email, info.OldPassword) {
-		logger.Warn("Wrong password")
 		return apperrors.ErrWrongPassword
 	}
-	userServiceDebugLog(logger, funcName, "Password verified")
+	logger.Debug("passwords match", funcName, nodeName)
 
-	userServiceDebugLog(logger, funcName, "Updating password")
 	return us.storage.UpdatePassword(ctx, dto.PasswordHashesInfo{
 		UserID:          info.UserID,
 		NewPasswordHash: hashFromAuthInfo(oldLoginInfo.Email, info.NewPassword),
@@ -117,25 +110,27 @@ func (us UserService) UpdateProfile(ctx context.Context, info dto.UserProfileInf
 // обновляет аватарку пользователя
 // или возвращает ошибку apperrors.ErrUserNotFound (409)
 func (us UserService) UpdateAvatar(ctx context.Context, info dto.AvatarChangeInfo) (*dto.UrlObj, error) {
+	funcName := "BoardService.UpdateThumbnail"
+	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
+
 	baseURL := ctx.Value(dto.BaseURLKey).(string)
 	fileLocation := "img/user_avatars/" + strconv.FormatUint(info.UserID, 10) + ".png"
-	log.Println("Service -- File location:", fileLocation)
 	avatarUrlInfo := dto.ImageUrlInfo{
 		ID:  info.UserID,
 		Url: baseURL + fileLocation,
 	}
-	log.Println("Service -- Full url to file", avatarUrlInfo.Url)
+
 	f, err := os.Create(fileLocation)
 	if err != nil {
-		log.Println("Service -- Failed to create file with error", err)
 		return nil, err
 	}
+	logger.Debug("file created", funcName, nodeName)
 
-	log.Println("Service -- Writing", len(info.Avatar), "bytes:\n\t", info.Avatar)
 	_, err = f.Write(info.Avatar)
 	if err != nil {
-		log.Println("Service -- Failed to write to file with error", err)
+		return nil, err
 	}
+	logger.Debug("avatar written", funcName, nodeName)
 
 	defer f.Close()
 
@@ -143,11 +138,11 @@ func (us UserService) UpdateAvatar(ctx context.Context, info dto.AvatarChangeInf
 	if err != nil {
 		errDelete := os.Remove(fileLocation)
 		for errDelete != nil {
-			log.Println("Service -- Failed to remove file after unsuccessful update with error", err)
 			errDelete = os.Remove(fileLocation)
 		}
 		return nil, err
 	}
+	logger.Debug("avatar url updated", funcName, nodeName)
 
 	return &dto.UrlObj{Value: avatarUrlInfo.Url}, nil
 }
@@ -165,21 +160,3 @@ func hashFromAuthInfo(email string, password string) string {
 	hasher.Write([]byte(email + password))
 	return fmt.Sprintf("%x", hasher.Sum(nil))
 }
-
-func userServiceDebugLog(logger *logrus.Logger, function string, message string) {
-	logger.
-		WithFields(logrus.Fields{
-			"route_node": "service",
-			"function":   function,
-		}).
-		Debug(message)
-}
-
-// func userServiceWarnLog(logger *logrus.Logger, function string, message string) {
-// 	logger.
-// 		WithFields(logrus.Fields{
-// 			"route_node": "service",
-// 			"function":   function,
-// 		}).
-// 		Warn(message)
-// }

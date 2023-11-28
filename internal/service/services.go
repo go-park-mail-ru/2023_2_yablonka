@@ -4,6 +4,7 @@ import (
 	"server/internal/config"
 	auth "server/internal/service/auth"
 	board "server/internal/service/board"
+	comment "server/internal/service/comment"
 	csat "server/internal/service/csat"
 	csrf "server/internal/service/csrf"
 	list "server/internal/service/list"
@@ -21,6 +22,7 @@ type Services struct {
 	CSRF         ICSRFService
 	List         IListService
 	Task         ITaskService
+	Comment      ICommentService
 	Workspace    IWorkspaceService
 	CSATQuestion ICSATQuestionService
 	CSATAnswer   ICSATSAnswerService
@@ -39,6 +41,7 @@ func NewServices(storages *storage.Storages, config config.SessionConfig) *Servi
 		CSRF:         csrf.NewCSRFService(config, storages.CSRF),
 		List:         list.NewListService(storages.List),
 		Task:         task.NewTaskService(storages.Task),
+		Comment:      comment.NewCommentService(storages.Comment),
 		Workspace:    workspace.NewWorkspaceService(storages.Workspace),
 		CSATAnswer:   csat.NewCSATAnswerService(storages.CSATAnswer),
 		CSATQuestion: csat.NewCSATQuestionService(storages.CSATQuestion),

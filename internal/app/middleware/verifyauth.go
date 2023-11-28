@@ -3,13 +3,11 @@ package middleware
 import (
 	"context"
 	"errors"
-	"fmt"
 	"net/http"
 	"server/internal/apperrors"
+	logger "server/internal/logging"
 	"server/internal/pkg/dto"
 	"server/internal/service"
-
-	"github.com/sirupsen/logrus"
 )
 
 func AuthMiddleware(as service.IAuthService, us service.IUserService) func(http.Handler) http.Handler {
@@ -17,18 +15,18 @@ func AuthMiddleware(as service.IAuthService, us service.IUserService) func(http.
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			rCtx := r.Context()
 			funcName := "AuthMiddleware"
-			logger := rCtx.Value(dto.LoggerKey).(*logrus.Logger)
+			logger := rCtx.Value(dto.LoggerKey).(logger.ILogger)
 
 			logger.Info("***** VERIFYING AUTH *****")
 
 			cookie, err := r.Cookie("tabula_user")
 			if err != nil {
 				logger.Error("***** VERIFICATION FAIL *****")
-				middlewareDebugLog(logger, funcName, "Verifying user failed with error "+err.Error())
+				logger.Debug("Verifying user failed with error "+err.Error(), funcName, "middleware")
 				apperrors.ReturnError(apperrors.GenericUnauthorizedResponse, w, r)
 				return
 			}
-			middlewareDebugLog(logger, funcName, "Cookie found")
+			logger.Debug("Cookie found", funcName, "middleware")
 
 			token := dto.SessionToken{
 				ID: cookie.Value,
@@ -37,24 +35,23 @@ func AuthMiddleware(as service.IAuthService, us service.IUserService) func(http.
 			userID, err := as.VerifyAuth(rCtx, token)
 			if err != nil {
 				logger.Error("***** VERIFICATION FAIL *****")
-				middlewareDebugLog(logger, funcName, "Verifying user failed with error "+err.Error())
+				logger.Debug("Verifying user failed with error "+err.Error(), funcName, "middleware")
 				w.Header().Set("X-Csrf-Token", "")
 				apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
 				return
 			}
-			middlewareDebugLog(logger, funcName, "Session verified")
+			logger.Debug("Session verified", funcName, "middleware")
 
-			middlewareDebugLog(logger, funcName, fmt.Sprintf("Getting user info for user ID %d", userID.Value))
 			userObj, err := us.GetWithID(rCtx, userID)
 			if errors.Is(err, apperrors.ErrUserNotFound) {
 				logger.Error("***** VERIFICATION FAIL *****")
-				middlewareDebugLog(logger, funcName, "Verifying user failed with error "+err.Error())
+				logger.Debug("Verifying user failed with error "+err.Error(), funcName, "middleware")
 				w.Header().Set("X-Csrf-Token", "")
 				apperrors.ReturnError(apperrors.GenericUnauthorizedResponse, w, r)
 				return
 			} else if err != nil {
 				logger.Error("***** VERIFICATION FAIL *****")
-				middlewareDebugLog(logger, funcName, "Verifying user failed with error "+err.Error())
+				logger.Debug("Verifying user failed with error "+err.Error(), funcName, "middleware")
 				w.Header().Set("X-Csrf-Token", "")
 				apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
 				return

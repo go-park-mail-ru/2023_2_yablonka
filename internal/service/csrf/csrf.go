@@ -12,6 +12,8 @@ import (
 	"time"
 )
 
+const nodeName string = "service"
+
 type CSRFService struct {
 	sessionDuration time.Duration
 	sessionIDLength uint

@@ -2,11 +2,13 @@ package service
 
 import (
 	"context"
-	"log"
+	logger "server/internal/logging"
 	"server/internal/pkg/dto"
 	"server/internal/pkg/entities"
 	"server/internal/storage"
 )
+
+const nodeName string = "service"
 
 type WorkspaceService struct {
 	storage storage.IWorkspaceStorage
@@ -24,17 +26,21 @@ func NewWorkspaceService(storage storage.IWorkspaceStorage) *WorkspaceService {
 // находит пользователя в БД по почте
 // или возвращает ошибки ...
 func (ws WorkspaceService) GetUserWorkspaces(ctx context.Context, userID dto.UserID) (*dto.AllWorkspaces, error) {
+	funcName := "BoardService.UpdateThumbnail"
+	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
+
 	ownedWorkspaces, err := ws.storage.GetUserOwnedWorkspaces(ctx, userID)
 	if err != nil {
-		log.Println("Service -- Failed to get user owned workspaces")
 		return nil, err
 	}
+	logger.Debug("got user workspaces", funcName, nodeName)
 
 	guestWorkspaces, err := ws.storage.GetUserGuestWorkspaces(ctx, userID)
 	if err != nil {
-		log.Println("Service -- Failed to get user guest workspaces")
 		return nil, err
 	}
+	logger.Debug("got guest workspaces", funcName, nodeName)
+
 	return &dto.AllWorkspaces{
 		OwnedWorkspaces: *ownedWorkspaces,
 		GuestWorkspaces: *guestWorkspaces,

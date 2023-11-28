@@ -91,20 +91,20 @@ type Role struct {
 	Description *string `json:"description"`
 }
 
-// Workspace
-// структура для хранения доски
+// Task
+// структура для хранения заданий
 type Task struct {
-	ID           uint64      `json:"id"`
-	ListID       uint64      `json:"list_id"`
-	DateCreated  time.Time   `json:"date_created"`
-	Name         string      `json:"name"`
-	Description  string      `json:"description"`
-	ListPosition uint64      `json:"list_position"`
-	Start        *time.Time  `json:"start"`
-	End          *time.Time  `json:"end"`
-	Users        []uint64    `json:"users"`
-	Checklists   []Checklist `json:"checklists"`
-	Comments     []Comment   `json:"comments"`
+	ID           uint64     `json:"id"`
+	ListID       uint64     `json:"list_id"`
+	DateCreated  time.Time  `json:"date_created"`
+	Name         string     `json:"name"`
+	Description  string     `json:"description"`
+	ListPosition uint64     `json:"list_position"`
+	Start        *time.Time `json:"start"`
+	End          *time.Time `json:"end"`
+	Users        []uint64   `json:"users"`
+	Checklists   []uint64   `json:"checklists"`
+	Comments     []uint64   `json:"comments"`
 }
 
 type Comment struct {

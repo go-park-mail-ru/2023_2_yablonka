@@ -462,7 +462,7 @@ type UpdatedTaskInfo struct {
 	Description  *string    `json:"description"`
 	Start        *time.Time `json:"start"`
 	End          *time.Time `json:"end"`
-	ListPosition string     `json:"list_position"`
+	ListPosition uint64     `json:"list_position"`
 }
 
 // UpdatedBoardInfo

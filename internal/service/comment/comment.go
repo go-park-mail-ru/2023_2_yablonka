@@ -7,6 +7,8 @@ import (
 	"server/internal/storage"
 )
 
+const nodeName string = "service"
+
 type CommentService struct {
 	storage storage.ICommentStorage
 }

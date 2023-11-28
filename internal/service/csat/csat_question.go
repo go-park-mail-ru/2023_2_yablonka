@@ -2,9 +2,12 @@ package list
 
 import (
 	"context"
+	logger "server/internal/logging"
 	"server/internal/pkg/dto"
 	"server/internal/storage"
 )
+
+const nodeName string = "service"
 
 type CSATQuestionService struct {
 	storage storage.ICSATQuestionStorage
@@ -22,14 +25,19 @@ func NewCSATQuestionService(storage storage.ICSATQuestionStorage) *CSATQuestionS
 // возвращает тип CSAT вопроса по его id
 // или возвращает ошибки ...
 func (cs CSATQuestionService) CheckRating(ctx context.Context, info dto.NewCSATAnswerInfo) error {
+	funcName := "CSATQuestionService.CheckRating"
+	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
+
 	questionType, err := cs.storage.GetQuestionType(ctx, dto.CSATQuestionID{Value: info.QuestionID})
 	if err != nil {
 		return nil
 	}
+	logger.Debug("got question type", funcName, nodeName)
 
 	if info.Rating > questionType.MaxRating {
 		return err
 	}
+	logger.Debug("rating OK", funcName, nodeName)
 
 	return nil
 }
@@ -45,10 +53,15 @@ func (cs CSATQuestionService) GetAll(ctx context.Context) (*[]dto.CSATQuestionFu
 // создает новый вопрос CSAT
 // или возвращает ошибки ...
 func (cs CSATQuestionService) Create(ctx context.Context, info dto.NewCSATQuestionInfo) (*dto.CSATQuestionFull, error) {
+	funcName := "CSATQuestionService.Create"
+	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
+
 	questionType, err := cs.storage.GetQuestionTypeWithName(ctx, dto.CSATQuestionTypeName{Value: info.Type})
 	if err != nil {
 		return nil, err
 	}
+	logger.Debug("got question type", funcName, nodeName)
+
 	verifiedInfo := dto.NewCSATQuestion{
 		Content: info.Content,
 		TypeID:  questionType.ID,
@@ -57,6 +70,7 @@ func (cs CSATQuestionService) Create(ctx context.Context, info dto.NewCSATQuesti
 	if err != nil {
 		return nil, err
 	}
+
 	question.Type = info.Type
 	return question, nil
 }
@@ -72,10 +86,15 @@ func (cs CSATQuestionService) GetStats(ctx context.Context) (*[]dto.QuestionWith
 // обновляет вопрос CSAT
 // или возвращает ошибки ...
 func (cs CSATQuestionService) Update(ctx context.Context, info dto.UpdatedCSATQuestionInfo) error {
+	funcName := "CSATQuestionService.Update"
+	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
+
 	questionType, err := cs.storage.GetQuestionType(ctx, dto.CSATQuestionID{Value: info.ID})
 	if err != nil {
 		return nil
 	}
+	logger.Debug("got question type", funcName, nodeName)
+
 	updatedQuestion := dto.UpdatedCSATQuestion{
 		ID:      info.ID,
 		Content: info.Content,

@@ -7,6 +7,8 @@ import (
 	"server/internal/storage"
 )
 
+const nodeName string = "service"
+
 type ListService struct {
 	storage storage.IListStorage
 }

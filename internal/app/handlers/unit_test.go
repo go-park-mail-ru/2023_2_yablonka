@@ -13,6 +13,7 @@ import (
 	"server/internal/app/handlers"
 	"server/internal/apperrors"
 	"server/internal/config"
+	logger "server/internal/logging"
 	"server/internal/pkg/dto"
 	"server/internal/pkg/entities"
 	"server/mocks/mock_service"
@@ -77,7 +78,7 @@ func createMux(mockAuthService *mock_service.MockIAuthService,
 		return nil, err
 	}
 
-	mux, _ := app.GetChiMux(mockHandlerManager, *cfg)
+	mux, _ := app.GetChiMux(mockHandlerManager, *cfg, &logger.LogrusLogger{})
 	return mux, nil
 }
 
