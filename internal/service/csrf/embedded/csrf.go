@@ -30,7 +30,7 @@ func NewCSRFService(config config.SessionConfig, CSRFStorage storage.ICSRFStorag
 
 // GetLifetime
 // возвращает длительность авторизации
-func (cs *CSRFService) GetLifetime() time.Duration {
+func (cs *CSRFService) GetLifetime(ctx context.Context) time.Duration {
 	return cs.sessionDuration
 }
 

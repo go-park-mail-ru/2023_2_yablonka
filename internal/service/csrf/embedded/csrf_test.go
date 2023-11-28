@@ -48,9 +48,13 @@ func TestCSRFService_GetLifetime(t *testing.T) {
 		sessionIDLength uint
 		storage         storage.ICSRFStorage
 	}
+	type args struct {
+		ctx context.Context
+	}
 	tests := []struct {
 		name   string
 		fields fields
+		args   args
 		want   time.Duration
 	}{
 		// TODO: Add test cases.
@@ -62,7 +66,7 @@ func TestCSRFService_GetLifetime(t *testing.T) {
 				sessionIDLength: tt.fields.sessionIDLength,
 				storage:         tt.fields.storage,
 			}
-			if got := cs.GetLifetime(); got != tt.want {
+			if got := cs.GetLifetime(tt.args.ctx); got != tt.want {
 				t.Errorf("GetLifetime() = %v, want %v", got, tt.want)
 			}
 		})
