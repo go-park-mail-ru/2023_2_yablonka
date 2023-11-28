@@ -27,14 +27,14 @@ func NewCSATQuestionService(storage storage.ICSATQuestionStorage) *CSATQuestionS
 func (cs CSATQuestionService) CheckRating(ctx context.Context, info *NewCSATAnswerInfo) (*emptypb.Empty, error) {
 	questionType, err := cs.storage.GetQuestionType(ctx, dto.CSATQuestionID{Value: info.QuestionID})
 	if err != nil {
-		return nil, err
+		return &emptypb.Empty{}, err
 	}
 
 	if info.Rating > questionType.MaxRating {
-		return nil, err
+		return &emptypb.Empty{}, err
 	}
 
-	return nil, nil
+	return &emptypb.Empty{}, nil
 }
 
 // GetAll
@@ -42,6 +42,10 @@ func (cs CSATQuestionService) CheckRating(ctx context.Context, info *NewCSATAnsw
 // или возвращает ошибки ...
 func (cs CSATQuestionService) GetAll(ctx context.Context, empty *emptypb.Empty) (*AllQuestionStats, error) {
 	questionStats, err := cs.storage.GetAll(ctx)
+	if err != nil {
+		return &AllQuestionStats{}, err
+	}
+
 	convertedQuestions := []*CSATQuestionFull{}
 	for _, question := range *questionStats {
 		convertedQuestions = append(convertedQuestions, &CSATQuestionFull{
@@ -53,7 +57,8 @@ func (cs CSATQuestionService) GetAll(ctx context.Context, empty *emptypb.Empty) 
 	convertedStats := &AllQuestionStats{
 		Questions: convertedQuestions,
 	}
-	return convertedStats, err
+
+	return convertedStats, nil
 }
 
 // GetStats
@@ -61,6 +66,10 @@ func (cs CSATQuestionService) GetAll(ctx context.Context, empty *emptypb.Empty) 
 // или возвращает ошибки ...
 func (cs CSATQuestionService) GetStats(ctx context.Context, empty *emptypb.Empty) (*AllQuestionsWithStats, error) {
 	stats, err := cs.storage.GetStats(ctx)
+	if err != nil {
+		return &AllQuestionsWithStats{}, err
+	}
+
 	convertedQuestions := []*QuestionWithStats{}
 	for _, question := range *stats {
 		convertedRatings := []*RatingStats{}
@@ -82,7 +91,7 @@ func (cs CSATQuestionService) GetStats(ctx context.Context, empty *emptypb.Empty
 		Questions: convertedQuestions,
 	}
 
-	return &convertedStats, err
+	return &convertedStats, nil
 }
 
 // Create
@@ -91,7 +100,7 @@ func (cs CSATQuestionService) GetStats(ctx context.Context, empty *emptypb.Empty
 func (cs CSATQuestionService) Create(ctx context.Context, info *NewCSATQuestionInfo) (*CSATQuestionFull, error) {
 	questionType, err := cs.storage.GetQuestionTypeWithName(ctx, dto.CSATQuestionTypeName{Value: info.Type})
 	if err != nil {
-		return nil, err
+		return &CSATQuestionFull{}, err
 	}
 	verifiedInfo := dto.NewCSATQuestion{
 		Content: info.Content,
@@ -99,7 +108,7 @@ func (cs CSATQuestionService) Create(ctx context.Context, info *NewCSATQuestionI
 	}
 	question, err := cs.storage.Create(ctx, verifiedInfo)
 	if err != nil {
-		return nil, err
+		return &CSATQuestionFull{}, err
 	}
 	question.Type = info.Type
 	convertedQuestion := &CSATQuestionFull{
@@ -116,14 +125,14 @@ func (cs CSATQuestionService) Create(ctx context.Context, info *NewCSATQuestionI
 func (cs CSATQuestionService) Update(ctx context.Context, info *UpdatedCSATQuestionInfo) (*emptypb.Empty, error) {
 	questionType, err := cs.storage.GetQuestionType(ctx, dto.CSATQuestionID{Value: info.ID})
 	if err != nil {
-		return nil, nil
+		return &emptypb.Empty{}, nil
 	}
 	updatedQuestion := dto.UpdatedCSATQuestion{
 		ID:      info.ID,
 		Content: info.Content,
 		Type:    questionType.ID,
 	}
-	return nil, cs.storage.Update(ctx, updatedQuestion)
+	return &emptypb.Empty{}, cs.storage.Update(ctx, updatedQuestion)
 }
 
 // Delete
@@ -133,5 +142,5 @@ func (cs CSATQuestionService) Delete(ctx context.Context, id *CSATQuestionID) (*
 	convertedID := dto.CSATQuestionID{
 		Value: id.Value,
 	}
-	return nil, cs.storage.Delete(ctx, convertedID)
+	return &emptypb.Empty{}, cs.storage.Delete(ctx, convertedID)
 }

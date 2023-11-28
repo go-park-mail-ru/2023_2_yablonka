@@ -7,6 +7,7 @@ import (
 	microservice "server/microservices/csat/csat_question"
 
 	"google.golang.org/grpc"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 type CSATQuestionService struct {
@@ -28,71 +29,98 @@ func NewCSATQuestionService(storage storage.ICSATQuestionStorage, connection *gr
 // возвращает тип CSAT вопроса по его id
 // или возвращает ошибки ...
 func (cs CSATQuestionService) CheckRating(ctx context.Context, info dto.NewCSATAnswerInfo) error {
-	questionType, err := cs.storage.GetQuestionType(ctx, dto.CSATQuestionID{Value: info.QuestionID})
-	if err != nil {
-		return nil
-	}
+	_, err := cs.client.CheckRating(ctx, &microservice.NewCSATAnswerInfo{
+		QuestionID: info.QuestionID,
+		Rating:     info.Rating,
+	})
 
-	if info.Rating > questionType.MaxRating {
-		return err
-	}
-
-	return nil
+	return err
 }
 
 // GetAll
 // возвращает все вопросы CSAT
 // или возвращает ошибки ...
 func (cs CSATQuestionService) GetAll(ctx context.Context) (*[]dto.CSATQuestionFull, error) {
-	return cs.storage.GetAll(ctx)
+	questions, err := cs.client.GetAll(ctx, &emptypb.Empty{})
+	convertedQuestions := []dto.CSATQuestionFull{}
+	for _, question := range questions.Questions {
+		convertedQuestions = append(convertedQuestions, dto.CSATQuestionFull{
+			ID:      question.ID,
+			Content: question.Content,
+			Type:    question.Type,
+		})
+	}
+	return &convertedQuestions, err
 }
 
 // Create
 // создает новый вопрос CSAT
 // или возвращает ошибки ...
 func (cs CSATQuestionService) Create(ctx context.Context, info dto.NewCSATQuestionInfo) (*dto.CSATQuestionFull, error) {
-	questionType, err := cs.storage.GetQuestionTypeWithName(ctx, dto.CSATQuestionTypeName{Value: info.Type})
-	if err != nil {
-		return nil, err
-	}
-	verifiedInfo := dto.NewCSATQuestion{
+	question, err := cs.client.Create(ctx, &microservice.NewCSATQuestionInfo{
 		Content: info.Content,
-		TypeID:  questionType.ID,
-	}
-	question, err := cs.storage.Create(ctx, verifiedInfo)
+		Type:    info.Type,
+	})
 	if err != nil {
 		return nil, err
 	}
-	question.Type = info.Type
-	return question, nil
+
+	convertedQuestion := dto.CSATQuestionFull{
+		ID:      question.ID,
+		Content: question.Content,
+		Type:    question.Type,
+	}
+
+	return &convertedQuestion, nil
 }
 
 // GetStats
 // возвращает статистику по вопросам
 // или возвращает ошибки ...
 func (cs CSATQuestionService) GetStats(ctx context.Context) (*[]dto.QuestionWithStats, error) {
-	return cs.storage.GetStats(ctx)
+	allQuestions, err := cs.client.GetStats(ctx, &emptypb.Empty{})
+	if err != nil {
+		return nil, err
+	}
+
+	convertedQuestions := []dto.QuestionWithStats{}
+	for _, question := range allQuestions.Questions {
+		stats := []dto.RatingStats{}
+		for _, stat := range question.Stats {
+			stats = append(stats, dto.RatingStats{
+				Rating:  stat.Rating,
+				Count:   stat.Count,
+				Average: stat.Average,
+			})
+		}
+		convertedQuestions = append(convertedQuestions, dto.QuestionWithStats{
+			ID:      question.ID,
+			Content: question.Content,
+			Type:    question.Type,
+			Stats:   stats,
+		})
+	}
+	return &convertedQuestions, err
 }
 
 // Update
 // обновляет вопрос CSAT
 // или возвращает ошибки ...
 func (cs CSATQuestionService) Update(ctx context.Context, info dto.UpdatedCSATQuestionInfo) error {
-	questionType, err := cs.storage.GetQuestionType(ctx, dto.CSATQuestionID{Value: info.ID})
-	if err != nil {
-		return nil
-	}
-	updatedQuestion := dto.UpdatedCSATQuestion{
+	_, err := cs.client.Update(ctx, &microservice.UpdatedCSATQuestionInfo{
 		ID:      info.ID,
 		Content: info.Content,
-		Type:    questionType.ID,
-	}
-	return cs.storage.Update(ctx, updatedQuestion)
+		Type:    info.Type,
+	})
+	return err
 }
 
 // Delete
 // удаляет вопрос CSAT по id
 // или возвращает ошибки ...
 func (cs CSATQuestionService) Delete(ctx context.Context, id dto.CSATQuestionID) error {
-	return cs.storage.Delete(ctx, id)
+	_, err := cs.client.Delete(ctx, &microservice.CSATQuestionID{
+		Value: id.Value,
+	})
+	return err
 }

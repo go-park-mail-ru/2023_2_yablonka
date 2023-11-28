@@ -58,6 +58,7 @@ func (cs CSATQuestionService) Create(ctx context.Context, info dto.NewCSATQuesti
 		return nil, err
 	}
 	question.Type = info.Type
+	question.Content = info.Content
 	return question, nil
 }
 

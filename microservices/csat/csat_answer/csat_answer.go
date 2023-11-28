@@ -30,5 +30,5 @@ func (cs CSATAnswerService) Create(ctx context.Context, info *NewCSATAnswer) (*e
 		QuestionID: info.QuestionID,
 		Rating:     info.Rating,
 	}
-	return nil, cs.storage.Create(ctx, convertedInfo)
+	return &emptypb.Empty{}, cs.storage.Create(ctx, convertedInfo)
 }

@@ -28,5 +28,10 @@ func NewCSATAnswerService(storage storage.ICSATAnswerStorage, connection *grpc.C
 // создает новый ответ CSAT
 // или возвращает ошибки ...
 func (cs CSATAnswerService) Create(ctx context.Context, info dto.NewCSATAnswer) error {
-	return cs.storage.Create(ctx, info)
+	_, err := cs.client.Create(ctx, &microservice.NewCSATAnswer{
+		UserID:     info.UserID,
+		QuestionID: info.QuestionID,
+		Rating:     info.Rating,
+	})
+	return err
 }
