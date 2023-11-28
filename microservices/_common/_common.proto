@@ -1,0 +1,7 @@
+syntax = "proto3";
+
+option go_package = "./common";
+
+message UserID {
+    uint64 Value = 1;
+}
