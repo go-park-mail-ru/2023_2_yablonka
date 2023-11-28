@@ -309,11 +309,11 @@ type SingleBoardInfo struct {
 }
 
 type SingleListInfo struct {
-	ID           uint64 `json:"id"`
-	BoardID      uint64 `json:"board_id"`
-	Name         string `json:"name"`
-	ListPosition uint64 `json:"list_position"`
-	Tasks        string `json:"cards"`
+	ID           uint64   `json:"id"`
+	BoardID      uint64   `json:"board_id"`
+	Name         string   `json:"name"`
+	ListPosition uint64   `json:"list_position"`
+	TaskIDs      []string `json:"cards"`
 }
 
 type SingleTaskInfo struct {
@@ -325,16 +325,17 @@ type SingleTaskInfo struct {
 	ListPosition uint64     `json:"list_position"`
 	Start        *time.Time `json:"start"`
 	End          *time.Time `json:"end"`
-	Users        string     `json:"users"`
-	// Commments    []CommentInfo    `json:"comments"`
+	UserIDs      []string   `json:"users"`
+	CommentIDs   []string   `json:"comments"`
 	// Checklists
 }
 
 type FullBoardResult struct {
-	Board SingleBoardInfo  `json:"board"`
-	Lists []SingleListInfo `json:"lists"`
-	Tasks []SingleTaskInfo `json:"cards"`
-	Users []UserPublicInfo `json:"users"`
+	Board    SingleBoardInfo  `json:"board"`
+	Lists    []SingleListInfo `json:"lists"`
+	Tasks    []SingleTaskInfo `json:"cards"`
+	Users    []UserPublicInfo `json:"users"`
+	Comments []CommentInfo    `json:"comments"`
 }
 
 // NewBoardRequest
@@ -403,8 +404,20 @@ type ListIDs struct {
 	Values []uint64 `json:"ids"`
 }
 
-// TaskID
+// CommentIDs
+// DTO для id комментариев
+type CommentIDs struct {
+	Values []string `json:"ids"`
+}
+
+// TaskIDs
 // DTO для id задач
+type TaskIDs struct {
+	Values []string `json:"ids"`
+}
+
+// TaskID
+// DTO для id задачи
 type TaskID struct {
 	Value uint64 `json:"id"`
 }

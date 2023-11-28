@@ -3,12 +3,15 @@ package postgresql
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"log"
 	"server/internal/apperrors"
+	logger "server/internal/logging"
 	"server/internal/pkg/dto"
 	"server/internal/pkg/entities"
 
 	sq "github.com/Masterminds/squirrel"
+	"github.com/lib/pq"
 )
 
 // PostgresListStorage
@@ -69,25 +72,26 @@ func (s PostgresTaskStorage) Create(ctx context.Context, info dto.NewTaskInfo) (
 // Read
 // находит задание в БД по его id
 // или возвращает ошибки ...
-func (s *PostgresTaskStorage) Read(ctx context.Context, id dto.TaskID) (*entities.Task, error) {
-	query1, args, err := sq.
+func (s *PostgresTaskStorage) Read(ctx context.Context, id dto.TaskID) (*dto.SingleTaskInfo, error) {
+	funcName := "PostgreSQLBoardStorage.GetLists"
+	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
+
+	query, args, err := sq.
 		Select(allTaskFields...).
 		From("public.task").
 		Join("public.task_user ON public.task.id = public.task_user.id_task").
+		Join("public.comment ON public.task.id = public.comment.id_task").
 		Where(sq.Eq{"id": id.Value}).
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
-
-	task := entities.Task{}
-
 	if err != nil {
 		log.Println("Storage -- Failed to build query with error", err.Error())
 		return nil, apperrors.ErrCouldNotBuildQuery
 	}
+	logger.Debug("Built query\n\t"+query+"\nwith args\n\t"+fmt.Sprintf("%+v", args), funcName, nodeName)
 
-	log.Println("Formed query\n\t", query1, "\nwith args\n\t", args)
-
-	row := s.db.QueryRow(query1, args...)
+	task := dto.SingleTaskInfo{}
+	row := s.db.QueryRow(query, args...)
 	if err = row.Scan(
 		&task.ID,
 		&task.ListID,
@@ -97,12 +101,72 @@ func (s *PostgresTaskStorage) Read(ctx context.Context, id dto.TaskID) (*entitie
 		&task.ListPosition,
 		&task.Start,
 		&task.End,
-		&task.Users); err != nil {
+		&task.UserIDs,
+		&task.CommentIDs,
+	); err != nil {
 		log.Println("Failed to query DB with error", err.Error())
 		return nil, apperrors.ErrCouldNotGetTask
 	}
+	logger.Debug("Got task from DB", funcName, nodeName)
 
 	return &task, nil
+}
+
+// ReadMany
+// находит задание в БД по их id
+// или возвращает ошибки ...
+func (s *PostgresTaskStorage) ReadMany(ctx context.Context, id dto.TaskIDs) (*[]dto.SingleTaskInfo, error) {
+	funcName := "PostgresTaskStorage.ReadMany"
+	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
+
+	query, args, err := sq.
+		Select(allTaskFields...).
+		From("public.task").
+		LeftJoin("public.task_user ON public.task.id = public.task_user.id_task").
+		LeftJoin("public.comment ON public.task.id = public.comment.id_task").
+		Where(sq.Eq{"public.task.id": id.Values}).
+		GroupBy("public.task.id", "public.comment.id", "public.task_user.id_user").
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
+	if err != nil {
+		log.Println("Storage -- Failed to build query with error", err.Error())
+		return nil, apperrors.ErrCouldNotBuildQuery
+	}
+	logger.Debug("Built query\n\t"+query+"\nwith args\n\t"+fmt.Sprintf("%+v", args), funcName, nodeName)
+
+	rows, err := s.db.Query(query, args...)
+	if err != nil {
+		logger.Debug(err.Error(), funcName, nodeName)
+		return nil, apperrors.ErrCouldNotGetBoardUsers
+	}
+	defer rows.Close()
+	logger.Debug("Got task rows", funcName, nodeName)
+
+	tasks := []dto.SingleTaskInfo{}
+	for rows.Next() {
+		var task dto.SingleTaskInfo
+
+		err = rows.Scan(
+			&task.ID,
+			&task.ListID,
+			&task.DateCreated,
+			&task.Name,
+			&task.Description,
+			&task.ListPosition,
+			&task.Start,
+			&task.End,
+			(*pq.StringArray)(&task.UserIDs),
+			(*pq.StringArray)(&task.CommentIDs),
+		)
+		if err != nil {
+			logger.Debug(err.Error(), funcName, nodeName)
+			return nil, apperrors.ErrCouldNotGetBoard
+		}
+		tasks = append(tasks, task)
+	}
+	logger.Debug("Got task from DB", funcName, nodeName)
+
+	return &tasks, nil
 }
 
 // Update

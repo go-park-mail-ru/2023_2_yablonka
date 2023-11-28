@@ -12,22 +12,25 @@ import (
 )
 
 type BoardService struct {
-	boardStorage storage.IBoardStorage
-	userStorage  storage.IUserStorage
-	listStorage  storage.IListStorage
+	boardStorage   storage.IBoardStorage
+	userStorage    storage.IUserStorage
+	taskStorage    storage.ITaskStorage
+	commentStorage storage.ICommentStorage
 }
 
 // NewBoardService
 // возвращает BoardService с инициализированным хранилищем
 func NewBoardService(
 	bs storage.IBoardStorage,
-	ls storage.IListStorage,
+	ts storage.ITaskStorage,
 	us storage.IUserStorage,
+	cs storage.ICommentStorage,
 ) *BoardService {
 	return &BoardService{
-		boardStorage: bs,
-		listStorage:  ls,
-		userStorage:  us,
+		boardStorage:   bs,
+		taskStorage:    ts,
+		userStorage:    us,
+		commentStorage: cs,
 	}
 }
 
@@ -72,21 +75,34 @@ func (bs BoardService) GetFullBoard(ctx context.Context, info dto.IndividualBoar
 	}
 	logger.Debug("Got lists", funcName, nodeName)
 
-	listIDs := dto.ListIDs{}
+	taskIDs := dto.TaskIDs{}
 	for _, list := range *lists {
-		listIDs.Values = append(listIDs.Values, list.ID)
+		taskIDs.Values = append(taskIDs.Values, list.TaskIDs...)
 	}
-	tasks, err := bs.listStorage.GetTasksWithID(ctx, listIDs)
+	tasks, err := bs.taskStorage.ReadMany(ctx, taskIDs)
 	if err != nil {
 		return nil, err
 	}
 	logger.Debug("Got tasks", funcName, nodeName)
 
+	commentIDs := dto.CommentIDs{}
+	for _, task := range *tasks {
+		commentIDs.Values = append(commentIDs.Values, task.CommentIDs...)
+	}
+	logger.Debug("Got comment ids", funcName, nodeName)
+
+	comments, err := bs.commentStorage.ReadMany(ctx, commentIDs)
+	if err != nil {
+		return nil, err
+	}
+	logger.Debug("Got comments", funcName, nodeName)
+
 	return &dto.FullBoardResult{
-		Users: *users,
-		Board: *board,
-		Lists: *lists,
-		Tasks: *tasks,
+		Users:    *users,
+		Board:    *board,
+		Lists:    *lists,
+		Tasks:    *tasks,
+		Comments: *comments,
 	}, nil
 }
 

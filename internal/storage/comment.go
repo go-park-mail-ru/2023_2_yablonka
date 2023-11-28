@@ -18,4 +18,8 @@ type ICommentStorage interface {
 	// возвращает все комментарии у задания в БД
 	// или возвращает ошибки ...
 	GetFromTask(context.Context, dto.TaskID) (*[]dto.CommentInfo, error)
+	// ReadMany
+	// возвращает все комментарии по многим ID в БД
+	// или возвращает ошибки ...
+	ReadMany(context.Context, dto.CommentIDs) (*[]dto.CommentInfo, error)
 }

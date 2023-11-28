@@ -56,7 +56,7 @@ func (mr *MockICommentStorageMockRecorder) Create(arg0, arg1 any) *gomock.Call {
 }
 
 // GetFromTask mocks base method.
-func (m *MockICommentStorage) GetFromTask(arg0 context.Context, arg1 dto.TaskID) (*[]dto.CommentInfo, error) {
+func (m *MockICommentStorage) GetFromTask(arg0 context.Context, arg1 dto.TaskIDs) (*[]dto.CommentInfo, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetFromTask", arg0, arg1)
 	ret0, _ := ret[0].(*[]dto.CommentInfo)

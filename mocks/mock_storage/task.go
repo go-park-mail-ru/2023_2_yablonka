@@ -56,7 +56,7 @@ func (mr *MockITaskStorageMockRecorder) Create(arg0, arg1 any) *gomock.Call {
 }
 
 // Delete mocks base method.
-func (m *MockITaskStorage) Delete(arg0 context.Context, arg1 dto.TaskID) error {
+func (m *MockITaskStorage) Delete(arg0 context.Context, arg1 dto.TaskIDs) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Delete", arg0, arg1)
 	ret0, _ := ret[0].(error)
@@ -70,7 +70,7 @@ func (mr *MockITaskStorageMockRecorder) Delete(arg0, arg1 any) *gomock.Call {
 }
 
 // Read mocks base method.
-func (m *MockITaskStorage) Read(arg0 context.Context, arg1 dto.TaskID) (*entities.Task, error) {
+func (m *MockITaskStorage) Read(arg0 context.Context, arg1 dto.TaskIDs) (*entities.Task, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Read", arg0, arg1)
 	ret0, _ := ret[0].(*entities.Task)

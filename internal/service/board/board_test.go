@@ -180,8 +180,9 @@ func TestBoardService_UpdateThumbnail(t *testing.T) {
 func TestNewBoardService(t *testing.T) {
 	type args struct {
 		us storage.IUserStorage
-		ls storage.IListStorage
+		ls storage.ITaskStorage
 		bs storage.IBoardStorage
+		cs storage.ICommentStorage
 	}
 	tests := []struct {
 		name string
@@ -192,7 +193,7 @@ func TestNewBoardService(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := NewBoardService(tt.args.bs, tt.args.ls, tt.args.us); !reflect.DeepEqual(got, tt.want) {
+			if got := NewBoardService(tt.args.bs, tt.args.ls, tt.args.us, tt.args.cs); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("NewBoardService() = %v, want %v", got, tt.want)
 			}
 		})

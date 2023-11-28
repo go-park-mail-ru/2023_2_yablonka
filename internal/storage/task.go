@@ -17,7 +17,11 @@ type ITaskStorage interface {
 	// Read
 	// возвращает заание с привязанными пользователями
 	// или возвращает ошибки ...
-	Read(context.Context, dto.TaskID) (*entities.Task, error)
+	Read(context.Context, dto.TaskID) (*dto.SingleTaskInfo, error)
+	// ReadMany
+	// возвращает задания
+	// или возвращает ошибки ...
+	ReadMany(context.Context, dto.TaskIDs) (*[]dto.SingleTaskInfo, error)
 	// Update
 	// обновляет задачу
 	// или возвращает ошибки ...

@@ -106,7 +106,7 @@ func (s PostgresListStorage) GetTasksWithID(ctx context.Context, ids dto.ListIDs
 			&task.ListPosition,
 			&task.Start,
 			&task.End,
-			&task.Users,
+			&task.UserIDs,
 		)
 		if err != nil {
 			return nil, apperrors.ErrCouldNotGetBoard
