@@ -9,11 +9,11 @@ import (
 	_ "server/internal/pkg/doc_structs"
 	"server/internal/pkg/dto"
 	"server/internal/pkg/entities"
-	"server/internal/service"
+	"server/internal/service/workspace"
 )
 
 type WorkspaceHandler struct {
-	ws service.IWorkspaceService
+	ws workspace.IWorkspaceService
 }
 
 // @Summary Вывести все рабочие пространства и доски текущего пользователя

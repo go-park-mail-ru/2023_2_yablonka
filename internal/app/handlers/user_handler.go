@@ -10,14 +10,14 @@ import (
 	_ "server/internal/pkg/doc_structs"
 	dto "server/internal/pkg/dto"
 	"server/internal/pkg/entities"
-	"server/internal/service"
+	"server/internal/service/user"
 
 	"github.com/asaskevich/govalidator"
 	"github.com/sirupsen/logrus"
 )
 
 type UserHandler struct {
-	us service.IUserService
+	us user.IUserService
 }
 
 // @Summary Поменять пароль

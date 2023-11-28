@@ -7,12 +7,13 @@ import (
 	"net/http"
 	"server/internal/apperrors"
 	"server/internal/pkg/dto"
-	"server/internal/service"
+	"server/internal/service/auth"
+	"server/internal/service/user"
 
 	"github.com/sirupsen/logrus"
 )
 
-func AuthMiddleware(as service.IAuthService, us service.IUserService) func(http.Handler) http.Handler {
+func AuthMiddleware(as auth.IAuthService, us user.IUserService) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			rCtx := r.Context()

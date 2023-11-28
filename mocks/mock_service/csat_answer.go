@@ -16,31 +16,31 @@ import (
 	gomock "go.uber.org/mock/gomock"
 )
 
-// MockICSATSAnswerService is a mock of ICSATSAnswerService interface.
-type MockICSATSAnswerService struct {
+// MockICSATAnswerService is a mock of ICSATAnswerService interface.
+type MockICSATAnswerService struct {
 	ctrl     *gomock.Controller
-	recorder *MockICSATSAnswerServiceMockRecorder
+	recorder *MockICSATAnswerServiceMockRecorder
 }
 
-// MockICSATSAnswerServiceMockRecorder is the mock recorder for MockICSATSAnswerService.
-type MockICSATSAnswerServiceMockRecorder struct {
-	mock *MockICSATSAnswerService
+// MockICSATAnswerServiceMockRecorder is the mock recorder for MockICSATAnswerService.
+type MockICSATAnswerServiceMockRecorder struct {
+	mock *MockICSATAnswerService
 }
 
-// NewMockICSATSAnswerService creates a new mock instance.
-func NewMockICSATSAnswerService(ctrl *gomock.Controller) *MockICSATSAnswerService {
-	mock := &MockICSATSAnswerService{ctrl: ctrl}
-	mock.recorder = &MockICSATSAnswerServiceMockRecorder{mock}
+// NewMockICSATAnswerService creates a new mock instance.
+func NewMockICSATAnswerService(ctrl *gomock.Controller) *MockICSATAnswerService {
+	mock := &MockICSATAnswerService{ctrl: ctrl}
+	mock.recorder = &MockICSATAnswerServiceMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use.
-func (m *MockICSATSAnswerService) EXPECT() *MockICSATSAnswerServiceMockRecorder {
+func (m *MockICSATAnswerService) EXPECT() *MockICSATAnswerServiceMockRecorder {
 	return m.recorder
 }
 
 // Create mocks base method.
-func (m *MockICSATSAnswerService) Create(arg0 context.Context, arg1 dto.NewCSATAnswer) error {
+func (m *MockICSATAnswerService) Create(arg0 context.Context, arg1 dto.NewCSATAnswer) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Create", arg0, arg1)
 	ret0, _ := ret[0].(error)
@@ -48,7 +48,7 @@ func (m *MockICSATSAnswerService) Create(arg0 context.Context, arg1 dto.NewCSATA
 }
 
 // Create indicates an expected call of Create.
-func (mr *MockICSATSAnswerServiceMockRecorder) Create(arg0, arg1 any) *gomock.Call {
+func (mr *MockICSATAnswerServiceMockRecorder) Create(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockICSATSAnswerService)(nil).Create), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockICSATAnswerService)(nil).Create), arg0, arg1)
 }

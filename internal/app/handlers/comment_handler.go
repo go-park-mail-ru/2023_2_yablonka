@@ -6,13 +6,13 @@ import (
 	"server/internal/apperrors"
 	_ "server/internal/pkg/doc_structs"
 	"server/internal/pkg/dto"
-	"server/internal/service"
+	"server/internal/service/comment"
 
 	"github.com/sirupsen/logrus"
 )
 
 type CommentHandler struct {
-	cs service.ICommentService
+	cs comment.ICommentService
 }
 
 // @Summary Создать комментарий

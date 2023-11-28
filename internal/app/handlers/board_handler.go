@@ -9,15 +9,16 @@ import (
 	_ "server/internal/pkg/doc_structs"
 	"server/internal/pkg/dto"
 	"server/internal/pkg/entities"
-	"server/internal/service"
+	"server/internal/service/auth"
+	"server/internal/service/board"
 
 	"github.com/asaskevich/govalidator"
 	"github.com/sirupsen/logrus"
 )
 
 type BoardHandler struct {
-	as service.IAuthService
-	bs service.IBoardService
+	as auth.IAuthService
+	bs board.IBoardService
 }
 
 // @Summary Получить доску

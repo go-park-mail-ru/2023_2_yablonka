@@ -8,13 +8,13 @@ import (
 	"server/internal/apperrors"
 	_ "server/internal/pkg/doc_structs"
 	"server/internal/pkg/dto"
-	"server/internal/service"
+	"server/internal/service/task"
 
 	"github.com/sirupsen/logrus"
 )
 
 type TaskHandler struct {
-	ts service.ITaskService
+	ts task.ITaskService
 }
 
 // @Summary Создать задание

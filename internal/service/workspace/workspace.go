@@ -1,77 +1,52 @@
-package service
+package workspace
 
 import (
 	"context"
-	"log"
 	"server/internal/pkg/dto"
 	"server/internal/pkg/entities"
 	"server/internal/storage"
+
+	embedded "server/internal/service/workspace/embedded"
+	micro "server/internal/service/workspace/microservice"
+
+	"google.golang.org/grpc"
 )
 
-type WorkspaceService struct {
-	storage storage.IWorkspaceStorage
+// Интерфейс для сервиса рабочих пространств
+//
+//go:generate mockgen -source=$GOFILE -destination=../../mocks/mock_service/$GOFILE -package=mock_service
+type IWorkspaceService interface {
+	// GetUserWorkspaces
+	// находит пользователя по почте
+	// или возвращает ошибки ...
+	GetUserWorkspaces(context.Context, dto.UserID) (*dto.AllWorkspaces, error)
+	// GetByID
+	// находит рабочее пространство по его id
+	// или возвращает ошибки ...
+	GetWorkspace(context.Context, dto.WorkspaceID) (*entities.Workspace, error)
+	// Create
+	// создает новоt рабочее пространство по данным
+	// или возвращает ошибки ...
+	Create(context.Context, dto.NewWorkspaceInfo) (*entities.Workspace, error)
+	// UpdateData
+	// обновляет рабочее пространство
+	// или возвращает ошибки ...
+	UpdateData(context.Context, dto.UpdatedWorkspaceInfo) error
+	// UpdateUsers
+	// обновляет список пользователей рабочего пространства
+	// или возвращает ошибки ...
+	UpdateUsers(context.Context, dto.ChangeWorkspaceGuestsInfo) error
+	// Delete
+	// удаляет рабочее пространство по id
+	// или возвращает ошибки ...
+	Delete(context.Context, dto.WorkspaceID) error
 }
 
-// NewWorkspaceService
-// возвращает UserService с инициализированным хранилищем пользователей
-func NewWorkspaceService(storage storage.IWorkspaceStorage) *WorkspaceService {
-	return &WorkspaceService{
-		storage: storage,
-	}
+func NewEmbeddedWorkspaceService(workspaceStorage storage.IWorkspaceStorage) *embedded.WorkspaceService {
+	return embedded.NewWorkspaceService(workspaceStorage)
 }
 
-// GetUserWorkspaces
-// находит пользователя в БД по почте
-// или возвращает ошибки ...
-func (ws WorkspaceService) GetUserWorkspaces(ctx context.Context, userID dto.UserID) (*dto.AllWorkspaces, error) {
-	ownedWorkspaces, err := ws.storage.GetUserOwnedWorkspaces(ctx, userID)
-	if err != nil {
-		log.Println("Service -- Failed to get user owned workspaces")
-		return nil, err
-	}
-
-	guestWorkspaces, err := ws.storage.GetUserGuestWorkspaces(ctx, userID)
-	if err != nil {
-		log.Println("Service -- Failed to get user guest workspaces")
-		return nil, err
-	}
-	return &dto.AllWorkspaces{
-		OwnedWorkspaces: *ownedWorkspaces,
-		GuestWorkspaces: *guestWorkspaces,
-	}, nil
-}
-
-// GetByID
-// находит рабочее пространство в БД по его id
-// или возвращает ошибки ...
-func (ws WorkspaceService) GetWorkspace(ctx context.Context, id dto.WorkspaceID) (*entities.Workspace, error) {
-	return ws.storage.GetWorkspace(ctx, id)
-}
-
-// Create
-// создает новоt рабочее пространство по данным
-// или возвращает ошибки ...
-func (ws WorkspaceService) Create(ctx context.Context, info dto.NewWorkspaceInfo) (*entities.Workspace, error) {
-	return ws.storage.Create(ctx, info)
-}
-
-// UpdateData
-// обновляет рабочее пространство
-// или возвращает ошибки .....
-func (ws WorkspaceService) UpdateData(ctx context.Context, info dto.UpdatedWorkspaceInfo) error {
-	return ws.storage.UpdateData(ctx, info)
-}
-
-// UpdateUsers
-// обновляет список пользователей рабочего пространства
-// или возвращает ошибки ...
-func (ws WorkspaceService) UpdateUsers(ctx context.Context, info dto.ChangeWorkspaceGuestsInfo) error {
-	return ws.storage.UpdateUsers(ctx, info)
-}
-
-// Delete
-// удаляет рабочее пространство в БД по id
-// или возвращает ошибки ...
-func (ws WorkspaceService) Delete(ctx context.Context, id dto.WorkspaceID) error {
-	return ws.storage.Delete(ctx, id)
+// TODO: User microservice
+func NewMicroWorkspaceService(workspaceStorage storage.IWorkspaceStorage, connection *grpc.ClientConn) *micro.WorkspaceService {
+	return micro.NewWorkspaceService(workspaceStorage)
 }

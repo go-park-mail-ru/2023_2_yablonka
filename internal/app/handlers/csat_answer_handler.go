@@ -7,14 +7,14 @@ import (
 	_ "server/internal/pkg/doc_structs"
 	"server/internal/pkg/dto"
 	"server/internal/pkg/entities"
-	"server/internal/service"
+	"server/internal/service/csat"
 
 	"github.com/sirupsen/logrus"
 )
 
 type CSATAnswerHandler struct {
-	as service.ICSATSAnswerService
-	qs service.ICSATQuestionService
+	as csat.ICSATAnswerService
+	qs csat.ICSATQuestionService
 }
 
 // @Summary Ответить на опрос CSAT

@@ -5,12 +5,12 @@ import (
 	"net/http"
 	"server/internal/apperrors"
 	"server/internal/pkg/dto"
-	"server/internal/service"
+	"server/internal/service/csrf"
 
 	"github.com/sirupsen/logrus"
 )
 
-func CSRFMiddleware(cs service.ICSRFService) func(http.Handler) http.Handler {
+func CSRFMiddleware(cs csrf.ICSRFService) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			logger := r.Context().Value(dto.LoggerKey).(*logrus.Logger)

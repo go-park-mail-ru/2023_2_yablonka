@@ -1,34 +1,36 @@
-package task
+package comment
 
 import (
 	"context"
 	"server/internal/pkg/dto"
 	"server/internal/pkg/entities"
 	"server/internal/storage"
+
+	embedded "server/internal/service/comment/embedded"
+	micro "server/internal/service/comment/microservice"
+
+	"google.golang.org/grpc"
 )
 
-type CommentService struct {
-	storage storage.ICommentStorage
+// Интерфейс для сервиса комментариев
+//
+//go:generate mockgen -source=$GOFILE -destination=../../mocks/mock_service/$GOFILE -package=mock_service
+type ICommentService interface {
+	// Create
+	// создает новый комментарий
+	// или возвращает ошибки ...
+	Create(context.Context, dto.NewCommentInfo) (*entities.Comment, error)
+	// GetFromTask
+	// возвращает все комментарии у задания
+	// или возвращает ошибки ...
+	GetFromTask(context.Context, dto.TaskID) (*[]dto.CommentInfo, error)
 }
 
-// NewBoardService
-// возвращает BoardService с инициализированным хранилищем
-func NewCommentService(storage storage.ICommentStorage) *CommentService {
-	return &CommentService{
-		storage: storage,
-	}
+func NewEmbeddedCommentService(commentStorage storage.ICommentStorage) *embedded.CommentService {
+	return embedded.NewCommentService(commentStorage)
 }
 
-// GetFromTask
-// возвращает все комментарии у задания
-// или возвращает ошибки ...
-func (cs CommentService) GetFromTask(ctx context.Context, id dto.TaskID) (*[]dto.CommentInfo, error) {
-	return cs.storage.GetFromTask(ctx, id)
-}
-
-// Create
-// создает новый комментарий
-// или возвращает ошибки ...
-func (cs CommentService) Create(ctx context.Context, info dto.NewCommentInfo) (*entities.Comment, error) {
-	return cs.storage.Create(ctx, info)
+// TODO: Board microservice
+func NewMicroCommentService(commentStorage storage.ICommentStorage, connection *grpc.ClientConn) *micro.CommentService {
+	return micro.NewCommentService(commentStorage)
 }

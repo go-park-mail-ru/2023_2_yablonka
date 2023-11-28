@@ -5,44 +5,40 @@ import (
 	"server/internal/pkg/dto"
 	"server/internal/pkg/entities"
 	"server/internal/storage"
+
+	embedded "server/internal/service/task/embedded"
+	micro "server/internal/service/task/microservice"
+
+	"google.golang.org/grpc"
 )
 
-type TaskService struct {
-	storage storage.ITaskStorage
+// Интерфейс для сервиса заданий
+//
+//go:generate mockgen -source=$GOFILE -destination=../../mocks/mock_service/$GOFILE -package=mock_service
+type ITaskService interface {
+	// Create
+	// создает новое задание
+	// или возвращает ошибки ...
+	Create(context.Context, dto.NewTaskInfo) (*entities.Task, error)
+	// Read
+	// возвращает заание с привязанными пользователями
+	// или возвращает ошибки ...
+	Read(context.Context, dto.TaskID) (*entities.Task, error)
+	// Update
+	// обновляет задание
+	// или возвращает ошибки ...
+	Update(context.Context, dto.UpdatedTaskInfo) error
+	// Delete
+	// удаляет задание
+	// или возвращает ошибки ...
+	Delete(context.Context, dto.TaskID) error
 }
 
-// NewBoardService
-// возвращает BoardService с инициализированным хранилищем
-func NewTaskService(storage storage.ITaskStorage) *TaskService {
-	return &TaskService{
-		storage: storage,
-	}
+func NewEmbeddedTaskService(taskStorage storage.ITaskStorage) *embedded.TaskService {
+	return embedded.NewTaskService(taskStorage)
 }
 
-// Read
-// возвращает задание
-// или возвращает ошибки ...
-func (ts TaskService) Read(ctx context.Context, id dto.TaskID) (*entities.Task, error) {
-	return ts.storage.Read(ctx, id)
-}
-
-// Create
-// создает новое задание
-// или возвращает ошибки ...
-func (ts TaskService) Create(ctx context.Context, info dto.NewTaskInfo) (*entities.Task, error) {
-	return ts.storage.Create(ctx, info)
-}
-
-// Update
-// обновляет задание
-// или возвращает ошибки ...
-func (ts TaskService) Update(ctx context.Context, info dto.UpdatedTaskInfo) error {
-	return ts.storage.Update(ctx, info)
-}
-
-// Delete
-// удаляет задание
-// или возвращает ошибки ...
-func (ts TaskService) Delete(ctx context.Context, id dto.TaskID) error {
-	return ts.storage.Delete(ctx, id)
+// TODO: Board microservice
+func NewMicroTaskService(taskStorage storage.ITaskStorage, connection *grpc.ClientConn) *micro.TaskService {
+	return micro.NewTaskService(taskStorage)
 }

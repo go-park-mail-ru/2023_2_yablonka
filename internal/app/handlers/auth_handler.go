@@ -6,7 +6,9 @@ import (
 	"net/http"
 	"server/internal/apperrors"
 	"server/internal/pkg/dto"
-	"server/internal/service"
+	"server/internal/service/auth"
+	"server/internal/service/csrf"
+	"server/internal/service/user"
 	"time"
 
 	"github.com/asaskevich/govalidator"
@@ -14,20 +16,20 @@ import (
 )
 
 type AuthHandler struct {
-	as service.IAuthService
-	us service.IUserService
-	cs service.ICSRFService
+	as auth.IAuthService
+	us user.IUserService
+	cs csrf.ICSRFService
 }
 
-func (ah AuthHandler) GetAuthService() service.IAuthService {
+func (ah AuthHandler) GetAuthService() auth.IAuthService {
 	return ah.as
 }
 
-func (ah AuthHandler) GetUserService() service.IUserService {
+func (ah AuthHandler) GetUserService() user.IUserService {
 	return ah.us
 }
 
-func (ah AuthHandler) GetCSRFService() service.ICSRFService {
+func (ah AuthHandler) GetCSRFService() csrf.ICSRFService {
 	return ah.cs
 }
 

@@ -6,13 +6,13 @@ import (
 	"server/internal/apperrors"
 	_ "server/internal/pkg/doc_structs"
 	"server/internal/pkg/dto"
-	"server/internal/service"
+	"server/internal/service/csat"
 
 	"github.com/sirupsen/logrus"
 )
 
 type CSATQuestionHandler struct {
-	qs service.ICSATQuestionService
+	qs csat.ICSATQuestionService
 }
 
 // @Summary Получить вопросы CSAT

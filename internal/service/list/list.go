@@ -5,37 +5,36 @@ import (
 	"server/internal/pkg/dto"
 	"server/internal/pkg/entities"
 	"server/internal/storage"
+
+	embedded "server/internal/service/list/embedded"
+	micro "server/internal/service/list/microservice"
+
+	"google.golang.org/grpc"
 )
 
-type ListService struct {
-	storage storage.IListStorage
+// Интерфейс для сервиса списков заданий
+//
+//go:generate mockgen -source=$GOFILE -destination=../../mocks/mock_service/$GOFILE -package=mock_service
+type IListService interface {
+	// Create
+	// создает новый список
+	// или возвращает ошибки ...
+	Create(context.Context, dto.NewListInfo) (*entities.List, error)
+	// Update
+	// обновляет список
+	// или возвращает ошибки ...
+	Update(context.Context, dto.UpdatedListInfo) error
+	// Delete
+	// удаляет список по id
+	// или возвращает ошибки ...
+	Delete(context.Context, dto.ListID) error
 }
 
-// NewBoardService
-// возвращает BoardService с инициализированным хранилищем
-func NewListService(storage storage.IListStorage) *ListService {
-	return &ListService{
-		storage: storage,
-	}
+func NewEmbeddedListService(listStorage storage.IListStorage) *embedded.ListService {
+	return embedded.NewListService(listStorage)
 }
 
-// Create
-// создает новый список
-// или возвращает ошибки ...
-func (ls ListService) Create(ctx context.Context, info dto.NewListInfo) (*entities.List, error) {
-	return ls.storage.Create(ctx, info)
-}
-
-// Update
-// обновляет список
-// или возвращает ошибки ...
-func (ls ListService) Update(ctx context.Context, info dto.UpdatedListInfo) error {
-	return ls.storage.Update(ctx, info)
-}
-
-// Delete
-// удаляет список по id
-// или возвращает ошибки ...
-func (ls ListService) Delete(ctx context.Context, id dto.ListID) error {
-	return ls.storage.Delete(ctx, id)
+// TODO: List microservice
+func NewMicroListService(listStorage storage.IListStorage, connection *grpc.ClientConn) *micro.ListService {
+	return micro.NewListService(listStorage)
 }

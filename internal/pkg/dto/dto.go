@@ -459,9 +459,9 @@ type NewTaskInfo struct {
 type UpdatedTaskInfo struct {
 	ID           uint64     `json:"id"`
 	Name         string     `json:"name"`
-	Description  *string    `json:"description"`
-	Start        *time.Time `json:"start"`
-	End          *time.Time `json:"end"`
+	Description  *string    `json:"description,omitempty"`
+	Start        *time.Time `json:"start,omitempty"`
+	End          *time.Time `json:"end,omitempty"`
 	ListPosition string     `json:"list_position"`
 }
 

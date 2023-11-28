@@ -8,11 +8,11 @@ import (
 	"server/internal/apperrors"
 	_ "server/internal/pkg/doc_structs"
 	"server/internal/pkg/dto"
-	"server/internal/service"
+	"server/internal/service/list"
 )
 
 type ListHandler struct {
-	ls service.IListService
+	ls list.IListService
 }
 
 // @Summary Создать список

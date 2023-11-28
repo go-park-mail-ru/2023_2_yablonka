@@ -1,4 +1,4 @@
-package service
+package microservice
 
 import (
 	"context"
@@ -8,6 +8,8 @@ import (
 	"server/internal/storage"
 	"testing"
 	"time"
+
+	"google.golang.org/grpc"
 )
 
 func TestAuthService_AuthUser(t *testing.T) {
@@ -149,6 +151,7 @@ func TestNewAuthService(t *testing.T) {
 	type args struct {
 		config      config.SessionConfig
 		authStorage storage.IAuthStorage
+		client      *grpc.ClientConn
 	}
 	tests := []struct {
 		name string
@@ -159,7 +162,8 @@ func TestNewAuthService(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := NewAuthService(tt.args.config, tt.args.authStorage); !reflect.DeepEqual(got, tt.want) {
+			got := NewAuthService(tt.args.config, tt.args.authStorage, tt.args.client)
+			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("NewAuthService() = %v, want %v", got, tt.want)
 			}
 		})

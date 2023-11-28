@@ -2,6 +2,14 @@ package handlers
 
 import (
 	"server/internal/service"
+	"server/internal/service/auth"
+	"server/internal/service/board"
+	"server/internal/service/csat"
+	"server/internal/service/csrf"
+	"server/internal/service/list"
+	"server/internal/service/task"
+	"server/internal/service/user"
+	"server/internal/service/workspace"
 
 	"github.com/sirupsen/logrus"
 )
@@ -36,7 +44,7 @@ func NewHandlers(services *service.Services) *Handlers {
 
 // NewAuthHandler
 // возвращает AuthHandler с необходимыми сервисами
-func NewAuthHandler(as service.IAuthService, us service.IUserService, cs service.ICSRFService) *AuthHandler {
+func NewAuthHandler(as auth.IAuthService, us user.IUserService, cs csrf.ICSRFService) *AuthHandler {
 	return &AuthHandler{
 		as: as,
 		us: us,
@@ -46,7 +54,7 @@ func NewAuthHandler(as service.IAuthService, us service.IUserService, cs service
 
 // NewCSATHandler
 // возвращает CSATHandler с необходимыми сервисами
-func NewCSATQuestionHandler(qs service.ICSATQuestionService) *CSATQuestionHandler {
+func NewCSATQuestionHandler(qs csat.ICSATQuestionService) *CSATQuestionHandler {
 	return &CSATQuestionHandler{
 		qs: qs,
 	}
@@ -54,7 +62,7 @@ func NewCSATQuestionHandler(qs service.ICSATQuestionService) *CSATQuestionHandle
 
 // NewCSATHandler
 // возвращает CSATHandler с необходимыми сервисами
-func NewCSATAnswerHandler(as service.ICSATSAnswerService, qs service.ICSATQuestionService) *CSATAnswerHandler {
+func NewCSATAnswerHandler(as csat.ICSATAnswerService, qs csat.ICSATQuestionService) *CSATAnswerHandler {
 	return &CSATAnswerHandler{
 		as: as,
 		qs: qs,
@@ -63,7 +71,7 @@ func NewCSATAnswerHandler(as service.ICSATSAnswerService, qs service.ICSATQuesti
 
 // NewUserHandler
 // возвращает UserHandler с необходимыми сервисами
-func NewUserHandler(us service.IUserService) *UserHandler {
+func NewUserHandler(us user.IUserService) *UserHandler {
 	return &UserHandler{
 		us: us,
 	}
@@ -71,7 +79,7 @@ func NewUserHandler(us service.IUserService) *UserHandler {
 
 // NewBoardHandler
 // возвращает BoardHandler с необходимыми сервисами
-func NewBoardHandler(as service.IAuthService, bs service.IBoardService) *BoardHandler {
+func NewBoardHandler(as auth.IAuthService, bs board.IBoardService) *BoardHandler {
 	return &BoardHandler{
 		as: as,
 		bs: bs,
@@ -80,7 +88,7 @@ func NewBoardHandler(as service.IAuthService, bs service.IBoardService) *BoardHa
 
 // NewWorkspaceHandler
 // возвращает WorkspaceHandler с необходимыми сервисами
-func NewWorkspaceHandler(ws service.IWorkspaceService) *WorkspaceHandler {
+func NewWorkspaceHandler(ws workspace.IWorkspaceService) *WorkspaceHandler {
 	return &WorkspaceHandler{
 		ws: ws,
 	}
@@ -88,7 +96,7 @@ func NewWorkspaceHandler(ws service.IWorkspaceService) *WorkspaceHandler {
 
 // NewListHandler
 // возвращает ListHandler с необходимыми сервисами
-func NewListHandler(ls service.IListService) *ListHandler {
+func NewListHandler(ls list.IListService) *ListHandler {
 	return &ListHandler{
 		ls: ls,
 	}
@@ -96,7 +104,7 @@ func NewListHandler(ls service.IListService) *ListHandler {
 
 // NewTaskHandler
 // возвращает TaskHandler с необходимыми сервисами
-func NewTaskHandler(ts service.ITaskService) *TaskHandler {
+func NewTaskHandler(ts task.ITaskService) *TaskHandler {
 	return &TaskHandler{
 		ts: ts,
 	}
