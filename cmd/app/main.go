@@ -15,6 +15,8 @@ import (
 	"server/internal/storage/postgresql"
 
 	"github.com/asaskevich/govalidator"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 const configPath string = "config/config.yml"
@@ -53,7 +55,17 @@ func main() {
 	storages := storage.NewPostgresStorages(dbConnection)
 	logger.Info("Storages configured")
 
-	services := service.NewEmbeddedServices(storages, *config.Session)
+	grpcConn, err := grpc.Dial(
+		fmt.Sprintf("%v:%v", config.Server.MicroserviceHostname, config.Server.MicroservicePort),
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+	)
+	if err != nil {
+		logger.Fatal(err.Error())
+	}
+	logger.Info("GRPC client started")
+	defer grpcConn.Close()
+
+	services := service.NewMicroServices(storages, *config.Session, grpcConn)
 	logger.Info("Services configured")
 
 	handlers := handlers.NewHandlers(services)

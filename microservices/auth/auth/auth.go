@@ -11,6 +11,7 @@ import (
 	"server/internal/storage"
 	"time"
 
+	"github.com/sirupsen/logrus"
 	"google.golang.org/protobuf/types/known/durationpb"
 	"google.golang.org/protobuf/types/known/emptypb"
 	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
@@ -20,13 +21,15 @@ type AuthService struct {
 	authStorage     storage.IAuthStorage
 	sessionDuration time.Duration
 	sessionIDLength uint
+	logger          *logrus.Logger
 	UnimplementedAuthServiceServer
 }
 
-func NewAuthService(config config.SessionConfig, authStorage storage.IAuthStorage) *AuthService {
+func NewAuthService(config config.SessionConfig, authStorage storage.IAuthStorage, logger *logrus.Logger) *AuthService {
 	return &AuthService{
 		sessionDuration: config.Duration,
 		sessionIDLength: config.IDLength,
+		logger:          logger,
 		authStorage:     authStorage,
 	}
 }
@@ -35,13 +38,14 @@ func NewAuthService(config config.SessionConfig, authStorage storage.IAuthStorag
 // возвращает уникальную строку авторизации и её длительность
 // или возвращает ошибки apperrors.ErrTokenNotGenerated (500)
 func (a *AuthService) AuthUser(ctx context.Context, id *UserID) (*SessionToken, error) {
-
+	funcName := "AuthUser"
 	expiresAt := time.Now().Add(a.sessionDuration)
 
 	sessionID, err := generateString(a.sessionIDLength)
 	if err != nil {
-		return nil, apperrors.ErrTokenNotGenerated
+		return &SessionToken{}, apperrors.ErrTokenNotGenerated
 	}
+	authServiceDebugLog(a.logger, funcName, "Session ID generated")
 
 	session := &entities.Session{
 		SessionID:  sessionID,
@@ -51,8 +55,9 @@ func (a *AuthService) AuthUser(ctx context.Context, id *UserID) (*SessionToken, 
 
 	err = a.authStorage.CreateSession(ctx, session)
 	if err != nil {
-		return nil, err
+		return &SessionToken{}, err
 	}
+	authServiceDebugLog(a.logger, funcName, "Session created")
 
 	return &SessionToken{
 		ID:             sessionID,
@@ -71,11 +76,11 @@ func (a *AuthService) VerifyAuth(ctx context.Context, token *SessionToken) (*Use
 
 	sessionObj, err := a.authStorage.GetSession(ctx, convertedSession)
 	if err != nil {
-		return nil, err
+		return &UserID{}, err
 	}
 
 	if sessionObj.ExpiryDate.Before(time.Now()) {
-		return nil, apperrors.ErrSessionExpired
+		return &UserID{}, apperrors.ErrSessionExpired
 	}
 	return &UserID{Value: sessionObj.UserID}, nil
 }
@@ -88,7 +93,7 @@ func (a *AuthService) LogOut(ctx context.Context, token *SessionToken) (*emptypb
 		ID:             token.ID,
 		ExpirationDate: token.ExpirationDate.AsTime(),
 	}
-	return nil, a.authStorage.DeleteSession(ctx, convertedSession)
+	return &emptypb.Empty{}, a.authStorage.DeleteSession(ctx, convertedSession)
 }
 
 // GetLifetime
@@ -110,4 +115,13 @@ func generateString(n uint) (string, error) {
 		buf[i] = letterRunes[j.Int64()]
 	}
 	return string(buf), nil
+}
+
+func authServiceDebugLog(logger *logrus.Logger, function string, message string) {
+	logger.
+		WithFields(logrus.Fields{
+			"route_node": "grpc_service",
+			"function":   function,
+		}).
+		Debug(message)
 }

@@ -10,7 +10,9 @@ import (
 	microservice "server/microservices/auth/auth"
 	"time"
 
+	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
+	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -37,10 +39,15 @@ func NewAuthService(config config.SessionConfig, authStorage storage.IAuthStorag
 // возвращает уникальную строку авторизации и её длительность
 // или возвращает ошибки apperrors.ErrTokenNotGenerated (500)
 func (a *AuthService) AuthUser(ctx context.Context, id dto.UserID) (dto.SessionToken, error) {
+	funcName := "AuthUser"
+	logger := ctx.Value(dto.LoggerKey).(*logrus.Logger)
+
+	authServiceDebugLog(logger, funcName, "Contacting GRPC server")
 	sessionpb, err := a.client.AuthUser(ctx, &microservice.UserID{Value: id.Value})
 	if err != nil {
-		return dto.SessionToken{}, nil
+		return dto.SessionToken{}, err
 	}
+	authServiceDebugLog(logger, funcName, "Info received")
 
 	return dto.SessionToken{
 		ID:             sessionpb.ID,
@@ -78,7 +85,7 @@ func (a *AuthService) LogOut(ctx context.Context, token dto.SessionToken) error 
 // GetLifetime
 // возвращает длительность авторизации
 func (a *AuthService) GetLifetime(ctx context.Context) time.Duration {
-	lifetimepb, err := a.client.GetLifetime(ctx, nil)
+	lifetimepb, err := a.client.GetLifetime(ctx, &emptypb.Empty{})
 	if err != nil {
 		return 0
 	}
@@ -98,4 +105,13 @@ func generateString(n uint) (string, error) {
 		buf[i] = letterRunes[j.Int64()]
 	}
 	return string(buf), nil
+}
+
+func authServiceDebugLog(logger *logrus.Logger, function string, message string) {
+	logger.
+		WithFields(logrus.Fields{
+			"route_node": "service",
+			"function":   function,
+		}).
+		Debug(message)
 }

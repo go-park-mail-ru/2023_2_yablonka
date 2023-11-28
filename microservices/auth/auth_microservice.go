@@ -13,14 +13,11 @@ type Microservices struct {
 	AuthService auth.AuthServiceServer
 }
 
-func NewMicroServices(config *config.Config, storages *storage.Storages) *Microservices {
-	return &Microservices{
-		AuthService: auth.NewAuthService(*config.Session, storages.Auth),
-	}
-}
-
 func RegisterServices(config *config.Config, storages *storage.Storages, server *grpc.Server, logger *logrus.Logger) {
-	authServer := auth.NewAuthService(*config.Session, storages.Auth)
+	logger.Debug("Creating auth GRPC server")
+	authServer := auth.NewAuthService(*config.Session, storages.Auth, logger)
+	logger.Debug("Auth GRPC server created")
 
 	auth.RegisterAuthServiceServer(server, authServer)
+	logger.Debug("Auth GRPC server registered")
 }

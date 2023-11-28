@@ -36,6 +36,5 @@ RUN mkdir -p /img
 RUN chown -R nonroot:nonroot /img 
 
 EXPOSE 8080
-EXPOSE 5432
 
 USER nonroot:nonroot

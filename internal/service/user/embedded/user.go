@@ -53,7 +53,7 @@ func (us UserService) RegisterUser(ctx context.Context, info dto.AuthInfo) (*ent
 // проверяет пароль пользователя по почте
 // или возвращает ошибки apperrors.ErrUserNotFound (401), apperrors.ErrWrongPassword (401)
 func (us UserService) CheckPassword(ctx context.Context, info dto.AuthInfo) (*entities.User, error) {
-	funcName := "RegisterUser"
+	funcName := "CheckPassword"
 	logger := ctx.Value(dto.LoggerKey).(*logrus.Logger)
 
 	user, err := us.storage.GetWithLogin(ctx, dto.UserLogin{Value: info.Email})

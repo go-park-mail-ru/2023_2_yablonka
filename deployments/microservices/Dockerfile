@@ -34,6 +34,5 @@ COPY --from=build-stage ./app/config/config.yml ./config/config.yml
 RUN chmod 755 ./yablonka-microservices
 
 EXPOSE 8083
-EXPOSE 5432
 
 USER nonroot:nonroot
