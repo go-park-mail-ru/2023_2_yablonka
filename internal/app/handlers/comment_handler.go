@@ -8,7 +8,7 @@ import (
 	"server/internal/pkg/dto"
 	"server/internal/service/comment"
 
-	"github.com/sirupsen/logrus"
+	logger "server/internal/logging"
 )
 
 type CommentHandler struct {
@@ -32,59 +32,47 @@ type CommentHandler struct {
 // @Router /comment/create/ [post]
 func (ch CommentHandler) Create(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
-	funcName := "Create"
+	funcName := "CommentHandler.Create"
+	nodeName := "handler"
+	errorMessage := "Creating comment failed with error: "
+	failBorder := "----------------- Create comment FAIL -----------------"
 
-	logger := rCtx.Value(dto.LoggerKey).(*logrus.Logger)
-	logger.Info("Creating a new comment")
+	logger := rCtx.Value(dto.LoggerKey).(logger.ILogger)
+
+	logger.Info("----------------- Create comment -----------------")
 
 	var newCommentInfo dto.NewCommentInfo
 	err := json.NewDecoder(r.Body).Decode(&newCommentInfo)
 	if err != nil {
-		handlerDebugLog(logger, funcName, "Creating a new task failed with error "+err.Error())
+		logger.Error(errorMessage + err.Error())
+		logger.Info(failBorder)
 		apperrors.ReturnError(apperrors.BadRequestResponse, w, r)
 		return
 	}
-	handlerDebugLog(logger, funcName, "JSON Decoded")
-
-	// _, err = govalidator.ValidateStruct(newCommentInfo)
-	// if err != nil {
-	// 	logger.Error("Creating a new board failed")
-	// 	handlerDebugLog(logger, funcName, "Creating a new board failed with error "+err.Error())
-	// 	apperrors.ReturnError(apperrors.BadRequestResponse, w, r)
-	// 	return
-	// }
-	// handlerDebugLog(logger, funcName, "New task data validated")
+	logger.Debug("JSON Decoded", funcName, nodeName)
 
 	comment, err := ch.cs.Create(rCtx, newCommentInfo)
 	if err != nil {
-		handlerDebugLog(logger, funcName, "Creating a new comment failed with error "+err.Error())
+		logger.Error(errorMessage + err.Error())
+		logger.Info(failBorder)
 		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
 		return
 	}
-	handlerDebugLog(logger, funcName, "Comment created")
+	logger.Debug("Comment created", funcName, nodeName)
 
 	response := dto.JSONResponse{
 		Body: dto.JSONMap{
 			"comment": comment,
 		},
 	}
-
-	jsonResponse, err := json.Marshal(response)
+	err = WriteResponse(response, w, r)
 	if err != nil {
-		handlerDebugLog(logger, funcName, "Creating a new comment failed with error "+err.Error())
+		logger.Error(errorMessage + err.Error())
+		logger.Info(failBorder)
 		apperrors.ReturnError(apperrors.InternalServerErrorResponse, w, r)
 		return
 	}
-	handlerDebugLog(logger, funcName, "JSON response marshaled")
+	logger.Debug("response written", funcName, nodeName)
 
-	_, err = w.Write(jsonResponse)
-	if err != nil {
-		handlerDebugLog(logger, funcName, "Creating a new comment failed with error "+err.Error())
-		apperrors.ReturnError(apperrors.InternalServerErrorResponse, w, r)
-		return
-	}
-	r.Body.Close()
-
-	handlerDebugLog(logger, funcName, "Response written")
-	logger.Info("Finished creating comment")
+	logger.Info("----------------- Create comment SUCCESS -----------------")
 }

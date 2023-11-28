@@ -1,9 +1,7 @@
 package handlers
 
 import (
-	"context"
 	"encoding/json"
-	"log"
 	"net/http"
 	"server/internal/apperrors"
 	_ "server/internal/pkg/doc_structs"
@@ -12,8 +10,9 @@ import (
 	"server/internal/service/auth"
 	"server/internal/service/board"
 
+	logger "server/internal/logging"
+
 	"github.com/asaskevich/govalidator"
-	"github.com/sirupsen/logrus"
 )
 
 type BoardHandler struct {
@@ -39,67 +38,59 @@ type BoardHandler struct {
 func (bh BoardHandler) GetFullBoard(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
 	funcName := "GetFullBoard"
+	nodeName := "handler"
+	errorMessage := "Getting full board failed with error: "
+	failBorder := "----------------- Get board FAIL -----------------"
 
-	logger := rCtx.Value(dto.LoggerKey).(*logrus.Logger)
-	logger.Info("Getting a board")
+	logger := rCtx.Value(dto.LoggerKey).(logger.ILogger)
+
+	logger.Info("----------------- Get board -----------------")
 
 	var boardID dto.BoardID
 	err := json.NewDecoder(r.Body).Decode(&boardID)
 	if err != nil {
-		logger.Error("Getting a board failed")
-		handlerDebugLog(logger, funcName, "Getting a board failed with error: "+err.Error())
+		logger.Error(errorMessage + err.Error())
+		logger.Info(failBorder)
 		apperrors.ReturnError(apperrors.BadRequestResponse, w, r)
 		return
 	}
-	handlerDebugLog(logger, funcName, "JSON Decoded")
+	logger.Debug("JSON Decoded", funcName, nodeName)
 
 	user, ok := rCtx.Value(dto.UserObjKey).(*entities.User)
 	if !ok {
-		logger.Error("Getting a board failed")
-		handlerDebugLog(logger, funcName, "Getting a board failed -- no user passed in context")
+		logger.Error(errorMessage + err.Error())
+		logger.Info(failBorder)
 		apperrors.ReturnError(apperrors.GenericUnauthorizedResponse, w, r)
 		return
 	}
-	handlerDebugLog(logger, funcName, "User object acquired from context")
+	logger.Debug("User object acquired from context", funcName, nodeName)
 
 	boardRequest := dto.IndividualBoardRequest{
 		UserID:  user.ID,
 		BoardID: boardID.Value,
 	}
-
 	board, err := bh.bs.GetFullBoard(rCtx, boardRequest)
 	if err != nil {
-		logger.Error("Getting a board failed")
-		handlerDebugLog(logger, funcName, "Getting a board failed with error "+err.Error())
+		logger.Error(errorMessage + err.Error())
+		logger.Info(failBorder)
 		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
 		return
 	}
-	handlerDebugLog(logger, funcName, "Got board")
+	logger.Debug("Got board", funcName, nodeName)
 
 	response := dto.JSONResponse{
 		Body: board,
 	}
-
-	jsonResponse, err := json.Marshal(response)
+	err = WriteResponse(response, w, r)
 	if err != nil {
-		logger.Error("Getting a board failed")
-		handlerDebugLog(logger, funcName, "Getting a board failed with error "+err.Error())
+		logger.Error(errorMessage + err.Error())
+		logger.Info(failBorder)
 		apperrors.ReturnError(apperrors.InternalServerErrorResponse, w, r)
 		return
 	}
-	handlerDebugLog(logger, funcName, "JSON response marshaled")
+	logger.Debug("response written", funcName, nodeName)
 
-	_, err = w.Write(jsonResponse)
-	if err != nil {
-		logger.Error("Getting a board failed")
-		handlerDebugLog(logger, funcName, "Getting a board failed with error "+err.Error())
-		apperrors.ReturnError(apperrors.InternalServerErrorResponse, w, r)
-		return
-	}
-	r.Body.Close()
-
-	handlerDebugLog(logger, funcName, "Response written")
-	logger.Info("Finished getting board")
+	logger.Info("----------------- Get board SUCCESS -----------------")
 }
 
 // @Summary Создать доску
@@ -120,37 +111,40 @@ func (bh BoardHandler) GetFullBoard(w http.ResponseWriter, r *http.Request) {
 func (bh BoardHandler) Create(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
 	funcName := "Create"
+	nodeName := "handler"
+	errorMessage := "Getting full board failed with error: "
+	failBorder := "----------------- Create board FAIL -----------------"
 
-	logger := rCtx.Value(dto.LoggerKey).(*logrus.Logger)
-	logger.Info("Creating a new board")
+	logger := rCtx.Value(dto.LoggerKey).(logger.ILogger)
+	logger.Info("----------------- Creating board -----------------")
 
 	var newBoardRequest dto.NewBoardRequest
 	err := json.NewDecoder(r.Body).Decode(&newBoardRequest)
 	if err != nil {
-		logger.Error("Creating a new board failed")
-		handlerDebugLog(logger, funcName, "Creating a new board failed with error "+err.Error())
+		logger.Error(errorMessage + err.Error())
+		logger.Info(failBorder)
 		apperrors.ReturnError(apperrors.BadRequestResponse, w, r)
 		return
 	}
-	handlerDebugLog(logger, funcName, "JSON Decoded")
+	logger.Debug("JSON Decoded", funcName, nodeName)
 
 	user, ok := rCtx.Value(dto.UserObjKey).(*entities.User)
 	if !ok {
-		logger.Error("Creating a new board failed")
-		handlerDebugLog(logger, funcName, "Creating a new board failed failed -- no user passed in context")
+		logger.Error(errorMessage + err.Error())
+		logger.Info(failBorder)
 		apperrors.ReturnError(apperrors.GenericUnauthorizedResponse, w, r)
 		return
 	}
-	handlerDebugLog(logger, funcName, "User object acquired from context")
+	logger.Debug("User object acquired from context", funcName, nodeName)
 
 	_, err = govalidator.ValidateStruct(newBoardRequest)
 	if err != nil {
-		logger.Error("Creating a new board failed")
-		handlerDebugLog(logger, funcName, "Creating a new board failed with error "+err.Error())
+		logger.Error(errorMessage + err.Error())
+		logger.Info(failBorder)
 		apperrors.ReturnError(apperrors.BadRequestResponse, w, r)
 		return
 	}
-	handlerDebugLog(logger, funcName, "New board data validated")
+	logger.Debug("New board data validated", funcName, nodeName)
 
 	newBoardInfo := dto.NewBoardInfo{
 		Name:        newBoardRequest.Name,
@@ -158,42 +152,30 @@ func (bh BoardHandler) Create(w http.ResponseWriter, r *http.Request) {
 		OwnerID:     user.ID,
 		Thumbnail:   newBoardRequest.Thumbnail,
 	}
-
 	board, err := bh.bs.Create(rCtx, newBoardInfo)
 	if err != nil {
-		logger.Error("Creating a new board failed")
-		handlerDebugLog(logger, funcName, "Creating a new board failed with error "+err.Error())
+		logger.Error(errorMessage + err.Error())
+		logger.Info(failBorder)
 		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
 		return
 	}
-	handlerDebugLog(logger, funcName, "Board created")
+	logger.Debug("Board created", funcName, nodeName)
 
 	response := dto.JSONResponse{
 		Body: dto.JSONMap{
 			"board": board,
 		},
 	}
-
-	jsonResponse, err := json.Marshal(response)
+	err = WriteResponse(response, w, r)
 	if err != nil {
-		logger.Error("Creating a new board failed")
-		handlerDebugLog(logger, funcName, "Creating a new board failed with error "+err.Error())
+		logger.Error(errorMessage + err.Error())
+		logger.Info(failBorder)
 		apperrors.ReturnError(apperrors.InternalServerErrorResponse, w, r)
 		return
 	}
-	handlerDebugLog(logger, funcName, "JSON response marshaled")
+	logger.Debug("response written", funcName, nodeName)
 
-	_, err = w.Write(jsonResponse)
-	if err != nil {
-		logger.Error("Creating a new board failed")
-		handlerDebugLog(logger, funcName, "Creating a new board failed with error "+err.Error())
-		apperrors.ReturnError(apperrors.InternalServerErrorResponse, w, r)
-		return
-	}
-	r.Body.Close()
-
-	handlerDebugLog(logger, funcName, "Response written")
-	logger.Info("Finished creating board")
+	logger.Info("----------------- Create board SUCCESS -----------------")
 }
 
 // @Summary Обновить доску
@@ -212,59 +194,47 @@ func (bh BoardHandler) Create(w http.ResponseWriter, r *http.Request) {
 //
 // @Router /board/update/ [post]
 func (bh BoardHandler) UpdateData(w http.ResponseWriter, r *http.Request) {
-	log.Println("--------------BoardHandler.UpdateData Endpoint START--------------")
-
 	rCtx := r.Context()
+	funcName := "UpdateData"
+	nodeName := "handler"
+	errorMessage := "Updating full board failed with error: "
+	failBorder := "----------------- Updating board FAIL -----------------"
+
+	logger := rCtx.Value(dto.LoggerKey).(logger.ILogger)
+	logger.Info("----------------- Updating board -----------------")
 
 	var boardInfo dto.UpdatedBoardInfo
 	err := json.NewDecoder(r.Body).Decode(&boardInfo)
 	if err != nil {
-		log.Println(err)
-		log.Println("--------------BoardHandler.UpdateData Endpoint FAIL--------------")
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.BadRequestResponse))
+		logger.Error(errorMessage + err.Error())
+		logger.Info(failBorder)
+		apperrors.ReturnError(apperrors.BadRequestResponse, w, r)
 		return
 	}
-	log.Println("request struct decoded")
-
-	// _, err = govalidator.ValidateStruct(boardInfo)
-	// if err != nil {
-	// 	*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.BadRequestResponse))
-	// 	return
-	// }
+	logger.Debug("JSON Decoded", funcName, nodeName)
 
 	err = bh.bs.UpdateData(rCtx, boardInfo)
 	if err != nil {
-		log.Println(err)
-		log.Println("--------------BoardHandler.UpdateData Endpoint FAIL--------------")
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.ErrorMap[err]))
+		logger.Error(errorMessage + err.Error())
+		logger.Info(failBorder)
+		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
 		return
 	}
-	log.Println("board data updated")
+	logger.Debug("board data updated", funcName, nodeName)
 
 	response := dto.JSONResponse{
 		Body: dto.JSONMap{},
 	}
-
-	jsonResponse, err := json.Marshal(response)
+	err = WriteResponse(response, w, r)
 	if err != nil {
-		log.Println(err)
-		log.Println("--------------BoardHandler.UpdateData Endpoint FAIL--------------")
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.InternalServerErrorResponse))
+		logger.Error(errorMessage + err.Error())
+		logger.Info(failBorder)
+		apperrors.ReturnError(apperrors.InternalServerErrorResponse, w, r)
 		return
 	}
-	log.Println("json response marshalled")
+	logger.Debug("response written", funcName, nodeName)
 
-	_, err = w.Write(jsonResponse)
-	if err != nil {
-		log.Println(err)
-		log.Println("--------------BoardHandler.UpdateData Endpoint FAIL--------------")
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.InternalServerErrorResponse))
-		return
-	}
-	r.Body.Close()
-	log.Println("response written")
-
-	log.Println("--------------BoardHandler.UpdateData Endpoint SUCCESS--------------")
+	logger.Info("----------------- Updating board SUCCESS -----------------")
 }
 
 // @Summary Обновить картинку доски
@@ -283,62 +253,50 @@ func (bh BoardHandler) UpdateData(w http.ResponseWriter, r *http.Request) {
 //
 // @Router /board/update/change_thumbnail/ [post]
 func (bh BoardHandler) UpdateThumbnail(w http.ResponseWriter, r *http.Request) {
-	log.Println("--------------BoardHandler.UpdateThumbnail Endpoint START--------------")
 	rCtx := r.Context()
+	funcName := "UpdateThumbnail"
+	nodeName := "handler"
+	errorMessage := "Updating board thumbnail failed with error: "
+	failBorder := "----------------- Updating board thumbnail FAIL -----------------"
+
+	logger := rCtx.Value(dto.LoggerKey).(logger.ILogger)
+	logger.Info("----------------- Updating board -----------------")
 
 	var boardInfo dto.UpdatedBoardThumbnailInfo
 	err := json.NewDecoder(r.Body).Decode(&boardInfo)
 	if err != nil {
-		log.Println(err)
-		log.Println("--------------BoardHandler.UpdateThumbnail Endpoint FAIL--------------")
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.BadRequestResponse))
+		logger.Error(errorMessage + err.Error())
+		logger.Info(failBorder)
+		apperrors.ReturnError(apperrors.BadRequestResponse, w, r)
 		return
 	}
-	log.Println("request struct decoded")
-
-	// _, err = govalidator.ValidateStruct(boardInfo)
-	// if err != nil {
-	// 	*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.BadRequestResponse))
-	// 	return
-	// }
-
-	//boardInfo.BaseURL = r.URL.Scheme + "://" + r.URL.Host
+	logger.Debug("JSON Decoded", funcName, nodeName)
 
 	urlObj, err := bh.bs.UpdateThumbnail(rCtx, boardInfo)
 	if err != nil {
-		log.Println(err)
-		log.Println("--------------BoardHandler.UpdateThumbnail Endpoint FAIL--------------")
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.ErrorMap[err]))
+		logger.Error(errorMessage + err.Error())
+		logger.Info(failBorder)
+		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
 		return
 	}
-	log.Println("board thumbnail updated")
+	logger.Debug("board thumbnail updated", funcName, nodeName)
 
 	response := dto.JSONResponse{
 		Body: dto.JSONMap{
 			"url": urlObj,
 		},
 	}
-
-	jsonResponse, err := json.Marshal(response)
+	err = WriteResponse(response, w, r)
 	if err != nil {
-		log.Println(err)
-		log.Println("--------------BoardHandler.UpdateThumbnail Endpoint FAIL--------------")
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.InternalServerErrorResponse))
+		logger.Error(errorMessage + err.Error())
+		logger.Info(failBorder)
+		apperrors.ReturnError(apperrors.InternalServerErrorResponse, w, r)
 		return
 	}
-	log.Println("json response marchalled")
+	logger.Debug("response written", funcName, nodeName)
 
-	_, err = w.Write(jsonResponse)
-	if err != nil {
-		log.Println(err)
-		log.Println("--------------BoardHandler.UpdateThumbnail Endpoint FAIL--------------")
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.InternalServerErrorResponse))
-		return
-	}
-	r.Body.Close()
-	log.Println("response written")
-
-	log.Println("--------------BoardHandler.UpdateThumbnail Endpoint SUCCESS--------------")
+	logger.Debug("response written", funcName, nodeName)
+	logger.Info("----------------- Updating board thumbnail SUCCESS -----------------")
 }
 
 // @Summary Удалить доску
@@ -357,179 +315,154 @@ func (bh BoardHandler) UpdateThumbnail(w http.ResponseWriter, r *http.Request) {
 //
 // @Router /board/delete/ [delete]
 func (bh BoardHandler) Delete(w http.ResponseWriter, r *http.Request) {
-	log.Println("--------------BoardHandler.Delete Endpoint START--------------")
-
 	rCtx := r.Context()
+	funcName := "Delete"
+	nodeName := "handler"
+	errorMessage := "Deleting board failed with error: "
+	failBorder := "----------------- Deleting board FAIL -----------------"
+
+	logger := rCtx.Value(dto.LoggerKey).(logger.ILogger)
+	logger.Info("----------------- Deleting board -----------------")
 
 	var boardID dto.BoardID
 	err := json.NewDecoder(r.Body).Decode(&boardID)
 	if err != nil {
-		log.Println(err)
-		log.Println("--------------LogIn Endpoint FAIL--------------")
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.BadRequestResponse))
+		logger.Error(errorMessage + err.Error())
+		logger.Info(failBorder)
+		apperrors.ReturnError(apperrors.BadRequestResponse, w, r)
 		return
 	}
-	log.Println("request struct decoded")
-
-	// _, err = govalidator.ValidateStruct(boardID)
-	// if err != nil {
-	// 	*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.BadRequestResponse))
-	// 	return
-	// }
+	logger.Debug("JSON Decoded", funcName, nodeName)
 
 	err = bh.bs.Delete(rCtx, boardID)
 	if err != nil {
-		log.Println(err)
-		log.Println("--------------LogIn Endpoint FAIL--------------")
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.ErrorMap[err]))
+		logger.Error(errorMessage + err.Error())
+		logger.Info(failBorder)
+		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
 		return
 	}
-	log.Println("board deleted")
+	logger.Debug("board deleted", funcName, nodeName)
 
 	response := dto.JSONResponse{
 		Body: dto.JSONMap{},
 	}
-
-	jsonResponse, err := json.Marshal(response)
+	err = WriteResponse(response, w, r)
 	if err != nil {
-		log.Println(err)
-		log.Println("--------------LogIn Endpoint FAIL--------------")
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.InternalServerErrorResponse))
+		logger.Error(errorMessage + err.Error())
+		logger.Info(failBorder)
+		apperrors.ReturnError(apperrors.InternalServerErrorResponse, w, r)
 		return
 	}
-	log.Println("json response marshalled")
+	logger.Debug("response written", funcName, nodeName)
 
-	_, err = w.Write(jsonResponse)
-	if err != nil {
-		log.Println(err)
-		log.Println("--------------LogIn Endpoint FAIL--------------")
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.InternalServerErrorResponse))
-		return
-	}
-	r.Body.Close()
-	log.Println("response written")
-
-	log.Println("--------------LogIn Endpoint SUCCESS--------------")
+	logger.Debug("response written", funcName, nodeName)
+	logger.Info("----------------- Deleting board SUCCESS -----------------")
 }
 
 func (bh BoardHandler) AddUser(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
 	funcName := "AddUser"
+	nodeName := "handler"
+	errorMessage := "Adding user to board with error: "
+	failBorder := "----------------- Adding user to board FAIL -----------------"
 
-	logger := rCtx.Value(dto.LoggerKey).(*logrus.Logger)
-	logger.Info("Adding user to board")
+	logger := rCtx.Value(dto.LoggerKey).(logger.ILogger)
+	logger.Info("----------------- Adding user to board -----------------")
 
 	var info dto.AddBoardUserRequest
 	err := json.NewDecoder(r.Body).Decode(&info)
 	if err != nil {
-		logger.Error("Adding user to board failed")
-		handlerDebugLog(logger, funcName, "Adding user to board failed with error: "+err.Error())
+		logger.Error(errorMessage + err.Error())
+		logger.Info(failBorder)
 		apperrors.ReturnError(apperrors.BadRequestResponse, w, r)
 		return
 	}
-	handlerDebugLog(logger, funcName, "JSON Decoded")
+	logger.Debug("JSON Decoded", funcName, nodeName)
 
 	_, ok := rCtx.Value(dto.UserObjKey).(*entities.User)
 	if !ok {
-		logger.Error("Adding user to board failed")
-		handlerDebugLog(logger, funcName, "Adding user to board failed -- no user passed in context")
+		logger.Error(errorMessage + err.Error())
+		logger.Info(failBorder)
 		apperrors.ReturnError(apperrors.GenericUnauthorizedResponse, w, r)
 		return
 	}
-	handlerDebugLog(logger, funcName, "User object acquired from context")
+	logger.Debug("User object acquired from context", funcName, nodeName)
 
 	err = bh.bs.AddUser(rCtx, info)
 	if err != nil {
-		logger.Error("Adding user to board failed")
-		handlerDebugLog(logger, funcName, "Adding user to board failed with error "+err.Error())
+		logger.Error(errorMessage + err.Error())
+		logger.Info(failBorder)
 		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
 		return
 	}
-	handlerDebugLog(logger, funcName, "User added")
+	logger.Debug("User added", funcName, nodeName)
 
 	response := dto.JSONResponse{
 		Body: dto.JSONMap{},
 	}
-
-	jsonResponse, err := json.Marshal(response)
+	err = WriteResponse(response, w, r)
 	if err != nil {
-		logger.Error("Adding user to board failed")
-		handlerDebugLog(logger, funcName, "Adding user to board failed with error "+err.Error())
+		logger.Error(errorMessage + err.Error())
+		logger.Info(failBorder)
 		apperrors.ReturnError(apperrors.InternalServerErrorResponse, w, r)
 		return
 	}
-	handlerDebugLog(logger, funcName, "JSON response marshaled")
+	logger.Debug("response written", funcName, nodeName)
 
-	_, err = w.Write(jsonResponse)
-	if err != nil {
-		logger.Error("Adding user to board failed")
-		handlerDebugLog(logger, funcName, "Adding user to board failed with error "+err.Error())
-		apperrors.ReturnError(apperrors.InternalServerErrorResponse, w, r)
-		return
-	}
-	r.Body.Close()
-
-	handlerDebugLog(logger, funcName, "Response written")
-	logger.Info("Finished adding user to board")
+	logger.Debug("Response written", funcName, nodeName)
+	logger.Info("----------------- Add user to board SUCCESS -----------------")
 }
 
 func (bh BoardHandler) RemoveUser(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
-	funcName := "RemoveUser"
+	funcName := "AddUser"
+	nodeName := "handler"
+	errorMessage := "Removing user from board failed with error: "
+	failBorder := "----------------- Removing user from board FAIL -----------------"
 
-	logger := rCtx.Value(dto.LoggerKey).(*logrus.Logger)
-	logger.Info("Removing user from board")
+	logger := rCtx.Value(dto.LoggerKey).(logger.ILogger)
+	logger.Info("----------------- Removing user from board -----------------")
 
 	var info dto.RemoveBoardUserInfo
 	err := json.NewDecoder(r.Body).Decode(&info)
 	if err != nil {
-		logger.Error("Removing user from board failed")
-		handlerDebugLog(logger, funcName, "Removing user from board failed with error: "+err.Error())
+		logger.Error(errorMessage + err.Error())
+		logger.Info(failBorder)
 		apperrors.ReturnError(apperrors.BadRequestResponse, w, r)
 		return
 	}
-	handlerDebugLog(logger, funcName, "JSON Decoded")
+	logger.Debug("JSON Decoded", funcName, nodeName)
 
 	_, ok := rCtx.Value(dto.UserObjKey).(*entities.User)
 	if !ok {
-		logger.Error("Removing user from board failed")
-		handlerDebugLog(logger, funcName, "Removing user from board failed -- no user passed in context")
+		logger.Error(errorMessage + err.Error())
+		logger.Info(failBorder)
 		apperrors.ReturnError(apperrors.GenericUnauthorizedResponse, w, r)
 		return
 	}
-	handlerDebugLog(logger, funcName, "User object acquired from context")
+	logger.Debug("User object acquired from context", funcName, nodeName)
 
 	err = bh.bs.RemoveUser(rCtx, info)
 	if err != nil {
-		logger.Error("Removing user from board failed")
-		handlerDebugLog(logger, funcName, "Removing user from board failed with error "+err.Error())
+		logger.Error(errorMessage + err.Error())
+		logger.Info(failBorder)
 		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
 		return
 	}
-	handlerDebugLog(logger, funcName, "User removed")
+	logger.Debug("User removed", funcName, nodeName)
 
 	response := dto.JSONResponse{
 		Body: dto.JSONMap{},
 	}
-
-	jsonResponse, err := json.Marshal(response)
+	err = WriteResponse(response, w, r)
 	if err != nil {
-		logger.Error("Removing user from board failed")
-		handlerDebugLog(logger, funcName, "Removing user from board failed with error "+err.Error())
+		logger.Error(errorMessage + err.Error())
+		logger.Info(failBorder)
 		apperrors.ReturnError(apperrors.InternalServerErrorResponse, w, r)
 		return
 	}
-	handlerDebugLog(logger, funcName, "JSON response marshaled")
+	logger.Debug("response written", funcName, nodeName)
 
-	_, err = w.Write(jsonResponse)
-	if err != nil {
-		logger.Error("Removing user from board failed")
-		handlerDebugLog(logger, funcName, "Removing user from board failed with error "+err.Error())
-		apperrors.ReturnError(apperrors.InternalServerErrorResponse, w, r)
-		return
-	}
-	r.Body.Close()
-
-	handlerDebugLog(logger, funcName, "Response written")
-	logger.Info("Finished Removing user from board")
+	logger.Debug("Response written", funcName, nodeName)
+	logger.Info("----------------- Removing user from board SUCCESS -----------------")
 }

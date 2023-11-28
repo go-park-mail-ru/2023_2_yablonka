@@ -6,11 +6,11 @@ import (
 	"fmt"
 	"log"
 	"server/internal/apperrors"
+	logger "server/internal/logging"
 	"server/internal/pkg/dto"
 	"server/internal/pkg/entities"
 
 	sq "github.com/Masterminds/squirrel"
-	"github.com/sirupsen/logrus"
 )
 
 // PostgresListStorage
@@ -70,8 +70,8 @@ func (s PostgresListStorage) Create(ctx context.Context, info dto.NewListInfo) (
 // GetWithID новый список задач в БД по данным
 // или возвращает ошибки ...
 func (s PostgresListStorage) GetTasksWithID(ctx context.Context, ids dto.ListIDs) (*[]dto.SingleTaskInfo, error) {
-	funcName := "GetById"
-	logger := ctx.Value(dto.LoggerKey).(*logrus.Logger)
+	funcName := "PostgreSQLBoardStorage.GetTasksWithID"
+	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
 
 	taskSql, args, err := sq.Select(allTaskAggFields...).
 		From("public.task").
@@ -84,15 +84,14 @@ func (s PostgresListStorage) GetTasksWithID(ctx context.Context, ids dto.ListIDs
 	if err != nil {
 		return nil, apperrors.ErrCouldNotBuildQuery
 	}
-	storageDebugLog(logger, funcName, "Built query\n\t"+taskSql+"\nwith args\n\t"+fmt.Sprintf("%+v", args))
+	logger.Debug("Built query\n\t"+taskSql+"\nwith args\n\t"+fmt.Sprintf("%+v", args), funcName, nodeName)
 
 	taskRows, err := s.db.Query(taskSql, args...)
 	if err != nil {
-		storageDebugLog(logger, funcName, "Failed to get tasks with error "+err.Error())
 		return nil, apperrors.ErrCouldNotGetBoard
 	}
 	defer taskRows.Close()
-	storageDebugLog(logger, funcName, "Got task info rows")
+	logger.Debug("Got task info rows", funcName, nodeName)
 
 	tasks := []dto.SingleTaskInfo{}
 	for taskRows.Next() {
@@ -110,12 +109,11 @@ func (s PostgresListStorage) GetTasksWithID(ctx context.Context, ids dto.ListIDs
 			&task.Users,
 		)
 		if err != nil {
-			storageDebugLog(logger, funcName, "Failed to collect rows with error "+err.Error())
 			return nil, apperrors.ErrCouldNotGetBoard
 		}
 		tasks = append(tasks, task)
 	}
-	storageDebugLog(logger, funcName, "Collected task info rows")
+	logger.Debug("Collected task info rows", funcName, nodeName)
 
 	return &tasks, nil
 }

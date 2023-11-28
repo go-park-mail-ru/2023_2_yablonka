@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"server/internal/apperrors"
+	logger "server/internal/logging"
 	_ "server/internal/pkg/doc_structs"
 	"server/internal/pkg/dto"
 	"server/internal/service/csat"
@@ -30,42 +31,39 @@ type CSATQuestionHandler struct {
 // @Router /csat/question/all [get]
 func (qh CSATQuestionHandler) GetQuestions(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
-	funcName := "GetQuestions"
+	funcName := "CSATQuestionHandler.GetQuestions"
+	nodeName := "handler"
+	errorMessage := "Getting all CSAT questions failed with error: "
+	failBorder := "----------------- Get all CSAT questions FAIL -----------------"
 
-	logger := rCtx.Value(dto.LoggerKey).(*logrus.Logger)
-	logger.Info("Getting all questions")
+	logger := rCtx.Value(dto.LoggerKey).(logger.ILogger)
+
+	logger.Info("----------------- Get all CSAT questions -----------------")
 
 	questions, err := qh.qs.GetAll(rCtx)
 	if err != nil {
-		handlerDebugLog(logger, funcName, "Getting questions failed with error "+err.Error())
+		logger.Error(errorMessage + err.Error())
+		logger.Info(failBorder)
 		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
 		return
 	}
-	handlerDebugLog(logger, funcName, "Got questions")
+	logger.Debug("Got questions", funcName, nodeName)
 
 	response := dto.JSONResponse{
 		Body: dto.JSONMap{
 			"questions": questions,
 		},
 	}
-
-	jsonResponse, err := json.Marshal(response)
+	err = WriteResponse(response, w, r)
 	if err != nil {
-		handlerDebugLog(logger, funcName, "Getting questions failed with error "+err.Error())
+		logger.Error(errorMessage + err.Error())
+		logger.Info(failBorder)
 		apperrors.ReturnError(apperrors.InternalServerErrorResponse, w, r)
 		return
 	}
-	handlerDebugLog(logger, funcName, "JSON response marshaled")
+	logger.Debug("response written", funcName, nodeName)
 
-	_, err = w.Write(jsonResponse)
-	if err != nil {
-		handlerDebugLog(logger, funcName, "Getting questions failed with error "+err.Error())
-		apperrors.ReturnError(apperrors.InternalServerErrorResponse, w, r)
-		return
-	}
-	r.Body.Close()
-
-	handlerDebugLog(logger, funcName, "Response written")
+	logger.Info("----------------- Getting all CSAT questions SUCCESS -----------------")
 }
 
 // @Summary Создать вопрос CSAT
@@ -85,56 +83,49 @@ func (qh CSATQuestionHandler) GetQuestions(w http.ResponseWriter, r *http.Reques
 // @Router /csat/question/create/ [post]
 func (qh CSATQuestionHandler) Create(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
-	funcName := "Create"
+	funcName := "CSATQuestionHandler.Create"
+	nodeName := "handler"
+	errorMessage := "Creating CSAT question failed with error: "
+	failBorder := "----------------- Create CSAT question FAIL -----------------"
 
-	logger := rCtx.Value(dto.LoggerKey).(*logrus.Logger)
-	logger.Info("Creating a new CSAT question")
+	logger := rCtx.Value(dto.LoggerKey).(logger.ILogger)
+
+	logger.Info("----------------- Create CSAT question -----------------")
 
 	var newQuestionInfo dto.NewCSATQuestionInfo
 	err := json.NewDecoder(r.Body).Decode(&newQuestionInfo)
 	if err != nil {
-		logger.Error("Creating a new CSAT question failed")
-		handlerDebugLog(logger, funcName, "Creating a new CSAT question failed with error "+err.Error())
+		logger.Error(errorMessage + err.Error())
+		logger.Info(failBorder)
 		apperrors.ReturnError(apperrors.BadRequestResponse, w, r)
 		return
 	}
-	handlerDebugLog(logger, funcName, "JSON Decoded")
+	logger.Debug("JSON Decoded", funcName, nodeName)
 
 	question, err := qh.qs.Create(rCtx, newQuestionInfo)
 	if err != nil {
-		logger.Error("Creating a new CSAT question failed")
-		handlerDebugLog(logger, funcName, "Creating a new CSAT question failed with error "+err.Error())
+		logger.Error(errorMessage + err.Error())
+		logger.Info(failBorder)
 		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
 		return
 	}
-	handlerDebugLog(logger, funcName, "Task created")
+	logger.Debug("Task created", funcName, nodeName)
 
 	response := dto.JSONResponse{
 		Body: dto.JSONMap{
 			"question": question,
 		},
 	}
-
-	jsonResponse, err := json.Marshal(response)
+	err = WriteResponse(response, w, r)
 	if err != nil {
-		logger.Error("Creating a new CSAT question failed")
-		handlerDebugLog(logger, funcName, "Creating a new CSAT question failed with error "+err.Error())
+		logger.Error(errorMessage + err.Error())
+		logger.Info(failBorder)
 		apperrors.ReturnError(apperrors.InternalServerErrorResponse, w, r)
 		return
 	}
-	handlerDebugLog(logger, funcName, "JSON response marshaled")
+	logger.Debug("response written", funcName, nodeName)
 
-	_, err = w.Write(jsonResponse)
-	if err != nil {
-		logger.Error("Creating a new CSAT question failed")
-		handlerDebugLog(logger, funcName, "Creating a new CSAT question failed with error "+err.Error())
-		apperrors.ReturnError(apperrors.InternalServerErrorResponse, w, r)
-		return
-	}
-	r.Body.Close()
-
-	handlerDebugLog(logger, funcName, "Response written")
-	logger.Info("Finished creating CSAT question")
+	logger.Info("----------------- Create CSAT question SUCCESS -----------------")
 }
 
 // @Summary Обновить вопрос CSAT
@@ -154,54 +145,47 @@ func (qh CSATQuestionHandler) Create(w http.ResponseWriter, r *http.Request) {
 // @Router /csat/question/update/ [post]
 func (qh CSATQuestionHandler) Update(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
-	funcName := "Update"
+	funcName := "CSATQuestionHandler.Update"
+	nodeName := "handler"
+	errorMessage := "Updating CSAT question failed with error: "
+	failBorder := "----------------- Update CSAT question FAIL -----------------"
 
-	logger := rCtx.Value(dto.LoggerKey).(*logrus.Logger)
-	logger.Info("Updating a new CSAT question")
+	logger := rCtx.Value(dto.LoggerKey).(logger.ILogger)
+
+	logger.Info("----------------- Update CSAT question -----------------")
 
 	var updatedQuestionInfo dto.UpdatedCSATQuestionInfo
 	err := json.NewDecoder(r.Body).Decode(&updatedQuestionInfo)
 	if err != nil {
-		logger.Error("Updating a new CSAT question failed")
-		handlerDebugLog(logger, funcName, "Updating a new CSAT question failed with error "+err.Error())
+		logger.Error(errorMessage + err.Error())
+		logger.Info(failBorder)
 		apperrors.ReturnError(apperrors.BadRequestResponse, w, r)
 		return
 	}
-	handlerDebugLog(logger, funcName, "JSON Decoded")
+	logger.Debug("JSON Decoded", funcName, nodeName)
 
 	err = qh.qs.Update(rCtx, updatedQuestionInfo)
 	if err != nil {
-		logger.Error("Updating a new CSAT question failed")
-		handlerDebugLog(logger, funcName, "Updating a new CSAT question failed with error "+err.Error())
+		logger.Error(errorMessage + err.Error())
+		logger.Info(failBorder)
 		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
 		return
 	}
-	handlerDebugLog(logger, funcName, "Task created")
+	logger.Debug("CSAT question updated", funcName, nodeName)
 
 	response := dto.JSONResponse{
 		Body: dto.JSONMap{},
 	}
-
-	jsonResponse, err := json.Marshal(response)
+	err = WriteResponse(response, w, r)
 	if err != nil {
-		logger.Error("Updating a new CSAT question failed")
-		handlerDebugLog(logger, funcName, "Updating a new CSAT question failed with error "+err.Error())
+		logger.Error(errorMessage + err.Error())
+		logger.Info(failBorder)
 		apperrors.ReturnError(apperrors.InternalServerErrorResponse, w, r)
 		return
 	}
-	handlerDebugLog(logger, funcName, "JSON response marshaled")
+	logger.Debug("response written", funcName, nodeName)
 
-	_, err = w.Write(jsonResponse)
-	if err != nil {
-		logger.Error("Updating a new CSAT question failed")
-		handlerDebugLog(logger, funcName, "Updating a new CSAT question failed with error "+err.Error())
-		apperrors.ReturnError(apperrors.InternalServerErrorResponse, w, r)
-		return
-	}
-	r.Body.Close()
-
-	handlerDebugLog(logger, funcName, "Response written")
-	logger.Info("Finished updating CSAT question")
+	logger.Info("----------------- Update CSAT question SUCCESS -----------------")
 }
 
 // @Summary Статистика ответов CSAT
@@ -218,39 +202,38 @@ func (qh CSATQuestionHandler) Update(w http.ResponseWriter, r *http.Request) {
 //
 // @Router /csat/stats [get]
 func (qh CSATQuestionHandler) GetStats(w http.ResponseWriter, r *http.Request) {
-	funcName := "GetStats"
-
 	rCtx := r.Context()
+	funcName := "CSATQuestionHandler.GetStats"
+	nodeName := "handler"
+	errorMessage := "Getting CSAT question stats failed with error: "
+	failBorder := "----------------- Getting CSAT question stats FAIL -----------------"
 
-	logger := rCtx.Value(dto.LoggerKey).(*logrus.Logger)
+	logger := rCtx.Value(dto.LoggerKey).(logger.ILogger)
+
+	logger.Info("----------------- Getting CSAT question stats -----------------")
 
 	answers, err := qh.qs.GetStats(rCtx)
 	if err != nil {
-		handlerDebugLog(logger, funcName, "Getting stats failed -- "+err.Error())
+		logger.Error(errorMessage + err.Error())
+		logger.Info(failBorder)
 		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
 		return
 	}
-	handlerDebugLog(logger, funcName, "Stats received")
+	logger.Debug("Stats received", funcName, nodeName)
 
 	response := dto.JSONResponse{
 		Body: dto.JSONMap{
 			"questions": answers,
 		},
 	}
-	jsonResponse, err := json.Marshal(response)
+	err = WriteResponse(response, w, r)
 	if err != nil {
-		handlerDebugLog(logger, funcName, "Getting stats failed -- "+err.Error())
+		logger.Error(errorMessage + err.Error())
+		logger.Info(failBorder)
 		apperrors.ReturnError(apperrors.InternalServerErrorResponse, w, r)
 		return
 	}
-	handlerDebugLog(logger, funcName, "Json response marshalled")
+	logger.Debug("response written", funcName, nodeName)
 
-	_, err = w.Write(jsonResponse)
-	if err != nil {
-		handlerDebugLog(logger, funcName, "Getting stats failed -- "+err.Error())
-		apperrors.ReturnError(apperrors.InternalServerErrorResponse, w, r)
-		return
-	}
-	r.Body.Close()
-	handlerDebugLog(logger, funcName, "Response written")
+	logger.Info("----------------- Getting CSAT question stats SUCCESS -----------------")
 }

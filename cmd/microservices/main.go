@@ -5,6 +5,9 @@ import (
 	"log"
 	"net"
 	"server/internal/config"
+	logging "server/internal/logging"
+	"server/internal/service"
+	microservice "server/internal/service/msvc"
 	"server/internal/storage"
 	"server/internal/storage/postgresql"
 	auth "server/microservices/auth"
@@ -23,8 +26,13 @@ func main() {
 	if err != nil {
 		log.Fatal(err.Error())
 	}
-	logger := config.Logging.Logger
-	logger.Info("Config loaded")
+	log.Printf("Config loaded")
+
+	logger, err := logging.NewLogrusLogger(config.Logging)
+	if err != nil {
+		logger.Fatal(err.Error())
+	}
+	logger.Info("Logger configured")
 
 	dbConnection, err := postgresql.GetDBConnection(*config.Database)
 	if err != nil {

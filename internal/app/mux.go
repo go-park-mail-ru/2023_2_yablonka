@@ -6,6 +6,7 @@ import (
 	"server/internal/app/handlers"
 	"server/internal/app/middleware"
 	config "server/internal/config"
+	logging "server/internal/logging"
 
 	chi "github.com/go-chi/chi/v5"
 	httpSwagger "github.com/swaggo/http-swagger/v2"
@@ -17,12 +18,12 @@ import (
 
 // GetChiMux
 // возвращает mux, реализованный с помощью модуля chi
-func GetChiMux(manager handlers.Handlers, config config.Config) (http.Handler, error) {
+func GetChiMux(manager handlers.Handlers, config config.Config, logger logging.ILogger) (http.Handler, error) {
 	mux := chi.NewRouter()
 
-	mux.Use(middleware.SetLogger(*config.Logging, *config.Server))
+	mux.Use(middleware.SetContext(*config.Server, logger))
 	mux.Use(middleware.PanicRecovery)
-	mux.Use(middleware.GetCors(*config.CORS, *config.Logging))
+	mux.Use(middleware.GetCors(*config.CORS, logger))
 	mux.Use(middleware.JsonHeader)
 
 	// Testing in-place error handling
@@ -48,7 +49,6 @@ func GetChiMux(manager handlers.Handlers, config config.Config) (http.Handler, e
 			r.Use(middleware.CSRFMiddleware(manager.AuthHandler.GetCSRFService()))
 			r.Post("/create/", manager.WorkspaceHandler.Create)
 			r.Post("/update/", manager.WorkspaceHandler.UpdateData)
-			r.Post("/update/change_users/", manager.WorkspaceHandler.ChangeGuests)
 			r.Delete("/delete/", manager.WorkspaceHandler.Delete)
 		})
 		r.Route("/board", func(r chi.Router) {
@@ -78,6 +78,11 @@ func GetChiMux(manager handlers.Handlers, config config.Config) (http.Handler, e
 			r.Post("/create/", manager.TaskHandler.Create)
 			r.Post("/edit/", manager.TaskHandler.Update)
 			r.Delete("/delete/", manager.TaskHandler.Delete)
+		})
+		r.Route("/comment", func(r chi.Router) {
+			r.Use(middleware.AuthMiddleware(manager.AuthHandler.GetAuthService(), manager.AuthHandler.GetUserService()))
+			r.Use(middleware.CSRFMiddleware(manager.AuthHandler.GetCSRFService()))
+			r.Post("/create/", manager.CommentHandler.Create)
 		})
 	})
 	mux.Route("/swagger/", func(r chi.Router) {

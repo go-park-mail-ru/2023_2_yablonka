@@ -4,16 +4,15 @@ import (
 	"fmt"
 	"net/http"
 	"server/internal/apperrors"
+	logger "server/internal/logging"
 	"server/internal/pkg/dto"
-	"server/internal/service/csrf"
-
-	"github.com/sirupsen/logrus"
+	"server/internal/service"
 )
 
 func CSRFMiddleware(cs csrf.ICSRFService) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			logger := r.Context().Value(dto.LoggerKey).(*logrus.Logger)
+			logger := r.Context().Value(dto.LoggerKey).(logger.ILogger)
 			funcName := "CSRFMiddleware"
 
 			logger.Info("***** VERIFYING CSRF *****")
@@ -22,17 +21,16 @@ func CSRFMiddleware(cs csrf.ICSRFService) func(http.Handler) http.Handler {
 
 			csrf := r.Header.Get("X-Csrf-Token")
 			if csrf == "" {
-				middlewareDebugLog(logger, funcName, "CSRF verification failed")
+				logger.Debug("CSRF verification failed", funcName, "middleware")
 				logger.Error("***** CSRF FAIL *****")
 				apperrors.ReturnError(apperrors.GenericUnauthorizedResponse, w, r)
 				return
 			}
-
-			middlewareDebugLog(logger, funcName, fmt.Sprintf("Received CSRF token %s", csrf))
+			logger.Debug(fmt.Sprintf("Received CSRF token %s", csrf), funcName, "middleware")
 
 			err := cs.VerifyCSRF(rCtx, dto.CSRFToken{Value: csrf})
 			if err != nil {
-				middlewareDebugLog(logger, funcName, "CSRF verification failed with error "+err.Error())
+				logger.Debug("CSRF verification failed with error "+err.Error(), funcName, "middleware")
 				logger.Error("***** CSRF FAIL *****")
 				apperrors.ReturnError(apperrors.GenericUnauthorizedResponse, w, r)
 				return

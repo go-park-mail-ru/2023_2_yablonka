@@ -2,18 +2,17 @@ package middleware
 
 import (
 	"net/http"
+	logger "server/internal/logging"
 	"server/internal/pkg/dto"
-
-	"github.com/sirupsen/logrus"
 )
 
 func JsonHeader(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		logger := r.Context().Value(dto.LoggerKey).(*logrus.Logger)
+		logger := r.Context().Value(dto.LoggerKey).(logger.ILogger)
 		funcName := "JsonHeader"
 
 		w.Header().Set("Content-Type", "application/json")
-		middlewareDebugLog(logger, funcName, "Content type header set")
+		logger.Debug("Content type header set", funcName, "middleware")
 
 		next.ServeHTTP(w, r)
 	})

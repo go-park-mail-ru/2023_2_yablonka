@@ -12,6 +12,7 @@ type Storages struct {
 	CSRF         ICSRFStorage
 	List         IListStorage
 	Task         ITaskStorage
+	Comment      ICommentStorage
 	Workspace    IWorkspaceStorage
 	CSATAnswer   ICSATAnswerStorage
 	CSATQuestion ICSATQuestionStorage
@@ -25,6 +26,7 @@ func NewPostgresStorages(db *sql.DB) *Storages {
 		CSRF:         postgresql.NewCSRFStorage(db),
 		List:         postgresql.NewListStorage(db),
 		Task:         postgresql.NewTaskStorage(db),
+		Comment:      postgresql.NewCommentStorage(db),
 		Workspace:    postgresql.NewWorkspaceStorage(db),
 		CSATAnswer:   postgresql.NewCSATAnswerStorage(db),
 		CSATQuestion: postgresql.NewCSATQuestionStorage(db),

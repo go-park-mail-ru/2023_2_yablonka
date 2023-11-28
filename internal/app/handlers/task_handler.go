@@ -3,14 +3,12 @@ package handlers
 import (
 	"context"
 	"encoding/json"
-	"log"
 	"net/http"
 	"server/internal/apperrors"
+	logger "server/internal/logging"
 	_ "server/internal/pkg/doc_structs"
 	"server/internal/pkg/dto"
-	"server/internal/service/task"
-
-	"github.com/sirupsen/logrus"
+	"server/internal/service"
 )
 
 type TaskHandler struct {
@@ -34,64 +32,48 @@ type TaskHandler struct {
 // @Router /task/create/ [post]
 func (th TaskHandler) Create(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
-	funcName := "Create"
+	funcName := "TaskHandler.Create"
+	nodeName := "handler"
+	errorMessage := "Creating a new task failed with error: "
+	failBorder := "----------------- Creating a new task FAIL -----------------"
 
-	logger := rCtx.Value(dto.LoggerKey).(*logrus.Logger)
+	logger := rCtx.Value(dto.LoggerKey).(logger.ILogger)
+
 	logger.Info("----------------- Creating a new task -----------------")
 
 	var newTaskInfo dto.NewTaskInfo
 	err := json.NewDecoder(r.Body).Decode(&newTaskInfo)
 	if err != nil {
-		handlerDebugLog(logger, funcName, "ERROR: "+err.Error())
-		logger.Error("----------------- Creating a new task FAIL -----------------")
+		logger.Error(errorMessage + err.Error())
+		logger.Info(failBorder)
 		apperrors.ReturnError(apperrors.BadRequestResponse, w, r)
 		return
 	}
-	handlerDebugLog(logger, funcName, "JSON Decoded")
-
-	// _, err = govalidator.ValidateStruct(newTaskInfo)
-	// if err != nil {
-	// 	logger.Error("Creating a new board failed")
-	// 	handlerDebugLog(logger, funcName, "Creating a new board failed with error "+err.Error())
-	// 	apperrors.ReturnError(apperrors.BadRequestResponse, w, r)
-	// 	return
-	// }
-	// handlerDebugLog(logger, funcName, "New task data validated")
+	logger.Debug("JSON Decoded", funcName, nodeName)
 
 	task, err := th.ts.Create(rCtx, newTaskInfo)
 	if err != nil {
-		handlerDebugLog(logger, funcName, "ERROR: "+err.Error())
-		logger.Error("----------------- Creating a new task FAIL -----------------")
+		logger.Error(errorMessage + err.Error())
+		logger.Info(failBorder)
 		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
 		return
 	}
-	handlerDebugLog(logger, funcName, "Task created")
+	logger.Debug("Task created", funcName, nodeName)
 
 	response := dto.JSONResponse{
 		Body: dto.JSONMap{
 			"task": task,
 		},
 	}
-
-	jsonResponse, err := json.Marshal(response)
+	err = WriteResponse(response, w, r)
 	if err != nil {
-		handlerDebugLog(logger, funcName, "ERROR: "+err.Error())
-		logger.Error("----------------- Creating a new task FAIL -----------------")
+		logger.Error(errorMessage + err.Error())
+		logger.Info(failBorder)
 		apperrors.ReturnError(apperrors.InternalServerErrorResponse, w, r)
 		return
 	}
-	handlerDebugLog(logger, funcName, "JSON response marshaled")
+	logger.Debug("response written", funcName, nodeName)
 
-	_, err = w.Write(jsonResponse)
-	if err != nil {
-		handlerDebugLog(logger, funcName, "ERROR: "+err.Error())
-		logger.Error("----------------- Creating a new task FAIL -----------------")
-		apperrors.ReturnError(apperrors.InternalServerErrorResponse, w, r)
-		return
-	}
-	r.Body.Close()
-
-	handlerDebugLog(logger, funcName, "Response written")
 	logger.Info("----------------- Creating a new task SUCCESS -----------------")
 }
 
@@ -111,63 +93,50 @@ func (th TaskHandler) Create(w http.ResponseWriter, r *http.Request) {
 //
 // @Router /task/ [post]
 func (th TaskHandler) Read(w http.ResponseWriter, r *http.Request) {
-	log.Println("--------------TaskHandler.Read Endpoint START--------------")
-
 	rCtx := r.Context()
+	funcName := "TaskHandler.Read"
+	nodeName := "handler"
+	errorMessage := "Getting task failed with error: "
+	failBorder := "----------------- Getting task FAIL -----------------"
 
-	log.Println("Handler -- Reading task")
+	logger := rCtx.Value(dto.LoggerKey).(logger.ILogger)
+
+	logger.Info("----------------- Getting task -----------------")
 
 	var taskID dto.TaskID
 	err := json.NewDecoder(r.Body).Decode(&taskID)
 	if err != nil {
-		log.Println(err)
-		log.Println("--------------TaskHandler.Read Endpoint FAIL--------------")
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.BadRequestResponse))
+		logger.Error(errorMessage + err.Error())
+		logger.Info(failBorder)
+		apperrors.ReturnError(apperrors.BadRequestResponse, w, r)
 		return
 	}
-	log.Println("request struct decoded")
-
-	// _, err = govalidator.ValidateStruct(taskID)
-	// if err != nil {
-	// 	*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.BadRequestResponse))
-	// 	return
-	// }
+	logger.Debug("JSON Decoded", funcName, nodeName)
 
 	task, err := th.ts.Read(rCtx, taskID)
 	if err != nil {
-		log.Println(err)
-		log.Println("--------------TaskHandler.Read Endpoint FAIL--------------")
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.ErrorMap[err]))
+		logger.Error(errorMessage + err.Error())
+		logger.Info(failBorder)
+		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
 		return
 	}
-	log.Println("task read")
+	logger.Debug("task read", funcName, nodeName)
 
 	response := dto.JSONResponse{
 		Body: dto.JSONMap{
 			"task": task,
 		},
 	}
-
-	jsonResponse, err := json.Marshal(response)
+	err = WriteResponse(response, w, r)
 	if err != nil {
-		log.Println(err)
-		log.Println("--------------TaskHandler.Read Endpoint FAIL--------------")
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.InternalServerErrorResponse))
+		logger.Error(errorMessage + err.Error())
+		logger.Info(failBorder)
+		apperrors.ReturnError(apperrors.InternalServerErrorResponse, w, r)
 		return
 	}
-	log.Println("json response marshalled")
+	logger.Debug("response written", funcName, nodeName)
 
-	_, err = w.Write(jsonResponse)
-	if err != nil {
-		log.Println(err)
-		log.Println("--------------TaskHandler.Read Endpoint FAIL--------------")
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.InternalServerErrorResponse))
-		return
-	}
-	r.Body.Close()
-	log.Println("response written")
-
-	log.Println("--------------TaskHandler.Read Endpoint SUCCESS--------------")
+	logger.Info("----------------- Getting task SUCCESS -----------------")
 }
 
 // @Summary Обновить задание
@@ -186,59 +155,48 @@ func (th TaskHandler) Read(w http.ResponseWriter, r *http.Request) {
 //
 // @Router /task/update/ [post]
 func (th TaskHandler) Update(w http.ResponseWriter, r *http.Request) {
-	log.Println("--------------TaskHandler.Update Endpoint START--------------")
-
 	rCtx := r.Context()
+	funcName := "TaskHandler.Update"
+	nodeName := "handler"
+	errorMessage := "Updating task failed with error: "
+	failBorder := "----------------- Updating task FAIL -----------------"
+
+	logger := rCtx.Value(dto.LoggerKey).(logger.ILogger)
+
+	logger.Info("----------------- Updating task -----------------")
 
 	var taskInfo dto.UpdatedTaskInfo
 	err := json.NewDecoder(r.Body).Decode(&taskInfo)
 	if err != nil {
-		log.Println(err)
-		log.Println("--------------TaskHandler.Update Endpoint FAIL--------------")
+		logger.Error(errorMessage + err.Error())
+		logger.Info(failBorder)
 		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.BadRequestResponse))
 		return
 	}
-	log.Println("request struct decoded")
-
-	// _, err = govalidator.ValidateStruct(taskInfo)
-	// if err != nil {
-	// 	*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.BadRequestResponse))
-	// 	return
-	// }
+	logger.Debug("JSON Decoded", funcName, nodeName)
 
 	err = th.ts.Update(rCtx, taskInfo)
 	if err != nil {
-		log.Println(err)
-		log.Println("--------------TaskHandler.Update Endpoint FAIL--------------")
+		logger.Error(errorMessage + err.Error())
+		logger.Info(failBorder)
 		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.ErrorMap[err]))
 		return
 	}
-	log.Println("task updated")
+	logger.Debug("task updated", funcName, nodeName)
 
 	response := dto.JSONResponse{
 		Body: dto.JSONMap{},
 	}
-
-	jsonResponse, err := json.Marshal(response)
+	err = WriteResponse(response, w, r)
 	if err != nil {
-		log.Println(err)
-		log.Println("--------------TaskHandler.Update Endpoint FAIL--------------")
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.InternalServerErrorResponse))
+		logger.Error(errorMessage + err.Error())
+		logger.Info(failBorder)
+		apperrors.ReturnError(apperrors.InternalServerErrorResponse, w, r)
 		return
 	}
-	log.Println("json response marshalled")
+	logger.Debug("response written", funcName, nodeName)
 
-	_, err = w.Write(jsonResponse)
-	if err != nil {
-		log.Println(err)
-		log.Println("--------------TaskHandler.Update Endpoint FAIL--------------")
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.InternalServerErrorResponse))
-		return
-	}
-	r.Body.Close()
-	log.Println("response written")
-
-	log.Println("--------------TaskHandler.Update Endpoint SUCCESS--------------")
+	logger.Info("----------------- Updating task SUCCESS -----------------")
 }
 
 // @Summary Удалить задание
@@ -257,57 +215,46 @@ func (th TaskHandler) Update(w http.ResponseWriter, r *http.Request) {
 //
 // @Router /task/delete/ [delete]
 func (th TaskHandler) Delete(w http.ResponseWriter, r *http.Request) {
-	log.Println("--------------TaskHandler.Delete Endpoint START--------------")
-
 	rCtx := r.Context()
+	funcName := "TaskHandler.Delete"
+	nodeName := "handler"
+	errorMessage := "Deleting task failed with error: "
+	failBorder := "----------------- Deleting task FAIL -----------------"
+
+	logger := rCtx.Value(dto.LoggerKey).(logger.ILogger)
+
+	logger.Info("----------------- Deleting task -----------------")
 
 	var taskID dto.TaskID
 	err := json.NewDecoder(r.Body).Decode(&taskID)
 	if err != nil {
-		log.Println(err)
-		log.Println("--------------TaskHandler.Delete Endpoint FAIL--------------")
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.BadRequestResponse))
+		logger.Error(errorMessage + err.Error())
+		logger.Info(failBorder)
+		apperrors.ReturnError(apperrors.BadRequestResponse, w, r)
 		return
 	}
-	log.Println("request struct decoded")
-
-	// _, err = govalidator.ValidateStruct(taskID)
-	// if err != nil {
-	// 	*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.BadRequestResponse))
-	// 	return
-	// }
+	logger.Debug("JSON Decoded", funcName, nodeName)
 
 	err = th.ts.Delete(rCtx, taskID)
 	if err != nil {
-		log.Println(err)
-		log.Println("--------------TaskHandler.Delete Endpoint FAIL--------------")
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.ErrorMap[err]))
+		logger.Error(errorMessage + err.Error())
+		logger.Info(failBorder)
+		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
 		return
 	}
-	log.Println("task deleted")
+	logger.Debug("task deleted", funcName, nodeName)
 
 	response := dto.JSONResponse{
 		Body: dto.JSONMap{},
 	}
-
-	jsonResponse, err := json.Marshal(response)
+	err = WriteResponse(response, w, r)
 	if err != nil {
-		log.Println(err)
-		log.Println("--------------TaskHandler.Delete Endpoint FAIL--------------")
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.InternalServerErrorResponse))
+		logger.Error(errorMessage + err.Error())
+		logger.Info(failBorder)
+		apperrors.ReturnError(apperrors.InternalServerErrorResponse, w, r)
 		return
 	}
-	log.Println("json response marshalled")
+	logger.Debug("response written", funcName, nodeName)
 
-	_, err = w.Write(jsonResponse)
-	if err != nil {
-		log.Println(err)
-		log.Println("--------------TaskHandler.Delete Endpoint FAIL--------------")
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.InternalServerErrorResponse))
-		return
-	}
-	r.Body.Close()
-	log.Println("response written")
-
-	log.Println("--------------TaskHandler.Delete Endpoint SUCCESS--------------")
+	logger.Info("----------------- Deleting task SUCCESS -----------------")
 }

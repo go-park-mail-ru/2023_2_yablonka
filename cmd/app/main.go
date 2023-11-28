@@ -10,6 +10,7 @@ import (
 	"server/internal/app"
 	"server/internal/app/handlers"
 	config "server/internal/config"
+	logging "server/internal/logging"
 	"server/internal/service"
 	"server/internal/storage"
 	"server/internal/storage/postgresql"
@@ -42,8 +43,13 @@ func main() {
 	if err != nil {
 		log.Fatal(err.Error())
 	}
-	logger := config.Logging.Logger
-	logger.Info("Config loaded")
+	log.Printf("Config loaded")
+
+	logger, err := logging.NewLogrusLogger(config.Logging)
+	if err != nil {
+		logger.Fatal(err.Error())
+	}
+	logger.Info("Logger configured")
 
 	dbConnection, err := postgresql.GetDBConnection(*config.Database)
 	if err != nil {
@@ -71,7 +77,7 @@ func main() {
 	handlers := handlers.NewHandlers(services)
 	logger.Info("Handlers configured")
 
-	mux, err := app.GetChiMux(*handlers, *config)
+	mux, err := app.GetChiMux(*handlers, *config, &logger)
 	if err != nil {
 		logger.Fatal(err.Error())
 	}
@@ -93,14 +99,14 @@ func main() {
 		// We received an interrupt signal, shut down.
 		if err := server.Shutdown(context.Background()); err != nil {
 			// Error from closing listeners, or context timeout:
-			logger.Infof("HTTP server Shutdown: %v", err)
+			logger.Info("HTTP server Shutdown: " + err.Error())
 		}
 		close(idleConnsClosed)
 	}()
 
 	if err := server.ListenAndServe(); err != http.ErrServerClosed {
 		// Error starting or closing listener:
-		logger.Fatalf("HTTP server ListenAndServe: %v", err)
+		logger.Fatal("HTTP server ListenAndServe: " + err.Error())
 	}
 
 	<-idleConnsClosed

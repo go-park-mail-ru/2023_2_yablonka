@@ -9,7 +9,7 @@ import (
 	"server/internal/pkg/entities"
 	"server/internal/service/csat"
 
-	"github.com/sirupsen/logrus"
+	logger "server/internal/logging"
 )
 
 type CSATAnswerHandler struct {
@@ -26,43 +26,50 @@ type CSATAnswerHandler struct {
 //
 // @Param CSATAnswerInfo body dto.NewCSATAnswerInfo true "данные ответа CSAT"
 //
-// @Success 200  {object}  doc_structs.AllQuestionsResponse "все вопросы"
+// @Success 204  {string} string "no content"
 // @Failure 400  {object}  apperrors.ErrorResponse
 // @Failure 401  {object}  apperrors.ErrorResponse
 // @Failure 500  {object}  apperrors.ErrorResponse
 //
 // @Router /csat/answer/ [post]
 func (ah CSATAnswerHandler) Create(w http.ResponseWriter, r *http.Request) {
-	funcName := "CreateCSATAnswer"
-
 	rCtx := r.Context()
+	funcName := "CSATAnswerHandler.Create"
+	nodeName := "handler"
+	errorMessage := "Creating CSAT answer failed with error: "
+	failBorder := "----------------- Create CSAT answer FAIL -----------------"
 
-	logger := rCtx.Value(dto.LoggerKey).(*logrus.Logger)
+	logger := rCtx.Value(dto.LoggerKey).(logger.ILogger)
+
+	logger.Info("----------------- Create CSAT answer -----------------")
 
 	var CSATAnswerInfo dto.NewCSATAnswerInfo
 	err := json.NewDecoder(r.Body).Decode(&CSATAnswerInfo)
 	if err != nil {
-		handlerDebugLog(logger, funcName, "Creating a CSAT answer failed -- "+err.Error())
+		logger.Error(errorMessage + err.Error())
+		logger.Info(failBorder)
 		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
 		return
 	}
-	handlerDebugLog(logger, funcName, "request struct decoded")
+	logger.Debug("JSON Decoded", funcName, nodeName)
 
 	err = ah.qs.CheckRating(rCtx, CSATAnswerInfo)
 	if err != nil {
-		handlerDebugLog(logger, funcName, "Creating a CSAT answer failed -- "+err.Error())
+		logger.Error(errorMessage + err.Error())
+		logger.Info(failBorder)
 		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
 		return
 	}
-	handlerDebugLog(logger, funcName, "Rating checked")
+	logger.Debug("Rating checked", funcName, nodeName)
 
 	user, ok := rCtx.Value(dto.UserObjKey).(*entities.User)
 	if !ok {
-		handlerDebugLog(logger, funcName, "Creating a CSAT answer failed -- "+err.Error())
+		logger.Error(errorMessage + err.Error())
+		logger.Info(failBorder)
 		apperrors.ReturnError(apperrors.GenericUnauthorizedResponse, w, r)
 		return
 	}
-	handlerDebugLog(logger, funcName, "User object acquired from context")
+	logger.Debug("User object acquired from context", funcName, nodeName)
 
 	CSATAnswer := dto.NewCSATAnswer{
 		UserID:     user.ID,
@@ -71,29 +78,24 @@ func (ah CSATAnswerHandler) Create(w http.ResponseWriter, r *http.Request) {
 	}
 	err = ah.as.Create(rCtx, CSATAnswer)
 	if err != nil {
-		handlerDebugLog(logger, funcName, "Creating a CSAT answer failed -- "+err.Error())
+		logger.Error(errorMessage + err.Error())
+		logger.Info(failBorder)
 		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
 		return
 	}
-	handlerDebugLog(logger, funcName, "Answer created")
+	logger.Debug("Answer created", funcName, nodeName)
 
 	response := dto.JSONResponse{
 		Body: dto.JSONMap{},
 	}
-	jsonResponse, err := json.Marshal(response)
+	err = WriteResponse(response, w, r)
 	if err != nil {
-		handlerDebugLog(logger, funcName, "Creating a CSAT answer failed -- "+err.Error())
+		logger.Error(errorMessage + err.Error())
+		logger.Info(failBorder)
 		apperrors.ReturnError(apperrors.InternalServerErrorResponse, w, r)
 		return
 	}
-	handlerDebugLog(logger, funcName, "Json response marshalled")
+	logger.Debug("response written", funcName, nodeName)
 
-	_, err = w.Write(jsonResponse)
-	if err != nil {
-		handlerDebugLog(logger, funcName, "Creating a CSAT answer failed -- "+err.Error())
-		apperrors.ReturnError(apperrors.InternalServerErrorResponse, w, r)
-		return
-	}
-	r.Body.Close()
-	handlerDebugLog(logger, funcName, "Response written")
+	logger.Info("----------------- Create CSAT answer SUCCESS -----------------")
 }

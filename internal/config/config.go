@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/joho/godotenv"
-	logrus "github.com/sirupsen/logrus"
 	yaml "gopkg.in/yaml.v2"
 )
 
@@ -56,13 +55,12 @@ type DatabaseConfig struct {
 }
 
 type LoggingConfig struct {
-	Logger                 *logrus.Logger `yaml:"-"`
-	Level                  string         `yaml:"level"`
-	DisableTimestamp       bool           `yaml:"disable_timestamp"`
-	FullTimestamp          bool           `yaml:"full_timestamp"`
-	DisableLevelTruncation bool           `yaml:"disable_level_truncation"`
-	LevelBasedReport       bool           `yaml:"level_based_report"`
-	ReportCaller           bool           `yaml:"report_caller"`
+	Level                  string `yaml:"level"`
+	DisableTimestamp       bool   `yaml:"disable_timestamp"`
+	FullTimestamp          bool   `yaml:"full_timestamp"`
+	DisableLevelTruncation bool   `yaml:"disable_level_truncation"`
+	LevelBasedReport       bool   `yaml:"level_based_report"`
+	ReportCaller           bool   `yaml:"report_caller"`
 }
 
 // LoadConfig
@@ -92,11 +90,6 @@ func LoadConfig(envPath string, configPath string) (*Config, error) {
 
 	if err != nil {
 		return nil, apperrors.ErrEnvNotFound
-	}
-
-	config.Logging.Logger, err = setupLogger(config.Logging)
-	if err != nil {
-		return nil, err
 	}
 
 	config.Session, err = NewSessionConfig()
@@ -137,27 +130,6 @@ func NewSessionConfig() (*SessionConfig, error) {
 	}
 
 	return &config, nil
-}
-
-func setupLogger(lc *LoggingConfig) (*logrus.Logger, error) {
-	logLevel, err := logrus.ParseLevel(lc.Level)
-	if err != nil {
-		return nil, apperrors.ErrInvalidLoggingLevel
-	}
-
-	logger := &logrus.Logger{
-		Out:   os.Stderr,
-		Level: logLevel,
-		ReportCaller: (lc.LevelBasedReport && logLevel == logrus.TraceLevel) ||
-			(!lc.LevelBasedReport && lc.ReportCaller),
-		Formatter: &logrus.TextFormatter{
-			DisableTimestamp:       lc.DisableTimestamp,
-			FullTimestamp:          lc.FullTimestamp,
-			DisableLevelTruncation: lc.DisableLevelTruncation,
-		},
-	}
-
-	return logger, nil
 }
 
 // getDBConnectionHost
