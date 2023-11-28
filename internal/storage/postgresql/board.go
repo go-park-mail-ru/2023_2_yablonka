@@ -13,6 +13,7 @@ import (
 	"time"
 
 	sq "github.com/Masterminds/squirrel"
+	"github.com/lib/pq"
 )
 
 const nodeName string = "storage"
@@ -145,7 +146,7 @@ func (s *PostgreSQLBoardStorage) GetLists(ctx context.Context, id dto.BoardID) (
 		From("public.list").
 		LeftJoin("public.task ON public.task.id_list = public.list.id").
 		Where(sq.Eq{"public.list.id_board": id.Value}).
-		GroupBy("public.list.id").
+		GroupBy("public.task.id", "public.list.id").
 		OrderBy("public.list.list_position").
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
@@ -156,6 +157,7 @@ func (s *PostgreSQLBoardStorage) GetLists(ctx context.Context, id dto.BoardID) (
 
 	rows, err := s.db.Query(listSql, args...)
 	if err != nil {
+		logger.Debug(err.Error(), funcName, nodeName)
 		return nil, apperrors.ErrCouldNotGetList
 	}
 	defer rows.Close()
@@ -170,9 +172,10 @@ func (s *PostgreSQLBoardStorage) GetLists(ctx context.Context, id dto.BoardID) (
 			&list.BoardID,
 			&list.Name,
 			&list.ListPosition,
-			&list.Tasks,
+			(*pq.StringArray)(&list.TaskIDs),
 		)
 		if err != nil {
+			logger.Debug(err.Error(), funcName, nodeName)
 			return nil, apperrors.ErrCouldNotGetBoard
 		}
 		lists = append(lists, list)

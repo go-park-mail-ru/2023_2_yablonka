@@ -8,7 +8,6 @@ import (
 	csat "server/internal/service/csat"
 	csrf "server/internal/service/csrf"
 	list "server/internal/service/list"
-	msvc "server/internal/service/msvc"
 	task "server/internal/service/task"
 	user "server/internal/service/user"
 	workspace "server/internal/service/workspace"
@@ -33,7 +32,7 @@ type Services struct {
 func NewEmbeddedServices(storages *storage.Storages, config config.SessionConfig) *Services {
 	return &Services{
 		Auth:  auth.NewEmbeddedAuthService(storages.Auth, config),
-		Board: board.NewEmbeddedBoardService(storages.Board, storages.List, storages.User),
+		Board: board.NewEmbeddedBoardService(storages.Board, storages.Task, storages.User, storages.Comment),
 		// Comment:      comment.NewEmbeddedCommentService(storages.Comment),
 		CSATAnswer:   csat.NewEmbeddedCSATAnswerService(storages.CSATAnswer),
 		CSATQuestion: csat.NewEmbeddedCSATQuestionService(storages.CSATQuestion),
@@ -48,7 +47,7 @@ func NewEmbeddedServices(storages *storage.Storages, config config.SessionConfig
 func NewMicroServices(storages *storage.Storages, config config.SessionConfig, connection *grpc.ClientConn) *Services {
 	return &Services{
 		Auth:  auth.NewMicroAuthService(storages.Auth, config, connection),
-		Board: board.NewMicroBoardService(storages.Board, storages.List, storages.User, connection),
+		Board: board.NewMicroBoardService(storages.Board, storages.Task, storages.User, storages.Comment, connection),
 		// Comment:      comment.NewMicroCommentService(storages.Comment, connection),
 		CSATAnswer:   csat.NewMicroCSATAnswerService(storages.CSATAnswer, connection),
 		CSATQuestion: csat.NewMicroCSATQuestionService(storages.CSATQuestion, connection),
