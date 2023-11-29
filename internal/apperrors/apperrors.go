@@ -3,6 +3,7 @@ package apperrors
 import (
 	"encoding/json"
 	"errors"
+	"log"
 	"net/http"
 	"server/internal/pkg/dto"
 )
@@ -11,8 +12,6 @@ import (
 var (
 	// ErrEnvNotFound ошибка: переданный при конфигурации .env файл не был найден
 	ErrEnvNotFound = errors.New("invalid .env location was provided to the server setup")
-	// ErrJWTSecretMissing ошибка: в полученном конфиге нет JWT ключа для подписи
-	ErrJWTSecretMissing = errors.New("no JWT secret was found in the environment")
 	// ErrSessionDurationMissing ошибка: в полученном конфиге нет времени жизни сессии
 	ErrSessionDurationMissing = errors.New("no session duration settings were found in the environment")
 	// ErrSessionNullDuration ошибка: в полученном конфиге время жизни сессии меньше секунды
@@ -61,16 +60,8 @@ var (
 
 // Ошибки, связанные с AuthService
 var (
-	// ErrJWTWrongMethod ошибка: у полученного JWT неправильный метод подписи
-	ErrJWTWrongMethod = errors.New("provided token has the wrong signing method")
 	// ErrTokenNotGenerated ошибка: у полученного JWT неправильный метод подписи
 	ErrTokenNotGenerated = errors.New("the system had trouble generating a session token")
-	// ErrJWTInvalidToken ошибка: полученный JWT не валиден
-	ErrJWTInvalidToken = errors.New("provided token is invalid")
-	// ErrJWTMissingClaim ошибка: у полученного JWT отсутствует необходимое поле
-	ErrJWTMissingClaim = errors.New("provided token is missing a required claim")
-	// ErrJWTOldToken ошибка: время действия JWT истекло
-	ErrJWTOldToken = errors.New("provided token has expired")
 	// ErrSessionExpired ошибка: время действия сессии истекло
 	ErrSessionExpired = errors.New("user session has expired")
 	// ErrSessionNotFound ошибка: полученной сессии нет в хранилище
@@ -229,39 +220,44 @@ var StatusConflictResponse = ErrorResponse{
 // ErrorMap
 // карта для связи ошибок приложения и ответа бэкэнд-сервера
 var ErrorMap = map[error]ErrorResponse{
-	ErrUserNotFound:           WrongLoginResponse,
-	ErrWrongPassword:          WrongLoginResponse,
-	ErrUserAlreadyExists:      StatusConflictResponse,
-	ErrUserNotCreated:         InternalServerErrorResponse,
-	ErrJWTSecretMissing:       InternalServerErrorResponse,
-	ErrTokenNotGenerated:      InternalServerErrorResponse,
-	ErrJWTWrongMethod:         GenericUnauthorizedResponse,
-	ErrJWTInvalidToken:        GenericUnauthorizedResponse,
-	ErrJWTMissingClaim:        GenericUnauthorizedResponse,
-	ErrJWTOldToken:            GenericUnauthorizedResponse,
-	ErrSessionDurationMissing: InternalServerErrorResponse,
-	ErrSessionNullDuration:    InternalServerErrorResponse,
-	ErrSessionIDLengthMissing: InternalServerErrorResponse,
-	ErrSessionNullIDLength:    InternalServerErrorResponse,
-	ErrSessionNotCreated:      InternalServerErrorResponse,
-	ErrSessionExpired:         GenericUnauthorizedResponse,
-	ErrCouldNotBuildQuery:     InternalServerErrorResponse,
-	ErrSessionNotFound:        GenericUnauthorizedResponse,
-	ErrWorkspaceNotCreated:    InternalServerErrorResponse,
-	ErrCouldNotGetWorkspace:   InternalServerErrorResponse,
-	ErrWorkspaceNotDeleted:    InternalServerErrorResponse,
-	ErrBoardNotCreated:        InternalServerErrorResponse,
-	ErrBoardNotUpdated:        InternalServerErrorResponse,
-	ErrBoardNotDeleted:        InternalServerErrorResponse,
-	ErrCouldNotGetBoard:       InternalServerErrorResponse,
-	ErrNoBoardAccess:          ForbiddenResponse,
-	ErrTaskNotCreated:         InternalServerErrorResponse,
-	ErrTaskNotUpdated:         InternalServerErrorResponse,
-	ErrTaskNotDeleted:         InternalServerErrorResponse,
-	ErrCouldNotGetTask:        InternalServerErrorResponse,
-	ErrListNotCreated:         InternalServerErrorResponse,
-	ErrListNotUpdated:         InternalServerErrorResponse,
-	ErrListNotDeleted:         InternalServerErrorResponse,
+	ErrUserNotFound:             WrongLoginResponse,
+	ErrWrongPassword:            WrongLoginResponse,
+	ErrUserAlreadyExists:        StatusConflictResponse,
+	ErrUserNotCreated:           InternalServerErrorResponse,
+	ErrTokenNotGenerated:        InternalServerErrorResponse,
+	ErrCSRFNotFound:             GenericUnauthorizedResponse,
+	ErrSessionDurationMissing:   InternalServerErrorResponse,
+	ErrSessionNullDuration:      InternalServerErrorResponse,
+	ErrSessionIDLengthMissing:   InternalServerErrorResponse,
+	ErrSessionNullIDLength:      InternalServerErrorResponse,
+	ErrSessionNotCreated:        InternalServerErrorResponse,
+	ErrSessionExpired:           GenericUnauthorizedResponse,
+	ErrSessionNotCreated:        InternalServerErrorResponse,
+	ErrCouldNotBuildQuery:       InternalServerErrorResponse,
+	ErrSessionNotFound:          GenericUnauthorizedResponse,
+	ErrWorkspaceNotCreated:      InternalServerErrorResponse,
+	ErrCouldNotGetWorkspace:     InternalServerErrorResponse,
+	ErrWorkspaceNotDeleted:      InternalServerErrorResponse,
+	ErrBoardNotCreated:          InternalServerErrorResponse,
+	ErrBoardNotUpdated:          InternalServerErrorResponse,
+	ErrBoardNotDeleted:          InternalServerErrorResponse,
+	ErrCouldNotGetBoard:         InternalServerErrorResponse,
+	ErrNoBoardAccess:            ForbiddenResponse,
+	ErrTaskNotCreated:           InternalServerErrorResponse,
+	ErrTaskNotUpdated:           InternalServerErrorResponse,
+	ErrTaskNotDeleted:           InternalServerErrorResponse,
+	ErrCouldNotGetTask:          InternalServerErrorResponse,
+	ErrListNotCreated:           InternalServerErrorResponse,
+	ErrListNotUpdated:           InternalServerErrorResponse,
+	ErrListNotDeleted:           InternalServerErrorResponse,
+	ErrCouldNotGetChecklist:     InternalServerErrorResponse,
+	ErrChecklistNotCreated:      InternalServerErrorResponse,
+	ErrChecklistNotUpdated:      InternalServerErrorResponse,
+	ErrChecklistNotDeleted:      InternalServerErrorResponse,
+	ErrCouldNotGetChecklistItem: InternalServerErrorResponse,
+	ErrChecklistItemNotCreated:  InternalServerErrorResponse,
+	ErrChecklistItemNotUpdated:  InternalServerErrorResponse,
+	ErrChecklistItemNotDeleted:  InternalServerErrorResponse,
 }
 
 func ErrorJSON(err ErrorResponse) []byte {
@@ -273,8 +269,12 @@ func ErrorJSON(err ErrorResponse) []byte {
 }
 
 func ReturnError(err ErrorResponse, w http.ResponseWriter, r *http.Request) {
+	log.Println("Returning error response", err)
 	w.WriteHeader(err.Code)
+	log.Println("Wrote header, code:", err.Code)
 	response := ErrorJSON(err)
 	_, _ = w.Write(response)
+	log.Println("Wrote response, text:", err.Message)
 	r.Body.Close()
+	log.Println("Request body closed")
 }

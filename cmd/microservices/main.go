@@ -11,6 +11,7 @@ import (
 	auth "server/microservices/auth"
 	csat "server/microservices/csat"
 	csrf "server/microservices/csrf"
+	user "server/microservices/user"
 
 	"github.com/asaskevich/govalidator"
 	"google.golang.org/grpc"
@@ -56,6 +57,8 @@ func main() {
 	auth.RegisterServices(config, storages, server, &logger)
 	logger.Info("Registering CSRF services")
 	csrf.RegisterServices(config, storages, server, &logger)
+	logger.Info("Registering user services")
+	user.RegisterServices(storages, server, &logger)
 
 	server.Serve(lstn)
 }

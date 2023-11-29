@@ -15,5 +15,5 @@ func NewEmbeddedUserService(userStorage storage.IUserStorage) *embedded.UserServ
 
 // TODO: User microservice
 func NewMicroUserService(userStorage storage.IUserStorage, connection *grpc.ClientConn) *micro.UserService {
-	return micro.NewUserService(userStorage)
+	return micro.NewUserService(userStorage, connection)
 }
