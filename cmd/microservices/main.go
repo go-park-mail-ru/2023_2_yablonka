@@ -10,6 +10,7 @@ import (
 	"server/internal/storage/postgresql"
 	auth "server/microservices/auth"
 	csat "server/microservices/csat"
+	csrf "server/microservices/csrf"
 
 	"github.com/asaskevich/govalidator"
 	"google.golang.org/grpc"
@@ -49,8 +50,12 @@ func main() {
 		logger.Fatal("Can't listen to port, " + err.Error())
 	}
 
+	logger.Info("Registering CSAT services")
 	csat.RegisterServices(storages, server, &logger)
+	logger.Info("Registering auth services")
 	auth.RegisterServices(config, storages, server, &logger)
+	logger.Info("Registering CSRF services")
+	csrf.RegisterServices(config, storages, server, &logger)
 
 	server.Serve(lstn)
 }

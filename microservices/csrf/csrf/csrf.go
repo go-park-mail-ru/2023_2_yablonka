@@ -48,7 +48,7 @@ func (cs *CSRFService) GetLifetime(ctx context.Context, empty *emptypb.Empty) (*
 // SetupCSRF
 // возвращает уникальную строку CSRF и её длительность
 // или возвращает ошибки apperrors.ErrTokenNotGenerated (500)
-func (cs *CSRFService) SetupCSRF(ctx context.Context, id *UserID) (*CSRFData, error) {
+func (cs *CSRFService) SetupCSRF(ctx context.Context, id *CSRFUserID) (*CSRFData, error) {
 	funcName := "CSRFService.SetupCSRF"
 	expiresAt := time.Now().Add(cs.sessionDuration)
 

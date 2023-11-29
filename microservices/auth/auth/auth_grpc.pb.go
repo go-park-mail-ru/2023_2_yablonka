@@ -20,8 +20,8 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type AuthServiceClient interface {
-	AuthUser(ctx context.Context, in *UserID, opts ...grpc.CallOption) (*SessionToken, error)
-	VerifyAuth(ctx context.Context, in *SessionToken, opts ...grpc.CallOption) (*UserID, error)
+	AuthUser(ctx context.Context, in *AuthUserID, opts ...grpc.CallOption) (*SessionToken, error)
+	VerifyAuth(ctx context.Context, in *SessionToken, opts ...grpc.CallOption) (*AuthUserID, error)
 	LogOut(ctx context.Context, in *SessionToken, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	GetLifetime(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*durationpb.Duration, error)
 }
@@ -34,7 +34,7 @@ func NewAuthServiceClient(cc grpc.ClientConnInterface) AuthServiceClient {
 	return &authServiceClient{cc}
 }
 
-func (c *authServiceClient) AuthUser(ctx context.Context, in *UserID, opts ...grpc.CallOption) (*SessionToken, error) {
+func (c *authServiceClient) AuthUser(ctx context.Context, in *AuthUserID, opts ...grpc.CallOption) (*SessionToken, error) {
 	out := new(SessionToken)
 	err := c.cc.Invoke(ctx, "/AuthService/AuthUser", in, out, opts...)
 	if err != nil {
@@ -43,8 +43,8 @@ func (c *authServiceClient) AuthUser(ctx context.Context, in *UserID, opts ...gr
 	return out, nil
 }
 
-func (c *authServiceClient) VerifyAuth(ctx context.Context, in *SessionToken, opts ...grpc.CallOption) (*UserID, error) {
-	out := new(UserID)
+func (c *authServiceClient) VerifyAuth(ctx context.Context, in *SessionToken, opts ...grpc.CallOption) (*AuthUserID, error) {
+	out := new(AuthUserID)
 	err := c.cc.Invoke(ctx, "/AuthService/VerifyAuth", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -74,8 +74,8 @@ func (c *authServiceClient) GetLifetime(ctx context.Context, in *emptypb.Empty, 
 // All implementations must embed UnimplementedAuthServiceServer
 // for forward compatibility
 type AuthServiceServer interface {
-	AuthUser(context.Context, *UserID) (*SessionToken, error)
-	VerifyAuth(context.Context, *SessionToken) (*UserID, error)
+	AuthUser(context.Context, *AuthUserID) (*SessionToken, error)
+	VerifyAuth(context.Context, *SessionToken) (*AuthUserID, error)
 	LogOut(context.Context, *SessionToken) (*emptypb.Empty, error)
 	GetLifetime(context.Context, *emptypb.Empty) (*durationpb.Duration, error)
 	mustEmbedUnimplementedAuthServiceServer()
@@ -85,10 +85,10 @@ type AuthServiceServer interface {
 type UnimplementedAuthServiceServer struct {
 }
 
-func (UnimplementedAuthServiceServer) AuthUser(context.Context, *UserID) (*SessionToken, error) {
+func (UnimplementedAuthServiceServer) AuthUser(context.Context, *AuthUserID) (*SessionToken, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AuthUser not implemented")
 }
-func (UnimplementedAuthServiceServer) VerifyAuth(context.Context, *SessionToken) (*UserID, error) {
+func (UnimplementedAuthServiceServer) VerifyAuth(context.Context, *SessionToken) (*AuthUserID, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method VerifyAuth not implemented")
 }
 func (UnimplementedAuthServiceServer) LogOut(context.Context, *SessionToken) (*emptypb.Empty, error) {
@@ -111,7 +111,7 @@ func RegisterAuthServiceServer(s grpc.ServiceRegistrar, srv AuthServiceServer) {
 }
 
 func _AuthService_AuthUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(UserID)
+	in := new(AuthUserID)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -123,7 +123,7 @@ func _AuthService_AuthUser_Handler(srv interface{}, ctx context.Context, dec fun
 		FullMethod: "/AuthService/AuthUser",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AuthServiceServer).AuthUser(ctx, req.(*UserID))
+		return srv.(AuthServiceServer).AuthUser(ctx, req.(*AuthUserID))
 	}
 	return interceptor(ctx, in, info, handler)
 }

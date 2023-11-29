@@ -44,7 +44,7 @@ func (a *AuthService) AuthUser(ctx context.Context, id dto.UserID) (dto.SessionT
 	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
 
 	logger.Debug("Contacting GRPC server", funcName, nodeName)
-	sessionpb, err := a.client.AuthUser(ctx, &microservice.UserID{Value: id.Value})
+	sessionpb, err := a.client.AuthUser(ctx, &microservice.AuthUserID{Value: id.Value})
 	if err != nil {
 		return dto.SessionToken{}, err
 	}

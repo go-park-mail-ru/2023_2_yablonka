@@ -1,5 +1,6 @@
 syntax = "proto3";
 
+// import "common/common.proto";
 import "google/protobuf/empty.proto";
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/duration.proto";
@@ -16,12 +17,13 @@ message CSRFData {
     google.protobuf.Timestamp ExpirationDate = 2;
 }
 
-message UserID {
+message CSRFUserID {
     uint64 Value = 1;
 }
 
+
 service CSRFService {
-	rpc SetupCSRF (UserID) returns (CSRFData) {}
+	rpc SetupCSRF (CSRFUserID) returns (CSRFData) {}
 	rpc VerifyCSRF (CSRFToken) returns (google.protobuf.Empty) {}
 	rpc DeleteCSRF (CSRFToken) returns (google.protobuf.Empty) {}
 	rpc GetLifetime (google.protobuf.Empty) returns (google.protobuf.Duration) {}

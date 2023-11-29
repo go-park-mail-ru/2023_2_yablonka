@@ -1,4 +1,5 @@
 syntax = "proto3";
+package csat_microservice;
 
 import "google/protobuf/empty.proto";
 

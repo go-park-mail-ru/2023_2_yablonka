@@ -32,7 +32,7 @@ func NewCSATAnswerServiceClient(cc grpc.ClientConnInterface) CSATAnswerServiceCl
 
 func (c *cSATAnswerServiceClient) Create(ctx context.Context, in *NewCSATAnswer, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	out := new(emptypb.Empty)
-	err := c.cc.Invoke(ctx, "/CSATAnswerService/Create", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/csat_microservice.CSATAnswerService/Create", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -77,7 +77,7 @@ func _CSATAnswerService_Create_Handler(srv interface{}, ctx context.Context, dec
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/CSATAnswerService/Create",
+		FullMethod: "/csat_microservice.CSATAnswerService/Create",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(CSATAnswerServiceServer).Create(ctx, req.(*NewCSATAnswer))
@@ -89,7 +89,7 @@ func _CSATAnswerService_Create_Handler(srv interface{}, ctx context.Context, dec
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var CSATAnswerService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "CSATAnswerService",
+	ServiceName: "csat_microservice.CSATAnswerService",
 	HandlerType: (*CSATAnswerServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{

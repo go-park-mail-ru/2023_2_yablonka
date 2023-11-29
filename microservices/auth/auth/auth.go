@@ -40,7 +40,7 @@ const nodeName = "microservice_server"
 // AuthUser
 // возвращает уникальную строку авторизации и её длительность
 // или возвращает ошибки apperrors.ErrTokenNotGenerated (500)
-func (a *AuthService) AuthUser(ctx context.Context, id *UserID) (*SessionToken, error) {
+func (a *AuthService) AuthUser(ctx context.Context, id *AuthUserID) (*SessionToken, error) {
 	funcName := "AuthService.AuthUser"
 	expiresAt := time.Now().Add(a.sessionDuration)
 
@@ -71,7 +71,7 @@ func (a *AuthService) AuthUser(ctx context.Context, id *UserID) (*SessionToken, 
 // VerifyAuth
 // проверяет состояние авторизации, возвращает ID авторизированного пользователя
 // или возвращает ошибки apperrors.ErrSessionNotFound (401)
-func (a *AuthService) VerifyAuth(ctx context.Context, token *SessionToken) (*UserID, error) {
+func (a *AuthService) VerifyAuth(ctx context.Context, token *SessionToken) (*AuthUserID, error) {
 	funcName := "AuthService.VerifyAuth"
 	convertedSession := dto.SessionToken{
 		ID:             token.ID,
@@ -80,16 +80,16 @@ func (a *AuthService) VerifyAuth(ctx context.Context, token *SessionToken) (*Use
 
 	sessionObj, err := a.authStorage.GetSession(ctx, convertedSession)
 	if err != nil {
-		return &UserID{}, err
+		return &AuthUserID{}, err
 	}
 	a.logger.Debug("Found session", funcName, nodeName)
 
 	if sessionObj.ExpiryDate.Before(time.Now()) {
 		a.logger.Debug("Deleting expired session", funcName, nodeName)
 		a.LogOut(ctx, token)
-		return &UserID{}, apperrors.ErrSessionExpired
+		return &AuthUserID{}, apperrors.ErrSessionExpired
 	}
-	return &UserID{Value: sessionObj.UserID}, nil
+	return &AuthUserID{Value: sessionObj.UserID}, nil
 }
 
 // LogOut

@@ -20,7 +20,7 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type CSRFServiceClient interface {
-	SetupCSRF(ctx context.Context, in *UserID, opts ...grpc.CallOption) (*CSRFData, error)
+	SetupCSRF(ctx context.Context, in *CSRFUserID, opts ...grpc.CallOption) (*CSRFData, error)
 	VerifyCSRF(ctx context.Context, in *CSRFToken, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	DeleteCSRF(ctx context.Context, in *CSRFToken, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	GetLifetime(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*durationpb.Duration, error)
@@ -34,7 +34,7 @@ func NewCSRFServiceClient(cc grpc.ClientConnInterface) CSRFServiceClient {
 	return &cSRFServiceClient{cc}
 }
 
-func (c *cSRFServiceClient) SetupCSRF(ctx context.Context, in *UserID, opts ...grpc.CallOption) (*CSRFData, error) {
+func (c *cSRFServiceClient) SetupCSRF(ctx context.Context, in *CSRFUserID, opts ...grpc.CallOption) (*CSRFData, error) {
 	out := new(CSRFData)
 	err := c.cc.Invoke(ctx, "/CSRFService/SetupCSRF", in, out, opts...)
 	if err != nil {
@@ -74,7 +74,7 @@ func (c *cSRFServiceClient) GetLifetime(ctx context.Context, in *emptypb.Empty, 
 // All implementations must embed UnimplementedCSRFServiceServer
 // for forward compatibility
 type CSRFServiceServer interface {
-	SetupCSRF(context.Context, *UserID) (*CSRFData, error)
+	SetupCSRF(context.Context, *CSRFUserID) (*CSRFData, error)
 	VerifyCSRF(context.Context, *CSRFToken) (*emptypb.Empty, error)
 	DeleteCSRF(context.Context, *CSRFToken) (*emptypb.Empty, error)
 	GetLifetime(context.Context, *emptypb.Empty) (*durationpb.Duration, error)
@@ -85,7 +85,7 @@ type CSRFServiceServer interface {
 type UnimplementedCSRFServiceServer struct {
 }
 
-func (UnimplementedCSRFServiceServer) SetupCSRF(context.Context, *UserID) (*CSRFData, error) {
+func (UnimplementedCSRFServiceServer) SetupCSRF(context.Context, *CSRFUserID) (*CSRFData, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SetupCSRF not implemented")
 }
 func (UnimplementedCSRFServiceServer) VerifyCSRF(context.Context, *CSRFToken) (*emptypb.Empty, error) {
@@ -111,7 +111,7 @@ func RegisterCSRFServiceServer(s grpc.ServiceRegistrar, srv CSRFServiceServer) {
 }
 
 func _CSRFService_SetupCSRF_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(UserID)
+	in := new(CSRFUserID)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -123,7 +123,7 @@ func _CSRFService_SetupCSRF_Handler(srv interface{}, ctx context.Context, dec fu
 		FullMethod: "/CSRFService/SetupCSRF",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CSRFServiceServer).SetupCSRF(ctx, req.(*UserID))
+		return srv.(CSRFServiceServer).SetupCSRF(ctx, req.(*CSRFUserID))
 	}
 	return interceptor(ctx, in, info, handler)
 }

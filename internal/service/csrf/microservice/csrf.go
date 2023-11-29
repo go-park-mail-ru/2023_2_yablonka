@@ -48,7 +48,7 @@ func (cs *CSRFService) SetupCSRF(ctx context.Context, id dto.UserID) (dto.CSRFDa
 	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
 
 	logger.Debug("Contacting GRPC server", funcName, nodeName)
-	csrfpb, err := cs.client.SetupCSRF(ctx, &microservice.UserID{Value: id.Value})
+	csrfpb, err := cs.client.SetupCSRF(ctx, &microservice.CSRFUserID{Value: id.Value})
 	if err != nil {
 		return dto.CSRFData{}, err
 	}
