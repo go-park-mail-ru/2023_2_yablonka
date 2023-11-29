@@ -385,6 +385,11 @@ func (s *PostgreSQLBoardStorage) AddUser(ctx context.Context, info dto.AddBoardU
 	funcName := "PostgreSQLBoardStorage.AddUser"
 	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
 
+	tx, err := s.db.BeginTx(ctx, &sql.TxOptions{})
+	if err != nil {
+		return apperrors.ErrCouldNotStartTransaction
+	}
+
 	query1, args, err := sq.
 		Insert("public.board_user").
 		Columns("id_board", "id_user").
@@ -396,9 +401,13 @@ func (s *PostgreSQLBoardStorage) AddUser(ctx context.Context, info dto.AddBoardU
 	}
 	logger.Debug("Built query\n\t"+query1+"\nwith args\n\t"+fmt.Sprintf("%+v", args), funcName, nodeName)
 
-	_, err = s.db.Exec(query1, args...)
+	_, err = tx.Exec(query1, args...)
 	if err != nil {
 		logger.Debug("Insert into board_user failed with error "+err.Error(), funcName, nodeName)
+		err = tx.Rollback()
+		for err != nil {
+			err = tx.Rollback()
+		}
 		return apperrors.ErrCouldNotAddBoardUser
 	}
 	logger.Debug("query executed", funcName, nodeName)
@@ -414,12 +423,27 @@ func (s *PostgreSQLBoardStorage) AddUser(ctx context.Context, info dto.AddBoardU
 	}
 	logger.Debug("Built query\n\t"+query2+"\nwith args\n\t"+fmt.Sprintf("%+v", args), funcName, nodeName)
 
-	_, err = s.db.Exec(query2, args...)
+	_, err = tx.Exec(query2, args...)
 	if err != nil {
 		logger.Debug("Insert into user_workspace failed with error "+err.Error(), funcName, nodeName)
+		err = tx.Rollback()
+		for err != nil {
+			err = tx.Rollback()
+		}
 		return apperrors.ErrCouldNotAddBoardUser
 	}
 	logger.Debug("query executed", funcName, nodeName)
+
+	err = tx.Commit()
+	if err != nil {
+		logger.Debug("Failed to commit changes with error "+err.Error(), funcName, nodeName)
+		err = tx.Rollback()
+		for err != nil {
+			err = tx.Rollback()
+		}
+		return apperrors.ErrCouldNotAddBoardUser
+	}
+	logger.Debug("Changes committed", funcName, nodeName)
 
 	return nil
 }
@@ -427,10 +451,15 @@ func (s *PostgreSQLBoardStorage) AddUser(ctx context.Context, info dto.AddBoardU
 // AddUser
 // добавляет пользователя на доску
 func (s *PostgreSQLBoardStorage) RemoveUser(ctx context.Context, info dto.RemoveBoardUserInfo) error {
-	funcName := "PostgreSQLBoardStorage.AddUser"
+	funcName := "PostgreSQLBoardStorage.RemoveUser"
 	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
 
-	query, args, err := sq.
+	tx, err := s.db.BeginTx(ctx, &sql.TxOptions{})
+	if err != nil {
+		return apperrors.ErrCouldNotStartTransaction
+	}
+
+	query1, args, err := sq.
 		Delete("public.board_user").
 		Where(sq.Eq{"id_board": info.BoardID, "id_user": info.UserID}).
 		PlaceholderFormat(sq.Dollar).
@@ -438,11 +467,16 @@ func (s *PostgreSQLBoardStorage) RemoveUser(ctx context.Context, info dto.Remove
 	if err != nil {
 		return apperrors.ErrCouldNotBuildQuery
 	}
-	logger.Debug("Built query\n\t"+query+"\nwith args\n\t"+fmt.Sprintf("%+v", args), funcName, nodeName)
+	logger.Debug("Built query\n\t"+query1+"\nwith args\n\t"+fmt.Sprintf("%+v", args), funcName, nodeName)
 
-	_, err = s.db.Exec(query, args...)
+	_, err = tx.Exec(query1, args...)
 	if err != nil {
-		return apperrors.ErrCouldNotAddBoardUser
+		logger.Debug("Removing user from board failed with error "+err.Error(), funcName, nodeName)
+		err = tx.Rollback()
+		for err != nil {
+			err = tx.Rollback()
+		}
+		return apperrors.ErrCouldNotRemoveBoardUser
 	}
 	logger.Debug("query executed", funcName, nodeName)
 
