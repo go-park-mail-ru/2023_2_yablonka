@@ -157,6 +157,7 @@ func (s *PostgresTaskStorage) ReadMany(ctx context.Context, id dto.TaskIDs) (*[]
 			&task.End,
 			(*pq.StringArray)(&task.UserIDs),
 			(*pq.StringArray)(&task.CommentIDs),
+			(*pq.StringArray)(&task.ChecklistIDs),
 		)
 		if err != nil {
 			logger.Debug(err.Error(), funcName, nodeName)

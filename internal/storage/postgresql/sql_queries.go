@@ -22,6 +22,7 @@ var (
 		"public.task.name", "public.task.description", "public.task.list_position", "public.task.task_start", "public.task.task_end",
 		"array_remove(array_agg(public.task_user.id_user), NULL)",
 		"array_remove(array_agg(public.comment.id), NULL)",
+		"array_remove(array_agg(public.checklist.id), NULL)",
 	}
 	allChecklistFields = []string{"public.checklist.id", "public.checklist.id_task", "public.checklist.name", "public.checklist.list_position",
 		"array_remove(array_agg(public.checklist_item.id), NULL)",
