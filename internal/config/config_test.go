@@ -106,7 +106,6 @@ func Test_GetDBConnectionHost(t *testing.T) {
 		},
 		{
 			name:           "Host not set",
-			envVaribles:    map[string]string{},
 			expectedResult: "localhost",
 		},
 	}
@@ -147,7 +146,6 @@ func Test_GetDBPassword(t *testing.T) {
 		},
 		{
 			name:           "Password not set",
-			envVaribles:    map[string]string{},
 			expectedResult: "",
 			expectedError:  apperrors.ErrDatabasePWMissing,
 		},
@@ -193,7 +191,6 @@ func Test_GetSessionDurationEnv(t *testing.T) {
 		},
 		{
 			name:           "Duration not set",
-			envVaribles:    map[string]string{},
 			expectedResult: time.Duration(14 * 24 * time.Hour),
 			expectedError:  nil,
 		},
@@ -247,7 +244,6 @@ func Test_GetSessionIDLength(t *testing.T) {
 		},
 		{
 			name:           "Session ID length not set",
-			envVaribles:    map[string]string{},
 			expectedResult: 32,
 			hasError:       false,
 		},
