@@ -12,8 +12,7 @@ import (
 const nodeName = "microservice"
 
 func RegisterServices(config *config.Config, storages *storage.Storages, server *grpc.Server, logger *logging.LogrusLogger) {
-	funcName := "RegisterServices"
-	logger.Debug("Creating auth GRPC server", funcName, nodeName)
+	funcName := "Auth.RegisterServices"
 	authServer := auth.NewAuthService(*config.Session, storages.Auth, logger)
 	logger.Debug("Auth GRPC server created", funcName, nodeName)
 
