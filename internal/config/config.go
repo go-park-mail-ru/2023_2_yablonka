@@ -77,8 +77,8 @@ func LoadConfig(envPath string, configPath string) (*Config, error) {
 	}
 	defer file.Close()
 
-	d := yaml.NewDecoder(file)
-	if err := d.Decode(&config); err != nil {
+	decoder := yaml.NewDecoder(file)
+	if err := decoder.Decode(&config); err != nil {
 		return nil, err
 	}
 
@@ -97,12 +97,12 @@ func LoadConfig(envPath string, configPath string) (*Config, error) {
 		return nil, err
 	}
 
-	config.Database.Password, err = getDBPassword()
+	config.Database.Password, err = GetDBPassword()
 	if err != nil {
 		return nil, err
 	}
 
-	config.Database.Host = getDBConnectionHost()
+	config.Database.Host = GetDBConnectionHost()
 
 	return &config, nil
 }
@@ -115,14 +115,14 @@ func NewSessionConfig() (*SessionConfig, error) {
 		err    error
 	)
 
-	config.Duration, err = getSessionDurationEnv()
+	config.Duration, err = GetSessionDurationEnv()
 	if err != nil {
 		return nil, err
 	} else if config.Duration < time.Duration(1*time.Second) {
 		return nil, apperrors.ErrSessionNullDuration
 	}
 
-	config.IDLength, err = getSessionIDLength()
+	config.IDLength, err = GetSessionIDLength()
 	if err != nil {
 		return nil, err
 	} else if config.IDLength < 1 {
@@ -132,9 +132,9 @@ func NewSessionConfig() (*SessionConfig, error) {
 	return &config, nil
 }
 
-// getDBConnectionHost
+// GetDBConnectionHost
 // возвращает имя хоста из env для соединения с БД (по умолчанию localhost)
-func getDBConnectionHost() string {
+func GetDBConnectionHost() string {
 	host, hOk := os.LookupEnv("POSTGRES_HOST")
 	if !hOk {
 		return "localhost"
@@ -144,18 +144,17 @@ func getDBConnectionHost() string {
 
 // getDBConnectionHost
 // возвращает пароль из env для соединения с БД
-func getDBPassword() (string, error) {
+func GetDBPassword() (string, error) {
 	pwd, pOk := os.LookupEnv("POSTGRES_PASSWORD")
 	if !pOk {
 		return "", apperrors.ErrDatabasePWMissing
 	}
-
 	return pwd, nil
 }
 
-// getSessionDurationEnv
+// GetSessionDurationEnv
 // возвращает время жизни сессии на основе параметров в .env (по умолчанию 14 дней)
-func getSessionDurationEnv() (time.Duration, error) {
+func GetSessionDurationEnv() (time.Duration, error) {
 	durationDays, dDok := os.LookupEnv("SESSION_DURATION_DAYS")
 	days, _ := strconv.Atoi(durationDays)
 	durationHours, dHok := os.LookupEnv("SESSION_DURATION_HOURS")
@@ -178,9 +177,9 @@ func getSessionDurationEnv() (time.Duration, error) {
 	return totalDuration, nil
 }
 
-// getSessionIDLength
+// GetSessionIDLength
 // возвращает время жизни сессии на основе параметров в .env (по умолчанию 14 дней)
-func getSessionIDLength() (uint, error) {
+func GetSessionIDLength() (uint, error) {
 	sidLengthString, ok := os.LookupEnv("SESSION_ID_LENGTH")
 	if !ok {
 		log.Println("WARNING: session ID length is not set, defaulting to 32")
