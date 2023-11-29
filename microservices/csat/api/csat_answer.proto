@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+import "google/protobuf/empty.proto";
+
+// protoc --go_out=. --go-grpc_out=. --go-grpc_opt=paths=source_relative --go_opt=paths=source_relative *.proto  
+option go_package = "./;csat_microservice";
+
+message NewCSATAnswer {
+	uint64 UserID = 1;
+	uint64 QuestionID = 2;
+	uint64 Rating = 3;
+}
+
+service CSATAnswerService {
+	rpc Create (NewCSATAnswer) returns (google.protobuf.Empty) {}
+}
