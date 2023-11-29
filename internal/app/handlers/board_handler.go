@@ -40,11 +40,11 @@ func (bh BoardHandler) GetFullBoard(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
 	funcName := "GetFullBoard"
 	errorMessage := "Getting full board failed with error: "
-	failBorder := "----------------- Get board FAIL -----------------"
+	failBorder := "---------------------------------- Get board FAIL ----------------------------------"
 
 	logger := rCtx.Value(dto.LoggerKey).(logger.ILogger)
 
-	logger.Info("----------------- Get board -----------------")
+	logger.Info("---------------------------------- Get board ----------------------------------")
 
 	var boardID dto.BoardID
 	err := json.NewDecoder(r.Body).Decode(&boardID)
@@ -90,7 +90,7 @@ func (bh BoardHandler) GetFullBoard(w http.ResponseWriter, r *http.Request) {
 	}
 	logger.Debug("response written", funcName, nodeName)
 
-	logger.Info("----------------- Get board SUCCESS -----------------")
+	logger.Info("---------------------------------- Get board SUCCESS ----------------------------------")
 }
 
 // @Summary Создать доску
@@ -112,10 +112,10 @@ func (bh BoardHandler) Create(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
 	funcName := "Create"
 	errorMessage := "Getting full board failed with error: "
-	failBorder := "----------------- Create board FAIL -----------------"
+	failBorder := "---------------------------------- Create board FAIL ----------------------------------"
 
 	logger := rCtx.Value(dto.LoggerKey).(logger.ILogger)
-	logger.Info("----------------- Creating board -----------------")
+	logger.Info("---------------------------------- Creating board ----------------------------------")
 
 	var newBoardRequest dto.NewBoardRequest
 	err := json.NewDecoder(r.Body).Decode(&newBoardRequest)
@@ -174,7 +174,7 @@ func (bh BoardHandler) Create(w http.ResponseWriter, r *http.Request) {
 	}
 	logger.Debug("response written", funcName, nodeName)
 
-	logger.Info("----------------- Create board SUCCESS -----------------")
+	logger.Info("---------------------------------- Create board SUCCESS ----------------------------------")
 }
 
 // @Summary Обновить доску
@@ -196,10 +196,10 @@ func (bh BoardHandler) UpdateData(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
 	funcName := "UpdateData"
 	errorMessage := "Updating full board failed with error: "
-	failBorder := "----------------- Updating board FAIL -----------------"
+	failBorder := "---------------------------------- Updating board FAIL ----------------------------------"
 
 	logger := rCtx.Value(dto.LoggerKey).(logger.ILogger)
-	logger.Info("----------------- Updating board -----------------")
+	logger.Info("---------------------------------- Updating board ----------------------------------")
 
 	var boardInfo dto.UpdatedBoardInfo
 	err := json.NewDecoder(r.Body).Decode(&boardInfo)
@@ -232,7 +232,7 @@ func (bh BoardHandler) UpdateData(w http.ResponseWriter, r *http.Request) {
 	}
 	logger.Debug("response written", funcName, nodeName)
 
-	logger.Info("----------------- Updating board SUCCESS -----------------")
+	logger.Info("---------------------------------- Updating board SUCCESS ----------------------------------")
 }
 
 // @Summary Обновить картинку доски
@@ -254,10 +254,10 @@ func (bh BoardHandler) UpdateThumbnail(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
 	funcName := "UpdateThumbnail"
 	errorMessage := "Updating board thumbnail failed with error: "
-	failBorder := "----------------- Updating board thumbnail FAIL -----------------"
+	failBorder := "---------------------------------- Updating board thumbnail FAIL ----------------------------------"
 
 	logger := rCtx.Value(dto.LoggerKey).(logger.ILogger)
-	logger.Info("----------------- Updating board -----------------")
+	logger.Info("---------------------------------- Updating board ----------------------------------")
 
 	var boardInfo dto.UpdatedBoardThumbnailInfo
 	err := json.NewDecoder(r.Body).Decode(&boardInfo)
@@ -293,7 +293,7 @@ func (bh BoardHandler) UpdateThumbnail(w http.ResponseWriter, r *http.Request) {
 	logger.Debug("response written", funcName, nodeName)
 
 	logger.Debug("response written", funcName, nodeName)
-	logger.Info("----------------- Updating board thumbnail SUCCESS -----------------")
+	logger.Info("---------------------------------- Updating board thumbnail SUCCESS ----------------------------------")
 }
 
 // @Summary Удалить доску
@@ -315,10 +315,10 @@ func (bh BoardHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
 	funcName := "Delete"
 	errorMessage := "Deleting board failed with error: "
-	failBorder := "----------------- Deleting board FAIL -----------------"
+	failBorder := "---------------------------------- Deleting board FAIL ----------------------------------"
 
 	logger := rCtx.Value(dto.LoggerKey).(logger.ILogger)
-	logger.Info("----------------- Deleting board -----------------")
+	logger.Info("---------------------------------- Deleting board ----------------------------------")
 
 	var boardID dto.BoardID
 	err := json.NewDecoder(r.Body).Decode(&boardID)
@@ -352,7 +352,7 @@ func (bh BoardHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	logger.Debug("response written", funcName, nodeName)
 
 	logger.Debug("response written", funcName, nodeName)
-	logger.Info("----------------- Deleting board SUCCESS -----------------")
+	logger.Info("---------------------------------- Deleting board SUCCESS ----------------------------------")
 }
 
 // @Summary Добавить пользователя в доску
@@ -374,10 +374,10 @@ func (bh BoardHandler) AddUser(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
 	funcName := "AddUser"
 	errorMessage := "Adding user to board with error: "
-	failBorder := "----------------- Adding user to board FAIL -----------------"
+	failBorder := "---------------------------------- Adding user to board FAIL ----------------------------------"
 
 	logger := rCtx.Value(dto.LoggerKey).(logger.ILogger)
-	logger.Info("----------------- Adding user to board -----------------")
+	logger.Info("---------------------------------- Adding user to board ----------------------------------")
 
 	var info dto.AddBoardUserRequest
 	err := json.NewDecoder(r.Body).Decode(&info)
@@ -419,7 +419,7 @@ func (bh BoardHandler) AddUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	logger.Debug("Response written", funcName, nodeName)
-	logger.Info("----------------- Add user to board SUCCESS -----------------")
+	logger.Info("---------------------------------- Add user to board SUCCESS ----------------------------------")
 }
 
 // @Summary Удалить пользователя из доски
@@ -441,10 +441,10 @@ func (bh BoardHandler) RemoveUser(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
 	funcName := "AddUser"
 	errorMessage := "Removing user from board failed with error: "
-	failBorder := "----------------- Removing user from board FAIL -----------------"
+	failBorder := "---------------------------------- Removing user from board FAIL ----------------------------------"
 
 	logger := rCtx.Value(dto.LoggerKey).(logger.ILogger)
-	logger.Info("----------------- Removing user from board -----------------")
+	logger.Info("---------------------------------- Removing user from board ----------------------------------")
 
 	var info dto.RemoveBoardUserInfo
 	err := json.NewDecoder(r.Body).Decode(&info)
@@ -487,5 +487,5 @@ func (bh BoardHandler) RemoveUser(w http.ResponseWriter, r *http.Request) {
 	logger.Debug("response written", funcName, nodeName)
 
 	logger.Debug("Response written", funcName, nodeName)
-	logger.Info("----------------- Removing user from board SUCCESS -----------------")
+	logger.Info("---------------------------------- Removing user from board SUCCESS ----------------------------------")
 }

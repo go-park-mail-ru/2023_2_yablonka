@@ -61,3 +61,7 @@ type QuestionResponse struct {
 type ChecklistResponse struct {
 	Question dto.ChecklistInfo `json:"checklist"`
 }
+
+type ChecklistItemResponse struct {
+	Question dto.ChecklistItemInfo `json:"checklist_item"`
+}

@@ -33,11 +33,11 @@ func (wh WorkspaceHandler) GetUserWorkspaces(w http.ResponseWriter, r *http.Requ
 	funcName := "WorkspaceHandler.GetUserWorkspaces"
 	nodeName := "handler"
 	errorMessage := "Getting user workspaces failed with error: "
-	failBorder := "----------------- Getting user workspaces FAIL -----------------"
+	failBorder := "---------------------------------- Getting user workspaces FAIL ----------------------------------"
 
 	logger := rCtx.Value(dto.LoggerKey).(logger.ILogger)
 
-	logger.Info("----------------- Getting user workspaces -----------------")
+	logger.Info("---------------------------------- Getting user workspaces ----------------------------------")
 
 	user, ok := rCtx.Value(dto.UserObjKey).(*entities.User)
 	if !ok {
@@ -74,7 +74,7 @@ func (wh WorkspaceHandler) GetUserWorkspaces(w http.ResponseWriter, r *http.Requ
 	}
 	logger.Debug("response written", funcName, nodeName)
 
-	logger.Info("----------------- Getting user workspaces SUCCESS -----------------")
+	logger.Info("---------------------------------- Getting user workspaces SUCCESS ----------------------------------")
 }
 
 // @Summary Создать рабочее пространство
@@ -97,11 +97,11 @@ func (wh WorkspaceHandler) Create(w http.ResponseWriter, r *http.Request) {
 	funcName := "WorkspaceHandler.Create"
 	nodeName := "handler"
 	errorMessage := "Creating workspace failed with error: "
-	failBorder := "----------------- Creating workspace FAIL -----------------"
+	failBorder := "---------------------------------- Creating workspace FAIL ----------------------------------"
 
 	logger := rCtx.Value(dto.LoggerKey).(logger.ILogger)
 
-	logger.Info("----------------- Creating workspace -----------------")
+	logger.Info("---------------------------------- Creating workspace ----------------------------------")
 
 	var newWorkspaceInfo dto.NewWorkspaceInfo
 	err := json.NewDecoder(r.Body).Decode(&newWorkspaceInfo)
@@ -136,7 +136,7 @@ func (wh WorkspaceHandler) Create(w http.ResponseWriter, r *http.Request) {
 	}
 	logger.Debug("response written", funcName, nodeName)
 
-	logger.Info("----------------- Creating workspace SUCCESS -----------------")
+	logger.Info("---------------------------------- Creating workspace SUCCESS ----------------------------------")
 }
 
 // @Summary Обновить рабочее пространство
@@ -159,11 +159,11 @@ func (wh WorkspaceHandler) UpdateData(w http.ResponseWriter, r *http.Request) {
 	funcName := "WorkspaceHandler.UpdateData"
 	nodeName := "handler"
 	errorMessage := "Updating workspace data failed with error: "
-	failBorder := "----------------- Updating workspace data FAIL -----------------"
+	failBorder := "---------------------------------- Updating workspace data FAIL ----------------------------------"
 
 	logger := rCtx.Value(dto.LoggerKey).(logger.ILogger)
 
-	logger.Info("----------------- Updating workspace data -----------------")
+	logger.Info("---------------------------------- Updating workspace data ----------------------------------")
 
 	var workspaceInfo dto.UpdatedWorkspaceInfo
 	err := json.NewDecoder(r.Body).Decode(&workspaceInfo)
@@ -196,7 +196,7 @@ func (wh WorkspaceHandler) UpdateData(w http.ResponseWriter, r *http.Request) {
 	}
 	logger.Debug("response written", funcName, nodeName)
 
-	logger.Info("----------------- Updating workspace data SUCCESS -----------------")
+	logger.Info("---------------------------------- Updating workspace data SUCCESS ----------------------------------")
 }
 
 // @Summary Удалить рабочее пространство
@@ -219,11 +219,11 @@ func (wh WorkspaceHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	funcName := "WorkspaceHandler.Delete"
 	nodeName := "handler"
 	errorMessage := "Deleting workspace failed with error: "
-	failBorder := "----------------- Deleting workspace FAIL -----------------"
+	failBorder := "---------------------------------- Deleting workspace FAIL ----------------------------------"
 
 	logger := rCtx.Value(dto.LoggerKey).(logger.ILogger)
 
-	logger.Info("----------------- Deleting workspace -----------------")
+	logger.Info("---------------------------------- Deleting workspace ----------------------------------")
 
 	var workspaceID dto.WorkspaceID
 	err := json.NewDecoder(r.Body).Decode(&workspaceID)
@@ -256,5 +256,5 @@ func (wh WorkspaceHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	}
 	logger.Debug("response written", funcName, nodeName)
 
-	logger.Info("----------------- Deleting workspace SUCCESS -----------------")
+	logger.Info("---------------------------------- Deleting workspace SUCCESS ----------------------------------")
 }

@@ -37,11 +37,11 @@ func (uh UserHandler) ChangePassword(w http.ResponseWriter, r *http.Request) {
 	funcName := "UserHandler.ChangePassword"
 	nodeName := "handler"
 	errorMessage := "Changing user's password failed with error: "
-	failBorder := "----------------- Changing user's password FAIL -----------------"
+	failBorder := "---------------------------------- Changing user's password FAIL ----------------------------------"
 
 	logger := rCtx.Value(dto.LoggerKey).(logger.ILogger)
 
-	logger.Info("----------------- Changing user's password -----------------")
+	logger.Info("---------------------------------- Changing user's password ----------------------------------")
 
 	var passwords dto.PasswordChangeInfo
 	err := json.NewDecoder(r.Body).Decode(&passwords)
@@ -85,7 +85,7 @@ func (uh UserHandler) ChangePassword(w http.ResponseWriter, r *http.Request) {
 	}
 	logger.Debug("response written", funcName, nodeName)
 
-	logger.Info("----------------- Changing user's password SUCCESS -----------------")
+	logger.Info("---------------------------------- Changing user's password SUCCESS ----------------------------------")
 }
 
 // @Summary Поменять данные профиля
@@ -106,11 +106,11 @@ func (uh UserHandler) ChangeProfile(w http.ResponseWriter, r *http.Request) {
 	funcName := "UserHandler.ChangeProfile"
 	nodeName := "handler"
 	errorMessage := "Changing user's profile failed with error: "
-	failBorder := "----------------- Changing user's profile FAIL -----------------"
+	failBorder := "---------------------------------- Changing user's profile FAIL ----------------------------------"
 
 	logger := rCtx.Value(dto.LoggerKey).(logger.ILogger)
 
-	logger.Info("----------------- Changing user's profile -----------------")
+	logger.Info("---------------------------------- Changing user's profile ----------------------------------")
 
 	var newProfileInfo dto.UserProfileInfo
 	user, ok := rCtx.Value(dto.UserObjKey).(*entities.User)
@@ -162,7 +162,7 @@ func (uh UserHandler) ChangeProfile(w http.ResponseWriter, r *http.Request) {
 	}
 	logger.Debug("response written", funcName, nodeName)
 
-	logger.Info("----------------- Changing user's profile SUCCESS -----------------")
+	logger.Info("---------------------------------- Changing user's profile SUCCESS ----------------------------------")
 }
 
 // @Summary Поменять аватарку
@@ -183,11 +183,11 @@ func (uh UserHandler) ChangeAvatar(w http.ResponseWriter, r *http.Request) {
 	funcName := "UserHandler.ChangeAvatar"
 	nodeName := "handler"
 	errorMessage := "Changing user's avatar failed with error: "
-	failBorder := "----------------- Changing user's avatar FAIL -----------------"
+	failBorder := "---------------------------------- Changing user's avatar FAIL ----------------------------------"
 
 	logger := rCtx.Value(dto.LoggerKey).(logger.ILogger)
 
-	logger.Info("----------------- Changing user's avatar -----------------")
+	logger.Info("---------------------------------- Changing user's avatar ----------------------------------")
 
 	var avatarChangeInfo dto.AvatarChangeInfo
 	user, ok := rCtx.Value(dto.UserObjKey).(*entities.User)
@@ -240,5 +240,5 @@ func (uh UserHandler) ChangeAvatar(w http.ResponseWriter, r *http.Request) {
 	}
 	logger.Debug("response written", funcName, nodeName)
 
-	logger.Info("----------------- Changing user's avatar SUCCESS -----------------")
+	logger.Info("---------------------------------- Changing user's avatar SUCCESS ----------------------------------")
 }
