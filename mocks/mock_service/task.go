@@ -40,6 +40,20 @@ func (m *MockITaskService) EXPECT() *MockITaskServiceMockRecorder {
 	return m.recorder
 }
 
+// AddUser mocks base method.
+func (m *MockITaskService) AddUser(arg0 context.Context, arg1 dto.AddTaskUserInfo) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AddUser", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AddUser indicates an expected call of AddUser.
+func (mr *MockITaskServiceMockRecorder) AddUser(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddUser", reflect.TypeOf((*MockITaskService)(nil).AddUser), arg0, arg1)
+}
+
 // Create mocks base method.
 func (m *MockITaskService) Create(arg0 context.Context, arg1 dto.NewTaskInfo) (*entities.Task, error) {
 	m.ctrl.T.Helper()
@@ -56,7 +70,7 @@ func (mr *MockITaskServiceMockRecorder) Create(arg0, arg1 any) *gomock.Call {
 }
 
 // Delete mocks base method.
-func (m *MockITaskService) Delete(arg0 context.Context, arg1 dto.TaskIDs) error {
+func (m *MockITaskService) Delete(arg0 context.Context, arg1 dto.TaskID) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Delete", arg0, arg1)
 	ret0, _ := ret[0].(error)
@@ -70,10 +84,10 @@ func (mr *MockITaskServiceMockRecorder) Delete(arg0, arg1 any) *gomock.Call {
 }
 
 // Read mocks base method.
-func (m *MockITaskService) Read(arg0 context.Context, arg1 dto.TaskIDs) (*entities.Task, error) {
+func (m *MockITaskService) Read(arg0 context.Context, arg1 dto.TaskID) (*dto.SingleTaskInfo, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Read", arg0, arg1)
-	ret0, _ := ret[0].(*entities.Task)
+	ret0, _ := ret[0].(*dto.SingleTaskInfo)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -82,6 +96,20 @@ func (m *MockITaskService) Read(arg0 context.Context, arg1 dto.TaskIDs) (*entiti
 func (mr *MockITaskServiceMockRecorder) Read(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Read", reflect.TypeOf((*MockITaskService)(nil).Read), arg0, arg1)
+}
+
+// RemoveUser mocks base method.
+func (m *MockITaskService) RemoveUser(arg0 context.Context, arg1 dto.RemoveTaskUserInfo) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RemoveUser", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// RemoveUser indicates an expected call of RemoveUser.
+func (mr *MockITaskServiceMockRecorder) RemoveUser(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveUser", reflect.TypeOf((*MockITaskService)(nil).RemoveUser), arg0, arg1)
 }
 
 // Update mocks base method.

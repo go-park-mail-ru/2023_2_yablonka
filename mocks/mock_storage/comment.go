@@ -56,7 +56,7 @@ func (mr *MockICommentStorageMockRecorder) Create(arg0, arg1 any) *gomock.Call {
 }
 
 // GetFromTask mocks base method.
-func (m *MockICommentStorage) GetFromTask(arg0 context.Context, arg1 dto.TaskIDs) (*[]dto.CommentInfo, error) {
+func (m *MockICommentStorage) GetFromTask(arg0 context.Context, arg1 dto.TaskID) (*[]dto.CommentInfo, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetFromTask", arg0, arg1)
 	ret0, _ := ret[0].(*[]dto.CommentInfo)
@@ -68,4 +68,19 @@ func (m *MockICommentStorage) GetFromTask(arg0 context.Context, arg1 dto.TaskIDs
 func (mr *MockICommentStorageMockRecorder) GetFromTask(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFromTask", reflect.TypeOf((*MockICommentStorage)(nil).GetFromTask), arg0, arg1)
+}
+
+// ReadMany mocks base method.
+func (m *MockICommentStorage) ReadMany(arg0 context.Context, arg1 dto.CommentIDs) (*[]dto.CommentInfo, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ReadMany", arg0, arg1)
+	ret0, _ := ret[0].(*[]dto.CommentInfo)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ReadMany indicates an expected call of ReadMany.
+func (mr *MockICommentStorageMockRecorder) ReadMany(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReadMany", reflect.TypeOf((*MockICommentStorage)(nil).ReadMany), arg0, arg1)
 }

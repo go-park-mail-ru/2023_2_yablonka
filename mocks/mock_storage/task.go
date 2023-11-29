@@ -40,6 +40,20 @@ func (m *MockITaskStorage) EXPECT() *MockITaskStorageMockRecorder {
 	return m.recorder
 }
 
+// AddUser mocks base method.
+func (m *MockITaskStorage) AddUser(arg0 context.Context, arg1 dto.AddTaskUserInfo) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AddUser", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AddUser indicates an expected call of AddUser.
+func (mr *MockITaskStorageMockRecorder) AddUser(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddUser", reflect.TypeOf((*MockITaskStorage)(nil).AddUser), arg0, arg1)
+}
+
 // Create mocks base method.
 func (m *MockITaskStorage) Create(arg0 context.Context, arg1 dto.NewTaskInfo) (*entities.Task, error) {
 	m.ctrl.T.Helper()
@@ -56,7 +70,7 @@ func (mr *MockITaskStorageMockRecorder) Create(arg0, arg1 any) *gomock.Call {
 }
 
 // Delete mocks base method.
-func (m *MockITaskStorage) Delete(arg0 context.Context, arg1 dto.TaskIDs) error {
+func (m *MockITaskStorage) Delete(arg0 context.Context, arg1 dto.TaskID) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Delete", arg0, arg1)
 	ret0, _ := ret[0].(error)
@@ -70,10 +84,10 @@ func (mr *MockITaskStorageMockRecorder) Delete(arg0, arg1 any) *gomock.Call {
 }
 
 // Read mocks base method.
-func (m *MockITaskStorage) Read(arg0 context.Context, arg1 dto.TaskIDs) (*entities.Task, error) {
+func (m *MockITaskStorage) Read(arg0 context.Context, arg1 dto.TaskID) (*dto.SingleTaskInfo, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Read", arg0, arg1)
-	ret0, _ := ret[0].(*entities.Task)
+	ret0, _ := ret[0].(*dto.SingleTaskInfo)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -82,6 +96,35 @@ func (m *MockITaskStorage) Read(arg0 context.Context, arg1 dto.TaskIDs) (*entiti
 func (mr *MockITaskStorageMockRecorder) Read(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Read", reflect.TypeOf((*MockITaskStorage)(nil).Read), arg0, arg1)
+}
+
+// ReadMany mocks base method.
+func (m *MockITaskStorage) ReadMany(arg0 context.Context, arg1 dto.TaskIDs) (*[]dto.SingleTaskInfo, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ReadMany", arg0, arg1)
+	ret0, _ := ret[0].(*[]dto.SingleTaskInfo)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ReadMany indicates an expected call of ReadMany.
+func (mr *MockITaskStorageMockRecorder) ReadMany(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReadMany", reflect.TypeOf((*MockITaskStorage)(nil).ReadMany), arg0, arg1)
+}
+
+// RemoveUser mocks base method.
+func (m *MockITaskStorage) RemoveUser(arg0 context.Context, arg1 dto.RemoveTaskUserInfo) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RemoveUser", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// RemoveUser indicates an expected call of RemoveUser.
+func (mr *MockITaskStorageMockRecorder) RemoveUser(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveUser", reflect.TypeOf((*MockITaskStorage)(nil).RemoveUser), arg0, arg1)
 }
 
 // Update mocks base method.
