@@ -20,7 +20,7 @@ type ILogger interface {
 
 type LogrusLogger struct {
 	level  int
-	logger logrus.Logger
+	logger *logrus.Logger
 }
 
 func NewLogrusLogger(lc *config.LoggingConfig) (LogrusLogger, error) {
@@ -40,9 +40,10 @@ func NewLogrusLogger(lc *config.LoggingConfig) (LogrusLogger, error) {
 			DisableLevelTruncation: lc.DisableLevelTruncation,
 		},
 	}
+	logger.SetNoLock()
 
 	return LogrusLogger{
-		logger: logger,
+		logger: &logger,
 		level:  int(logger.Level),
 	}, nil
 }
