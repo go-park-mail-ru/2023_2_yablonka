@@ -57,5 +57,8 @@ func main() {
 	logger.Info("Registering CSRF services")
 	csrf.RegisterServices(config, storages, server, &logger)
 
-	server.Serve(lstn)
+	err = server.Serve(lstn)
+	if err != nil {
+		logger.Fatal("Server failure " + err.Error())
+	}
 }
