@@ -162,7 +162,7 @@ func (clh ChecklistHandler) Delete(w http.ResponseWriter, r *http.Request) {
 
 	logger.Info("----------------- Deleting Checklist -----------------")
 
-	var checklistID uint64
+	var checklistID dto.ChecklistID
 	err := json.NewDecoder(r.Body).Decode(&checklistID)
 	if err != nil {
 		logger.Error(errorMessage + err.Error())
@@ -172,10 +172,7 @@ func (clh ChecklistHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	}
 	logger.Debug("request struct decoded", funcName, nodeName)
 
-	ChecklistIDObj := dto.ChecklistID{
-		Value: checklistID,
-	}
-	err = clh.cls.Delete(rCtx, ChecklistIDObj)
+	err = clh.cls.Delete(rCtx, checklistID)
 	if err != nil {
 		logger.Error(errorMessage + err.Error())
 		logger.Info(failBorder)
