@@ -398,6 +398,7 @@ func (s *PostgreSQLBoardStorage) AddUser(ctx context.Context, info dto.AddBoardU
 
 	_, err = s.db.Exec(query1, args...)
 	if err != nil {
+		logger.Debug("Insert into board_user failed with error "+err.Error(), funcName, nodeName)
 		return apperrors.ErrCouldNotAddBoardUser
 	}
 	logger.Debug("query executed", funcName, nodeName)
@@ -415,6 +416,7 @@ func (s *PostgreSQLBoardStorage) AddUser(ctx context.Context, info dto.AddBoardU
 
 	_, err = s.db.Exec(query2, args...)
 	if err != nil {
+		logger.Debug("Insert into user_workspace failed with error "+err.Error(), funcName, nodeName)
 		return apperrors.ErrCouldNotAddBoardUser
 	}
 	logger.Debug("query executed", funcName, nodeName)
