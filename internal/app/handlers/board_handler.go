@@ -19,6 +19,8 @@ type BoardHandler struct {
 	bs service.IBoardService
 }
 
+const nodeName = "handler"
+
 // @Summary Получить доску
 // @Description Получить доску
 // @Tags boards
@@ -37,7 +39,6 @@ type BoardHandler struct {
 func (bh BoardHandler) GetFullBoard(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
 	funcName := "GetFullBoard"
-	nodeName := "handler"
 	errorMessage := "Getting full board failed with error: "
 	failBorder := "----------------- Get board FAIL -----------------"
 
@@ -110,7 +111,6 @@ func (bh BoardHandler) GetFullBoard(w http.ResponseWriter, r *http.Request) {
 func (bh BoardHandler) Create(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
 	funcName := "Create"
-	nodeName := "handler"
 	errorMessage := "Getting full board failed with error: "
 	failBorder := "----------------- Create board FAIL -----------------"
 
@@ -195,7 +195,6 @@ func (bh BoardHandler) Create(w http.ResponseWriter, r *http.Request) {
 func (bh BoardHandler) UpdateData(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
 	funcName := "UpdateData"
-	nodeName := "handler"
 	errorMessage := "Updating full board failed with error: "
 	failBorder := "----------------- Updating board FAIL -----------------"
 
@@ -254,7 +253,6 @@ func (bh BoardHandler) UpdateData(w http.ResponseWriter, r *http.Request) {
 func (bh BoardHandler) UpdateThumbnail(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
 	funcName := "UpdateThumbnail"
-	nodeName := "handler"
 	errorMessage := "Updating board thumbnail failed with error: "
 	failBorder := "----------------- Updating board thumbnail FAIL -----------------"
 
@@ -316,7 +314,6 @@ func (bh BoardHandler) UpdateThumbnail(w http.ResponseWriter, r *http.Request) {
 func (bh BoardHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
 	funcName := "Delete"
-	nodeName := "handler"
 	errorMessage := "Deleting board failed with error: "
 	failBorder := "----------------- Deleting board FAIL -----------------"
 
@@ -361,7 +358,6 @@ func (bh BoardHandler) Delete(w http.ResponseWriter, r *http.Request) {
 func (bh BoardHandler) AddUser(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
 	funcName := "AddUser"
-	nodeName := "handler"
 	errorMessage := "Adding user to board with error: "
 	failBorder := "----------------- Adding user to board FAIL -----------------"
 
@@ -415,7 +411,6 @@ func (bh BoardHandler) AddUser(w http.ResponseWriter, r *http.Request) {
 func (bh BoardHandler) RemoveUser(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
 	funcName := "AddUser"
-	nodeName := "handler"
 	errorMessage := "Removing user from board failed with error: "
 	failBorder := "----------------- Removing user from board FAIL -----------------"
 

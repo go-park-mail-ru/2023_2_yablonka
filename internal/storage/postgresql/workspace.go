@@ -176,41 +176,43 @@ func (s PostgresWorkspaceStorage) GetUserGuestWorkspaces(ctx context.Context, us
 	log.Println("Workspaces got")
 	defer rows.Close()
 
-	workspaceRows := []GuestWorkspaceReturn{}
+	workspaceRows := []dto.UserGuestWorkspaceInfo{}
+	guestWorkspaceID := []uint64{}
 	for rows.Next() {
-		var workspace GuestWorkspaceReturn
+		var workspace dto.UserGuestWorkspaceInfo
+		var owner dto.UserOwnerInfo
 
 		err = rows.Scan(
 			&workspace.ID,
 			&workspace.Name,
+			&workspace.DateCreated,
+			&owner.ID,
+			&owner.Email,
+			&owner.Name,
+			&owner.Surname,
 		)
 		if err != nil {
 			fmt.Println("Scanning failed due to error", err.Error())
 			return nil, err
 		}
+		workspace.Owner = owner
 		workspaceRows = append(workspaceRows, workspace)
+		guestWorkspaceID = append(guestWorkspaceID, workspace.ID)
 	}
 
 	workspaces := map[uint64]dto.UserGuestWorkspaceInfo{}
-	var guestID []uint64
 	for _, row := range workspaceRows {
-		workspaces[row.WorkspaceID] = dto.UserGuestWorkspaceInfo{
-			ID:   row.WorkspaceID,
-			Name: row.WorkspaceName,
-			Owner: dto.UserOwnerInfo{
-				ID:      row.ID,
-				Email:   row.Email,
-				Name:    row.Name,
-				Surname: row.Surname,
-			},
-		}
-		guestID = append(guestID, row.WorkspaceID)
+		workspaces[row.ID] = row
 	}
 
 	boardQuery, args, err := sq.
-		Select("id_workspace", "id", "name", "description", "thumbnail_url").
+		Select("public.board.id_workspace", "public.board.id", "public.board.name", "public.board.description", "public.board.thumbnail_url").
 		From("public.board").
-		Where(sq.Eq{"id_workspace": guestID}).
+		LeftJoin("public.board_user ON public.board_user.id_board = public.board.id").
+		Where(sq.And{
+			sq.Eq{"public.board.id_workspace": guestWorkspaceID},
+			sq.Eq{"public.board_user.id_user": userID.Value},
+		}).
 		OrderBy("public.board.date_created").
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
@@ -233,9 +235,8 @@ func (s PostgresWorkspaceStorage) GetUserGuestWorkspaces(ctx context.Context, us
 	boardRows := []BoardReturn{}
 	for rows.Next() {
 		var board BoardReturn
-
 		err = rows.Scan(
-			&board.WorkspaceBoardInfo,
+			&board.WorkspaceID,
 			&board.ID,
 			&board.Name,
 			&board.Description,

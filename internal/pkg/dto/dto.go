@@ -270,22 +270,25 @@ type IndividualBoardInfo struct {
 // AddBoardUserRequest
 // DTO для запроса добавления пользователя в доску
 type AddBoardUserRequest struct {
-	UserEmail string `json:"user_email"`
-	BoardID   uint64 `json:"board_id"`
+	UserEmail   string `json:"user_email"`
+	WorkspaceID uint64 `json:"workspace_id"`
+	BoardID     uint64 `json:"board_id"`
 }
 
 // AddBoardUserInfo
 // DTO для добавления пользователя в доску
 type AddBoardUserInfo struct {
-	UserID  uint64 `json:"user_id"`
-	BoardID uint64 `json:"board_id"`
+	UserID      uint64 `json:"user_id"`
+	WorkspaceID uint64 `json:"workspace_id"`
+	BoardID     uint64 `json:"board_id"`
 }
 
 // RemoveBoardUserInfo
 // DTO для удаления пользователя из доски
 type RemoveBoardUserInfo struct {
-	UserID  uint64 `json:"user_id"`
-	BoardID uint64 `json:"board_id"`
+	UserID      uint64 `json:"user_id"`
+	WorkspaceID uint64 `json:"workspace_id"`
+	BoardID     uint64 `json:"board_id"`
 }
 
 // NewBoardInfo
@@ -624,10 +627,11 @@ type UserOwnedWorkspaceInfo struct {
 // UserGuestWorkspaceInfo
 // DTO для рабочего пространства, где пользователь гость
 type UserGuestWorkspaceInfo struct {
-	ID     uint64               `json:"workspace_id"`
-	Name   string               `json:"workspace_name"`
-	Owner  UserOwnerInfo        `json:"workspace_owner"`
-	Boards []WorkspaceBoardInfo `json:"boards"`
+	ID          uint64               `json:"workspace_id"`
+	Name        string               `json:"workspace_name"`
+	Owner       UserOwnerInfo        `json:"workspace_owner"`
+	DateCreated time.Time            `json:"-"`
+	Boards      []WorkspaceBoardInfo `json:"boards"`
 }
 
 // AllWorkspaces
