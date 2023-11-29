@@ -1,4 +1,5 @@
 syntax = "proto3";
+package auth;
 
 // import "common/common.proto";
 import "google/protobuf/empty.proto";
@@ -13,13 +14,13 @@ message SessionToken {
     google.protobuf.Timestamp ExpirationDate = 2;
 }
 
-message AuthUserID {
+message UserID {
     uint64 Value = 1;
 }
 
 service AuthService {
-    rpc AuthUser (AuthUserID) returns (SessionToken) {}
-    rpc VerifyAuth (SessionToken) returns (AuthUserID) {}
+    rpc AuthUser (UserID) returns (SessionToken) {}
+    rpc VerifyAuth (SessionToken) returns (UserID) {}
     rpc LogOut (SessionToken) returns (google.protobuf.Empty) {}
     rpc GetLifetime (google.protobuf.Empty) returns (google.protobuf.Duration) {}
 }

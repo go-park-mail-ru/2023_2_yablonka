@@ -20,8 +20,8 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type AuthServiceClient interface {
-	AuthUser(ctx context.Context, in *AuthUserID, opts ...grpc.CallOption) (*SessionToken, error)
-	VerifyAuth(ctx context.Context, in *SessionToken, opts ...grpc.CallOption) (*AuthUserID, error)
+	AuthUser(ctx context.Context, in *UserID, opts ...grpc.CallOption) (*SessionToken, error)
+	VerifyAuth(ctx context.Context, in *SessionToken, opts ...grpc.CallOption) (*UserID, error)
 	LogOut(ctx context.Context, in *SessionToken, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	GetLifetime(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*durationpb.Duration, error)
 }
@@ -34,18 +34,18 @@ func NewAuthServiceClient(cc grpc.ClientConnInterface) AuthServiceClient {
 	return &authServiceClient{cc}
 }
 
-func (c *authServiceClient) AuthUser(ctx context.Context, in *AuthUserID, opts ...grpc.CallOption) (*SessionToken, error) {
+func (c *authServiceClient) AuthUser(ctx context.Context, in *UserID, opts ...grpc.CallOption) (*SessionToken, error) {
 	out := new(SessionToken)
-	err := c.cc.Invoke(ctx, "/AuthService/AuthUser", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/auth.AuthService/AuthUser", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *authServiceClient) VerifyAuth(ctx context.Context, in *SessionToken, opts ...grpc.CallOption) (*AuthUserID, error) {
-	out := new(AuthUserID)
-	err := c.cc.Invoke(ctx, "/AuthService/VerifyAuth", in, out, opts...)
+func (c *authServiceClient) VerifyAuth(ctx context.Context, in *SessionToken, opts ...grpc.CallOption) (*UserID, error) {
+	out := new(UserID)
+	err := c.cc.Invoke(ctx, "/auth.AuthService/VerifyAuth", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -54,7 +54,7 @@ func (c *authServiceClient) VerifyAuth(ctx context.Context, in *SessionToken, op
 
 func (c *authServiceClient) LogOut(ctx context.Context, in *SessionToken, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	out := new(emptypb.Empty)
-	err := c.cc.Invoke(ctx, "/AuthService/LogOut", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/auth.AuthService/LogOut", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -63,7 +63,7 @@ func (c *authServiceClient) LogOut(ctx context.Context, in *SessionToken, opts .
 
 func (c *authServiceClient) GetLifetime(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*durationpb.Duration, error) {
 	out := new(durationpb.Duration)
-	err := c.cc.Invoke(ctx, "/AuthService/GetLifetime", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/auth.AuthService/GetLifetime", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -74,8 +74,8 @@ func (c *authServiceClient) GetLifetime(ctx context.Context, in *emptypb.Empty, 
 // All implementations must embed UnimplementedAuthServiceServer
 // for forward compatibility
 type AuthServiceServer interface {
-	AuthUser(context.Context, *AuthUserID) (*SessionToken, error)
-	VerifyAuth(context.Context, *SessionToken) (*AuthUserID, error)
+	AuthUser(context.Context, *UserID) (*SessionToken, error)
+	VerifyAuth(context.Context, *SessionToken) (*UserID, error)
 	LogOut(context.Context, *SessionToken) (*emptypb.Empty, error)
 	GetLifetime(context.Context, *emptypb.Empty) (*durationpb.Duration, error)
 	mustEmbedUnimplementedAuthServiceServer()
@@ -85,10 +85,10 @@ type AuthServiceServer interface {
 type UnimplementedAuthServiceServer struct {
 }
 
-func (UnimplementedAuthServiceServer) AuthUser(context.Context, *AuthUserID) (*SessionToken, error) {
+func (UnimplementedAuthServiceServer) AuthUser(context.Context, *UserID) (*SessionToken, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AuthUser not implemented")
 }
-func (UnimplementedAuthServiceServer) VerifyAuth(context.Context, *SessionToken) (*AuthUserID, error) {
+func (UnimplementedAuthServiceServer) VerifyAuth(context.Context, *SessionToken) (*UserID, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method VerifyAuth not implemented")
 }
 func (UnimplementedAuthServiceServer) LogOut(context.Context, *SessionToken) (*emptypb.Empty, error) {
@@ -111,7 +111,7 @@ func RegisterAuthServiceServer(s grpc.ServiceRegistrar, srv AuthServiceServer) {
 }
 
 func _AuthService_AuthUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(AuthUserID)
+	in := new(UserID)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -120,10 +120,10 @@ func _AuthService_AuthUser_Handler(srv interface{}, ctx context.Context, dec fun
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/AuthService/AuthUser",
+		FullMethod: "/auth.AuthService/AuthUser",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AuthServiceServer).AuthUser(ctx, req.(*AuthUserID))
+		return srv.(AuthServiceServer).AuthUser(ctx, req.(*UserID))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -138,7 +138,7 @@ func _AuthService_VerifyAuth_Handler(srv interface{}, ctx context.Context, dec f
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/AuthService/VerifyAuth",
+		FullMethod: "/auth.AuthService/VerifyAuth",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(AuthServiceServer).VerifyAuth(ctx, req.(*SessionToken))
@@ -156,7 +156,7 @@ func _AuthService_LogOut_Handler(srv interface{}, ctx context.Context, dec func(
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/AuthService/LogOut",
+		FullMethod: "/auth.AuthService/LogOut",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(AuthServiceServer).LogOut(ctx, req.(*SessionToken))
@@ -174,7 +174,7 @@ func _AuthService_GetLifetime_Handler(srv interface{}, ctx context.Context, dec 
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/AuthService/GetLifetime",
+		FullMethod: "/auth.AuthService/GetLifetime",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(AuthServiceServer).GetLifetime(ctx, req.(*emptypb.Empty))
@@ -186,7 +186,7 @@ func _AuthService_GetLifetime_Handler(srv interface{}, ctx context.Context, dec 
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var AuthService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "AuthService",
+	ServiceName: "auth.AuthService",
 	HandlerType: (*AuthServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
