@@ -34,7 +34,7 @@ const envPath string = "config/.env"
 // @license.name None
 // @license.url None
 
-// @host localhost:8080
+// @host localhost:8082
 // @BasePath /api/v2
 // @query.collection.format multi
 func main() {
