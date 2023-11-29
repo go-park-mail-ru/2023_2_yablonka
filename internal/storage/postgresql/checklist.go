@@ -73,7 +73,7 @@ func (s PostgresChecklistStorage) ReadMany(ctx context.Context, ids dto.Checklis
 		From("public.checklist").
 		LeftJoin("public.checklist_item ON public.checklist.id = public.checklist_item.id_checklist").
 		Where(sq.Eq{"public.checklist.id": ids.Values}).
-		GroupBy("public.checklist_item.id_checklist").
+		GroupBy("public.checklist.id").
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
 	if err != nil {
