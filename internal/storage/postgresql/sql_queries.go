@@ -57,4 +57,8 @@ var (
 	allCommentFields = []string{
 		"id", "id_user", "content", "date_created",
 	}
+
+	taskUserFields = []string{
+		"id_task", "id_user",
+	}
 )

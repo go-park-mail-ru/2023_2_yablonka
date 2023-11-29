@@ -1,4 +1,4 @@
-package service
+package embedded
 
 import (
 	"context"
@@ -68,7 +68,7 @@ func TestAuthService_GetLifetime(t *testing.T) {
 				sessionIDLength: tt.fields.sessionIDLength,
 				authStorage:     tt.fields.authStorage,
 			}
-			if got := a.GetLifetime(); got != tt.want {
+			if got := a.GetLifetime(context.Background()); got != tt.want {
 				t.Errorf("GetLifetime() = %v, want %v", got, tt.want)
 			}
 		})

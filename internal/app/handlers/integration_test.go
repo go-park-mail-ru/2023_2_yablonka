@@ -531,7 +531,7 @@ package handlers_test
 // 				require.NoError(t, err)
 // 				userObj, err := userAuthService.GetUserByID(ctx, userInfo.UserID)
 // 				require.NoError(t, err)
-// 				*r = *r.WithContext(context.WithValue(r.Context(), dto.UserObjKey, userObj))
+// 				apperrors.ReturnError(context.WithValue(r.Context(), dto.UserObjKey, userObj))
 // 			}
 
 // 			w.Header().Set("Content-Type", "application/json")

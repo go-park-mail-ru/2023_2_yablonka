@@ -56,17 +56,17 @@ func (mr *MockIAuthServiceMockRecorder) AuthUser(arg0, arg1 any) *gomock.Call {
 }
 
 // GetLifetime mocks base method.
-func (m *MockIAuthService) GetLifetime() time.Duration {
+func (m *MockIAuthService) GetLifetime(arg0 context.Context) time.Duration {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetLifetime")
+	ret := m.ctrl.Call(m, "GetLifetime", arg0)
 	ret0, _ := ret[0].(time.Duration)
 	return ret0
 }
 
 // GetLifetime indicates an expected call of GetLifetime.
-func (mr *MockIAuthServiceMockRecorder) GetLifetime() *gomock.Call {
+func (mr *MockIAuthServiceMockRecorder) GetLifetime(arg0 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetLifetime", reflect.TypeOf((*MockIAuthService)(nil).GetLifetime))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetLifetime", reflect.TypeOf((*MockIAuthService)(nil).GetLifetime), arg0)
 }
 
 // LogOut mocks base method.

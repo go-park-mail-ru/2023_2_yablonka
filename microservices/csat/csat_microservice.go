@@ -1,11 +1,11 @@
 package csat_microservice
 
 import (
+	logging "server/internal/logging"
 	"server/internal/storage"
 	answer "server/microservices/csat/csat_answer"
 	question "server/microservices/csat/csat_question"
 
-	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 )
 
@@ -21,7 +21,7 @@ func NewMicroServices(storages *storage.Storages) *Microservices {
 	}
 }
 
-func RegisterServices(storages *storage.Storages, server *grpc.Server, logger *logrus.Logger) {
+func RegisterServices(storages *storage.Storages, server *grpc.Server, logger *logging.LogrusLogger) {
 	answerServer := answer.NewCSATAnswerService(storages.CSATAnswer)
 	questionServer := question.NewCSATQuestionService(storages.CSATQuestion)
 

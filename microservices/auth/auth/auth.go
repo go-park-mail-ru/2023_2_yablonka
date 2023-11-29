@@ -11,6 +11,8 @@ import (
 	"server/internal/storage"
 	"time"
 
+	logging "server/internal/logging"
+
 	"github.com/sirupsen/logrus"
 	"google.golang.org/protobuf/types/known/durationpb"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -21,11 +23,11 @@ type AuthService struct {
 	authStorage     storage.IAuthStorage
 	sessionDuration time.Duration
 	sessionIDLength uint
-	logger          *logrus.Logger
+	logger          *logging.LogrusLogger
 	UnimplementedAuthServiceServer
 }
 
-func NewAuthService(config config.SessionConfig, authStorage storage.IAuthStorage, logger *logrus.Logger) *AuthService {
+func NewAuthService(config config.SessionConfig, authStorage storage.IAuthStorage, logger *logging.LogrusLogger) *AuthService {
 	return &AuthService{
 		sessionDuration: config.Duration,
 		sessionIDLength: config.IDLength,
@@ -33,6 +35,8 @@ func NewAuthService(config config.SessionConfig, authStorage storage.IAuthStorag
 		authStorage:     authStorage,
 	}
 }
+
+const nodeName = "microservice_server"
 
 // AuthUser
 // возвращает уникальную строку авторизации и её длительность
@@ -45,7 +49,7 @@ func (a *AuthService) AuthUser(ctx context.Context, id *UserID) (*SessionToken, 
 	if err != nil {
 		return &SessionToken{}, apperrors.ErrTokenNotGenerated
 	}
-	authServiceDebugLog(a.logger, funcName, "Session ID generated")
+	a.logger.Debug("Session ID generated", funcName, nodeName)
 
 	session := &entities.Session{
 		SessionID:  sessionID,
@@ -57,7 +61,7 @@ func (a *AuthService) AuthUser(ctx context.Context, id *UserID) (*SessionToken, 
 	if err != nil {
 		return &SessionToken{}, err
 	}
-	authServiceDebugLog(a.logger, funcName, "Session created")
+	a.logger.Debug("Session created", funcName, nodeName)
 
 	return &SessionToken{
 		ID:             sessionID,

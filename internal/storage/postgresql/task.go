@@ -32,6 +32,9 @@ func NewTaskStorage(db *sql.DB) *PostgresTaskStorage {
 // создает новое задание в БД по данным
 // или возвращает ошибки ...
 func (s PostgresTaskStorage) Create(ctx context.Context, info dto.NewTaskInfo) (*entities.Task, error) {
+	funcName := "PostgreSQLTaskStorage.Create"
+	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
+
 	sql, args, err := sq.
 		Insert("public.task").
 		Columns(newTaskFields...).
@@ -41,11 +44,10 @@ func (s PostgresTaskStorage) Create(ctx context.Context, info dto.NewTaskInfo) (
 		ToSql()
 
 	if err != nil {
-		log.Println("Storage -- Failed to build query with error", err.Error())
 		return nil, apperrors.ErrCouldNotBuildQuery
 	}
 
-	log.Println("Formed query\n\t", sql, "\nwith args\n\t", args)
+	logger.Debug("Built query\n\t"+sql+"\nwith args\n\t"+fmt.Sprintf("%+v", args), funcName, nodeName)
 
 	task := entities.Task{
 		Name:         info.Name,
@@ -225,6 +227,66 @@ func (s PostgresTaskStorage) Delete(ctx context.Context, id dto.TaskID) error {
 	if err != nil {
 		return apperrors.ErrTaskNotDeleted
 	}
+
+	return nil
+}
+
+// AddUser
+// добавляет пользователя в карточку
+// или возвращает ошибки ...
+func (s PostgresTaskStorage) AddUser(ctx context.Context, info dto.AddTaskUserInfo) error {
+	funcName := "PostgreSQLTaskStorage.AddUser"
+	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
+
+	sql, args, err := sq.
+		Insert("task_user").
+		Columns(taskUserFields...).
+		Values(info.UserID, info.TaskID).
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
+
+	if err != nil {
+		return apperrors.ErrCouldNotBuildQuery
+	}
+	logger.Debug("Built query\n\t"+sql+"\nwith args\n\t"+fmt.Sprintf("%+v", args), funcName, nodeName)
+
+	_, err = s.db.Exec(sql, args...)
+	if err != nil {
+		logger.Debug("Insert failed with error "+err.Error(), funcName, nodeName)
+		return apperrors.ErrCouldNotAddTaskUser
+	}
+	logger.Debug("query executed", funcName, nodeName)
+
+	return nil
+}
+
+// RemoveUser
+// удаляет пользователя из карточки
+// или возвращает ошибки ...
+func (s PostgresTaskStorage) RemoveUser(ctx context.Context, info dto.RemoveTaskUserInfo) error {
+	funcName := "PostgreSQLTaskStorage.RemoveUser"
+	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
+
+	sql, args, err := sq.
+		Delete("task_user").
+		Where(sq.And{
+			sq.Eq{"id_user": info.UserID},
+			sq.Eq{"id_task": info.UserID},
+		}).
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
+
+	if err != nil {
+		return apperrors.ErrCouldNotBuildQuery
+	}
+	logger.Debug("Built query\n\t"+sql+"\nwith args\n\t"+fmt.Sprintf("%+v", args), funcName, nodeName)
+
+	_, err = s.db.Exec(sql, args...)
+	if err != nil {
+		logger.Debug("Delete failed with error "+err.Error(), funcName, nodeName)
+		return apperrors.ErrCouldNotRemoveTaskUser
+	}
+	logger.Debug("query executed", funcName, nodeName)
 
 	return nil
 }

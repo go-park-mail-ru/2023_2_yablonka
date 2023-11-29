@@ -56,10 +56,21 @@ func main() {
 	defer dbConnection.Close()
 	logger.Info("Database connection established")
 
+	// grcpConn, err := grpc.Dial(
+	// 	fmt.Sprintf("%v:%v", config.Server.MicroserviceHost, config.Server.MicroservicePort),
+	// 	grpc.WithTransportCredentials(insecure.NewCredentials()),
+	// )
+	// if err != nil {
+	// 	logger.Fatal("Failed to connect to the GRPC server as client")
+	// }
+	// logger.Info("Connected to GRPC server as client")
+	// defer grcpConn.Close()
+
 	storages := storage.NewPostgresStorages(dbConnection)
 	logger.Info("Storages configured")
 
-	services := service.NewServices(storages, *config.Session)
+	services := service.NewEmbeddedServices(storages, *config.Session)
+	// services := service.NewMicroServices(storages, *config.Session, grcpConn)
 	logger.Info("Services configured")
 
 	handlers := handlers.NewHandlers(services)
