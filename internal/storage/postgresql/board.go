@@ -414,8 +414,8 @@ func (s *PostgreSQLBoardStorage) AddUser(ctx context.Context, info dto.AddBoardU
 
 	query2, args, err := sq.
 		Insert("public.user_workspace").
-		Columns("id_workspace", "id_user", "id_role").
-		Values(info.WorkspaceID, info.UserID, 1).
+		Columns("id_workspace", "id_user").
+		Values(info.WorkspaceID, info.UserID).
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
 	if err != nil {

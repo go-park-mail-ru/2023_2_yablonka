@@ -57,3 +57,7 @@ type StatsResponse struct {
 type QuestionResponse struct {
 	Question dto.CSATQuestionFull `json:"question"`
 }
+
+type ChecklistResponse struct {
+	Question dto.ChecklistInfo `json:"checklist"`
+}

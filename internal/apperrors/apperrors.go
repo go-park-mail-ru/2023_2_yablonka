@@ -99,6 +99,8 @@ var (
 var (
 	// ErrWorkspaceNotDeleted ошибка: не удалось создать рабочее прострнство в БД
 	ErrBoardNotCreated = errors.New("board couldn't be created")
+	// ErrUserAlreadyInBoard ошибка: пользователь уже есть в доске
+	ErrUserAlreadyInBoard = errors.New("user already in board")
 	// ErrWorkspaceNotDeleted ошибка: не удалось получить рабочее прострнство в БД
 	ErrBoardNotUpdated = errors.New("board couldn't be updated")
 	// ErrWorkspaceNotDeleted ошибка: не удалось удалить рабочее прострнство в БД
@@ -262,6 +264,8 @@ var ErrorMap = map[error]ErrorResponse{
 	ErrListNotCreated:         InternalServerErrorResponse,
 	ErrListNotUpdated:         InternalServerErrorResponse,
 	ErrListNotDeleted:         InternalServerErrorResponse,
+	ErrUserAlreadyInBoard:     GenericUnauthorizedResponse,
+	ErrCouldNotAddBoardUser:   GenericUnauthorizedResponse,
 }
 
 func ErrorJSON(err ErrorResponse) []byte {

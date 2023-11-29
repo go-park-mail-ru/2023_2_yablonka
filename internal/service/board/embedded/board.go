@@ -219,13 +219,14 @@ func (bs BoardService) AddUser(ctx context.Context, request dto.AddBoardUserRequ
 	if !hasAccess(bs.boardStorage, ctx, requestingUserID, request.BoardID) {
 		return apperrors.ErrNoBoardAccess
 	}
-	logger.Debug("user has access to board", funcName, nodeName)
+	logger.Debug("user adding the user has access to board", funcName, nodeName)
 
 	targetUser, err := bs.userStorage.GetWithLogin(ctx, dto.UserLogin{Value: request.UserEmail})
-	if err != nil {
-		return err
+	if err == nil {
+		logger.Debug(err.Error(), funcName, nodeName)
+		return apperrors.ErrCouldNotAddBoardUser
 	}
-	logger.Debug("user found", funcName, nodeName)
+	logger.Debug("user not found", funcName, nodeName)
 
 	info := dto.AddBoardUserInfo{
 		UserID:      targetUser.ID,

@@ -355,6 +355,21 @@ func (bh BoardHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	logger.Info("----------------- Deleting board SUCCESS -----------------")
 }
 
+// @Summary Добавить пользователя в доску
+// @Description Добавить пользователя в доску
+// @Tags boards
+//
+// @Accept  json
+// @Produce  json
+//
+// @Param info body dto.AddBoardUserRequest true "мэйл пользователя, id доски и воркспейса"
+//
+// @Success 204  {string}  string "no content"
+// @Failure 400  {object}  apperrors.ErrorResponse
+// @Failure 401  {object}  apperrors.ErrorResponse
+// @Failure 500  {object}  apperrors.ErrorResponse
+//
+// @Router /board/user/add/ [post]
 func (bh BoardHandler) AddUser(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
 	funcName := "AddUser"
@@ -402,12 +417,26 @@ func (bh BoardHandler) AddUser(w http.ResponseWriter, r *http.Request) {
 		apperrors.ReturnError(apperrors.InternalServerErrorResponse, w, r)
 		return
 	}
-	logger.Debug("response written", funcName, nodeName)
 
 	logger.Debug("Response written", funcName, nodeName)
 	logger.Info("----------------- Add user to board SUCCESS -----------------")
 }
 
+// @Summary Удалить пользователя из доски
+// @Description Удалить пользователя из доски
+// @Tags boards
+//
+// @Accept  json
+// @Produce  json
+//
+// @Param info body dto.RemoveBoardUserInfo true "id пользователя, доски и воркспейса"
+//
+// @Success 204  {string}  string "no content"
+// @Failure 400  {object}  apperrors.ErrorResponse
+// @Failure 401  {object}  apperrors.ErrorResponse
+// @Failure 500  {object}  apperrors.ErrorResponse
+//
+// @Router /board/user/remove/ [delete]
 func (bh BoardHandler) RemoveUser(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
 	funcName := "AddUser"
