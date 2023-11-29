@@ -25,5 +25,5 @@ type ICSRFService interface {
 	DeleteCSRF(context.Context, dto.CSRFToken) error
 	// GetLifetime
 	// возвращает длительность авторизации
-	GetLifetime() time.Duration
+	GetLifetime(context.Context) time.Duration
 }

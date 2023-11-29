@@ -1,4 +1,4 @@
-package list
+package microservice
 
 import (
 	"context"
@@ -7,6 +7,8 @@ import (
 	"server/internal/pkg/entities"
 	"server/internal/storage"
 	"testing"
+
+	"google.golang.org/grpc"
 )
 
 func TestListService_Create(t *testing.T) {
@@ -101,7 +103,8 @@ func TestListService_Update(t *testing.T) {
 
 func TestNewListService(t *testing.T) {
 	type args struct {
-		storage storage.IListStorage
+		storage    storage.IListStorage
+		connection *grpc.ClientConn
 	}
 	tests := []struct {
 		name string
@@ -112,7 +115,7 @@ func TestNewListService(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := NewListService(tt.args.storage); !reflect.DeepEqual(got, tt.want) {
+			if got := NewListService(tt.args.storage, tt.args.connection); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("NewListService() = %v, want %v", got, tt.want)
 			}
 		})

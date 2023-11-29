@@ -1,40 +1,19 @@
 package checklist_item
 
 import (
-	"context"
-	"server/internal/pkg/dto"
 	"server/internal/storage"
+
+	embedded "server/internal/service/checklist_item/embedded"
+	micro "server/internal/service/checklist_item/microservice"
+
+	"google.golang.org/grpc"
 )
 
-type ChecklistItemService struct {
-	storage storage.IChecklistItemStorage
+func NewEmbeddedChecklistItemService(checklistItemStorage storage.IChecklistItemStorage) *embedded.ChecklistItemService {
+	return embedded.NewChecklistItemService(checklistItemStorage)
 }
 
-// NewChecklistItemService
-// возвращает ChecklistItemService с инициализированным хранилищем
-func NewChecklistItemService(storage storage.IChecklistItemStorage) *ChecklistItemService {
-	return &ChecklistItemService{
-		storage: storage,
-	}
-}
-
-// Create
-// создает новый элемент чеклиста
-// или возвращает ошибки ...
-func (cls ChecklistItemService) Create(ctx context.Context, info dto.NewChecklistItemInfo) (*dto.ChecklistItemInfo, error) {
-	return cls.storage.Create(ctx, info)
-}
-
-// Update
-// обновляет элемент чеклиста
-// или возвращает ошибки ...
-func (cls ChecklistItemService) Update(ctx context.Context, info dto.UpdatedChecklistItemInfo) error {
-	return cls.storage.Update(ctx, info)
-}
-
-// Delete
-// удаляет элемент чеклиста по id
-// или возвращает ошибки ...
-func (cls ChecklistItemService) Delete(ctx context.Context, id dto.ChecklistItemID) error {
-	return cls.storage.Delete(ctx, id)
+// TODO: Checklist item microservice
+func NewMicroChecklistItemService(checklistItemStorage storage.IChecklistItemStorage, connection *grpc.ClientConn) *micro.ChecklistItemService {
+	return micro.NewChecklistItemService(checklistItemStorage)
 }

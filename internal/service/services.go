@@ -19,7 +19,7 @@ import (
 )
 
 type Services struct {
-	Auth          auth.IAuthService
+	Auth          IAuthService
 	User          IUserService
 	Board         IBoardService
 	CSRF          ICSRFService
@@ -36,24 +36,33 @@ type Services struct {
 func NewEmbeddedServices(storages *storage.Storages, config config.SessionConfig) *Services {
 	return &Services{
 		Auth:          auth.NewEmbeddedAuthService(storages.Auth, config),
-		User:          user.NewUserService(storages.User),
+		User:          user.NewEmbeddedUserService(storages.User),
 		Board:         board.NewEmbeddedBoardService(storages.Board, storages.Task, storages.User, storages.Comment, storages.Checklist, storages.ChecklistItem),
-		CSRF:          csrf.NewCSRFService(config, storages.CSRF),
-		List:          list.NewListService(storages.List),
+		CSRF:          csrf.NewEmbeddedCSRFService(storages.CSRF, config),
+		List:          list.NewEmbeddedListService(storages.List),
 		Task:          task.NewEmbeddedTaskService(storages.Task),
-		Comment:       comment.NewCommentService(storages.Comment),
-		Checklist:     checklist.NewChecklistService(storages.Checklist),
-		ChecklistItem: checklist_item.NewChecklistItemService(storages.ChecklistItem),
-		Workspace:     workspace.NewWorkspaceService(storages.Workspace),
-		CSATAnswer:    csat.NewCSATAnswerService(storages.CSATAnswer),
-		CSATQuestion:  csat.NewCSATQuestionService(storages.CSATQuestion),
+		Comment:       comment.NewEmbeddedCommentService(storages.Comment),
+		Checklist:     checklist.NewEmbeddedChecklistService(storages.Checklist),
+		ChecklistItem: checklist_item.NewEmbeddedChecklistItemService(storages.ChecklistItem),
+		Workspace:     workspace.NewEmbeddedWorkspaceService(storages.Workspace),
+		CSATAnswer:    csat.NewEmbeddedCSATAnswerService(storages.CSATAnswer),
+		CSATQuestion:  csat.NewEmbeddedCSATQuestionService(storages.CSATQuestion),
 	}
 }
 
 func NewMicroServices(storages *storage.Storages, config config.SessionConfig, conn *grpc.ClientConn) *Services {
 	return &Services{
-		Auth:  auth.NewMicroAuthService(storages.Auth, config, conn),
-		Board: board.NewMicroBoardService(storages.Board, storages.Task, storages.User, storages.Comment, storages.Checklist, storages.ChecklistItem, conn),
-		Task:  task.NewMicroTaskService(storages.Task, conn),
+		Auth:          auth.NewMicroAuthService(storages.Auth, config, conn),
+		Board:         board.NewMicroBoardService(storages.Board, storages.Task, storages.User, storages.Comment, storages.Checklist, storages.ChecklistItem, conn),
+		Comment:       comment.NewMicroCommentService(storages.Comment, conn),
+		Checklist:     checklist.NewMicroChecklistService(storages.Checklist, conn),
+		ChecklistItem: checklist_item.NewMicroChecklistItemService(storages.ChecklistItem, conn),
+		CSATAnswer:    csat.NewMicroCSATAnswerService(storages.CSATAnswer, conn),
+		CSATQuestion:  csat.NewMicroCSATQuestionService(storages.CSATQuestion, conn),
+		CSRF:          csrf.NewMicroCSRFService(storages.CSRF, config, conn),
+		List:          list.NewMicroListService(storages.List, conn),
+		Task:          task.NewMicroTaskService(storages.Task, conn),
+		User:          user.NewMicroUserService(storages.User, conn),
+		Workspace:     workspace.NewMicroWorkspaceService(storages.Workspace, conn),
 	}
 }

@@ -1,26 +1,17 @@
-package list
+package csat
 
 import (
-	"context"
-	"server/internal/pkg/dto"
+	embedded "server/internal/service/csat/embedded"
+	micro "server/internal/service/csat/microservice"
 	"server/internal/storage"
+
+	"google.golang.org/grpc"
 )
 
-type CSATAnswerService struct {
-	storage storage.ICSATAnswerStorage
+func NewEmbeddedCSATAnswerService(answerStorage storage.ICSATAnswerStorage) *embedded.CSATAnswerService {
+	return embedded.NewCSATAnswerService(answerStorage)
 }
 
-// NewBoardService
-// возвращает BoardService с инициализированным хранилищем
-func NewCSATAnswerService(storage storage.ICSATAnswerStorage) *CSATAnswerService {
-	return &CSATAnswerService{
-		storage: storage,
-	}
-}
-
-// Create
-// создает новый ответ CSAT
-// или возвращает ошибки ...
-func (cs CSATAnswerService) Create(ctx context.Context, info dto.NewCSATAnswer) error {
-	return cs.storage.Create(ctx, info)
+func NewMicroCSATAnswerService(answerStorage storage.ICSATAnswerStorage, connection *grpc.ClientConn) *micro.CSATAnswerService {
+	return micro.NewCSATAnswerService(answerStorage, connection)
 }
