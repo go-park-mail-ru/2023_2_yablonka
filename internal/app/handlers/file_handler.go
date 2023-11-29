@@ -6,7 +6,6 @@ import (
 	"server/internal/apperrors"
 	_ "server/internal/pkg/doc_structs"
 	"server/internal/pkg/dto"
-	"server/internal/pkg/entities"
 	"server/internal/service"
 
 	logger "server/internal/logging"
@@ -17,21 +16,21 @@ type FileHandler struct {
 }
 
 // @Summary Загрузить изображение
-// @Description Получить доску
-// @Tags boards
+// @Description Загрузить изображение
+// @Tags images
 //
 // @Accept  json
 // @Produce  json
 //
-// @Param boardID body dto.BoardID true "id доски"
+// @Param image body dto.Image true "байты изоьражения"
 //
-// @Success 200  {object}  doc_structs.BoardResponse "объект доски"
+// @Success 200  {object}  doc_structs.URLResponse "ссылка на изображение"
 // @Failure 400  {object}  apperrors.ErrorResponse
 // @Failure 401  {object}  apperrors.ErrorResponse
 // @Failure 500  {object}  apperrors.ErrorResponse
 //
-// @Router /board/ [post]
-func (bh BoardHandler) UploadImage(w http.ResponseWriter, r *http.Request) {
+// @Router /image/upload/ [post]
+func (fh FileHandler) UploadImage(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
 	funcName := "UploadImage"
 	errorMessage := "Uploading image failed with error: "
@@ -41,8 +40,8 @@ func (bh BoardHandler) UploadImage(w http.ResponseWriter, r *http.Request) {
 
 	logger.Info("---------------------------------- Uploading image ----------------------------------")
 
-	var boardID dto.BoardID
-	err := json.NewDecoder(r.Body).Decode(&boardID)
+	var image dto.Image
+	err := json.NewDecoder(r.Body).Decode(&image)
 	if err != nil {
 		logger.Error(errorMessage + err.Error())
 		logger.Info(failBorder)
@@ -51,30 +50,17 @@ func (bh BoardHandler) UploadImage(w http.ResponseWriter, r *http.Request) {
 	}
 	logger.Debug("JSON Decoded", funcName, nodeName)
 
-	user, ok := rCtx.Value(dto.UserObjKey).(*entities.User)
-	if !ok {
-		logger.Error(errorMessage + err.Error())
-		logger.Info(failBorder)
-		apperrors.ReturnError(apperrors.GenericUnauthorizedResponse, w, r)
-		return
-	}
-	logger.Debug("User object acquired from context", funcName, nodeName)
-
-	boardRequest := dto.IndividualBoardRequest{
-		UserID:  user.ID,
-		BoardID: boardID.Value,
-	}
-	board, err := bh.bs.GetFullBoard(rCtx, boardRequest)
+	url, err := fh.fs.Upload(rCtx, image)
 	if err != nil {
 		logger.Error(errorMessage + err.Error())
 		logger.Info(failBorder)
 		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
 		return
 	}
-	logger.Debug("Got board", funcName, nodeName)
+	logger.Debug("Uploaded image", funcName, nodeName)
 
 	response := dto.JSONResponse{
-		Body: board,
+		Body: url,
 	}
 	err = WriteResponse(response, w, r)
 	if err != nil {

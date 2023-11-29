@@ -9,8 +9,8 @@ import (
 type IFileService interface {
 	// Upload
 	// загружает изображение на сервер
-	Upload(context.Context, dto.IndividualBoardRequest) (*dto.FullBoardResult, error)
+	Upload(context.Context, dto.Image) (*dto.UrlObj, error)
 	// Download
 	// выгружает изображение с сервера
-	Download(context.Context, dto.NewBoardInfo) (*dto.Image, error)
+	Download(context.Context, dto.UrlObj) (*dto.Image, error)
 }

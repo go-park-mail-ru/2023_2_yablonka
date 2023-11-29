@@ -27,6 +27,10 @@ type AvatarUploadResponse struct {
 	AvatarUrl dto.UrlObj `json:"avatar_url"`
 }
 
+type URLResponse struct {
+	URL dto.UrlObj `json:"url"`
+}
+
 type TaskResponse struct {
 	Task entities.Task `json:"task"`
 }
