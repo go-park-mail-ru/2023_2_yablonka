@@ -4,6 +4,8 @@ import (
 	"server/internal/config"
 	auth "server/internal/service/auth"
 	board "server/internal/service/board"
+	checklist "server/internal/service/checklist"
+	checklist_item "server/internal/service/checklist_item"
 	comment "server/internal/service/comment"
 	csat "server/internal/service/csat"
 	csrf "server/internal/service/csrf"
@@ -16,16 +18,18 @@ import (
 )
 
 type Services struct {
-	Auth         IAuthService
-	User         IUserService
-	Board        IBoardService
-	CSRF         ICSRFService
-	List         IListService
-	Task         ITaskService
-	Comment      ICommentService
-	Workspace    IWorkspaceService
-	CSATQuestion ICSATQuestionService
-	CSATAnswer   ICSATSAnswerService
+	Auth          IAuthService
+	User          IUserService
+	Board         IBoardService
+	CSRF          ICSRFService
+	List          IListService
+	Task          ITaskService
+	Comment       ICommentService
+	Checklist     IChecklistService
+	ChecklistItem IChecklistItemService
+	Workspace     IWorkspaceService
+	CSATQuestion  ICSATQuestionService
+	CSATAnswer    ICSATSAnswerService
 }
 
 type Microservices struct {
@@ -35,16 +39,18 @@ type Microservices struct {
 
 func NewServices(storages *storage.Storages, config config.SessionConfig) *Services {
 	return &Services{
-		Auth:         auth.NewAuthService(config, storages.Auth),
-		User:         user.NewUserService(storages.User),
-		Board:        board.NewBoardService(storages.Board, storages.Task, storages.User, storages.Comment),
-		CSRF:         csrf.NewCSRFService(config, storages.CSRF),
-		List:         list.NewListService(storages.List),
-		Task:         task.NewTaskService(storages.Task),
-		Comment:      comment.NewCommentService(storages.Comment),
-		Workspace:    workspace.NewWorkspaceService(storages.Workspace),
-		CSATAnswer:   csat.NewCSATAnswerService(storages.CSATAnswer),
-		CSATQuestion: csat.NewCSATQuestionService(storages.CSATQuestion),
+		Auth:          auth.NewAuthService(config, storages.Auth),
+		User:          user.NewUserService(storages.User),
+		Board:         board.NewBoardService(storages.Board, storages.Task, storages.User, storages.Comment, storages.Checklist, storages.ChecklistItem),
+		CSRF:          csrf.NewCSRFService(config, storages.CSRF),
+		List:          list.NewListService(storages.List),
+		Task:          task.NewTaskService(storages.Task),
+		Comment:       comment.NewCommentService(storages.Comment),
+		Checklist:     checklist.NewChecklistService(storages.Checklist),
+		ChecklistItem: checklist_item.NewChecklistItemService(storages.ChecklistItem),
+		Workspace:     workspace.NewWorkspaceService(storages.Workspace),
+		CSATAnswer:    csat.NewCSATAnswerService(storages.CSATAnswer),
+		CSATQuestion:  csat.NewCSATQuestionService(storages.CSATQuestion),
 	}
 }
 

@@ -17,6 +17,8 @@ type Handlers struct {
 	CommentHandler
 	ListHandler
 	TaskHandler
+	ChecklistHandler
+	ChecklistItemHandler
 	CSATAnswerHandler
 	CSATQuestionHandler
 }
@@ -25,15 +27,17 @@ type Handlers struct {
 // возвращает HandlerManager со всеми хэндлерами приложения
 func NewHandlers(services *service.Services) *Handlers {
 	return &Handlers{
-		AuthHandler:         *NewAuthHandler(services.Auth, services.User, services.CSRF),
-		UserHandler:         *NewUserHandler(services.User),
-		CommentHandler:      *NewCommentHandler(services.Comment),
-		BoardHandler:        *NewBoardHandler(services.Auth, services.Board),
-		WorkspaceHandler:    *NewWorkspaceHandler(services.Workspace),
-		ListHandler:         *NewListHandler(services.List),
-		TaskHandler:         *NewTaskHandler(services.Task),
-		CSATAnswerHandler:   *NewCSATAnswerHandler(services.CSATAnswer, services.CSATQuestion),
-		CSATQuestionHandler: *NewCSATQuestionHandler(services.CSATQuestion),
+		AuthHandler:          *NewAuthHandler(services.Auth, services.User, services.CSRF),
+		UserHandler:          *NewUserHandler(services.User),
+		CommentHandler:       *NewCommentHandler(services.Comment),
+		BoardHandler:         *NewBoardHandler(services.Auth, services.Board),
+		WorkspaceHandler:     *NewWorkspaceHandler(services.Workspace),
+		ListHandler:          *NewListHandler(services.List),
+		TaskHandler:          *NewTaskHandler(services.Task),
+		ChecklistHandler:     *NewChecklistHandler(services.Checklist),
+		ChecklistItemHandler: *NewChecklistItemHandler(services.ChecklistItem),
+		CSATAnswerHandler:    *NewCSATAnswerHandler(services.CSATAnswer, services.CSATQuestion),
+		CSATQuestionHandler:  *NewCSATQuestionHandler(services.CSATQuestion),
 	}
 }
 
@@ -44,6 +48,22 @@ func NewAuthHandler(as service.IAuthService, us service.IUserService, cs service
 		as: as,
 		us: us,
 		cs: cs,
+	}
+}
+
+// NewChecklistItemHandler
+// возвращает NewChecklistItemHandler с необходимыми сервисами
+func NewChecklistItemHandler(clis service.IChecklistItemService) *ChecklistItemHandler {
+	return &ChecklistItemHandler{
+		clis: clis,
+	}
+}
+
+// NewChecklistHandler
+// возвращает NewChecklistHandler с необходимыми сервисами
+func NewChecklistHandler(cls service.IChecklistService) *ChecklistHandler {
+	return &ChecklistHandler{
+		cls: cls,
 	}
 }
 

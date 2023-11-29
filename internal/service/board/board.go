@@ -12,10 +12,12 @@ import (
 )
 
 type BoardService struct {
-	boardStorage   storage.IBoardStorage
-	userStorage    storage.IUserStorage
-	taskStorage    storage.ITaskStorage
-	commentStorage storage.ICommentStorage
+	boardStorage         storage.IBoardStorage
+	userStorage          storage.IUserStorage
+	taskStorage          storage.ITaskStorage
+	commentStorage       storage.ICommentStorage
+	checklistStorage     storage.IChecklistStorage
+	checklistItemStorage storage.IChecklistItemStorage
 }
 
 // NewBoardService
@@ -25,12 +27,16 @@ func NewBoardService(
 	ts storage.ITaskStorage,
 	us storage.IUserStorage,
 	cs storage.ICommentStorage,
+	cls storage.IChecklistStorage,
+	clis storage.IChecklistItemStorage,
 ) *BoardService {
 	return &BoardService{
-		boardStorage:   bs,
-		taskStorage:    ts,
-		userStorage:    us,
-		commentStorage: cs,
+		boardStorage:         bs,
+		taskStorage:          ts,
+		userStorage:          us,
+		commentStorage:       cs,
+		checklistStorage:     cls,
+		checklistItemStorage: clis,
 	}
 }
 
@@ -86,8 +92,10 @@ func (bs BoardService) GetFullBoard(ctx context.Context, info dto.IndividualBoar
 	logger.Debug("Got tasks", funcName, nodeName)
 
 	commentIDs := dto.CommentIDs{}
+	checklistIDs := dto.ChecklistIDs{}
 	for _, task := range *tasks {
 		commentIDs.Values = append(commentIDs.Values, task.CommentIDs...)
+		checklistIDs.Values = append(checklistIDs.Values, task.ChecklistIDs...)
 	}
 	logger.Debug("Got comment ids", funcName, nodeName)
 
@@ -97,12 +105,30 @@ func (bs BoardService) GetFullBoard(ctx context.Context, info dto.IndividualBoar
 	}
 	logger.Debug("Got comments", funcName, nodeName)
 
+	checklists, err := bs.checklistStorage.ReadMany(ctx, checklistIDs)
+	if err != nil {
+		return nil, err
+	}
+	logger.Debug("Got checklists", funcName, nodeName)
+
+	checklistItemIDs := dto.ChecklistItemIDs{}
+	for _, checklist := range *checklists {
+		checklistItemIDs.Values = append(checklistItemIDs.Values, checklist.Items...)
+	}
+	checklistItems, err := bs.checklistItemStorage.ReadMany(ctx, checklistItemIDs)
+	if err != nil {
+		return nil, err
+	}
+	logger.Debug("Got checklists", funcName, nodeName)
+
 	return &dto.FullBoardResult{
-		Users:    *users,
-		Board:    *board,
-		Lists:    *lists,
-		Tasks:    *tasks,
-		Comments: *comments,
+		Users:          *users,
+		Board:          *board,
+		Lists:          *lists,
+		Tasks:          *tasks,
+		Comments:       *comments,
+		Checklists:     *checklists,
+		ChecklistItems: *checklistItems,
 	}, nil
 }
 

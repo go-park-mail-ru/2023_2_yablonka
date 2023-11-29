@@ -137,6 +137,30 @@ var (
 	ErrListNotDeleted = errors.New("list couldn't be deleted")
 )
 
+// Ошибки, связанные с ChecklistService
+var (
+	// ErrCouldNotGetChecklist ошибка: не удалось получить чеклист из БД
+	ErrCouldNotGetChecklist = errors.New("could not get checklist")
+	// ErrChecklistNotCreated ошибка: не удалось создать чеклист в БД
+	ErrChecklistNotCreated = errors.New("checklist couldn't be created")
+	// ErrChecklistNotUpdated ошибка: не удалось получить чеклист в БД
+	ErrChecklistNotUpdated = errors.New("checklist couldn't be updated")
+	// ErrChecklistNotDeleted ошибка: не удалось удалить чеклист в БД
+	ErrChecklistNotDeleted = errors.New("checklist couldn't be deleted")
+)
+
+// Ошибки, связанные с ChecklistItemService
+var (
+	// ErrCouldNotGetChecklist ошибка: не удалось получить элемент чеклиста из БД
+	ErrCouldNotGetChecklistItem = errors.New("could not get checklist item")
+	// ErrChecklistItemNotCreated ошибка: не удалось создать элемент чеклиста в БД
+	ErrChecklistItemNotCreated = errors.New("checklist item couldn't be created")
+	// ErrChecklistItemNotUpdated ошибка: не удалось получить элемент чеклиста в БД
+	ErrChecklistItemNotUpdated = errors.New("checklist item couldn't be updated")
+	// ErrChecklistItemNotDeleted ошибка: не удалось удалить элемент чеклиста в БД
+	ErrChecklistItemNotDeleted = errors.New("checklist item couldn't be deleted")
+)
+
 // Ошибки, связанные с TaskService
 var (
 	// ErrTaskNotCreated ошибка: не удалось создать задание в БД

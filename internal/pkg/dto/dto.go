@@ -327,15 +327,18 @@ type SingleTaskInfo struct {
 	End          *time.Time `json:"end"`
 	UserIDs      []string   `json:"users"`
 	CommentIDs   []string   `json:"comments"`
+	ChecklistIDs []string   `json:"checklists"`
 	// Checklists
 }
 
 type FullBoardResult struct {
-	Board    SingleBoardInfo  `json:"board"`
-	Lists    []SingleListInfo `json:"lists"`
-	Tasks    []SingleTaskInfo `json:"cards"`
-	Users    []UserPublicInfo `json:"users"`
-	Comments []CommentInfo    `json:"comments"`
+	Board          SingleBoardInfo     `json:"board"`
+	Lists          []SingleListInfo    `json:"lists"`
+	Tasks          []SingleTaskInfo    `json:"cards"`
+	Users          []UserPublicInfo    `json:"users"`
+	Comments       []CommentInfo       `json:"comments"`
+	Checklists     []ChecklistInfo     `json:"checklists"`
+	ChecklistItems []ChecklistItemInfo `json:"checklist_items"`
 }
 
 // NewBoardRequest
@@ -457,6 +460,84 @@ type NewListInfo struct {
 	Name         string  `json:"name"`
 	Description  *string `json:"description"`
 	ListPosition uint64  `json:"list_position"`
+}
+
+// NewChecklistInfo
+// DTO для нового чеклиста
+type NewChecklistInfo struct {
+	TaskID       uint64 `json:"task_id"`
+	Name         string `json:"name"`
+	ListPosition uint64 `json:"list_position"`
+}
+
+// NewChecklistItemInfo
+// DTO для нового элемента чеклиста
+type NewChecklistItemInfo struct {
+	ChecklistID  uint64 `json:"checklist_id"`
+	Name         string `json:"name"`
+	Done         bool   `json:"done"`
+	ListPosition uint64 `json:"list_position"`
+}
+
+// NewChecklistInfo
+// DTO для чеклиста
+type ChecklistInfo struct {
+	ID           uint64   `json:"id"`
+	TaskID       uint64   `json:"task_id"`
+	Name         string   `json:"name"`
+	ListPosition uint64   `json:"list_position"`
+	Items        []string `json:"items"`
+}
+
+// UpdatedChecklistInfo
+// DTO для чеклиста
+type UpdatedChecklistInfo struct {
+	ID           uint64 `json:"id"`
+	Name         string `json:"name"`
+	ListPosition uint64 `json:"list_position"`
+}
+
+// ChecklistID
+// DTO для ID чеклиста
+type ChecklistID struct {
+	Value uint64 `json:"id"`
+}
+
+// ChecklistIDs
+// DTO для ID чеклистов
+type ChecklistIDs struct {
+	Values []string `json:"ids"`
+}
+
+// ChecklistItemID
+// DTO для ID элемента чеклиста
+type ChecklistItemID struct {
+	Value uint64 `json:"id"`
+}
+
+// ChecklistItemID
+// DTO для ID элементов чеклиста
+type ChecklistItemIDs struct {
+	Values []string `json:"ids"`
+}
+
+// NewChecklistItemInfo
+// DTO дляэлемента чеклиста
+type ChecklistItemInfo struct {
+	ID           uint64 `json:"id"`
+	ChecklistID  uint64 `json:"checklist_id"`
+	Name         string `json:"name"`
+	Done         bool   `json:"done"`
+	ListPosition uint64 `json:"list_position"`
+}
+
+// UpdatedChecklistItemInfo
+// DTO для элемента чеклиста
+type UpdatedChecklistItemInfo struct {
+	ID           uint64 `json:"id"`
+	Name         string `json:"name"`
+	Done         bool   `json:"done"`
+	ListPosition uint64 `json:"list_position"`
 }
 
 // NewTaskInfo
