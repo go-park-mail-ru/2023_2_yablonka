@@ -1,26 +1,19 @@
-package service
+package auth
 
 import (
-	jwt "server/internal/config/jwt"
-	session "server/internal/config/session"
+	"server/internal/config"
 	"server/internal/storage"
+
+	embedded "server/internal/service/auth/embedded"
+	micro "server/internal/service/auth/microservice"
+
+	"google.golang.org/grpc"
 )
 
-// NewAuthJWTService
-// возвращает AuthJWTService с инициализированным JWT-секретом и датой истечения рефреш-токенов
-func NewAuthJWTService(config jwt.JWTServerConfig) *AuthJWTService {
-	return &AuthJWTService{
-		jwtSecret:     []byte(config.JWTSecret),
-		tokenLifetime: config.Base.SessionDuration,
-	}
+func NewEmbeddedAuthService(authStorage storage.IAuthStorage, config config.SessionConfig) *embedded.AuthService {
+	return embedded.NewAuthService(config, authStorage)
 }
 
-// NewAuthSessionService
-// возвращает AuthSessionService с инициализированной датой истечения сессии и хранилищем сессий
-func NewAuthSessionService(config session.SessionServerConfig, storage storage.IAuthStorage) *AuthSessionService {
-	return &AuthSessionService{
-		sessionDuration: config.Base.SessionDuration,
-		sessionIDLength: config.SessionIDLength,
-		storage:         storage,
-	}
+func NewMicroAuthService(authStorage storage.IAuthStorage, config config.SessionConfig, connection *grpc.ClientConn) *micro.AuthService {
+	return micro.NewAuthService(config, authStorage, connection)
 }

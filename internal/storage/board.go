@@ -8,20 +8,36 @@ import (
 	"server/internal/pkg/entities"
 )
 
+// Интерфейс для хранилища досок
+//
+//go:generate mockgen -source=$GOFILE -destination=../../mocks/mock_storage/$GOFILE -package=mock_storage
 type IBoardStorage interface {
-	// GetUserOwnedBoards
-	// находит все доски, созданные пользователем
-	// или возвращает ошибку apperrors.ErrUserNotFound (401)
-	GetUserOwnedBoards(context.Context, dto.VerifiedAuthInfo) (*[]entities.Board, error)
-	// GetUserGuestBoards
-	// находит все доски, в которых участвует пользователь
-	// или возвращает ошибку apperrors.ErrUserNotFound (401)
-	GetUserGuestBoards(context.Context, dto.VerifiedAuthInfo) (*[]entities.Board, error)
-
-	// TODO Implement
-	// GetBoard(context.Context, dto.IndividualBoardInfo) (*entities.Board, error)
-	// UpdateBoard(context.Context, dto.IndividualBoardInfo) (*entities.Board, error)
-	// CreateBoard(context.Context, dto.NewBoardInfo) (*entities.Board, error)
-	// GetUserBoards(context.Context, dto.VerifiedAuthInfo) (*[]entities.Board, error)
-	// DeleteBoard(context.Context, dto.IndividualBoardInfo) error
+	// GetUsers
+	// находит пользователей, у которых есть доступ к доске
+	GetUsers(context.Context, dto.BoardID) (*[]dto.UserPublicInfo, error)
+	// GetById
+	// находит доску и связанные с ней списки и задания по id
+	GetById(context.Context, dto.BoardID) (*dto.SingleBoardInfo, error)
+	// GetLists
+	// находит списки в доске
+	// или возвращает ошибки ...
+	GetLists(context.Context, dto.BoardID) (*[]dto.SingleListInfo, error)
+	// UpdateData
+	// обновляет доску
+	UpdateData(context.Context, dto.UpdatedBoardInfo) error
+	// Update
+	// обновляет картинку доски
+	UpdateThumbnailUrl(context.Context, dto.ImageUrlInfo) error
+	// Create
+	// создает доску
+	Create(context.Context, dto.NewBoardInfo) (*entities.Board, error)
+	// Delete
+	// удаляет доску
+	Delete(context.Context, dto.BoardID) error
+	// AddUser
+	// добавляет пользователя на доску
+	AddUser(context.Context, dto.AddBoardUserInfo) error
+	// RemoveUser
+	// удаляет пользователя с доски
+	RemoveUser(context.Context, dto.RemoveBoardUserInfo) error
 }

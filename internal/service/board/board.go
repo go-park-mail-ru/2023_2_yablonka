@@ -1,75 +1,33 @@
-package service
+package board
 
 import (
-	"context"
-	"server/internal/pkg/dto"
 	"server/internal/storage"
+
+	embedded "server/internal/service/board/embedded"
+	micro "server/internal/service/board/microservice"
+
+	"google.golang.org/grpc"
 )
 
-type BoardService struct {
-	storage storage.IBoardStorage
+func NewEmbeddedBoardService(
+	bs storage.IBoardStorage,
+	ts storage.ITaskStorage,
+	us storage.IUserStorage,
+	cs storage.ICommentStorage,
+	cls storage.IChecklistStorage,
+	clis storage.IChecklistItemStorage,
+) *embedded.BoardService {
+	return embedded.NewBoardService(bs, ts, us, cs, cls, clis)
 }
 
-// NewBoardService
-// возвращает BoardService с инициализированным хранилищем
-func NewBoardService(storage storage.IBoardStorage) *BoardService {
-	return &BoardService{
-		storage: storage,
-	}
+// TODO: Board microservice
+func NewMicroBoardService(bs storage.IBoardStorage,
+	ts storage.ITaskStorage,
+	us storage.IUserStorage,
+	cs storage.ICommentStorage,
+	cls storage.IChecklistStorage,
+	clis storage.IChecklistItemStorage,
+	connection *grpc.ClientConn,
+) *micro.BoardService {
+	return micro.NewBoardService(bs, ts, us, cs, cls, clis, connection)
 }
-
-// GetUserOwnedBoards
-// находит все доски, созданные пользователем
-// или возвращает ошибку apperrors.ErrUserNotFound (401)
-func (us BoardService) GetUserOwnedBoards(ctx context.Context, userInfo dto.VerifiedAuthInfo) ([]dto.UserOwnedBoardInfo, error) {
-	boards, err := us.storage.GetUserOwnedBoards(ctx, userInfo)
-	if err != nil {
-		return nil, err
-	}
-
-	var boardInfo []dto.UserOwnedBoardInfo
-	for _, board := range *boards {
-		boardInfo = append(boardInfo, dto.UserOwnedBoardInfo{
-			ID:           board.ID,
-			BoardName:    board.Name,
-			ThumbnailURL: board.ThumbnailURL,
-		})
-	}
-	return boardInfo, nil
-}
-
-// GetUserGuestBoards
-// находит все доски, в которых участвует пользователь
-// или возвращает ошибку apperrors.ErrUserNotFound (401)
-func (us BoardService) GetUserGuestBoards(ctx context.Context, userInfo dto.VerifiedAuthInfo) ([]dto.UserGuestBoardInfo, error) {
-	boards, err := us.storage.GetUserGuestBoards(ctx, userInfo)
-	if err != nil {
-		return nil, err
-	}
-
-	var boardInfo []dto.UserGuestBoardInfo
-	for _, board := range *boards {
-		boardInfo = append(boardInfo, dto.UserGuestBoardInfo{
-			BoardInfo: dto.UserOwnedBoardInfo{
-				ID:           board.ID,
-				BoardName:    board.Name,
-				ThumbnailURL: board.ThumbnailURL,
-			},
-			OwnerID:    board.Owner.ID,
-			OwnerEmail: board.Owner.Email,
-		})
-	}
-	return boardInfo, nil
-}
-
-// func (us BoardService) GetBoard(ctx context.Context, board dto.IndividualBoardInfo) (*entities.Board, error) {
-// 	return us.storage.GetBoard(board)
-// }
-
-// func (us BoardService) CreateBoard(ctx context.Context, board dto.NewBoardInfo) (*entities.Board, error) {
-// 	return us.storage.CreateBoard(board)
-// }
-
-// func (us BoardService) UpdateBoard(ctx context.Context, board dto.IndividualBoardInfo) (*entities.Board, error) {
-// 	return us.storage.UpdateBoard(board)
-// }
