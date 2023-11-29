@@ -2,29 +2,35 @@ package service
 
 import (
 	"context"
-	"crypto/rand"
-	"math/big"
-	"server/internal/apperrors"
 	config "server/internal/config"
 	"server/internal/pkg/dto"
-	"server/internal/pkg/entities"
 	"server/internal/storage"
+	microservice "server/microservices/csrf/csrf"
 	"time"
+
+	logger "server/internal/logging"
+
+	"google.golang.org/grpc"
 )
 
 type CSRFService struct {
 	sessionDuration time.Duration
 	sessionIDLength uint
 	storage         storage.ICSRFStorage
+	client          microservice.CSRFServiceClient
 }
+
+const nodeName = "service"
 
 // NewAuthService
 // возвращает AuthSessionService с инициализированной датой истечения сессии и хранилищем сессий
-func NewCSRFService(config config.SessionConfig, CSRFStorage storage.ICSRFStorage) *CSRFService {
+func NewCSRFService(config config.SessionConfig, CSRFStorage storage.ICSRFStorage, conn *grpc.ClientConn) *CSRFService {
+	client := microservice.NewCSRFServiceClient(conn)
 	return &CSRFService{
 		sessionDuration: config.Duration,
 		sessionIDLength: config.IDLength,
 		storage:         CSRFStorage,
+		client:          client,
 	}
 }
 
@@ -38,27 +44,19 @@ func (cs *CSRFService) GetLifetime(ctx context.Context) time.Duration {
 // возвращает уникальную строку CSRF и её длительность
 // или возвращает ошибки apperrors.ErrTokenNotGenerated (500)
 func (cs *CSRFService) SetupCSRF(ctx context.Context, id dto.UserID) (dto.CSRFData, error) {
-	expiresAt := time.Now().Add(cs.sessionDuration)
+	funcName := "CSRFService.SetupCSRF"
+	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
 
-	token, err := generateToken(cs.sessionIDLength)
-	if err != nil {
-		return dto.CSRFData{}, apperrors.ErrTokenNotGenerated
-	}
-
-	csrf := &entities.CSRF{
-		Token:          token,
-		UserID:         id.Value,
-		ExpirationDate: expiresAt,
-	}
-
-	err = cs.storage.Create(ctx, csrf)
+	logger.Debug("Contacting GRPC server", funcName, nodeName)
+	csrfpb, err := cs.client.SetupCSRF(ctx, &microservice.UserID{Value: id.Value})
 	if err != nil {
 		return dto.CSRFData{}, err
 	}
+	logger.Debug("Info received", funcName, nodeName)
 
 	return dto.CSRFData{
-		Token:          token,
-		Expirationdate: expiresAt,
+		Token:          csrfpb.ID,
+		ExpirationDate: csrfpb.ExpirationDate.AsTime(),
 	}, nil
 }
 
@@ -66,36 +64,30 @@ func (cs *CSRFService) SetupCSRF(ctx context.Context, id dto.UserID) (dto.CSRFDa
 // проверяет состояние CSRF, возвращает ID авторизированного пользователя
 // или возвращает ошибки apperrors.ErrTokenNotGenerated (500)
 func (cs *CSRFService) VerifyCSRF(ctx context.Context, token dto.CSRFToken) error {
-	CSRFObj, err := cs.storage.Get(ctx, token)
-	if err != nil {
-		return err
-	}
+	funcName := "CSRFService.VerifyCSRF"
+	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
 
-	if CSRFObj.ExpirationDate.Before(time.Now()) {
-		return apperrors.ErrSessionExpired
-	}
+	logger.Debug("Contacting GRPC server", funcName, nodeName)
+	_, err := cs.client.VerifyCSRF(ctx, &microservice.CSRFToken{
+		Value: token.Value,
+	})
+	logger.Debug("Info received", funcName, nodeName)
 
-	return nil
+	return err
 }
 
 // DeleteCSRF
 // удаляет CSRF
 // или возвращает ошибку apperrors.ErrSessionNotFound (401)
 func (cs *CSRFService) DeleteCSRF(ctx context.Context, token dto.CSRFToken) error {
-	return cs.storage.Delete(ctx, token)
-}
+	funcName := "CSRFService.DeleteCSRF"
+	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
 
-// generateString
-// возвращает alphanumeric строку, собранную криптографически безопасным PRNG
-func generateToken(n uint) (string, error) {
-	letterRunes := []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
-	buf := make([]rune, n)
-	for i := range buf {
-		j, err := rand.Int(rand.Reader, big.NewInt(int64(len(letterRunes))))
-		if err != nil {
-			return "", err
-		}
-		buf[i] = letterRunes[j.Int64()]
-	}
-	return string(buf), nil
+	logger.Debug("Contacting GRPC server", funcName, nodeName)
+	_, err := cs.client.DeleteCSRF(ctx, &microservice.CSRFToken{
+		Value: token.Value,
+	})
+	logger.Debug("Info received", funcName, nodeName)
+
+	return err
 }

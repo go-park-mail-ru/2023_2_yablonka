@@ -2,15 +2,14 @@ package microservice
 
 import (
 	"context"
-	"crypto/rand"
-	"math/big"
 	config "server/internal/config"
 	"server/internal/pkg/dto"
 	"server/internal/storage"
 	microservice "server/microservices/auth/auth"
 	"time"
 
-	"github.com/sirupsen/logrus"
+	logger "server/internal/logging"
+
 	"google.golang.org/grpc"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -22,6 +21,8 @@ type AuthService struct {
 	sessionIDLength uint
 	authStorage     storage.IAuthStorage
 }
+
+const nodeName = "service"
 
 // NewAuthService
 // возвращает AuthSessionService с инициализированной датой истечения сессии и хранилищем сессий
@@ -39,15 +40,15 @@ func NewAuthService(config config.SessionConfig, authStorage storage.IAuthStorag
 // возвращает уникальную строку авторизации и её длительность
 // или возвращает ошибки apperrors.ErrTokenNotGenerated (500)
 func (a *AuthService) AuthUser(ctx context.Context, id dto.UserID) (dto.SessionToken, error) {
-	funcName := "AuthUser"
-	logger := ctx.Value(dto.LoggerKey).(*logrus.Logger)
+	funcName := "AuthService.AuthUser"
+	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
 
-	authServiceDebugLog(logger, funcName, "Contacting GRPC server")
+	logger.Debug("Contacting GRPC server", funcName, nodeName)
 	sessionpb, err := a.client.AuthUser(ctx, &microservice.UserID{Value: id.Value})
 	if err != nil {
 		return dto.SessionToken{}, err
 	}
-	authServiceDebugLog(logger, funcName, "Info received")
+	logger.Debug("Info received", funcName, nodeName)
 
 	return dto.SessionToken{
 		ID:             sessionpb.ID,
@@ -59,6 +60,10 @@ func (a *AuthService) AuthUser(ctx context.Context, id dto.UserID) (dto.SessionT
 // проверяет состояние авторизации, возвращает ID авторизированного пользователя
 // или возвращает ошибки apperrors.ErrSessionNotFound (401)
 func (a *AuthService) VerifyAuth(ctx context.Context, token dto.SessionToken) (dto.UserID, error) {
+	funcName := "AuthService.VerifyAuth"
+	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
+
+	logger.Debug("Contacting GRPC server", funcName, nodeName)
 	uidpb, err := a.client.VerifyAuth(ctx, &microservice.SessionToken{
 		ID:             token.ID,
 		ExpirationDate: timestamppb.New(token.ExpirationDate),
@@ -66,6 +71,7 @@ func (a *AuthService) VerifyAuth(ctx context.Context, token dto.SessionToken) (d
 	if err != nil {
 		return dto.UserID{}, err
 	}
+	logger.Debug("Info received", funcName, nodeName)
 
 	return dto.UserID{Value: uidpb.Value}, nil
 }
@@ -74,10 +80,15 @@ func (a *AuthService) VerifyAuth(ctx context.Context, token dto.SessionToken) (d
 // удаляет текущую сессию
 // или возвращает ошибку apperrors.ErrSessionNotFound (401)
 func (a *AuthService) LogOut(ctx context.Context, token dto.SessionToken) error {
+	funcName := "AuthService.LogOut"
+	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
+
+	logger.Debug("Contacting GRPC server", funcName, nodeName)
 	_, err := a.client.LogOut(ctx, &microservice.SessionToken{
 		ID:             token.ID,
 		ExpirationDate: timestamppb.New(token.ExpirationDate),
 	})
+	logger.Debug("Info received", funcName, nodeName)
 
 	return err
 }
@@ -90,28 +101,4 @@ func (a *AuthService) GetLifetime(ctx context.Context) time.Duration {
 		return 0
 	}
 	return lifetimepb.AsDuration()
-}
-
-// generateString
-// возвращает alphanumeric строку, собранную криптографически безопасным PRNG
-func generateString(n uint) (string, error) {
-	letterRunes := []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
-	buf := make([]rune, n)
-	for i := range buf {
-		j, err := rand.Int(rand.Reader, big.NewInt(int64(len(letterRunes))))
-		if err != nil {
-			return "", err
-		}
-		buf[i] = letterRunes[j.Int64()]
-	}
-	return string(buf), nil
-}
-
-func authServiceDebugLog(logger *logrus.Logger, function string, message string) {
-	logger.
-		WithFields(logrus.Fields{
-			"route_node": "service",
-			"function":   function,
-		}).
-		Debug(message)
 }

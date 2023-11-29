@@ -9,18 +9,6 @@ import (
 	"google.golang.org/grpc"
 )
 
-type Microservices struct {
-	CSATQuestion question.CSATQuestionServiceServer
-	CSATAnswer   answer.CSATAnswerServiceServer
-}
-
-func NewMicroServices(storages *storage.Storages) *Microservices {
-	return &Microservices{
-		CSATAnswer:   answer.NewCSATAnswerService(storages.CSATAnswer),
-		CSATQuestion: question.NewCSATQuestionService(storages.CSATQuestion),
-	}
-}
-
 func RegisterServices(storages *storage.Storages, server *grpc.Server, logger *logging.LogrusLogger) {
 	answerServer := answer.NewCSATAnswerService(storages.CSATAnswer)
 	questionServer := question.NewCSATQuestionService(storages.CSATQuestion)

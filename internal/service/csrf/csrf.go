@@ -16,5 +16,5 @@ func NewEmbeddedCSRFService(csrfStorage storage.ICSRFStorage, config config.Sess
 
 // TODO: CSRF microservice
 func NewMicroCSRFService(csrfStorage storage.ICSRFStorage, config config.SessionConfig, connection *grpc.ClientConn) *micro.CSRFService {
-	return micro.NewCSRFService(config, csrfStorage)
+	return micro.NewCSRFService(config, csrfStorage, connection)
 }

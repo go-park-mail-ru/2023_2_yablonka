@@ -13,7 +13,6 @@ import (
 
 	logging "server/internal/logging"
 
-	"github.com/sirupsen/logrus"
 	"google.golang.org/protobuf/types/known/durationpb"
 	"google.golang.org/protobuf/types/known/emptypb"
 	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
@@ -42,7 +41,7 @@ const nodeName = "microservice_server"
 // возвращает уникальную строку авторизации и её длительность
 // или возвращает ошибки apperrors.ErrTokenNotGenerated (500)
 func (a *AuthService) AuthUser(ctx context.Context, id *UserID) (*SessionToken, error) {
-	funcName := "AuthUser"
+	funcName := "AuthService.AuthUser"
 	expiresAt := time.Now().Add(a.sessionDuration)
 
 	sessionID, err := generateString(a.sessionIDLength)
@@ -73,6 +72,7 @@ func (a *AuthService) AuthUser(ctx context.Context, id *UserID) (*SessionToken, 
 // проверяет состояние авторизации, возвращает ID авторизированного пользователя
 // или возвращает ошибки apperrors.ErrSessionNotFound (401)
 func (a *AuthService) VerifyAuth(ctx context.Context, token *SessionToken) (*UserID, error) {
+	funcName := "AuthService.VerifyAuth"
 	convertedSession := dto.SessionToken{
 		ID:             token.ID,
 		ExpirationDate: token.ExpirationDate.AsTime(),
@@ -82,8 +82,11 @@ func (a *AuthService) VerifyAuth(ctx context.Context, token *SessionToken) (*Use
 	if err != nil {
 		return &UserID{}, err
 	}
+	a.logger.Debug("Found session", funcName, nodeName)
 
 	if sessionObj.ExpiryDate.Before(time.Now()) {
+		a.logger.Debug("Deleting expired session", funcName, nodeName)
+		a.LogOut(ctx, token)
 		return &UserID{}, apperrors.ErrSessionExpired
 	}
 	return &UserID{Value: sessionObj.UserID}, nil
@@ -119,13 +122,4 @@ func generateString(n uint) (string, error) {
 		buf[i] = letterRunes[j.Int64()]
 	}
 	return string(buf), nil
-}
-
-func authServiceDebugLog(logger *logrus.Logger, function string, message string) {
-	logger.
-		WithFields(logrus.Fields{
-			"route_node": "grpc_service",
-			"function":   function,
-		}).
-		Debug(message)
 }

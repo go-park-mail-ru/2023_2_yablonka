@@ -8,6 +8,8 @@ import (
 	"server/internal/storage"
 	"testing"
 	"time"
+
+	"google.golang.org/grpc"
 )
 
 func TestCSRFService_DeleteCSRF(t *testing.T) {
@@ -147,6 +149,7 @@ func TestNewCSRFService(t *testing.T) {
 	type args struct {
 		config      config.SessionConfig
 		CSRFStorage storage.ICSRFStorage
+		conn        *grpc.ClientConn
 	}
 	tests := []struct {
 		name string
@@ -157,34 +160,8 @@ func TestNewCSRFService(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := NewCSRFService(tt.args.config, tt.args.CSRFStorage); !reflect.DeepEqual(got, tt.want) {
+			if got := NewCSRFService(tt.args.config, tt.args.CSRFStorage, tt.args.conn); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("NewCSRFService() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func Test_generateToken(t *testing.T) {
-	type args struct {
-		n uint
-	}
-	tests := []struct {
-		name    string
-		args    args
-		want    string
-		wantErr bool
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, err := generateToken(tt.args.n)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("generateToken() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if got != tt.want {
-				t.Errorf("generateToken() got = %v, want %v", got, tt.want)
 			}
 		})
 	}

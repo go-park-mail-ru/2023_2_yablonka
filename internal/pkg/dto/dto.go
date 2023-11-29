@@ -395,7 +395,7 @@ type SessionToken struct {
 // DTO для токена CSRF
 type CSRFData struct {
 	Token          string    `json:"csrf_token"`
-	Expirationdate time.Time `json:"expiration_date"`
+	ExpirationDate time.Time `json:"expiration_date"`
 }
 
 // CSRFToken

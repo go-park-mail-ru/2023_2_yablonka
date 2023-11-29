@@ -9,10 +9,6 @@ import (
 	"google.golang.org/grpc"
 )
 
-type Microservices struct {
-	AuthService auth.AuthServiceServer
-}
-
 const nodeName = "microservice"
 
 func RegisterServices(config *config.Config, storages *storage.Storages, server *grpc.Server, logger *logging.LogrusLogger) {

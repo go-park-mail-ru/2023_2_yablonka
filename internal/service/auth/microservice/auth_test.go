@@ -169,29 +169,3 @@ func TestNewAuthService(t *testing.T) {
 		})
 	}
 }
-
-func Test_generateString(t *testing.T) {
-	type args struct {
-		n uint
-	}
-	tests := []struct {
-		name    string
-		args    args
-		want    string
-		wantErr bool
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, err := generateString(tt.args.n)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("generateString() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if got != tt.want {
-				t.Errorf("generateString() got = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}

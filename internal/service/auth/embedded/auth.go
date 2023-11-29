@@ -10,6 +10,8 @@ import (
 	"server/internal/pkg/entities"
 	"server/internal/storage"
 	"time"
+
+	logger "server/internal/logging"
 )
 
 type AuthService struct {
@@ -17,6 +19,8 @@ type AuthService struct {
 	sessionIDLength uint
 	authStorage     storage.IAuthStorage
 }
+
+const nodeName = "service"
 
 // NewAuthService
 // возвращает AuthSessionService с инициализированной датой истечения сессии и хранилищем сессий
@@ -60,14 +64,22 @@ func (a *AuthService) AuthUser(ctx context.Context, id dto.UserID) (dto.SessionT
 // проверяет состояние авторизации, возвращает ID авторизированного пользователя
 // или возвращает ошибки apperrors.ErrSessionNotFound (401)
 func (a *AuthService) VerifyAuth(ctx context.Context, token dto.SessionToken) (dto.UserID, error) {
+	funcName := "AuthService.VerifyAuth"
+	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
+
 	sessionObj, err := a.authStorage.GetSession(ctx, token)
 	if err != nil {
 		return dto.UserID{}, err
 	}
+	logger.Debug("Session found", funcName, nodeName)
 
 	if sessionObj.ExpiryDate.Before(time.Now()) {
+		logger.Debug("Deleting expired session", funcName, nodeName)
+		a.LogOut(ctx, token)
 		return dto.UserID{}, apperrors.ErrSessionExpired
 	}
+	logger.Debug("Session is still good", funcName, nodeName)
+
 	return dto.UserID{Value: sessionObj.UserID}, nil
 }
 
