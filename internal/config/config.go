@@ -24,8 +24,9 @@ type Config struct {
 type ServerConfig struct {
 	BackendPort      uint   `yaml:"backend_port"`
 	FrontendPort     uint   `yaml:"frontend_port"`
-	MicroservicePort uint   `yaml:"microservice_port"`
 	Host             string `yaml:"host"`
+	MicroserviceHost string `yaml:"microservice_host"`
+	MicroservicePort uint   `yaml:"microservice_port"`
 }
 
 type CORSConfig struct {

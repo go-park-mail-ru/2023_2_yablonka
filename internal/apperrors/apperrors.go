@@ -171,6 +171,10 @@ var (
 	ErrTaskNotDeleted = errors.New("task couldn't be deleted")
 	// ErrCouldNotGetTask ошибка: не удалось получить задание в БД
 	ErrCouldNotGetTask = errors.New("couldn't get task")
+	// ErrCouldNotAddTaskUser ошибка: не удалось добавить пользователя на карточку
+	ErrCouldNotAddTaskUser = errors.New("couldn't add user to task")
+	// ErrCouldNotRemoveTaskUser ошибка: не удалось удалить пользователя с карточки
+	ErrCouldNotRemoveTaskUser = errors.New("couldn't remove user from task")
 )
 
 // ErrorResponse

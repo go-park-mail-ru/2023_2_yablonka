@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"context"
 	"encoding/json"
 	"net/http"
 	"server/internal/apperrors"
@@ -170,7 +169,7 @@ func (th TaskHandler) Update(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		logger.Error(errorMessage + err.Error())
 		logger.Info(failBorder)
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.BadRequestResponse))
+		apperrors.ReturnError(apperrors.BadRequestResponse, w, r)
 		return
 	}
 	logger.Debug("JSON Decoded", funcName, nodeName)
@@ -179,7 +178,7 @@ func (th TaskHandler) Update(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		logger.Error(errorMessage + err.Error())
 		logger.Info(failBorder)
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.ErrorMap[err]))
+		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
 		return
 	}
 	logger.Debug("task updated", funcName, nodeName)
@@ -257,4 +256,124 @@ func (th TaskHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	logger.Debug("response written", funcName, nodeName)
 
 	logger.Info("----------------- Deleting task SUCCESS -----------------")
+}
+
+// @Summary Добавить пользователя на карточку
+// @Description Добавить пользователя на карточку
+// @Tags tasks
+//
+// @Accept  json
+// @Produce  json
+//
+// @Param taskInfo body dto.AddTaskUserInfo true "ID пользователя и ID карточки, на которую добавляют пользователя"
+//
+// @Success 200  {string}  string "no content"
+// @Failure 400  {object}  apperrors.ErrorResponse
+// @Failure 401  {object}  apperrors.ErrorResponse
+// @Failure 500  {object}  apperrors.ErrorResponse
+//
+// @Router /task/user/add/ [post]
+func (th TaskHandler) AddUser(w http.ResponseWriter, r *http.Request) {
+	rCtx := r.Context()
+	funcName := "TaskHandler.AddUser"
+	nodeName := "handler"
+	errorMessage := "Adding user to task failed with error: "
+	failBorder := "----------------- Adding user to task FAIL -----------------"
+
+	logger := rCtx.Value(dto.LoggerKey).(logger.ILogger)
+
+	logger.Info("----------------- Adding user to task -----------------")
+
+	var info dto.AddTaskUserInfo
+	err := json.NewDecoder(r.Body).Decode(&info)
+	if err != nil {
+		logger.Error(errorMessage + err.Error())
+		logger.Info(failBorder)
+		apperrors.ReturnError(apperrors.BadRequestResponse, w, r)
+		return
+	}
+	logger.Debug("JSON Decoded", funcName, nodeName)
+
+	err = th.ts.AddUser(rCtx, info)
+	if err != nil {
+		logger.Error(errorMessage + err.Error())
+		logger.Info(failBorder)
+		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
+		return
+	}
+	logger.Debug("User added", funcName, nodeName)
+
+	response := dto.JSONResponse{
+		Body: dto.JSONMap{},
+	}
+	err = WriteResponse(response, w, r)
+	if err != nil {
+		logger.Error(errorMessage + err.Error())
+		logger.Info(failBorder)
+		apperrors.ReturnError(apperrors.InternalServerErrorResponse, w, r)
+		return
+	}
+	logger.Debug("Response written", funcName, nodeName)
+
+	logger.Info("----------------- Adding user to task SUCCESS -----------------")
+}
+
+// @Summary Удалить пользователя из карточки
+// @Description Удалить пользователя из карточки
+// @Tags tasks
+//
+// @Accept  json
+// @Produce  json
+//
+// @Param taskInfo body dto.RemoveTaskUserInfo true "ID пользователя и ID карточки, из которой удаляют пользователя"
+//
+// @Success 200  {string}  string "no content"
+// @Failure 400  {object}  apperrors.ErrorResponse
+// @Failure 401  {object}  apperrors.ErrorResponse
+// @Failure 500  {object}  apperrors.ErrorResponse
+//
+// @Router /task/user/remove/ [post]
+func (th TaskHandler) RemoveUser(w http.ResponseWriter, r *http.Request) {
+	rCtx := r.Context()
+	funcName := "TaskHandler.RemoveUser"
+	nodeName := "handler"
+	errorMessage := "Removing user from task failed with error: "
+	failBorder := "----------------- Removing user from task FAIL -----------------"
+
+	logger := rCtx.Value(dto.LoggerKey).(logger.ILogger)
+
+	logger.Info("----------------- Removing user from task -----------------")
+
+	var info dto.RemoveTaskUserInfo
+	err := json.NewDecoder(r.Body).Decode(&info)
+	if err != nil {
+		logger.Error(errorMessage + err.Error())
+		logger.Info(failBorder)
+		apperrors.ReturnError(apperrors.BadRequestResponse, w, r)
+		return
+	}
+	logger.Debug("JSON Decoded", funcName, nodeName)
+
+	err = th.ts.RemoveUser(rCtx, info)
+	if err != nil {
+		logger.Error(errorMessage + err.Error())
+		logger.Info(failBorder)
+		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
+		return
+	}
+	logger.Debug("User removed", funcName, nodeName)
+
+	response := dto.JSONResponse{
+		Body: dto.JSONMap{},
+	}
+	err = WriteResponse(response, w, r)
+	if err != nil {
+		logger.Error(errorMessage + err.Error())
+		logger.Info(failBorder)
+		apperrors.ReturnError(apperrors.InternalServerErrorResponse, w, r)
+		return
+	}
+	logger.Debug("Response written", funcName, nodeName)
+
+	logger.Info("----------------- Removing user from task SUCCESS -----------------")
 }

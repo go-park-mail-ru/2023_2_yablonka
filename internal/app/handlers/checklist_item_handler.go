@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"context"
 	"encoding/json"
 	"net/http"
 	"server/internal/apperrors"
@@ -46,7 +45,7 @@ func (clh ChecklistItemHandler) Create(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		logger.Error(errorMessage + err.Error())
 		logger.Info(failBorder)
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.BadRequestResponse))
+		apperrors.ReturnError(apperrors.BadRequestResponse, w, r)
 		return
 	}
 	logger.Debug("request struct decoded", funcName, nodeName)
@@ -55,7 +54,7 @@ func (clh ChecklistItemHandler) Create(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		logger.Error(errorMessage + err.Error())
 		logger.Info(failBorder)
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.ErrorMap[err]))
+		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
 		return
 	}
 	logger.Debug("ChecklistItem created", funcName, nodeName)
@@ -108,7 +107,7 @@ func (clh ChecklistItemHandler) Update(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		logger.Error(errorMessage + err.Error())
 		logger.Info(failBorder)
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.BadRequestResponse))
+		apperrors.ReturnError(apperrors.BadRequestResponse, w, r)
 		return
 	}
 	logger.Debug("request struct decoded", funcName, nodeName)
@@ -117,7 +116,7 @@ func (clh ChecklistItemHandler) Update(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		logger.Error(errorMessage + err.Error())
 		logger.Info(failBorder)
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.ErrorMap[err]))
+		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
 		return
 	}
 	logger.Debug("ChecklistItem updated", funcName, nodeName)
@@ -168,7 +167,7 @@ func (clh ChecklistItemHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		logger.Error(errorMessage + err.Error())
 		logger.Info(failBorder)
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.BadRequestResponse))
+		apperrors.ReturnError(apperrors.BadRequestResponse, w, r)
 		return
 	}
 	logger.Debug("request struct decoded", funcName, nodeName)
@@ -180,7 +179,7 @@ func (clh ChecklistItemHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		logger.Error(errorMessage + err.Error())
 		logger.Info(failBorder)
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.ErrorMap[err]))
+		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
 		return
 	}
 	logger.Debug("ChecklistItem deleted", funcName, nodeName)

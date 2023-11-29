@@ -291,6 +291,20 @@ type RemoveBoardUserInfo struct {
 	BoardID     uint64 `json:"board_id"`
 }
 
+// AddTaskUserInfo
+// DTO для добавления пользователя в карточку
+type AddTaskUserInfo struct {
+	UserID uint64 `json:"user_id"`
+	TaskID uint64 `json:"task_id"`
+}
+
+// RemoveTaskUserInfo
+// DTO для удаления пользователя из карточки
+type RemoveTaskUserInfo struct {
+	UserID uint64 `json:"user_id"`
+	TaskID uint64 `json:"task_id"`
+}
+
 // NewBoardInfo
 // DTO для новой доски
 type NewBoardInfo struct {

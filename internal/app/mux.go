@@ -77,6 +77,10 @@ func GetChiMux(manager handlers.Handlers, config config.Config, logger logging.I
 			r.Post("/", manager.TaskHandler.Read)
 			r.Post("/create/", manager.TaskHandler.Create)
 			r.Post("/edit/", manager.TaskHandler.Update)
+			r.Route("/user", func(r chi.Router) {
+				r.Post("/add/", manager.TaskHandler.AddUser)
+				r.Post("/remove/", manager.TaskHandler.RemoveUser)
+			})
 			r.Delete("/delete/", manager.TaskHandler.Delete)
 		})
 		r.Route("/checklist", func(r chi.Router) {

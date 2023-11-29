@@ -26,4 +26,12 @@ type ITaskService interface {
 	// удаляет задание
 	// или возвращает ошибки ...
 	Delete(context.Context, dto.TaskID) error
+	// AddUser
+	// добавляет пользователя в карточку
+	// или возвращает ошибки ...
+	AddUser(context.Context, dto.AddTaskUserInfo) error
+	// RemoveUser
+	// удаляет пользователя из карточки
+	// или возвращает ошибки ...
+	RemoveUser(context.Context, dto.RemoveTaskUserInfo) error
 }

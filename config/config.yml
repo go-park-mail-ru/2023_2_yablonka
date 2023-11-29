@@ -1,11 +1,14 @@
 # config.yml
 
 server:
+  host: '213.219.215.40'
   backend_port: 8080
   frontend_port: 8081
   swagger_port: 8082
+  # !! MUST match the container_name of the microservice container in compose.yml
+  # Client will fail to connect otherwise
+  microservice_host: 'microservices'
   microservice_port: 8083
-  host: '213.219.215.40'
 
 cors:
   allowed_methods:

@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"context"
 	"encoding/json"
 	"net/http"
 	"server/internal/apperrors"
@@ -169,14 +168,18 @@ func (wh WorkspaceHandler) UpdateData(w http.ResponseWriter, r *http.Request) {
 	var workspaceInfo dto.UpdatedWorkspaceInfo
 	err := json.NewDecoder(r.Body).Decode(&workspaceInfo)
 	if err != nil {
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.BadRequestResponse))
+		logger.Error(errorMessage + err.Error())
+		logger.Info(failBorder)
+		apperrors.ReturnError(apperrors.BadRequestResponse, w, r)
 		return
 	}
 	logger.Debug("JSON parsed", funcName, nodeName)
 
 	err = wh.ws.UpdateData(rCtx, workspaceInfo)
 	if err != nil {
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.ErrorMap[err]))
+		logger.Error(errorMessage + err.Error())
+		logger.Info(failBorder)
+		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
 		return
 	}
 	logger.Debug("workspace data updated", funcName, nodeName)
