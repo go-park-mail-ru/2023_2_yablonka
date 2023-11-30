@@ -27,6 +27,18 @@ func TestPostgresAuthStorage_CreateSession(t *testing.T) {
 					ExpiryDate: time.Now(),
 				},
 			},
+			wantErr: false,
+		},
+		{
+			name: "Bad query",
+			args: args{
+				&entities.Session{
+					SessionID:  ".",
+					UserID:     1,
+					ExpiryDate: time.Now(),
+				},
+			},
+			wantErr: true,
 		},
 	}
 	for _, tt := range tests {
@@ -40,7 +52,6 @@ func TestPostgresAuthStorage_CreateSession(t *testing.T) {
 
 			ctx := context.Background()
 
-			mock.ExpectBegin()
 			mock.ExpectExec("INSERT INTO public.session").
 				WithArgs(
 					tt.args.session.UserID,
@@ -48,7 +59,6 @@ func TestPostgresAuthStorage_CreateSession(t *testing.T) {
 					tt.args.session.SessionID,
 				).
 				WillReturnResult(sqlmock.NewResult(1, 1))
-			mock.ExpectCommit()
 
 			s := NewAuthStorage(db)
 
@@ -56,7 +66,6 @@ func TestPostgresAuthStorage_CreateSession(t *testing.T) {
 				t.Errorf("CreateSession() error = %v, wantErr %v", err, tt.wantErr)
 			}
 
-			// we make sure that all expectations were met
 			if err := mock.ExpectationsWereMet(); err != nil {
 				t.Errorf("there were unfulfilled expectations: %s", err)
 			}
