@@ -2,6 +2,7 @@ package microservice
 
 import (
 	"context"
+	"server/internal/apperrors"
 	"server/internal/pkg/dto"
 	"server/internal/pkg/entities"
 	"server/internal/storage"
@@ -41,8 +42,8 @@ func (us UserService) RegisterUser(ctx context.Context, info dto.AuthInfo) (*ent
 		Email:    info.Email,
 		Password: info.Password,
 	})
-	if err != nil {
-		return &entities.User{}, err
+	if handledErr := apperrors.HandleGRPCError(err); handledErr != nil {
+		return &entities.User{}, handledErr
 	}
 	logger.Debug("Info received", funcName, nodeName)
 
@@ -69,8 +70,8 @@ func (us UserService) CheckPassword(ctx context.Context, info dto.AuthInfo) (*en
 		Email:    info.Email,
 		Password: info.Password,
 	})
-	if err != nil {
-		return &entities.User{}, err
+	if handledErr := apperrors.HandleGRPCError(err); handledErr != nil {
+		return &entities.User{}, handledErr
 	}
 	logger.Debug("Info received", funcName, nodeName)
 
@@ -94,8 +95,8 @@ func (us UserService) GetWithID(ctx context.Context, id dto.UserID) (*entities.U
 
 	logger.Debug("Contacting GRPC server", funcName, nodeName)
 	user, err := us.client.GetWithID(ctx, &microservice.UserID{Value: id.Value})
-	if err != nil {
-		return &entities.User{}, err
+	if handledErr := apperrors.HandleGRPCError(err); handledErr != nil {
+		return &entities.User{}, handledErr
 	}
 	logger.Debug("Info received", funcName, nodeName)
 
@@ -125,7 +126,7 @@ func (us UserService) UpdatePassword(ctx context.Context, info dto.PasswordChang
 	})
 	logger.Debug("Response received", funcName, nodeName)
 
-	return err
+	return apperrors.HandleGRPCError(err)
 }
 
 // UpdateProfile
@@ -144,7 +145,7 @@ func (us UserService) UpdateProfile(ctx context.Context, info dto.UserProfileInf
 	})
 	logger.Debug("Response received", funcName, nodeName)
 
-	return err
+	return apperrors.HandleGRPCError(err)
 }
 
 // UpdateProfile
@@ -161,8 +162,8 @@ func (us UserService) UpdateAvatar(ctx context.Context, info dto.AvatarChangeInf
 		BaseURL: ctx.Value(dto.BaseURLKey).(string),
 	})
 	logger.Debug("Response received", funcName, nodeName)
-	if err != nil {
-		return &dto.UrlObj{}, err
+	if handledErr := apperrors.HandleGRPCError(err); handledErr != nil {
+		return &dto.UrlObj{}, handledErr
 	}
 
 	return &dto.UrlObj{Value: urlObj.Value}, nil
@@ -179,5 +180,5 @@ func (us UserService) DeleteUser(ctx context.Context, id dto.UserID) error {
 	_, err := us.client.DeleteUser(ctx, &microservice.UserID{Value: id.Value})
 	logger.Debug("Response received", funcName, nodeName)
 
-	return err
+	return apperrors.HandleGRPCError(err)
 }

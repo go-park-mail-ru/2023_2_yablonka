@@ -46,7 +46,7 @@ func (a *AuthService) AuthUser(ctx context.Context, id *UserID) (*SessionToken, 
 
 	sessionID, err := generateString(a.sessionIDLength)
 	if err != nil {
-		return &SessionToken{}, apperrors.ErrTokenNotGenerated
+		return &SessionToken{}, apperrors.MakeGRPCError(apperrors.ErrTokenNotGenerated)
 	}
 	a.logger.Debug("Session ID generated", funcName, nodeName)
 
@@ -58,7 +58,7 @@ func (a *AuthService) AuthUser(ctx context.Context, id *UserID) (*SessionToken, 
 
 	err = a.authStorage.CreateSession(ctx, session)
 	if err != nil {
-		return &SessionToken{}, err
+		return &SessionToken{}, apperrors.MakeGRPCError(err)
 	}
 	a.logger.Debug("Session created", funcName, nodeName)
 
@@ -80,7 +80,7 @@ func (a *AuthService) VerifyAuth(ctx context.Context, token *SessionToken) (*Use
 
 	sessionObj, err := a.authStorage.GetSession(ctx, convertedSession)
 	if err != nil {
-		return &UserID{}, err
+		return &UserID{}, apperrors.MakeGRPCError(err)
 	}
 	a.logger.Debug("Found session", funcName, nodeName)
 
@@ -89,7 +89,7 @@ func (a *AuthService) VerifyAuth(ctx context.Context, token *SessionToken) (*Use
 		for _, err = a.LogOut(ctx, token); err != nil; {
 			_, err = a.LogOut(ctx, token)
 		}
-		return &UserID{}, apperrors.ErrSessionExpired
+		return &UserID{}, apperrors.MakeGRPCError(apperrors.ErrSessionExpired)
 	}
 	return &UserID{Value: sessionObj.UserID}, nil
 }
@@ -102,7 +102,7 @@ func (a *AuthService) LogOut(ctx context.Context, token *SessionToken) (*emptypb
 		ID:             token.ID,
 		ExpirationDate: token.ExpirationDate.AsTime(),
 	}
-	return &emptypb.Empty{}, a.authStorage.DeleteSession(ctx, convertedSession)
+	return &emptypb.Empty{}, apperrors.MakeGRPCError(a.authStorage.DeleteSession(ctx, convertedSession))
 }
 
 // GetLifetime

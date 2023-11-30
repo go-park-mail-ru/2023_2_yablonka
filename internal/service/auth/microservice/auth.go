@@ -2,6 +2,7 @@ package microservice
 
 import (
 	"context"
+	"server/internal/apperrors"
 	config "server/internal/config"
 	"server/internal/pkg/dto"
 	"server/internal/storage"
@@ -46,7 +47,7 @@ func (a *AuthService) AuthUser(ctx context.Context, id dto.UserID) (dto.SessionT
 	logger.Debug("Contacting GRPC server", funcName, nodeName)
 	sessionpb, err := a.client.AuthUser(ctx, &microservice.UserID{Value: id.Value})
 	if err != nil {
-		return dto.SessionToken{}, err
+		return dto.SessionToken{}, apperrors.HandleGRPCError(err)
 	}
 	logger.Debug("Info received", funcName, nodeName)
 
@@ -69,7 +70,7 @@ func (a *AuthService) VerifyAuth(ctx context.Context, token dto.SessionToken) (d
 		ExpirationDate: timestamppb.New(token.ExpirationDate),
 	})
 	if err != nil {
-		return dto.UserID{}, err
+		return dto.UserID{}, apperrors.HandleGRPCError(err)
 	}
 	logger.Debug("Info received", funcName, nodeName)
 
@@ -90,7 +91,7 @@ func (a *AuthService) LogOut(ctx context.Context, token dto.SessionToken) error 
 	})
 	logger.Debug("Info received", funcName, nodeName)
 
-	return err
+	return apperrors.HandleGRPCError(err)
 }
 
 // GetLifetime

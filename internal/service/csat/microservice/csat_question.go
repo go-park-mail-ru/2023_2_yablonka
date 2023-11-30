@@ -2,6 +2,7 @@ package microservice
 
 import (
 	"context"
+	"server/internal/apperrors"
 	"server/internal/pkg/dto"
 	"server/internal/storage"
 	microservice "server/microservices/csat/csat_question"
@@ -34,7 +35,7 @@ func (cs CSATQuestionService) CheckRating(ctx context.Context, info dto.NewCSATA
 		Rating:     info.Rating,
 	})
 
-	return err
+	return apperrors.HandleGRPCError(err)
 }
 
 // GetAll
@@ -42,6 +43,9 @@ func (cs CSATQuestionService) CheckRating(ctx context.Context, info dto.NewCSATA
 // или возвращает ошибки ...
 func (cs CSATQuestionService) GetAll(ctx context.Context) (*[]dto.CSATQuestionFull, error) {
 	questions, err := cs.client.GetAll(ctx, &emptypb.Empty{})
+	if handledErr := apperrors.HandleGRPCError(err); handledErr != nil {
+		return nil, handledErr
+	}
 	convertedQuestions := []dto.CSATQuestionFull{}
 	for _, question := range questions.Questions {
 		convertedQuestions = append(convertedQuestions, dto.CSATQuestionFull{
@@ -50,7 +54,7 @@ func (cs CSATQuestionService) GetAll(ctx context.Context) (*[]dto.CSATQuestionFu
 			Type:    question.Type,
 		})
 	}
-	return &convertedQuestions, err
+	return &convertedQuestions, nil
 }
 
 // Create
@@ -61,8 +65,8 @@ func (cs CSATQuestionService) Create(ctx context.Context, info dto.NewCSATQuesti
 		Content: info.Content,
 		Type:    info.Type,
 	})
-	if err != nil {
-		return nil, err
+	if handledErr := apperrors.HandleGRPCError(err); handledErr != nil {
+		return nil, handledErr
 	}
 
 	convertedQuestion := dto.CSATQuestionFull{
@@ -79,8 +83,8 @@ func (cs CSATQuestionService) Create(ctx context.Context, info dto.NewCSATQuesti
 // или возвращает ошибки ...
 func (cs CSATQuestionService) GetStats(ctx context.Context) (*[]dto.QuestionWithStats, error) {
 	allQuestions, err := cs.client.GetStats(ctx, &emptypb.Empty{})
-	if err != nil {
-		return nil, err
+	if handledErr := apperrors.HandleGRPCError(err); handledErr != nil {
+		return nil, handledErr
 	}
 
 	convertedQuestions := []dto.QuestionWithStats{}
@@ -100,7 +104,7 @@ func (cs CSATQuestionService) GetStats(ctx context.Context) (*[]dto.QuestionWith
 			Stats:   stats,
 		})
 	}
-	return &convertedQuestions, err
+	return &convertedQuestions, nil
 }
 
 // Update
@@ -112,7 +116,7 @@ func (cs CSATQuestionService) Update(ctx context.Context, info dto.UpdatedCSATQu
 		Content: info.Content,
 		Type:    info.Type,
 	})
-	return err
+	return apperrors.HandleGRPCError(err)
 }
 
 // Delete
@@ -122,5 +126,5 @@ func (cs CSATQuestionService) Delete(ctx context.Context, id dto.CSATQuestionID)
 	_, err := cs.client.Delete(ctx, &microservice.CSATQuestionID{
 		Value: id.Value,
 	})
-	return err
+	return apperrors.HandleGRPCError(err)
 }

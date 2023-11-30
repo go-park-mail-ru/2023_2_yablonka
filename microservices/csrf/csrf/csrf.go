@@ -54,7 +54,7 @@ func (cs *CSRFService) SetupCSRF(ctx context.Context, id *UserID) (*CSRFData, er
 
 	token, err := generateToken(cs.sessionIDLength)
 	if err != nil {
-		return &CSRFData{}, apperrors.ErrTokenNotGenerated
+		return &CSRFData{}, apperrors.MakeGRPCError(apperrors.ErrTokenNotGenerated)
 	}
 	cs.logger.Debug("CSRF token generated", funcName, nodeName)
 
@@ -66,7 +66,7 @@ func (cs *CSRFService) SetupCSRF(ctx context.Context, id *UserID) (*CSRFData, er
 
 	err = cs.csrfStorage.Create(ctx, csrf)
 	if err != nil {
-		return &CSRFData{}, err
+		return &CSRFData{}, apperrors.MakeGRPCError(err)
 	}
 	cs.logger.Debug("CSRF session created", funcName, nodeName)
 
@@ -83,7 +83,7 @@ func (cs *CSRFService) VerifyCSRF(ctx context.Context, token *CSRFToken) (*empty
 	funcName := "CSRFService.VerifyCSRF"
 	CSRFObj, err := cs.csrfStorage.Get(ctx, dto.CSRFToken{Value: token.Value})
 	if err != nil {
-		return &emptypb.Empty{}, err
+		return &emptypb.Empty{}, apperrors.MakeGRPCError(err)
 	}
 	cs.logger.Debug("CSRF token found", funcName, nodeName)
 
@@ -92,7 +92,7 @@ func (cs *CSRFService) VerifyCSRF(ctx context.Context, token *CSRFToken) (*empty
 		for _, err = cs.DeleteCSRF(ctx, token); err != nil; {
 			_, err = cs.DeleteCSRF(ctx, token)
 		}
-		return &emptypb.Empty{}, apperrors.ErrSessionExpired
+		return &emptypb.Empty{}, apperrors.MakeGRPCError(apperrors.ErrSessionExpired)
 	}
 	cs.logger.Debug("CSRF token is still good", funcName, nodeName)
 
@@ -103,7 +103,7 @@ func (cs *CSRFService) VerifyCSRF(ctx context.Context, token *CSRFToken) (*empty
 // удаляет CSRF
 // или возвращает ошибку apperrors.ErrSessionNotFound (401)
 func (cs *CSRFService) DeleteCSRF(ctx context.Context, token *CSRFToken) (*emptypb.Empty, error) {
-	return &emptypb.Empty{}, cs.csrfStorage.Delete(ctx, dto.CSRFToken{Value: token.Value})
+	return &emptypb.Empty{}, apperrors.MakeGRPCError(cs.csrfStorage.Delete(ctx, dto.CSRFToken{Value: token.Value}))
 }
 
 // generateString

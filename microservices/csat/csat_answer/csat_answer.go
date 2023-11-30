@@ -2,6 +2,7 @@ package csat_microservice
 
 import (
 	context "context"
+	"server/internal/apperrors"
 	"server/internal/pkg/dto"
 	"server/internal/storage"
 
@@ -30,5 +31,5 @@ func (cs CSATAnswerService) Create(ctx context.Context, info *NewCSATAnswer) (*e
 		QuestionID: info.QuestionID,
 		Rating:     info.Rating,
 	}
-	return &emptypb.Empty{}, cs.storage.Create(ctx, convertedInfo)
+	return &emptypb.Empty{}, apperrors.MakeGRPCError(cs.storage.Create(ctx, convertedInfo))
 }
