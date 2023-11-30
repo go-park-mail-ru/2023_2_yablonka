@@ -23,6 +23,9 @@ cors:
     - 213.219.215.40:8080
     - 213.219.215.40:8081
     - 213.219.215.40:8082
+    - http://microservices:8080
+    - http://microservices:8081
+    - http://microservices:8082
     - http://localhost:8080
     - http://localhost:8081
     - http://localhost:8082
