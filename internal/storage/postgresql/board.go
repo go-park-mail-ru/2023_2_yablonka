@@ -486,29 +486,23 @@ func (s *PostgreSQLBoardStorage) RemoveUser(ctx context.Context, info dto.Remove
 	funcName := "PostgreSQLBoardStorage.RemoveUser"
 	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
 
-	tx, err := s.db.BeginTx(ctx, &sql.TxOptions{})
-	if err != nil {
-		return apperrors.ErrCouldNotStartTransaction
-	}
-
-	query1, args, err := sq.
+	query, args, err := sq.
 		Delete("public.board_user").
-		Where(sq.Eq{"id_board": info.BoardID, "id_user": info.UserID}).
+		Where(sq.And{
+			sq.Eq{"id_user": info.UserID},
+			sq.Eq{"id_board": info.BoardID},
+		}).
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
 	if err != nil {
 		return apperrors.ErrCouldNotBuildQuery
 	}
-	logger.Debug("Built query\n\t"+query1+"\nwith args\n\t"+fmt.Sprintf("%+v", args), funcName, nodeName)
+	logger.Debug("Built query\n\t"+query+"\nwith args\n\t"+fmt.Sprintf("%+v", args), funcName, nodeName)
 
-	_, err = tx.Exec(query1, args...)
+	_, err = s.db.Exec(query, args...)
 	if err != nil {
-		logger.Debug("Removing user from board failed with error "+err.Error(), funcName, nodeName)
-		err = tx.Rollback()
-		for err != nil {
-			err = tx.Rollback()
-		}
-		return apperrors.ErrCouldNotRemoveBoardUser
+		logger.Debug("Delete failed with error "+err.Error(), funcName, nodeName)
+		return apperrors.ErrCouldNotRemoveTaskUser
 	}
 	logger.Debug("query executed", funcName, nodeName)
 

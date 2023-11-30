@@ -277,7 +277,7 @@ func (s PostgresTaskStorage) RemoveUser(ctx context.Context, info dto.RemoveTask
 		Delete("task_user").
 		Where(sq.And{
 			sq.Eq{"id_user": info.UserID},
-			sq.Eq{"id_task": info.UserID},
+			sq.Eq{"id_task": info.TaskID},
 		}).
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
