@@ -186,18 +186,17 @@ func (s *PostgreSQLBoardStorage) GetLists(ctx context.Context, id dto.BoardID) (
 }
 
 // CheckAccess
-// находит пользователя в доске
+// находит пользователя в задании
 // или возвращает ошибки ...
 func (s *PostgreSQLBoardStorage) CheckAccess(ctx context.Context, info dto.CheckBoardAccessInfo) (bool, error) {
 	funcName := "PostgreSQLBoardStorage.CheckAccess"
 	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
 
-	listSql, args, err := sq.Select("count(public.board_user.*)").
+	listSql, args, err := sq.Select("count(*)").
 		From("public.board_user").
-		LeftJoin("public.user ON public.user.id = public.board_user.id_user").
 		Where(sq.Eq{
-			"public.board_user.id_board": info.BoardID,
-			"public.board_user.id_user":  info.UserID,
+			"id_board": info.BoardID,
+			"id_user":  info.UserID,
 		}).
 		PlaceholderFormat(sq.Dollar).
 		ToSql()

@@ -245,8 +245,8 @@ func (bs BoardService) AddUser(ctx context.Context, request dto.AddBoardUserRequ
 	}
 	logger.Debug("got user", funcName, nodeName)
 
-	if !userAccess {
-		return apperrors.ErrNoBoardAccess
+	if userAccess {
+		return apperrors.ErrUserAlreadyInBoard
 	}
 	logger.Debug("user not in board", funcName, nodeName)
 
@@ -292,13 +292,4 @@ func (bs BoardService) RemoveUser(ctx context.Context, info dto.RemoveBoardUserI
 	logger.Debug("user in board", funcName, nodeName)
 
 	return bs.boardStorage.RemoveUser(ctx, info)
-}
-
-func hasAccess(userID uint64, boardUsers *[]dto.UserPublicInfo) bool {
-	for _, user := range *boardUsers {
-		if user.ID == userID {
-			return true
-		}
-	}
-	return false
 }
