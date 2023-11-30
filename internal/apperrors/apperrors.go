@@ -273,6 +273,7 @@ var ErrorMap = map[error]ErrorResponse{
 	ErrChecklistItemNotUpdated:  InternalServerErrorResponse,
 	ErrChecklistItemNotDeleted:  InternalServerErrorResponse,
 	ErrUserAlreadyInBoard:       GenericUnauthorizedResponse,
+	ErrUserAlreadyInTask:        GenericUnauthorizedResponse,
 }
 
 func ErrorJSON(err ErrorResponse) []byte {
