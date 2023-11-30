@@ -18,6 +18,10 @@ type IBoardStorage interface {
 	// GetById
 	// находит доску и связанные с ней списки и задания по id
 	GetById(context.Context, dto.BoardID) (*dto.SingleBoardInfo, error)
+	// CheckAccess
+	// находит пользователя в доске
+	// или возвращает ошибки ...
+	CheckAccess(context.Context, dto.CheckBoardAccessInfo) (bool, error)
 	// GetLists
 	// находит списки в доске
 	// или возвращает ошибки ...

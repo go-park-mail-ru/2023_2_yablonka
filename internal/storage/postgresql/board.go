@@ -185,6 +185,38 @@ func (s *PostgreSQLBoardStorage) GetLists(ctx context.Context, id dto.BoardID) (
 	return &lists, nil
 }
 
+// CheckAccess
+// находит пользователя в доске
+// или возвращает ошибки ...
+func (s *PostgreSQLBoardStorage) CheckAccess(ctx context.Context, info dto.CheckBoardAccessInfo) (bool, error) {
+	funcName := "PostgreSQLBoardStorage.CheckAccess"
+	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
+
+	listSql, args, err := sq.Select("count(*)").
+		From("public.board_user").
+		Where(sq.Eq{
+			"public.board_user.id_board": info.BoardID,
+			"public.board_user.id_user":  info.UserID,
+		}).
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
+	if err != nil {
+		return false, apperrors.ErrCouldNotBuildQuery
+	}
+	logger.Debug("Built query\n\t"+listSql+"\nwith args\n\t"+fmt.Sprintf("%+v", args), funcName, nodeName)
+
+	row := s.db.QueryRow(listSql, args...)
+	logger.Debug("Got user row", funcName, nodeName)
+
+	var count uint64
+	if row.Scan(&count) != nil {
+		return false, apperrors.ErrCouldNotGetUser
+	}
+	logger.Debug("checked database", funcName, nodeName)
+
+	return count > 0, nil
+}
+
 func (s *PostgreSQLBoardStorage) Create(ctx context.Context, info dto.NewBoardInfo) (*entities.Board, error) {
 	user, ok := ctx.Value(dto.UserObjKey).(*entities.User)
 	if !ok {

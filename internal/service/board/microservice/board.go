@@ -217,12 +217,17 @@ func (bs BoardService) AddUser(ctx context.Context, request dto.AddBoardUserRequ
 	funcName := "BoardService.AddUser"
 	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
 
-	requestingUserID := ctx.Value(dto.UserObjKey).(*entities.User).ID
-
-	if !hasAccess(bs.boardStorage, ctx, requestingUserID, request.BoardID) {
+	boardUsers, err := bs.boardStorage.GetUsers(ctx, dto.BoardID{Value: request.BoardID})
+	if err != nil {
 		return apperrors.ErrNoBoardAccess
 	}
-	logger.Debug("user has access to board", funcName, nodeName)
+	logger.Debug("Got board users", funcName, nodeName)
+
+	requestingUserID := ctx.Value(dto.UserObjKey).(*entities.User).ID
+	if !hasAccess(requestingUserID, boardUsers) {
+		return apperrors.ErrNoBoardAccess
+	}
+	logger.Debug("Requesting user has access to board", funcName, nodeName)
 
 	targetUser, err := bs.userStorage.GetWithLogin(ctx, dto.UserLogin{Value: request.UserEmail})
 	if err != nil {
@@ -230,7 +235,7 @@ func (bs BoardService) AddUser(ctx context.Context, request dto.AddBoardUserRequ
 	}
 	logger.Debug("user found", funcName, nodeName)
 
-	if hasAccess(bs.boardStorage, ctx, targetUser.ID, request.BoardID) {
+	if hasAccess(targetUser.ID, boardUsers) {
 		return apperrors.ErrUserAlreadyInBoard
 	}
 	logger.Debug("user not in board", funcName, nodeName)
@@ -249,8 +254,14 @@ func (bs BoardService) RemoveUser(ctx context.Context, info dto.RemoveBoardUserI
 	funcName := "BoardService.RemoveUser"
 	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
 
+	boardUsers, err := bs.boardStorage.GetUsers(ctx, dto.BoardID{Value: info.BoardID})
+	if err != nil {
+		return apperrors.ErrNoBoardAccess
+	}
+	logger.Debug("Got board users", funcName, nodeName)
+
 	requestingUserID := ctx.Value(dto.UserObjKey).(*entities.User).ID
-	if !hasAccess(bs.boardStorage, ctx, requestingUserID, info.BoardID) {
+	if !hasAccess(requestingUserID, boardUsers) {
 		return apperrors.ErrNoBoardAccess
 	}
 	logger.Debug("user has access to board", funcName, nodeName)
@@ -261,7 +272,7 @@ func (bs BoardService) RemoveUser(ctx context.Context, info dto.RemoveBoardUserI
 	}
 	logger.Debug("user found", funcName, nodeName)
 
-	if !hasAccess(bs.boardStorage, ctx, targetUser.ID, info.BoardID) {
+	if !hasAccess(targetUser.ID, boardUsers) {
 		return apperrors.ErrUserAlreadyInBoard
 	}
 	logger.Debug("user in board", funcName, nodeName)
@@ -269,19 +280,11 @@ func (bs BoardService) RemoveUser(ctx context.Context, info dto.RemoveBoardUserI
 	return bs.boardStorage.RemoveUser(ctx, info)
 }
 
-func hasAccess(storage storage.IBoardStorage, ctx context.Context, userID uint64, boardID uint64) bool {
-	hasAccess := false
-
-	boardUsers, err := storage.GetUsers(ctx, dto.BoardID{Value: boardID})
-	if err != nil {
-		return hasAccess
-	}
-
+func hasAccess(userID uint64, boardUsers *[]dto.UserPublicInfo) bool {
 	for _, user := range *boardUsers {
 		if user.ID == userID {
-			hasAccess = true
+			return true
 		}
 	}
-
-	return hasAccess
+	return false
 }
