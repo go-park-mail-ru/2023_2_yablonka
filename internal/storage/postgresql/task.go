@@ -178,19 +178,23 @@ func (s *PostgresTaskStorage) ReadMany(ctx context.Context, id dto.TaskIDs) (*[]
 // или возвращает ошибки ...
 func (s PostgresTaskStorage) Update(ctx context.Context, info dto.UpdatedTaskInfo) error {
 	query := sq.Update("public.task")
-	if info.Start != nil {
-		query = query.Set("task_start", &info.Start)
-	}
-	if info.End != nil {
-		query = query.Set("task_end", &info.End)
-	}
-	log.Println(info.Start)
-	log.Println(info.End)
+	/*
+		if info.Start != nil {
+			query = query.Set("task_start", &info.Start)
+		}
+		if info.End != nil {
+			query = query.Set("task_end", &info.End)
+		}
+		log.Println(info.Start)
+		log.Println(info.End)
+	*/
 
 	finalQuery, args, err := query.
 		Set("name", info.Name).
 		Set("description", info.Description).
 		Set("list_position", info.ListPosition).
+		Set("task_start", &info.Start).
+		Set("task_end", &info.End).
 		Where(sq.Eq{"id": info.ID}).
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
