@@ -4,3 +4,5 @@ coverage*
 *.out
 /.idea
 *.exe
+*.ps1
+prometheus.yml

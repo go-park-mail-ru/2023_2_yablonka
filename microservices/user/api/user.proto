@@ -1,0 +1,58 @@
+syntax = "proto3";
+package user;
+
+import "google/protobuf/empty.proto";
+
+option go_package = "./;user_microservice";
+
+message User {
+	uint64 ID = 1;
+	string Email = 2;
+	string PasswordHash = 3;
+	string Name = 4;
+	string Surname = 5;
+	string AvatarURL = 6;
+	string Description = 7;
+}
+
+message AuthInfo {
+    string Email = 1;
+    string Password = 2;
+}
+
+message UserID {
+    uint64 Value = 1;
+}
+
+message PasswordChangeInfo {
+    uint64 UserID = 1;
+    string OldPassword = 2;
+    string NewPassword = 3;
+}
+
+message UserProfileInfo {
+	uint64 UserID = 1;
+	string Name = 2;
+	string Surname = 3;
+	string Description = 4;
+}
+
+message AvatarChangeInfo {
+	uint64 UserID = 1;
+	bytes Avatar = 2;
+	string BaseURL = 3;
+}
+
+message UrlObj {
+	string Value = 1;
+}
+
+service UserService {
+	rpc RegisterUser (AuthInfo) returns (User) {}
+	rpc CheckPassword (AuthInfo) returns (User) {}
+	rpc GetWithID (UserID) returns (User) {}
+	rpc UpdatePassword(PasswordChangeInfo) returns (google.protobuf.Empty) {}
+	rpc UpdateProfile(UserProfileInfo) returns (google.protobuf.Empty) {}
+	rpc UpdateAvatar(AvatarChangeInfo) returns (UrlObj) {}
+	rpc DeleteUser(UserID) returns (google.protobuf.Empty) {}
+}
