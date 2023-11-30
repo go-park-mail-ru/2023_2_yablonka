@@ -192,8 +192,9 @@ func (s *PostgreSQLBoardStorage) CheckAccess(ctx context.Context, info dto.Check
 	funcName := "PostgreSQLBoardStorage.CheckAccess"
 	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
 
-	listSql, args, err := sq.Select("count(*)").
+	listSql, args, err := sq.Select("count(public.board_user.*)").
 		From("public.board_user").
+		LeftJoin("public.user ON public.user.id = public.board_user.id_user").
 		Where(sq.Eq{
 			"public.board_user.id_board": info.BoardID,
 			"public.board_user.id_user":  info.UserID,

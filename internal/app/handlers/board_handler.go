@@ -456,7 +456,7 @@ func (bh BoardHandler) RemoveUser(w http.ResponseWriter, r *http.Request) {
 	}
 	logger.Debug("JSON Decoded", funcName, nodeName)
 
-	_, ok := rCtx.Value(dto.UserObjKey).(*entities.User)
+	user, ok := rCtx.Value(dto.UserObjKey).(*entities.User)
 	if !ok {
 		logger.Error(errorMessage + err.Error())
 		logger.Info(failBorder)
@@ -464,6 +464,13 @@ func (bh BoardHandler) RemoveUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	logger.Debug("User object acquired from context", funcName, nodeName)
+
+	if user.ID == info.UserID {
+		logger.Error(errorMessage + "user cannot remove himself from the board")
+		logger.Info(failBorder)
+		apperrors.ReturnError(apperrors.GenericUnauthorizedResponse, w, r)
+		return
+	}
 
 	err = bh.bs.RemoveUser(rCtx, info)
 	if err != nil {
