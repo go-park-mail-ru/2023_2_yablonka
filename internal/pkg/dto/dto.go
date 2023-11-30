@@ -358,6 +358,14 @@ type FullBoardResult struct {
 	ChecklistItems []ChecklistItemInfo `json:"checklist_items"`
 }
 
+type Image struct {
+	Data []byte `json:"data"`
+}
+
+type ImageUrl struct {
+	Value string `json:"url"`
+}
+
 // NewBoardRequest
 // DTO для запроса новой доски
 type NewBoardRequest struct {

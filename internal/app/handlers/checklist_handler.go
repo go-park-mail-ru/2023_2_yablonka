@@ -34,11 +34,11 @@ func (clh ChecklistHandler) Create(w http.ResponseWriter, r *http.Request) {
 	funcName := "ChecklistHandler.Create"
 	nodeName := "handler"
 	errorMessage := "Creating Checklist failed with error: "
-	failBorder := "----------------- Creating Checklist FAIL -----------------"
+	failBorder := "---------------------------------- Creating Checklist FAIL ----------------------------------"
 
 	logger := rCtx.Value(dto.LoggerKey).(logger.ILogger)
 
-	logger.Info("----------------- Creating Checklist -----------------")
+	logger.Info("---------------------------------- Creating Checklist ----------------------------------")
 
 	var newChecklistInfo dto.NewChecklistInfo
 	err := json.NewDecoder(r.Body).Decode(&newChecklistInfo)
@@ -73,7 +73,7 @@ func (clh ChecklistHandler) Create(w http.ResponseWriter, r *http.Request) {
 	}
 	logger.Debug("response written", funcName, nodeName)
 
-	logger.Info("----------------- Creating Checklist FAIL -----------------")
+	logger.Info("---------------------------------- Creating Checklist FAIL ----------------------------------")
 }
 
 // @Summary Обновить чеклист
@@ -96,11 +96,11 @@ func (clh ChecklistHandler) Update(w http.ResponseWriter, r *http.Request) {
 	funcName := "ChecklistHandler.Update"
 	nodeName := "handler"
 	errorMessage := "Updating failed with error: "
-	failBorder := "----------------- Updating Checklist FAIL -----------------"
+	failBorder := "---------------------------------- Updating Checklist FAIL ----------------------------------"
 
 	logger := rCtx.Value(dto.LoggerKey).(logger.ILogger)
 
-	logger.Info("----------------- Updating Checklist -----------------")
+	logger.Info("---------------------------------- Updating Checklist ----------------------------------")
 
 	var ChecklistInfo dto.UpdatedChecklistInfo
 	err := json.NewDecoder(r.Body).Decode(&ChecklistInfo)
@@ -133,7 +133,7 @@ func (clh ChecklistHandler) Update(w http.ResponseWriter, r *http.Request) {
 	}
 	logger.Debug("response written", funcName, nodeName)
 
-	logger.Info("----------------- Updating Checklist SUCCESS -----------------")
+	logger.Info("---------------------------------- Updating Checklist SUCCESS ----------------------------------")
 }
 
 // @Summary Удалить чеклист
@@ -156,11 +156,11 @@ func (clh ChecklistHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	funcName := "ChecklistHandler.Delete"
 	nodeName := "handler"
 	errorMessage := "Deleting failed with error: "
-	failBorder := "----------------- Deleting Checklist FAIL -----------------"
+	failBorder := "---------------------------------- Deleting Checklist FAIL ----------------------------------"
 
 	logger := rCtx.Value(dto.LoggerKey).(logger.ILogger)
 
-	logger.Info("----------------- Deleting Checklist -----------------")
+	logger.Info("---------------------------------- Deleting Checklist ----------------------------------")
 
 	var checklistID dto.ChecklistID
 	err := json.NewDecoder(r.Body).Decode(&checklistID)
@@ -193,5 +193,5 @@ func (clh ChecklistHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	}
 	logger.Debug("response written", funcName, nodeName)
 
-	logger.Info("----------------- Deleting Checklist SUCCESS -----------------")
+	logger.Info("---------------------------------- Deleting Checklist SUCCESS ----------------------------------")
 }

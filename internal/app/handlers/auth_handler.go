@@ -50,11 +50,11 @@ func (ah AuthHandler) LogIn(w http.ResponseWriter, r *http.Request) {
 	funcName := "LogIn"
 	nodeName := "handler"
 	errorMessage := "Logging user in failed with error: "
-	failBorder := "----------------- User Login FAIL -----------------"
+	failBorder := "---------------------------------- User Login FAIL ----------------------------------"
 
 	logger := rCtx.Value(dto.LoggerKey).(logger.ILogger)
 
-	logger.Info("----------------- User Login -----------------")
+	logger.Info("---------------------------------- User Login ----------------------------------")
 
 	var authInfo dto.AuthInfo
 	err := json.NewDecoder(r.Body).Decode(&authInfo)
@@ -141,7 +141,7 @@ func (ah AuthHandler) LogIn(w http.ResponseWriter, r *http.Request) {
 	logger.Debug("response written", funcName, nodeName)
 
 	logger.Debug("Response written", funcName, nodeName)
-	logger.Info("----------------- User Login SUCCESS -----------------")
+	logger.Info("---------------------------------- User Login SUCCESS ----------------------------------")
 }
 
 // @Summary Зарегистрировать нового пользователя
@@ -165,11 +165,11 @@ func (ah AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 	funcName := "SignUp"
 	nodeName := "handler"
 	errorMessage := "Signing user up failed with error: "
-	failBorder := "----------------- User SignUp FAIL -----------------"
+	failBorder := "---------------------------------- User SignUp FAIL ----------------------------------"
 
 	logger := rCtx.Value(dto.LoggerKey).(logger.ILogger)
 
-	logger.Info("----------------- User Login -----------------")
+	logger.Info("---------------------------------- User Login ----------------------------------")
 
 	var signup dto.AuthInfo
 	err := json.NewDecoder(r.Body).Decode(&signup)
@@ -254,7 +254,7 @@ func (ah AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 	}
 	logger.Debug("response written", funcName, nodeName)
 
-	logger.Info("----------------- User SignUp SUCCESS -----------------")
+	logger.Info("---------------------------------- User SignUp SUCCESS ----------------------------------")
 }
 
 // @Summary Выйти из системы
@@ -275,11 +275,11 @@ func (ah AuthHandler) LogOut(w http.ResponseWriter, r *http.Request) {
 	funcName := "LogOut"
 	nodeName := "handler"
 	errorMessage := "Logging user out failed with error: "
-	failBorder := "----------------- User LogOut FAIL -----------------"
+	failBorder := "---------------------------------- User LogOut FAIL ----------------------------------"
 
 	logger := rCtx.Value(dto.LoggerKey).(logger.ILogger)
 
-	logger.Info("----------------- User Logout -----------------")
+	logger.Info("---------------------------------- User Logout ----------------------------------")
 
 	cookie, err := r.Cookie("tabula_user")
 	if err != nil {
@@ -336,7 +336,7 @@ func (ah AuthHandler) LogOut(w http.ResponseWriter, r *http.Request) {
 	logger.Debug("response written", funcName, nodeName)
 
 	logger.Debug("Response written", funcName, nodeName)
-	logger.Info("----------------- User Logout SUCCESS -----------------")
+	logger.Info("---------------------------------- User Logout SUCCESS ----------------------------------")
 }
 
 // @Summary Подтвердить вход
@@ -356,12 +356,12 @@ func (ah AuthHandler) VerifyAuthEndpoint(w http.ResponseWriter, r *http.Request)
 	funcName := "LogOut"
 	nodeName := "handler"
 	errorMessage := "Logging user out failed with error: "
-	failBorder := "----------------- User auth verification FAIL -----------------"
+	failBorder := "---------------------------------- User auth verification FAIL ----------------------------------"
 
 	rCtx := r.Context()
 	logger := rCtx.Value(dto.LoggerKey).(logger.ILogger)
 
-	logger.Info("----------------- Verifying user authorization -----------------")
+	logger.Info("---------------------------------- Verifying user authorization ----------------------------------")
 
 	w.Header().Set("X-Csrf-Token", "")
 	logger.Debug("Default X-Csrf-Token set", funcName, nodeName)
@@ -428,5 +428,5 @@ func (ah AuthHandler) VerifyAuthEndpoint(w http.ResponseWriter, r *http.Request)
 	}
 	logger.Debug("response written", funcName, nodeName)
 
-	logger.Info("----------------- User SignUp SUCCESS -----------------")
+	logger.Info("---------------------------------- User SignUp SUCCESS ----------------------------------")
 }

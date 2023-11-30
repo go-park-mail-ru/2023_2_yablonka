@@ -34,11 +34,11 @@ func (lh ListHandler) Create(w http.ResponseWriter, r *http.Request) {
 	funcName := "ListHandler.Create"
 	nodeName := "handler"
 	errorMessage := "Creating list failed with error: "
-	failBorder := "----------------- Creating list FAIL -----------------"
+	failBorder := "---------------------------------- Creating list FAIL ----------------------------------"
 
 	logger := rCtx.Value(dto.LoggerKey).(logger.ILogger)
 
-	logger.Info("----------------- Creating list -----------------")
+	logger.Info("---------------------------------- Creating list ----------------------------------")
 
 	var newListInfo dto.NewListInfo
 	err := json.NewDecoder(r.Body).Decode(&newListInfo)
@@ -73,7 +73,7 @@ func (lh ListHandler) Create(w http.ResponseWriter, r *http.Request) {
 	}
 	logger.Debug("response written", funcName, nodeName)
 
-	logger.Info("----------------- Creating list FAIL -----------------")
+	logger.Info("---------------------------------- Creating list FAIL ----------------------------------")
 }
 
 // @Summary Обновить список
@@ -96,11 +96,11 @@ func (lh ListHandler) Update(w http.ResponseWriter, r *http.Request) {
 	funcName := "ListHandler.Update"
 	nodeName := "handler"
 	errorMessage := "Updating failed with error: "
-	failBorder := "----------------- Updating list FAIL -----------------"
+	failBorder := "---------------------------------- Updating list FAIL ----------------------------------"
 
 	logger := rCtx.Value(dto.LoggerKey).(logger.ILogger)
 
-	logger.Info("----------------- Updating list -----------------")
+	logger.Info("---------------------------------- Updating list ----------------------------------")
 
 	var listInfo dto.UpdatedListInfo
 	err := json.NewDecoder(r.Body).Decode(&listInfo)
@@ -133,7 +133,7 @@ func (lh ListHandler) Update(w http.ResponseWriter, r *http.Request) {
 	}
 	logger.Debug("response written", funcName, nodeName)
 
-	logger.Info("----------------- Updating list SUCCESS -----------------")
+	logger.Info("---------------------------------- Updating list SUCCESS ----------------------------------")
 }
 
 // @Summary Удалить список
@@ -156,11 +156,11 @@ func (lh ListHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	funcName := "ListHandler.Delete"
 	nodeName := "handler"
 	errorMessage := "Deleting failed with error: "
-	failBorder := "----------------- Deleting list FAIL -----------------"
+	failBorder := "---------------------------------- Deleting list FAIL ----------------------------------"
 
 	logger := rCtx.Value(dto.LoggerKey).(logger.ILogger)
 
-	logger.Info("----------------- Deleting list -----------------")
+	logger.Info("---------------------------------- Deleting list ----------------------------------")
 
 	var listID uint64
 	err := json.NewDecoder(r.Body).Decode(&listID)
@@ -196,5 +196,5 @@ func (lh ListHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	}
 	logger.Debug("response written", funcName, nodeName)
 
-	logger.Info("----------------- Deleting list SUCCESS -----------------")
+	logger.Info("---------------------------------- Deleting list SUCCESS ----------------------------------")
 }

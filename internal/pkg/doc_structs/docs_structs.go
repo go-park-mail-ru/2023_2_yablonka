@@ -27,6 +27,10 @@ type AvatarUploadResponse struct {
 	AvatarUrl dto.UrlObj `json:"avatar_url"`
 }
 
+type URLResponse struct {
+	URL dto.UrlObj `json:"url"`
+}
+
 type TaskResponse struct {
 	Task entities.Task `json:"task"`
 }
@@ -60,4 +64,8 @@ type QuestionResponse struct {
 
 type ChecklistResponse struct {
 	Question dto.ChecklistInfo `json:"checklist"`
+}
+
+type ChecklistItemResponse struct {
+	Question dto.ChecklistItemInfo `json:"checklist_item"`
 }
