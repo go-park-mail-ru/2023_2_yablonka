@@ -296,3 +296,35 @@ func (s PostgresTaskStorage) RemoveUser(ctx context.Context, info dto.RemoveTask
 
 	return nil
 }
+
+// CheckAccess
+// находит пользователя в доске
+// или возвращает ошибки ...
+func (s *PostgresTaskStorage) CheckAccess(ctx context.Context, info dto.CheckTaskAccessInfo) (bool, error) {
+	funcName := "PostgresTaskStorage.CheckAccess"
+	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
+
+	listSql, args, err := sq.Select("count(*)").
+		From("public.task_user").
+		Where(sq.Eq{
+			"id_task": info.TaskID,
+			"id_user": info.UserID,
+		}).
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
+	if err != nil {
+		return false, apperrors.ErrCouldNotBuildQuery
+	}
+	logger.Debug("Built query\n\t"+listSql+"\nwith args\n\t"+fmt.Sprintf("%+v", args), funcName, nodeName)
+
+	row := s.db.QueryRow(listSql, args...)
+	logger.Debug("Got user row", funcName, nodeName)
+
+	var count uint64
+	if row.Scan(&count) != nil {
+		return false, apperrors.ErrCouldNotGetUser
+	}
+	logger.Debug("checked database", funcName, nodeName)
+
+	return count > 0, nil
+}

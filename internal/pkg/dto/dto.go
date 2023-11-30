@@ -386,11 +386,18 @@ type BoardID struct {
 	Value uint64 `json:"board_id"`
 }
 
-// BoardID
-// DTO для id доски
+// CheckBoardAccessInfo
+// DTO для проверки есть ли доступ к доске
 type CheckBoardAccessInfo struct {
 	UserID  uint64 `json:"user_id"`
 	BoardID uint64 `json:"board_id"`
+}
+
+// CheckTaskAccessInfo
+// DTO для проверки есть ли доступ к заданию
+type CheckTaskAccessInfo struct {
+	UserID uint64 `json:"user_id"`
+	TaskID uint64 `json:"task_id"`
 }
 
 // WorkspaceID

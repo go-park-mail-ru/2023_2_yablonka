@@ -22,6 +22,10 @@ type ITaskStorage interface {
 	// возвращает задания
 	// или возвращает ошибки ...
 	ReadMany(context.Context, dto.TaskIDs) (*[]dto.SingleTaskInfo, error)
+	// CheckAccess
+	// находит пользователя в задании
+	// или возвращает ошибки ...
+	CheckAccess(context.Context, dto.CheckTaskAccessInfo) (bool, error)
 	// Update
 	// обновляет задачу
 	// или возвращает ошибки ...
