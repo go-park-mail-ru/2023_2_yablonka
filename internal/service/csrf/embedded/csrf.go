@@ -80,7 +80,9 @@ func (cs *CSRFService) VerifyCSRF(ctx context.Context, token dto.CSRFToken) erro
 
 	if CSRFObj.ExpirationDate.Before(time.Now()) {
 		logger.Debug("Deleting expired CSRF token", funcName, nodeName)
-		cs.DeleteCSRF(ctx, token)
+		for err := cs.DeleteCSRF(ctx, token); err != nil; {
+			err = cs.DeleteCSRF(ctx, token)
+		}
 		return apperrors.ErrSessionExpired
 	}
 

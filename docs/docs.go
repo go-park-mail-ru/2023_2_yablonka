@@ -475,6 +475,110 @@ const docTemplate = `{
                 }
             }
         },
+        "/board/user/add/": {
+            "post": {
+                "description": "Добавить пользователя в доску",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "boards"
+                ],
+                "summary": "Добавить пользователя в доску",
+                "parameters": [
+                    {
+                        "description": "мэйл пользователя, id доски и воркспейса",
+                        "name": "info",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.AddBoardUserRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "no content",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/board/user/remove/": {
+            "delete": {
+                "description": "Удалить пользователя из доски",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "boards"
+                ],
+                "summary": "Удалить пользователя из доски",
+                "parameters": [
+                    {
+                        "description": "id пользователя, доски и воркспейса",
+                        "name": "info",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.RemoveBoardUserInfo"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "no content",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/comment/create/": {
             "post": {
                 "description": "Создать комментарий в каком-то задании",
@@ -552,10 +656,10 @@ const docTemplate = `{
                     }
                 ],
                 "responses": {
-                    "200": {
-                        "description": "все вопросы",
+                    "204": {
+                        "description": "no content",
                         "schema": {
-                            "$ref": "#/definitions/doc_structs.AllQuestionsResponse"
+                            "type": "string"
                         }
                     },
                     "400": {
@@ -1129,6 +1233,110 @@ const docTemplate = `{
                 }
             }
         },
+        "/task/user/add/": {
+            "post": {
+                "description": "Добавить пользователя на карточку",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "tasks"
+                ],
+                "summary": "Добавить пользователя на карточку",
+                "parameters": [
+                    {
+                        "description": "ID пользователя и ID карточки, на которую добавляют пользователя",
+                        "name": "taskInfo",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.AddTaskUserInfo"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "no content",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/task/user/remove/": {
+            "post": {
+                "description": "Удалить пользователя из карточки",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "tasks"
+                ],
+                "summary": "Удалить пользователя из карточки",
+                "parameters": [
+                    {
+                        "description": "ID пользователя и ID карточки, из которой удаляют пользователя",
+                        "name": "taskInfo",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.RemoveTaskUserInfo"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "no content",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/user/edit/": {
             "post": {
                 "description": "В ответ ничего не шлёт",
@@ -1445,58 +1653,6 @@ const docTemplate = `{
                     }
                 }
             }
-        },
-        "/workspace/update/change_users/": {
-            "post": {
-                "description": "Обновить гостей рабочего пространства",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "workspaces"
-                ],
-                "summary": "Обновить гостей рабочего пространства",
-                "parameters": [
-                    {
-                        "description": "обновленный список пользователей",
-                        "name": "guestsInfo",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/dto.UpdatedWorkspaceInfo"
-                        }
-                    }
-                ],
-                "responses": {
-                    "204": {
-                        "description": "no content",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/apperrors.ErrorResponse"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/apperrors.ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/apperrors.ErrorResponse"
-                        }
-                    }
-                }
-            }
         }
     },
     "definitions": {
@@ -1540,6 +1696,22 @@ const docTemplate = `{
             "properties": {
                 "board": {
                     "$ref": "#/definitions/dto.FullBoardResult"
+                }
+            }
+        },
+        "doc_structs.ChecklistItemResponse": {
+            "type": "object",
+            "properties": {
+                "checklist_item": {
+                    "$ref": "#/definitions/dto.ChecklistItemInfo"
+                }
+            }
+        },
+        "doc_structs.ChecklistResponse": {
+            "type": "object",
+            "properties": {
+                "checklist": {
+                    "$ref": "#/definitions/dto.ChecklistInfo"
                 }
             }
         },
@@ -1599,6 +1771,31 @@ const docTemplate = `{
             "properties": {
                 "user": {
                     "$ref": "#/definitions/dto.UserPublicInfo"
+                }
+            }
+        },
+        "dto.AddBoardUserRequest": {
+            "type": "object",
+            "properties": {
+                "board_id": {
+                    "type": "integer"
+                },
+                "user_email": {
+                    "type": "string"
+                },
+                "workspace_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.AddTaskUserInfo": {
+            "type": "object",
+            "properties": {
+                "task_id": {
+                    "type": "integer"
+                },
+                "user_id": {
+                    "type": "integer"
                 }
             }
         },
@@ -1663,6 +1860,82 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.ChecklistID": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.ChecklistInfo": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "list_position": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "task_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.ChecklistItemID": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.ChecklistItemInfo": {
+            "type": "object",
+            "properties": {
+                "checklist_id": {
+                    "type": "integer"
+                },
+                "done": {
+                    "type": "boolean"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "list_position": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.CommentInfo": {
+            "type": "object",
+            "properties": {
+                "date_created": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "text": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "integer"
+                }
+            }
+        },
         "dto.FullBoardResult": {
             "type": "object",
             "properties": {
@@ -1673,6 +1946,24 @@ const docTemplate = `{
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/dto.SingleTaskInfo"
+                    }
+                },
+                "checklist_items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.ChecklistItemInfo"
+                    }
+                },
+                "checklists": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.ChecklistInfo"
+                    }
+                },
+                "comments": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.CommentInfo"
                     }
                 },
                 "lists": {
@@ -1739,6 +2030,37 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.NewChecklistInfo": {
+            "type": "object",
+            "properties": {
+                "list_position": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "task_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.NewChecklistItemInfo": {
+            "type": "object",
+            "properties": {
+                "checklist_id": {
+                    "type": "integer"
+                },
+                "done": {
+                    "type": "boolean"
+                },
+                "list_position": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
         "dto.NewCommentInfo": {
             "type": "object",
             "properties": {
@@ -1773,12 +2095,6 @@ const docTemplate = `{
         "dto.NewTaskInfo": {
             "type": "object",
             "properties": {
-                "description": {
-                    "type": "string"
-                },
-                "end": {
-                    "type": "string"
-                },
                 "list_id": {
                     "type": "integer"
                 },
@@ -1786,9 +2102,6 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "name": {
-                    "type": "string"
-                },
-                "start": {
                     "type": "string"
                 }
             }
@@ -1852,6 +2165,31 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.RemoveBoardUserInfo": {
+            "type": "object",
+            "properties": {
+                "board_id": {
+                    "type": "integer"
+                },
+                "user_id": {
+                    "type": "integer"
+                },
+                "workspace_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.RemoveTaskUserInfo": {
+            "type": "object",
+            "properties": {
+                "task_id": {
+                    "type": "integer"
+                },
+                "user_id": {
+                    "type": "integer"
+                }
+            }
+        },
         "dto.SingleBoardInfo": {
             "type": "object",
             "properties": {
@@ -1882,7 +2220,10 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "cards": {
-                    "type": "string"
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 },
                 "id": {
                     "type": "integer"
@@ -1898,6 +2239,18 @@ const docTemplate = `{
         "dto.SingleTaskInfo": {
             "type": "object",
             "properties": {
+                "checklists": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "comments": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
                 "date_created": {
                     "type": "string"
                 },
@@ -1925,7 +2278,7 @@ const docTemplate = `{
                 "users": {
                     "type": "array",
                     "items": {
-                        "type": "integer"
+                        "type": "string"
                     }
                 }
             }
@@ -1977,6 +2330,37 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.UpdatedChecklistInfo": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "list_position": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.UpdatedChecklistItemInfo": {
+            "type": "object",
+            "properties": {
+                "done": {
+                    "type": "boolean"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "list_position": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
         "dto.UpdatedListInfo": {
             "type": "object",
             "properties": {
@@ -1987,7 +2371,7 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "list_position": {
-                    "type": "string"
+                    "type": "integer"
                 },
                 "name": {
                     "type": "string"
@@ -2007,7 +2391,7 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "list_position": {
-                    "type": "string"
+                    "type": "integer"
                 },
                 "name": {
                     "type": "string"
@@ -2155,49 +2539,6 @@ const docTemplate = `{
                 }
             }
         },
-        "entities.Checklist": {
-            "type": "object",
-            "properties": {
-                "id": {
-                    "type": "integer"
-                },
-                "items": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/entities.ChecklistItem"
-                    }
-                },
-                "list_position": {
-                    "type": "integer"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "task_id": {
-                    "type": "integer"
-                }
-            }
-        },
-        "entities.ChecklistItem": {
-            "type": "object",
-            "properties": {
-                "checklist_id": {
-                    "type": "integer"
-                },
-                "done": {
-                    "type": "boolean"
-                },
-                "id": {
-                    "type": "integer"
-                },
-                "list_position": {
-                    "type": "integer"
-                },
-                "name": {
-                    "type": "string"
-                }
-            }
-        },
         "entities.Comment": {
             "type": "object",
             "properties": {
@@ -2250,13 +2591,13 @@ const docTemplate = `{
                 "checklists": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/entities.Checklist"
+                        "type": "integer"
                     }
                 },
                 "comments": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/entities.Comment"
+                        "type": "integer"
                     }
                 },
                 "date_created": {
@@ -2297,7 +2638,7 @@ const docTemplate = `{
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
 	Version:          "2.0",
-	Host:             "localhost:8080",
+	Host:             "localhost:8082",
 	BasePath:         "/api/v2",
 	Schemes:          []string{},
 	Title:            "LA TABULA API",

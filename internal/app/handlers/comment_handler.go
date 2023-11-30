@@ -35,11 +35,11 @@ func (ch CommentHandler) Create(w http.ResponseWriter, r *http.Request) {
 	funcName := "CommentHandler.Create"
 	nodeName := "handler"
 	errorMessage := "Creating comment failed with error: "
-	failBorder := "----------------- Create comment FAIL -----------------"
+	failBorder := "---------------------------------- Create comment FAIL ----------------------------------"
 
 	logger := rCtx.Value(dto.LoggerKey).(logger.ILogger)
 
-	logger.Info("----------------- Create comment -----------------")
+	logger.Info("---------------------------------- Create comment ----------------------------------")
 
 	var newCommentInfo dto.NewCommentInfo
 	err := json.NewDecoder(r.Body).Decode(&newCommentInfo)
@@ -74,5 +74,5 @@ func (ch CommentHandler) Create(w http.ResponseWriter, r *http.Request) {
 	}
 	logger.Debug("response written", funcName, nodeName)
 
-	logger.Info("----------------- Create comment SUCCESS -----------------")
+	logger.Info("---------------------------------- Create comment SUCCESS ----------------------------------")
 }

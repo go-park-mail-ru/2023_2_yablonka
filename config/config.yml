@@ -7,7 +7,7 @@ server:
   swagger_port: 8082
   # !! MUST match the container_name of the microservice container in compose.yml
   # Client will fail to connect otherwise
-  microservice_host: 'microservices'
+  microservice_host: 'localhost'
   microservice_port: 8083
 
 cors:

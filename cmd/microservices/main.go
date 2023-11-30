@@ -60,5 +60,8 @@ func main() {
 	logger.Info("Registering user services")
 	user.RegisterServices(storages, server, &logger)
 
-	server.Serve(lstn)
+	err = server.Serve(lstn)
+	if err != nil {
+		logger.Fatal("Server failure " + err.Error())
+	}
 }

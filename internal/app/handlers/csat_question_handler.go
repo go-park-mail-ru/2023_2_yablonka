@@ -32,11 +32,11 @@ func (qh CSATQuestionHandler) GetQuestions(w http.ResponseWriter, r *http.Reques
 	funcName := "CSATQuestionHandler.GetQuestions"
 	nodeName := "handler"
 	errorMessage := "Getting all CSAT questions failed with error: "
-	failBorder := "----------------- Get all CSAT questions FAIL -----------------"
+	failBorder := "---------------------------------- Get all CSAT questions FAIL ----------------------------------"
 
 	logger := rCtx.Value(dto.LoggerKey).(logger.ILogger)
 
-	logger.Info("----------------- Get all CSAT questions -----------------")
+	logger.Info("---------------------------------- Get all CSAT questions ----------------------------------")
 
 	questions, err := qh.qs.GetAll(rCtx)
 	if err != nil {
@@ -61,7 +61,7 @@ func (qh CSATQuestionHandler) GetQuestions(w http.ResponseWriter, r *http.Reques
 	}
 	logger.Debug("response written", funcName, nodeName)
 
-	logger.Info("----------------- Getting all CSAT questions SUCCESS -----------------")
+	logger.Info("---------------------------------- Getting all CSAT questions SUCCESS ----------------------------------")
 }
 
 // @Summary Создать вопрос CSAT
@@ -84,11 +84,11 @@ func (qh CSATQuestionHandler) Create(w http.ResponseWriter, r *http.Request) {
 	funcName := "CSATQuestionHandler.Create"
 	nodeName := "handler"
 	errorMessage := "Creating CSAT question failed with error: "
-	failBorder := "----------------- Create CSAT question FAIL -----------------"
+	failBorder := "---------------------------------- Create CSAT question FAIL ----------------------------------"
 
 	logger := rCtx.Value(dto.LoggerKey).(logger.ILogger)
 
-	logger.Info("----------------- Create CSAT question -----------------")
+	logger.Info("---------------------------------- Create CSAT question ----------------------------------")
 
 	var newQuestionInfo dto.NewCSATQuestionInfo
 	err := json.NewDecoder(r.Body).Decode(&newQuestionInfo)
@@ -123,7 +123,7 @@ func (qh CSATQuestionHandler) Create(w http.ResponseWriter, r *http.Request) {
 	}
 	logger.Debug("response written", funcName, nodeName)
 
-	logger.Info("----------------- Create CSAT question SUCCESS -----------------")
+	logger.Info("---------------------------------- Create CSAT question SUCCESS ----------------------------------")
 }
 
 // @Summary Обновить вопрос CSAT
@@ -146,11 +146,11 @@ func (qh CSATQuestionHandler) Update(w http.ResponseWriter, r *http.Request) {
 	funcName := "CSATQuestionHandler.Update"
 	nodeName := "handler"
 	errorMessage := "Updating CSAT question failed with error: "
-	failBorder := "----------------- Update CSAT question FAIL -----------------"
+	failBorder := "---------------------------------- Update CSAT question FAIL ----------------------------------"
 
 	logger := rCtx.Value(dto.LoggerKey).(logger.ILogger)
 
-	logger.Info("----------------- Update CSAT question -----------------")
+	logger.Info("---------------------------------- Update CSAT question ----------------------------------")
 
 	var updatedQuestionInfo dto.UpdatedCSATQuestionInfo
 	err := json.NewDecoder(r.Body).Decode(&updatedQuestionInfo)
@@ -183,7 +183,7 @@ func (qh CSATQuestionHandler) Update(w http.ResponseWriter, r *http.Request) {
 	}
 	logger.Debug("response written", funcName, nodeName)
 
-	logger.Info("----------------- Update CSAT question SUCCESS -----------------")
+	logger.Info("---------------------------------- Update CSAT question SUCCESS ----------------------------------")
 }
 
 // @Summary Статистика ответов CSAT
@@ -204,11 +204,11 @@ func (qh CSATQuestionHandler) GetStats(w http.ResponseWriter, r *http.Request) {
 	funcName := "CSATQuestionHandler.GetStats"
 	nodeName := "handler"
 	errorMessage := "Getting CSAT question stats failed with error: "
-	failBorder := "----------------- Getting CSAT question stats FAIL -----------------"
+	failBorder := "---------------------------------- Getting CSAT question stats FAIL ----------------------------------"
 
 	logger := rCtx.Value(dto.LoggerKey).(logger.ILogger)
 
-	logger.Info("----------------- Getting CSAT question stats -----------------")
+	logger.Info("---------------------------------- Getting CSAT question stats ----------------------------------")
 
 	answers, err := qh.qs.GetStats(rCtx)
 	if err != nil {
@@ -233,5 +233,5 @@ func (qh CSATQuestionHandler) GetStats(w http.ResponseWriter, r *http.Request) {
 	}
 	logger.Debug("response written", funcName, nodeName)
 
-	logger.Info("----------------- Getting CSAT question stats SUCCESS -----------------")
+	logger.Info("---------------------------------- Getting CSAT question stats SUCCESS ----------------------------------")
 }

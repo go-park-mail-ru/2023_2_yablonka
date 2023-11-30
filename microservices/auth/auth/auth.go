@@ -86,7 +86,9 @@ func (a *AuthService) VerifyAuth(ctx context.Context, token *SessionToken) (*Use
 
 	if sessionObj.ExpiryDate.Before(time.Now()) {
 		a.logger.Debug("Deleting expired session", funcName, nodeName)
-		a.LogOut(ctx, token)
+		for _, err = a.LogOut(ctx, token); err != nil; {
+			_, err = a.LogOut(ctx, token)
+		}
 		return &UserID{}, apperrors.ErrSessionExpired
 	}
 	return &UserID{Value: sessionObj.UserID}, nil

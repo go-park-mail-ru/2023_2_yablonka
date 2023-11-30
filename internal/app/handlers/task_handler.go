@@ -34,11 +34,11 @@ func (th TaskHandler) Create(w http.ResponseWriter, r *http.Request) {
 	funcName := "TaskHandler.Create"
 	nodeName := "handler"
 	errorMessage := "Creating a new task failed with error: "
-	failBorder := "----------------- Creating a new task FAIL -----------------"
+	failBorder := "---------------------------------- Creating a new task FAIL ----------------------------------"
 
 	logger := rCtx.Value(dto.LoggerKey).(logger.ILogger)
 
-	logger.Info("----------------- Creating a new task -----------------")
+	logger.Info("---------------------------------- Creating a new task ----------------------------------")
 
 	var newTaskInfo dto.NewTaskInfo
 	err := json.NewDecoder(r.Body).Decode(&newTaskInfo)
@@ -73,7 +73,7 @@ func (th TaskHandler) Create(w http.ResponseWriter, r *http.Request) {
 	}
 	logger.Debug("response written", funcName, nodeName)
 
-	logger.Info("----------------- Creating a new task SUCCESS -----------------")
+	logger.Info("---------------------------------- Creating a new task SUCCESS ----------------------------------")
 }
 
 // @Summary Получить задание
@@ -96,11 +96,11 @@ func (th TaskHandler) Read(w http.ResponseWriter, r *http.Request) {
 	funcName := "TaskHandler.Read"
 	nodeName := "handler"
 	errorMessage := "Getting task failed with error: "
-	failBorder := "----------------- Getting task FAIL -----------------"
+	failBorder := "---------------------------------- Getting task FAIL ----------------------------------"
 
 	logger := rCtx.Value(dto.LoggerKey).(logger.ILogger)
 
-	logger.Info("----------------- Getting task -----------------")
+	logger.Info("---------------------------------- Getting task ----------------------------------")
 
 	var taskID dto.TaskID
 	err := json.NewDecoder(r.Body).Decode(&taskID)
@@ -135,7 +135,7 @@ func (th TaskHandler) Read(w http.ResponseWriter, r *http.Request) {
 	}
 	logger.Debug("response written", funcName, nodeName)
 
-	logger.Info("----------------- Getting task SUCCESS -----------------")
+	logger.Info("---------------------------------- Getting task SUCCESS ----------------------------------")
 }
 
 // @Summary Обновить задание
@@ -158,11 +158,11 @@ func (th TaskHandler) Update(w http.ResponseWriter, r *http.Request) {
 	funcName := "TaskHandler.Update"
 	nodeName := "handler"
 	errorMessage := "Updating task failed with error: "
-	failBorder := "----------------- Updating task FAIL -----------------"
+	failBorder := "---------------------------------- Updating task FAIL ----------------------------------"
 
 	logger := rCtx.Value(dto.LoggerKey).(logger.ILogger)
 
-	logger.Info("----------------- Updating task -----------------")
+	logger.Info("---------------------------------- Updating task ----------------------------------")
 
 	var taskInfo dto.UpdatedTaskInfo
 	err := json.NewDecoder(r.Body).Decode(&taskInfo)
@@ -195,7 +195,7 @@ func (th TaskHandler) Update(w http.ResponseWriter, r *http.Request) {
 	}
 	logger.Debug("response written", funcName, nodeName)
 
-	logger.Info("----------------- Updating task SUCCESS -----------------")
+	logger.Info("---------------------------------- Updating task SUCCESS ----------------------------------")
 }
 
 // @Summary Удалить задание
@@ -218,11 +218,11 @@ func (th TaskHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	funcName := "TaskHandler.Delete"
 	nodeName := "handler"
 	errorMessage := "Deleting task failed with error: "
-	failBorder := "----------------- Deleting task FAIL -----------------"
+	failBorder := "---------------------------------- Deleting task FAIL ----------------------------------"
 
 	logger := rCtx.Value(dto.LoggerKey).(logger.ILogger)
 
-	logger.Info("----------------- Deleting task -----------------")
+	logger.Info("---------------------------------- Deleting task ----------------------------------")
 
 	var taskID dto.TaskID
 	err := json.NewDecoder(r.Body).Decode(&taskID)
@@ -255,7 +255,7 @@ func (th TaskHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	}
 	logger.Debug("response written", funcName, nodeName)
 
-	logger.Info("----------------- Deleting task SUCCESS -----------------")
+	logger.Info("---------------------------------- Deleting task SUCCESS ----------------------------------")
 }
 
 // @Summary Добавить пользователя на карточку
@@ -278,11 +278,11 @@ func (th TaskHandler) AddUser(w http.ResponseWriter, r *http.Request) {
 	funcName := "TaskHandler.AddUser"
 	nodeName := "handler"
 	errorMessage := "Adding user to task failed with error: "
-	failBorder := "----------------- Adding user to task FAIL -----------------"
+	failBorder := "---------------------------------- Adding user to task FAIL ----------------------------------"
 
 	logger := rCtx.Value(dto.LoggerKey).(logger.ILogger)
 
-	logger.Info("----------------- Adding user to task -----------------")
+	logger.Info("---------------------------------- Adding user to task ----------------------------------")
 
 	var info dto.AddTaskUserInfo
 	err := json.NewDecoder(r.Body).Decode(&info)
@@ -315,7 +315,7 @@ func (th TaskHandler) AddUser(w http.ResponseWriter, r *http.Request) {
 	}
 	logger.Debug("Response written", funcName, nodeName)
 
-	logger.Info("----------------- Adding user to task SUCCESS -----------------")
+	logger.Info("---------------------------------- Adding user to task SUCCESS ----------------------------------")
 }
 
 // @Summary Удалить пользователя из карточки
@@ -338,11 +338,11 @@ func (th TaskHandler) RemoveUser(w http.ResponseWriter, r *http.Request) {
 	funcName := "TaskHandler.RemoveUser"
 	nodeName := "handler"
 	errorMessage := "Removing user from task failed with error: "
-	failBorder := "----------------- Removing user from task FAIL -----------------"
+	failBorder := "---------------------------------- Removing user from task FAIL ----------------------------------"
 
 	logger := rCtx.Value(dto.LoggerKey).(logger.ILogger)
 
-	logger.Info("----------------- Removing user from task -----------------")
+	logger.Info("---------------------------------- Removing user from task ----------------------------------")
 
 	var info dto.RemoveTaskUserInfo
 	err := json.NewDecoder(r.Body).Decode(&info)
@@ -375,5 +375,5 @@ func (th TaskHandler) RemoveUser(w http.ResponseWriter, r *http.Request) {
 	}
 	logger.Debug("Response written", funcName, nodeName)
 
-	logger.Info("----------------- Removing user from task SUCCESS -----------------")
+	logger.Info("---------------------------------- Removing user from task SUCCESS ----------------------------------")
 }

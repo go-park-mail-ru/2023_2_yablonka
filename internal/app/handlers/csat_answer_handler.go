@@ -37,11 +37,11 @@ func (ah CSATAnswerHandler) Create(w http.ResponseWriter, r *http.Request) {
 	funcName := "CSATAnswerHandler.Create"
 	nodeName := "handler"
 	errorMessage := "Creating CSAT answer failed with error: "
-	failBorder := "----------------- Create CSAT answer FAIL -----------------"
+	failBorder := "---------------------------------- Create CSAT answer FAIL ----------------------------------"
 
 	logger := rCtx.Value(dto.LoggerKey).(logger.ILogger)
 
-	logger.Info("----------------- Create CSAT answer -----------------")
+	logger.Info("---------------------------------- Create CSAT answer ----------------------------------")
 
 	var CSATAnswerInfo dto.NewCSATAnswerInfo
 	err := json.NewDecoder(r.Body).Decode(&CSATAnswerInfo)
@@ -97,5 +97,5 @@ func (ah CSATAnswerHandler) Create(w http.ResponseWriter, r *http.Request) {
 	}
 	logger.Debug("response written", funcName, nodeName)
 
-	logger.Info("----------------- Create CSAT answer SUCCESS -----------------")
+	logger.Info("---------------------------------- Create CSAT answer SUCCESS ----------------------------------")
 }

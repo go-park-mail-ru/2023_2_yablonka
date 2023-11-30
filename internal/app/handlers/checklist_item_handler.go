@@ -27,18 +27,16 @@ type ChecklistItemHandler struct {
 // @Failure 400  {object}  apperrors.ErrorResponse
 // @Failure 401  {object}  apperrors.ErrorResponse
 // @Failure 500  {object}  apperrors.ErrorResponse
-//
-// @Router /сhecklist_item/create/ [post]
 func (clh ChecklistItemHandler) Create(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
 	funcName := "ChecklistItemHandler.Create"
 	nodeName := "handler"
 	errorMessage := "Creating ChecklistItem failed with error: "
-	failBorder := "----------------- Creating ChecklistItem FAIL -----------------"
+	failBorder := "---------------------------------- Creating ChecklistItem FAIL ----------------------------------"
 
 	logger := rCtx.Value(dto.LoggerKey).(logger.ILogger)
 
-	logger.Info("----------------- Creating ChecklistItem -----------------")
+	logger.Info("---------------------------------- Creating ChecklistItem ----------------------------------")
 
 	var newChecklistItemInfo dto.NewChecklistItemInfo
 	err := json.NewDecoder(r.Body).Decode(&newChecklistItemInfo)
@@ -73,7 +71,7 @@ func (clh ChecklistItemHandler) Create(w http.ResponseWriter, r *http.Request) {
 	}
 	logger.Debug("response written", funcName, nodeName)
 
-	logger.Info("----------------- Creating ChecklistItem FAIL -----------------")
+	logger.Info("---------------------------------- Creating ChecklistItem FAIL ----------------------------------")
 }
 
 // @Summary Обновить элемент чеклиста
@@ -89,18 +87,16 @@ func (clh ChecklistItemHandler) Create(w http.ResponseWriter, r *http.Request) {
 // @Failure 400  {object}  apperrors.ErrorResponse
 // @Failure 401  {object}  apperrors.ErrorResponse
 // @Failure 500  {object}  apperrors.ErrorResponse
-//
-// @Router /сhecklist_item/edit/ [post]
 func (clh ChecklistItemHandler) Update(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
 	funcName := "ChecklistItemHandler.Update"
 	nodeName := "handler"
 	errorMessage := "Updating failed with error: "
-	failBorder := "----------------- Updating ChecklistItem FAIL -----------------"
+	failBorder := "---------------------------------- Updating ChecklistItem FAIL ----------------------------------"
 
 	logger := rCtx.Value(dto.LoggerKey).(logger.ILogger)
 
-	logger.Info("----------------- Updating ChecklistItem -----------------")
+	logger.Info("---------------------------------- Updating ChecklistItem ----------------------------------")
 
 	var ChecklistItemInfo dto.UpdatedChecklistItemInfo
 	err := json.NewDecoder(r.Body).Decode(&ChecklistItemInfo)
@@ -133,7 +129,7 @@ func (clh ChecklistItemHandler) Update(w http.ResponseWriter, r *http.Request) {
 	}
 	logger.Debug("response written", funcName, nodeName)
 
-	logger.Info("----------------- Updating ChecklistItem SUCCESS -----------------")
+	logger.Info("---------------------------------- Updating ChecklistItem SUCCESS ----------------------------------")
 }
 
 // @Summary Удалить элемент чеклиста
@@ -149,18 +145,16 @@ func (clh ChecklistItemHandler) Update(w http.ResponseWriter, r *http.Request) {
 // @Failure 400  {object}  apperrors.ErrorResponse
 // @Failure 401  {object}  apperrors.ErrorResponse
 // @Failure 500  {object}  apperrors.ErrorResponse
-//
-// @Router /сhecklist_item/delete/ [delete]
 func (clh ChecklistItemHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
 	funcName := "ChecklistItemHandler.Delete"
 	nodeName := "handler"
 	errorMessage := "Deleting failed with error: "
-	failBorder := "----------------- Deleting ChecklistItem FAIL -----------------"
+	failBorder := "---------------------------------- Deleting ChecklistItem FAIL ----------------------------------"
 
 	logger := rCtx.Value(dto.LoggerKey).(logger.ILogger)
 
-	logger.Info("----------------- Deleting ChecklistItem -----------------")
+	logger.Info("---------------------------------- Deleting ChecklistItem ----------------------------------")
 
 	var checklistItemID dto.ChecklistItemID
 	err := json.NewDecoder(r.Body).Decode(&checklistItemID)
@@ -193,5 +187,5 @@ func (clh ChecklistItemHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	}
 	logger.Debug("response written", funcName, nodeName)
 
-	logger.Info("----------------- Deleting ChecklistItem SUCCESS -----------------")
+	logger.Info("---------------------------------- Deleting ChecklistItem SUCCESS ----------------------------------")
 }

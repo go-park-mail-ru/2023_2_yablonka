@@ -55,17 +55,17 @@ func (mr *MockICSRFServiceMockRecorder) DeleteCSRF(arg0, arg1 any) *gomock.Call 
 }
 
 // GetLifetime mocks base method.
-func (m *MockICSRFService) GetLifetime() time.Duration {
+func (m *MockICSRFService) GetLifetime(arg0 context.Context) time.Duration {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetLifetime")
+	ret := m.ctrl.Call(m, "GetLifetime", arg0)
 	ret0, _ := ret[0].(time.Duration)
 	return ret0
 }
 
 // GetLifetime indicates an expected call of GetLifetime.
-func (mr *MockICSRFServiceMockRecorder) GetLifetime() *gomock.Call {
+func (mr *MockICSRFServiceMockRecorder) GetLifetime(arg0 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetLifetime", reflect.TypeOf((*MockICSRFService)(nil).GetLifetime))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetLifetime", reflect.TypeOf((*MockICSRFService)(nil).GetLifetime), arg0)
 }
 
 // SetupCSRF mocks base method.

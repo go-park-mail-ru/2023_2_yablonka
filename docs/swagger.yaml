@@ -27,6 +27,16 @@ definitions:
       board:
         $ref: '#/definitions/dto.FullBoardResult'
     type: object
+  doc_structs.ChecklistItemResponse:
+    properties:
+      checklist_item:
+        $ref: '#/definitions/dto.ChecklistItemInfo'
+    type: object
+  doc_structs.ChecklistResponse:
+    properties:
+      checklist:
+        $ref: '#/definitions/dto.ChecklistInfo'
+    type: object
   doc_structs.CommentResponse:
     properties:
       comment:
@@ -63,6 +73,22 @@ definitions:
     properties:
       user:
         $ref: '#/definitions/dto.UserPublicInfo'
+    type: object
+  dto.AddBoardUserRequest:
+    properties:
+      board_id:
+        type: integer
+      user_email:
+        type: string
+      workspace_id:
+        type: integer
+    type: object
+  dto.AddTaskUserInfo:
+    properties:
+      task_id:
+        type: integer
+      user_id:
+        type: integer
     type: object
   dto.AllWorkspaces:
     properties:
@@ -103,6 +129,55 @@ definitions:
       type:
         type: string
     type: object
+  dto.ChecklistID:
+    properties:
+      id:
+        type: integer
+    type: object
+  dto.ChecklistInfo:
+    properties:
+      id:
+        type: integer
+      items:
+        items:
+          type: string
+        type: array
+      list_position:
+        type: integer
+      name:
+        type: string
+      task_id:
+        type: integer
+    type: object
+  dto.ChecklistItemID:
+    properties:
+      id:
+        type: integer
+    type: object
+  dto.ChecklistItemInfo:
+    properties:
+      checklist_id:
+        type: integer
+      done:
+        type: boolean
+      id:
+        type: integer
+      list_position:
+        type: integer
+      name:
+        type: string
+    type: object
+  dto.CommentInfo:
+    properties:
+      date_created:
+        type: string
+      id:
+        type: integer
+      text:
+        type: string
+      user_id:
+        type: integer
+    type: object
   dto.FullBoardResult:
     properties:
       board:
@@ -110,6 +185,18 @@ definitions:
       cards:
         items:
           $ref: '#/definitions/dto.SingleTaskInfo'
+        type: array
+      checklist_items:
+        items:
+          $ref: '#/definitions/dto.ChecklistItemInfo'
+        type: array
+      checklists:
+        items:
+          $ref: '#/definitions/dto.ChecklistInfo'
+        type: array
+      comments:
+        items:
+          $ref: '#/definitions/dto.CommentInfo'
         type: array
       lists:
         items:
@@ -152,6 +239,26 @@ definitions:
       type:
         type: string
     type: object
+  dto.NewChecklistInfo:
+    properties:
+      list_position:
+        type: integer
+      name:
+        type: string
+      task_id:
+        type: integer
+    type: object
+  dto.NewChecklistItemInfo:
+    properties:
+      checklist_id:
+        type: integer
+      done:
+        type: boolean
+      list_position:
+        type: integer
+      name:
+        type: string
+    type: object
   dto.NewCommentInfo:
     properties:
       task_id:
@@ -174,17 +281,11 @@ definitions:
     type: object
   dto.NewTaskInfo:
     properties:
-      description:
-        type: string
-      end:
-        type: string
       list_id:
         type: integer
       list_position:
         type: integer
       name:
-        type: string
-      start:
         type: string
     type: object
   dto.NewWorkspaceInfo:
@@ -225,6 +326,22 @@ definitions:
       rating:
         type: integer
     type: object
+  dto.RemoveBoardUserInfo:
+    properties:
+      board_id:
+        type: integer
+      user_id:
+        type: integer
+      workspace_id:
+        type: integer
+    type: object
+  dto.RemoveTaskUserInfo:
+    properties:
+      task_id:
+        type: integer
+      user_id:
+        type: integer
+    type: object
   dto.SingleBoardInfo:
     properties:
       board_id:
@@ -245,7 +362,9 @@ definitions:
       board_id:
         type: integer
       cards:
-        type: string
+        items:
+          type: string
+        type: array
       id:
         type: integer
       list_position:
@@ -255,6 +374,14 @@ definitions:
     type: object
   dto.SingleTaskInfo:
     properties:
+      checklists:
+        items:
+          type: string
+        type: array
+      comments:
+        items:
+          type: string
+        type: array
       date_created:
         type: string
       description:
@@ -273,7 +400,7 @@ definitions:
         type: string
       users:
         items:
-          type: integer
+          type: string
         type: array
     type: object
   dto.TaskID:
@@ -306,6 +433,26 @@ definitions:
       type:
         type: string
     type: object
+  dto.UpdatedChecklistInfo:
+    properties:
+      id:
+        type: integer
+      list_position:
+        type: integer
+      name:
+        type: string
+    type: object
+  dto.UpdatedChecklistItemInfo:
+    properties:
+      done:
+        type: boolean
+      id:
+        type: integer
+      list_position:
+        type: integer
+      name:
+        type: string
+    type: object
   dto.UpdatedListInfo:
     properties:
       description:
@@ -313,7 +460,7 @@ definitions:
       id:
         type: integer
       list_position:
-        type: string
+        type: integer
       name:
         type: string
     type: object
@@ -326,7 +473,7 @@ definitions:
       id:
         type: integer
       list_position:
-        type: string
+        type: integer
       name:
         type: string
       start:
@@ -421,34 +568,6 @@ definitions:
       workspace_id:
         type: integer
     type: object
-  entities.Checklist:
-    properties:
-      id:
-        type: integer
-      items:
-        items:
-          $ref: '#/definitions/entities.ChecklistItem'
-        type: array
-      list_position:
-        type: integer
-      name:
-        type: string
-      task_id:
-        type: integer
-    type: object
-  entities.ChecklistItem:
-    properties:
-      checklist_id:
-        type: integer
-      done:
-        type: boolean
-      id:
-        type: integer
-      list_position:
-        type: integer
-      name:
-        type: string
-    type: object
   entities.Comment:
     properties:
       date_created:
@@ -483,11 +602,11 @@ definitions:
     properties:
       checklists:
         items:
-          $ref: '#/definitions/entities.Checklist'
+          type: integer
         type: array
       comments:
         items:
-          $ref: '#/definitions/entities.Comment'
+          type: integer
         type: array
       date_created:
         type: string
@@ -510,7 +629,7 @@ definitions:
           type: integer
         type: array
     type: object
-host: localhost:8080
+host: localhost:8082
 info:
   contact:
     email: kdanil01@mail.ru
@@ -822,6 +941,74 @@ paths:
       summary: Обновить картинку доски
       tags:
       - boards
+  /board/user/add/:
+    post:
+      consumes:
+      - application/json
+      description: Добавить пользователя в доску
+      parameters:
+      - description: мэйл пользователя, id доски и воркспейса
+        in: body
+        name: info
+        required: true
+        schema:
+          $ref: '#/definitions/dto.AddBoardUserRequest'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: no content
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+      summary: Добавить пользователя в доску
+      tags:
+      - boards
+  /board/user/remove/:
+    delete:
+      consumes:
+      - application/json
+      description: Удалить пользователя из доски
+      parameters:
+      - description: id пользователя, доски и воркспейса
+        in: body
+        name: info
+        required: true
+        schema:
+          $ref: '#/definitions/dto.RemoveBoardUserInfo'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: no content
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+      summary: Удалить пользователя из доски
+      tags:
+      - boards
   /comment/create/:
     post:
       consumes:
@@ -871,10 +1058,10 @@ paths:
       produces:
       - application/json
       responses:
-        "200":
-          description: все вопросы
+        "204":
+          description: no content
           schema:
-            $ref: '#/definitions/doc_structs.AllQuestionsResponse'
+            type: string
         "400":
           description: Bad Request
           schema:
@@ -1250,6 +1437,74 @@ paths:
       summary: Обновить задание
       tags:
       - tasks
+  /task/user/add/:
+    post:
+      consumes:
+      - application/json
+      description: Добавить пользователя на карточку
+      parameters:
+      - description: ID пользователя и ID карточки, на которую добавляют пользователя
+        in: body
+        name: taskInfo
+        required: true
+        schema:
+          $ref: '#/definitions/dto.AddTaskUserInfo'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: no content
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+      summary: Добавить пользователя на карточку
+      tags:
+      - tasks
+  /task/user/remove/:
+    post:
+      consumes:
+      - application/json
+      description: Удалить пользователя из карточки
+      parameters:
+      - description: ID пользователя и ID карточки, из которой удаляют пользователя
+        in: body
+        name: taskInfo
+        required: true
+        schema:
+          $ref: '#/definitions/dto.RemoveTaskUserInfo'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: no content
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+      summary: Удалить пользователя из карточки
+      tags:
+      - tasks
   /user/edit/:
     post:
       consumes:
@@ -1456,40 +1711,6 @@ paths:
           schema:
             $ref: '#/definitions/apperrors.ErrorResponse'
       summary: Обновить рабочее пространство
-      tags:
-      - workspaces
-  /workspace/update/change_users/:
-    post:
-      consumes:
-      - application/json
-      description: Обновить гостей рабочего пространства
-      parameters:
-      - description: обновленный список пользователей
-        in: body
-        name: guestsInfo
-        required: true
-        schema:
-          $ref: '#/definitions/dto.UpdatedWorkspaceInfo'
-      produces:
-      - application/json
-      responses:
-        "204":
-          description: no content
-          schema:
-            type: string
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/apperrors.ErrorResponse'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/apperrors.ErrorResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/apperrors.ErrorResponse'
-      summary: Обновить гостей рабочего пространства
       tags:
       - workspaces
 swagger: "2.0"
