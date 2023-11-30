@@ -14,6 +14,6 @@ func NewEmbeddedTaskService(taskStorage storage.ITaskStorage) *embedded.TaskServ
 }
 
 // TODO: Task microservice
-func NewMicroTaskService(taskStorage storage.ITaskStorage, connection *grpc.ClientConn) *micro.TaskService {
-	return micro.NewTaskService(taskStorage)
+func NewMicroTaskService(taskStorage storage.ITaskStorage, userStorage storage.IUserStorage, connection *grpc.ClientConn) *micro.TaskService {
+	return micro.NewTaskService(taskStorage, userStorage)
 }

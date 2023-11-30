@@ -61,7 +61,7 @@ func NewMicroServices(storages *storage.Storages, config config.SessionConfig, c
 		CSATQuestion:  csat.NewMicroCSATQuestionService(storages.CSATQuestion, conn),
 		CSRF:          csrf.NewMicroCSRFService(storages.CSRF, config, conn),
 		List:          list.NewMicroListService(storages.List, conn),
-		Task:          task.NewMicroTaskService(storages.Task, conn),
+		Task:          task.NewMicroTaskService(storages.Task, storages.User, conn),
 		User:          user.NewMicroUserService(storages.User, conn),
 		Workspace:     workspace.NewMicroWorkspaceService(storages.Workspace, conn),
 	}

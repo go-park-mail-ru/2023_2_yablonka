@@ -177,6 +177,8 @@ var (
 	ErrCouldNotAddTaskUser = errors.New("couldn't add user to task")
 	// ErrCouldNotRemoveTaskUser ошибка: не удалось удалить пользователя с карточки
 	ErrCouldNotRemoveTaskUser = errors.New("couldn't remove user from task")
+	// ErrUserAlreadyInTask ошибка: пользователь уже есть в задании
+	ErrUserAlreadyInTask = errors.New("user already in task")
 )
 
 // ErrorResponse
