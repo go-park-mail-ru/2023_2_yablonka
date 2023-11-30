@@ -122,7 +122,7 @@ func (bs BoardService) GetFullBoard(ctx context.Context, info dto.IndividualBoar
 	if err != nil {
 		return nil, err
 	}
-	logger.Debug("Got checklists", funcName, nodeName)
+	logger.Debug("Got checklist items", funcName, nodeName)
 
 	return &dto.FullBoardResult{
 		Users:          *users,
@@ -251,9 +251,8 @@ func (bs BoardService) AddUser(ctx context.Context, request dto.AddBoardUserRequ
 	logger.Debug("user not in board", funcName, nodeName)
 
 	info := dto.AddBoardUserInfo{
-		UserID:      targetUser.ID,
-		WorkspaceID: request.WorkspaceID,
-		BoardID:     request.BoardID,
+		UserID:  targetUser.ID,
+		BoardID: request.BoardID,
 	}
 	return bs.boardStorage.AddUser(ctx, info)
 }

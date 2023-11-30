@@ -270,9 +270,8 @@ type IndividualBoardInfo struct {
 // AddBoardUserRequest
 // DTO для запроса добавления пользователя в доску
 type AddBoardUserRequest struct {
-	UserEmail   string `json:"user_email"`
-	WorkspaceID uint64 `json:"workspace_id"`
-	BoardID     uint64 `json:"board_id"`
+	UserEmail string `json:"user_email"`
+	BoardID   uint64 `json:"board_id"`
 }
 
 // AddBoardUserInfo
@@ -286,9 +285,8 @@ type AddBoardUserInfo struct {
 // RemoveBoardUserInfo
 // DTO для удаления пользователя из доски
 type RemoveBoardUserInfo struct {
-	UserID      uint64 `json:"user_id"`
-	WorkspaceID uint64 `json:"workspace_id"`
-	BoardID     uint64 `json:"board_id"`
+	UserID  uint64 `json:"user_id"`
+	BoardID uint64 `json:"board_id"`
 }
 
 // AddTaskUserInfo
