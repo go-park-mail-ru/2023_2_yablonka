@@ -149,7 +149,6 @@ func (s PostgresWorkspaceStorage) GetUserOwnedWorkspaces(ctx context.Context, us
 func (s PostgresWorkspaceStorage) GetUserGuestWorkspaces(ctx context.Context, userID dto.UserID) (*[]dto.UserGuestWorkspaceInfo, error) {
 	workspaceQuery, args, err := sq.
 		Select(userGuestWorkspaceFields...).
-		Distinct().
 		From("public.workspace").
 		Join("public.user_workspace ON public.user_workspace.id_workspace = public.workspace.id").
 		Join("public.user ON public.user.id = public.workspace.id_creator").

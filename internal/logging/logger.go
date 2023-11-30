@@ -40,7 +40,6 @@ func NewLogrusLogger(lc *config.LoggingConfig) (LogrusLogger, error) {
 			DisableLevelTruncation: lc.DisableLevelTruncation,
 		},
 	}
-	logger.SetNoLock()
 
 	return LogrusLogger{
 		logger: &logger,

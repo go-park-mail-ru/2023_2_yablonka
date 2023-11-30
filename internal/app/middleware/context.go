@@ -12,7 +12,7 @@ import (
 func SetContext(sc config.ServerConfig, logger logger.ILogger) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			logger.Info("***** SETTING UP LOGGER *****")
+			logger.Info("*************** SETTING UP CONTEXT ***************")
 
 			funcName := "SetLogger"
 
@@ -26,7 +26,7 @@ func SetContext(sc config.ServerConfig, logger logger.ILogger) func(http.Handler
 			)
 			logger.Debug("Added base URL to context", funcName, "middleware")
 
-			logger.Info("***** LOGGER SET UP *****")
+			logger.Info("*************** CONTEXT SET UP ***************")
 
 			next.ServeHTTP(w, r.WithContext(rCtx))
 		})
