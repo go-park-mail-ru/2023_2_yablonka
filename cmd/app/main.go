@@ -2,23 +2,26 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
 	"os/signal"
 	"server/internal/app"
 	"server/internal/app/handlers"
-	config "server/internal/config/session"
-	auth "server/internal/service/auth"
-	board "server/internal/service/board"
-	user "server/internal/service/user"
-	"server/internal/storage/in_memory"
+	config "server/internal/config"
+	logging "server/internal/logging"
+	"server/internal/service"
+	"server/internal/storage"
+	"server/internal/storage/postgresql"
 
 	"github.com/asaskevich/govalidator"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
-const configPath string = "internal/config/config.yml"
-const envPath string = "internal/config/.env"
+const configPath string = "config/config.yml"
+const envPath string = "config/.env"
 
 // @title LA TABULA API
 // @version 2.0
@@ -31,45 +34,62 @@ const envPath string = "internal/config/.env"
 // @license.name None
 // @license.url None
 
-// @host localhost:8080
+// @host localhost:8082
 // @BasePath /api/v2
 // @query.collection.format multi
 func main() {
-	config, err := config.NewSessionEnvConfig(envPath, configPath)
+	config, err := config.LoadConfig(envPath, configPath)
 	govalidator.SetFieldsRequiredByDefault(true)
 	if err != nil {
 		log.Fatal(err.Error())
 	}
-	log.Println("config generated")
+	log.Printf("Config loaded")
 
-	userStorage := in_memory.NewUserStorage()
-	authStorage := in_memory.NewAuthStorage()
-	boardStorage := in_memory.NewBoardStorage()
-	log.Println("storages configured")
+	logger, err := logging.NewLogrusLogger(config.Logging)
+	if err != nil {
+		logger.Fatal(err.Error())
+	}
+	logger.Info("Logger configured")
 
-	userAuthService := user.NewAuthUserService(userStorage)
-	authService := auth.NewAuthSessionService(*config, authStorage)
-	boardService := board.NewBoardService(boardStorage)
-	log.Println("services configured")
+	dbConnection, err := postgresql.GetDBConnection(*config.Database)
+	if err != nil {
+		logger.Fatal(err.Error())
+	}
+	defer dbConnection.Close()
+	logger.Info("Database connection established")
 
-	mux, err := app.GetChiMux(*handlers.NewHandlerManager(
-		authService,
-		userAuthService,
-		//user.NewUserService(userStorage),
-		boardService),
-		config.Base,
+	grcpConn, err := grpc.Dial(
+		fmt.Sprintf("%v:%v", config.Server.MicroserviceHost, config.Server.MicroservicePort),
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	)
 	if err != nil {
-		log.Fatal(err.Error())
+		logger.Fatal("Failed to connect to the GRPC server as client")
 	}
-	log.Println("router configured")
+	logger.Info("Connected to GRPC server as client")
+	defer grcpConn.Close()
+
+	storages := storage.NewPostgresStorages(dbConnection)
+	logger.Info("Storages configured")
+
+	// services := service.NewEmbeddedServices(storages, *config.Session)
+	services := service.NewMicroServices(storages, *config.Session, grcpConn)
+	logger.Info("Services configured")
+
+	handlers := handlers.NewHandlers(services)
+	logger.Info("Handlers configured")
+
+	mux, err := app.GetChiMux(*handlers, *config, &logger)
+	if err != nil {
+		logger.Fatal(err.Error())
+	}
+	logger.Info("Router configured")
 
 	var server = http.Server{
-		Addr:    ":8080",
+		Addr:    fmt.Sprintf(":%d", config.Server.BackendPort),
 		Handler: mux,
 	}
 
-	log.Println("server configured")
+	logger.Info("Server is running")
 
 	idleConnsClosed := make(chan struct{})
 	go func() {
@@ -80,14 +100,14 @@ func main() {
 		// We received an interrupt signal, shut down.
 		if err := server.Shutdown(context.Background()); err != nil {
 			// Error from closing listeners, or context timeout:
-			log.Printf("HTTP server Shutdown: %v", err)
+			logger.Info("HTTP server Shutdown: " + err.Error())
 		}
 		close(idleConnsClosed)
 	}()
 
 	if err := server.ListenAndServe(); err != http.ErrServerClosed {
 		// Error starting or closing listener:
-		log.Fatalf("HTTP server ListenAndServe: %v", err)
+		logger.Fatal("HTTP server ListenAndServe: " + err.Error())
 	}
 
 	<-idleConnsClosed

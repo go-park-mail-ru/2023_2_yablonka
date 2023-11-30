@@ -1,33 +1,33 @@
 package handlers
 
 import (
-	"context"
-	"crypto/sha256"
 	"encoding/json"
-	"fmt"
-	"log"
 	"net/http"
-	"time"
-
-	apperrors "server/internal/apperrors"
-	_ "server/internal/pkg/doc_structs"
-	dto "server/internal/pkg/dto"
+	"server/internal/apperrors"
+	logger "server/internal/logging"
+	"server/internal/pkg/dto"
 	"server/internal/service"
+	"time"
 
 	"github.com/asaskevich/govalidator"
 )
 
 type AuthHandler struct {
 	as service.IAuthService
-	us service.IUserAuthService
+	us service.IUserService
+	cs service.ICSRFService
 }
 
 func (ah AuthHandler) GetAuthService() service.IAuthService {
 	return ah.as
 }
 
-func (ah AuthHandler) GetUserAuthService() service.IUserAuthService {
+func (ah AuthHandler) GetUserService() service.IUserService {
 	return ah.us
+}
+
+func (ah AuthHandler) GetCSRFService() service.ICSRFService {
+	return ah.cs
 }
 
 // @Summary Войти в систему
@@ -47,68 +47,101 @@ func (ah AuthHandler) GetUserAuthService() service.IUserAuthService {
 // @Router /auth/login/ [post]
 func (ah AuthHandler) LogIn(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
+	funcName := "LogIn"
+	nodeName := "handler"
+	errorMessage := "Logging user in failed with error: "
+	failBorder := "---------------------------------- User Login FAIL ----------------------------------"
 
-	var login dto.AuthInfo
+	logger := rCtx.Value(dto.LoggerKey).(logger.ILogger)
 
-	err := json.NewDecoder(r.Body).Decode(&login)
+	logger.Info("---------------------------------- User Login ----------------------------------")
+
+	var authInfo dto.AuthInfo
+	err := json.NewDecoder(r.Body).Decode(&authInfo)
 	if err != nil {
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.BadRequestResponse))
+		logger.Error(errorMessage + err.Error())
+		logger.Info(failBorder)
+		apperrors.ReturnError(apperrors.BadRequestResponse, w, r)
 		return
 	}
+	logger.Debug("JSON decoded", funcName, nodeName)
 
-	_, err = govalidator.ValidateStruct(login)
+	_, err = govalidator.ValidateStruct(authInfo)
 	if err != nil {
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.GenericUnauthorizedResponse))
+		logger.Error(errorMessage + err.Error())
+		logger.Info(failBorder)
+		apperrors.ReturnError(apperrors.BadRequestResponse, w, r)
 		return
 	}
+	logger.Debug("Login info validated", funcName, nodeName)
 
-	incomingAuth := dto.LoginInfo{
-		Email:        login.Email,
-		PasswordHash: hashFromAuthInfo(login),
-	}
-
-	user, err := ah.us.GetUser(rCtx, incomingAuth)
+	user, err := ah.us.CheckPassword(rCtx, authInfo)
 	if err != nil {
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.ErrorMap[err]))
+		logger.Error(errorMessage + err.Error())
+		logger.Info(failBorder)
+		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
 		return
 	}
+	logger.Debug("Password checked", funcName, nodeName)
 
-	token, expiresAt, err := ah.as.AuthUser(rCtx, user)
+	userID := dto.UserID{
+		Value: user.ID,
+	}
+	session, err := ah.as.AuthUser(rCtx, userID)
 	if err != nil {
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.ErrorMap[err]))
+		logger.Error(errorMessage + err.Error())
+		logger.Info(failBorder)
+		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
 		return
 	}
+	logger.Debug("Session created", funcName, nodeName)
 
-	cookie := &http.Cookie{
+	authCookie := &http.Cookie{
 		Name:     "tabula_user",
-		Value:    token,
+		Value:    session.ID,
 		HttpOnly: true,
 		SameSite: http.SameSiteLaxMode,
-		Expires:  expiresAt,
+		Expires:  session.ExpirationDate,
 		Path:     "/api/v2/",
 	}
+	http.SetCookie(w, authCookie)
+	logger.Debug("Cookie set", funcName, nodeName)
 
-	fmt.Println(token)
+	csrfToken, err := ah.cs.SetupCSRF(rCtx, userID)
+	if err != nil {
+		logger.Error(errorMessage + err.Error())
+		logger.Info(failBorder)
+		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
+		return
+	}
+	w.Header().Set("X-Csrf-Token", csrfToken.Token)
+	logger.Debug("CSRF token response header set", funcName, nodeName)
 
-	http.SetCookie(w, cookie)
+	publicUserInfo := dto.UserPublicInfo{
+		ID:          user.ID,
+		Name:        user.Name,
+		Surname:     user.Surname,
+		Email:       user.Email,
+		Description: user.Description,
+		AvatarURL:   user.AvatarURL,
+	}
 
 	response := dto.JSONResponse{
 		Body: dto.JSONMap{
-			"user": user,
+			"user": publicUserInfo,
 		},
 	}
-	jsonResponse, err := json.Marshal(response)
+	err = WriteResponse(response, w, r)
 	if err != nil {
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.InternalServerErrorResponse))
+		logger.Error(errorMessage + err.Error())
+		logger.Info(failBorder)
+		apperrors.ReturnError(apperrors.InternalServerErrorResponse, w, r)
 		return
 	}
+	logger.Debug("response written", funcName, nodeName)
 
-	r.Body.Close()
-	_, err = w.Write(jsonResponse)
-	if err != nil {
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.InternalServerErrorResponse))
-		return
-	}
+	logger.Debug("Response written", funcName, nodeName)
+	logger.Info("---------------------------------- User Login SUCCESS ----------------------------------")
 }
 
 // @Summary Зарегистрировать нового пользователя
@@ -118,7 +151,7 @@ func (ah AuthHandler) LogIn(w http.ResponseWriter, r *http.Request) {
 // @Accept  json
 // @Produce  json
 //
-// @Param authData body dto.AuthInfo true "Эл. почта и логин пользователя"
+// @Param signup body dto.AuthInfo true "Базовые данные пользователя"
 //
 // @Success 200  {object}  doc_structs.UserResponse "Объект пользователя"
 // @Failure 400  {object}  apperrors.ErrorResponse
@@ -129,66 +162,99 @@ func (ah AuthHandler) LogIn(w http.ResponseWriter, r *http.Request) {
 // @Router /auth/signup/ [post]
 func (ah AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
+	funcName := "SignUp"
+	nodeName := "handler"
+	errorMessage := "Signing user up failed with error: "
+	failBorder := "---------------------------------- User SignUp FAIL ----------------------------------"
+
+	logger := rCtx.Value(dto.LoggerKey).(logger.ILogger)
+
+	logger.Info("---------------------------------- User Login ----------------------------------")
 
 	var signup dto.AuthInfo
 	err := json.NewDecoder(r.Body).Decode(&signup)
 	if err != nil {
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.BadRequestResponse))
+		logger.Error(errorMessage + err.Error())
+		logger.Info(failBorder)
+		apperrors.ReturnError(apperrors.BadRequestResponse, w, r)
 		return
 	}
+	logger.Debug("JSON decoded", funcName, nodeName)
 
 	_, err = govalidator.ValidateStruct(signup)
 	if err != nil {
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.BadRequestResponse))
+		logger.Error(errorMessage + err.Error())
+		logger.Info(failBorder)
+		apperrors.ReturnError(apperrors.BadRequestResponse, w, r)
 		return
 	}
+	logger.Debug("request struct validated", funcName, nodeName)
 
-	passwordHash := hashFromAuthInfo(signup)
-	incomingAuth := dto.SignupInfo{
-		Email:        signup.Email,
-		PasswordHash: passwordHash,
-	}
-
-	user, err := ah.us.CreateUser(rCtx, incomingAuth)
+	user, err := ah.us.RegisterUser(rCtx, signup)
 	if err != nil {
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.ErrorMap[err]))
+		logger.Error(errorMessage + err.Error())
+		logger.Info(failBorder)
+		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
 		return
 	}
+	logger.Debug("User registered", funcName, nodeName)
 
-	token, expiresAt, err := ah.as.AuthUser(rCtx, user)
+	userID := dto.UserID{
+		Value: user.ID,
+	}
+	session, err := ah.as.AuthUser(rCtx, userID)
 	if err != nil {
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.ErrorMap[err]))
+		logger.Error(errorMessage + err.Error())
+		logger.Info(failBorder)
+		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
 		return
 	}
+	logger.Debug("User authorized", funcName, nodeName)
 
 	cookie := &http.Cookie{
 		Name:     "tabula_user",
-		Value:    token,
+		Value:    session.ID,
 		HttpOnly: true,
 		SameSite: http.SameSiteLaxMode,
-		Expires:  expiresAt,
+		Expires:  session.ExpirationDate,
 		Path:     "/api/v2/",
 	}
-
 	http.SetCookie(w, cookie)
+	logger.Debug("Cookie set", funcName, nodeName)
 
+	csrfToken, err := ah.cs.SetupCSRF(rCtx, userID)
+	if err != nil {
+		logger.Error(errorMessage + err.Error())
+		logger.Info(failBorder)
+		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
+		return
+	}
+	w.Header().Set("X-Csrf-Token", csrfToken.Token)
+	logger.Debug("JSON decoded", funcName, nodeName)
+
+	publicUserInfo := dto.UserPublicInfo{
+		ID:          user.ID,
+		Name:        user.Name,
+		Surname:     user.Surname,
+		Email:       user.Email,
+		Description: user.Description,
+		AvatarURL:   user.AvatarURL,
+	}
 	response := dto.JSONResponse{
 		Body: dto.JSONMap{
-			"user": user,
+			"user": publicUserInfo,
 		},
 	}
-	jsonResponse, err := json.Marshal(response)
+	err = WriteResponse(response, w, r)
 	if err != nil {
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.InternalServerErrorResponse))
+		logger.Error(errorMessage + err.Error())
+		logger.Info(failBorder)
+		apperrors.ReturnError(apperrors.InternalServerErrorResponse, w, r)
 		return
 	}
+	logger.Debug("response written", funcName, nodeName)
 
-	_, err = w.Write(jsonResponse)
-	if err != nil {
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.InternalServerErrorResponse))
-		return
-	}
-	r.Body.Close()
+	logger.Info("---------------------------------- User SignUp SUCCESS ----------------------------------")
 }
 
 // @Summary Выйти из системы
@@ -198,7 +264,7 @@ func (ah AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 // @Accept  json
 // @Produce  json
 //
-// @Success 204 {string} string "no content"
+// @Success 204  {string} string "no content"
 // @Failure 400  {object}  apperrors.ErrorResponse
 // @Failure 401  {object}  apperrors.ErrorResponse
 // @Failure 500  {object}  apperrors.ErrorResponse
@@ -206,26 +272,45 @@ func (ah AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 // @Router /auth/logout/ [delete]
 func (ah AuthHandler) LogOut(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
+	funcName := "LogOut"
+	nodeName := "handler"
+	errorMessage := "Logging user out failed with error: "
+	failBorder := "---------------------------------- User LogOut FAIL ----------------------------------"
+
+	logger := rCtx.Value(dto.LoggerKey).(logger.ILogger)
+
+	logger.Info("---------------------------------- User Logout ----------------------------------")
 
 	cookie, err := r.Cookie("tabula_user")
 	if err != nil {
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.GenericUnauthorizedResponse))
+		logger.Error(errorMessage + err.Error())
+		logger.Info(failBorder)
+		apperrors.ReturnError(apperrors.GenericUnauthorizedResponse, w, r)
 		return
 	}
+	logger.Debug("Cookie found", funcName, nodeName)
 
-	token := cookie.Value
+	token := dto.SessionToken{
+		ID: cookie.Value,
+	}
 
 	_, err = ah.as.VerifyAuth(rCtx, token)
 	if err != nil {
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.ErrorMap[err]))
+		logger.Error(errorMessage + err.Error())
+		logger.Info(failBorder)
+		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
 		return
 	}
+	logger.Debug("Session verified", funcName, nodeName)
 
 	err = ah.as.LogOut(rCtx, token)
 	if err != nil {
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.ErrorMap[err]))
+		logger.Error(errorMessage + err.Error())
+		logger.Info(failBorder)
+		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
 		return
 	}
+	logger.Debug("Session deleted", funcName, nodeName)
 
 	cookie = &http.Cookie{
 		Name:     "tabula_user",
@@ -236,22 +321,22 @@ func (ah AuthHandler) LogOut(w http.ResponseWriter, r *http.Request) {
 		Path:     "/api/v2/",
 	}
 	http.SetCookie(w, cookie)
+	logger.Debug("Empty cookie set", funcName, nodeName)
 
 	response := dto.JSONResponse{
 		Body: dto.JSONMap{},
 	}
-	jsonResponse, err := json.Marshal(response)
+	err = WriteResponse(response, w, r)
 	if err != nil {
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.InternalServerErrorResponse))
+		logger.Error(errorMessage + err.Error())
+		logger.Info(failBorder)
+		apperrors.ReturnError(apperrors.InternalServerErrorResponse, w, r)
 		return
 	}
+	logger.Debug("response written", funcName, nodeName)
 
-	_, err = w.Write(jsonResponse)
-	if err != nil {
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.InternalServerErrorResponse))
-		return
-	}
-	r.Body.Close()
+	logger.Debug("Response written", funcName, nodeName)
+	logger.Info("---------------------------------- User Logout SUCCESS ----------------------------------")
 }
 
 // @Summary Подтвердить вход
@@ -268,55 +353,80 @@ func (ah AuthHandler) LogOut(w http.ResponseWriter, r *http.Request) {
 //
 // @Router /auth/verify [get]
 func (ah AuthHandler) VerifyAuthEndpoint(w http.ResponseWriter, r *http.Request) {
+	funcName := "LogOut"
+	nodeName := "handler"
+	errorMessage := "Logging user out failed with error: "
+	failBorder := "---------------------------------- User auth verification FAIL ----------------------------------"
+
 	rCtx := r.Context()
-	log.Println(r.Cookies())
+	logger := rCtx.Value(dto.LoggerKey).(logger.ILogger)
+
+	logger.Info("---------------------------------- Verifying user authorization ----------------------------------")
+
+	w.Header().Set("X-Csrf-Token", "")
+	logger.Debug("Default X-Csrf-Token set", funcName, nodeName)
 
 	cookie, err := r.Cookie("tabula_user")
-
 	if err != nil {
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.GenericUnauthorizedResponse))
+		logger.Error(errorMessage + err.Error())
+		logger.Info(failBorder)
+		apperrors.ReturnError(apperrors.GenericUnauthorizedResponse, w, r)
 		return
 	}
-	log.Println(cookie.Value)
+	logger.Debug("Cookie found", funcName, nodeName)
 
-	token := cookie.Value
-
-	userInfo, err := ah.as.VerifyAuth(rCtx, token)
+	token := dto.SessionToken{
+		ID: cookie.Value,
+	}
+	userID, err := ah.as.VerifyAuth(rCtx, token)
 	if err != nil {
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.ErrorMap[err]))
+		logger.Error(errorMessage + err.Error())
+		logger.Info(failBorder)
+		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
 		return
 	}
-	userObj, err := ah.us.GetUserByID(rCtx, userInfo.UserID)
-	if err == apperrors.ErrUserNotFound {
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.GenericUnauthorizedResponse))
-		return
-	} else if err != nil {
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.ErrorMap[err]))
-		return
-	}
+	logger.Debug("Session verified", funcName, nodeName)
 
+	user, err := ah.us.GetWithID(rCtx, userID)
+	if err != nil {
+		logger.Error(errorMessage + err.Error())
+		logger.Info(failBorder)
+		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
+		return
+	}
+	logger.Debug("Got user object", funcName, nodeName)
+
+	csrfToken, err := ah.cs.SetupCSRF(rCtx, userID)
+	if err != nil {
+		logger.Error(errorMessage + err.Error())
+		logger.Info(failBorder)
+		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
+		return
+	}
+	w.Header().Set("X-Csrf-Token", csrfToken.Token)
+	logger.Debug("CSRF set up", funcName, nodeName)
+
+	publicUserInfo := dto.UserPublicInfo{
+		ID:          user.ID,
+		Name:        user.Name,
+		Surname:     user.Surname,
+		Email:       user.Email,
+		Description: user.Description,
+		AvatarURL:   user.AvatarURL,
+	}
 	response := dto.JSONResponse{
 		Body: dto.JSONMap{
-			"user": userObj,
+			"user": publicUserInfo,
 		},
 	}
-	jsonResponse, err := json.Marshal(response)
+	err = WriteResponse(response, w, r)
 	if err != nil {
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.InternalServerErrorResponse))
+		logger.Error(errorMessage + err.Error())
+		logger.Info(failBorder)
+		apperrors.ReturnError(apperrors.InternalServerErrorResponse, w, r)
 		return
 	}
+	logger.Debug("response written", funcName, nodeName)
 
-	_, err = w.Write(jsonResponse)
-	if err != nil {
-		*r = *r.WithContext(context.WithValue(rCtx, dto.ErrorKey, apperrors.InternalServerErrorResponse))
-		return
-	}
-	r.Body.Close()
-}
-
-// TODO salt
-func hashFromAuthInfo(info dto.AuthInfo) string {
-	hasher := sha256.New()
-	hasher.Write([]byte(info.Email + info.Password))
-	return fmt.Sprintf("%x", hasher.Sum(nil))
+	logger.Info("---------------------------------- User SignUp SUCCESS ----------------------------------")
 }

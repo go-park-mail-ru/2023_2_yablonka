@@ -3,20 +3,30 @@ package service
 import (
 	"context"
 	"server/internal/pkg/dto"
+	"server/internal/pkg/entities"
 )
 
+//go:generate mockgen -source=$GOFILE -destination=../../mocks/mock_service/$GOFILE -package=mock_service
 type IBoardService interface {
-	// GetUserOwnedBoards
-	// находит все доски, созданные пользователем
-	// или возвращает ошибку apperrors.ErrUserNotFound (401)
-	GetUserOwnedBoards(context.Context, dto.VerifiedAuthInfo) ([]dto.UserOwnedBoardInfo, error)
-	// GetUserGuestBoards
-	// находит все доски, в которых участвует пользователь
-	// или возвращает ошибку apperrors.ErrUserNotFound (401)
-	GetUserGuestBoards(context.Context, dto.VerifiedAuthInfo) ([]dto.UserGuestBoardInfo, error)
-
-	// TODO Implement
-	// GetBoard(context.Context, dto.IndividualBoardInfo) (*entities.Board, error)
-	// CreateBoard(context.Context, dto.NewBoardInfo) (*entities.Board, error)
-	// UpdateBoard(context.Context, dto.IndividualBoardInfo) (*entities.Board, error)
+	// GetFullBoard
+	// возвращает доску со связанными пользователями, списками и заданиями
+	GetFullBoard(context.Context, dto.IndividualBoardRequest) (*dto.FullBoardResult, error)
+	// Create
+	// создаёт доску и связь с пользователем-создателем
+	Create(context.Context, dto.NewBoardInfo) (*entities.Board, error)
+	// UpdateData
+	// возвращает доску со связанными пользователями, списками и заданиями
+	UpdateData(context.Context, dto.UpdatedBoardInfo) error
+	// UpdateThumbnail
+	// сохраняет картинку доски в папку images/board_thumbnails с названием id доски и сохраняет ссылку на изображение в БД
+	UpdateThumbnail(context.Context, dto.UpdatedBoardThumbnailInfo) (*dto.UrlObj, error)
+	// Delete
+	// удаляет доску
+	Delete(context.Context, dto.BoardID) error
+	// AddUser
+	// добавляет пользователя на доску
+	AddUser(context.Context, dto.AddBoardUserRequest) error
+	// AddUser
+	// добавляет пользователя на доску
+	RemoveUser(context.Context, dto.RemoveBoardUserInfo) error
 }
