@@ -20,18 +20,23 @@ cors:
     - localhost:8080
     - localhost:8081
     - localhost:8082
+    - localhost:8083
     - 213.219.215.40:8080
     - 213.219.215.40:8081
     - 213.219.215.40:8082
+    - 213.219.215.40:8083
     - http://microservices:8080
     - http://microservices:8081
     - http://microservices:8082
+    - http://microservices:8083
     - http://localhost:8080
     - http://localhost:8081
     - http://localhost:8082
+    - http://localhost:8083
     - http://213.219.215.40:8080
     - http://213.219.215.40:8081
     - http://213.219.215.40:8082
+    - http://213.219.215.40:8083
   allowed_headers:
     - Acccess-Control-Allow-Origin
     - Content-Type
