@@ -67,7 +67,7 @@ func (ts TaskService) AddUser(ctx context.Context, info dto.AddTaskUserInfo) err
 	logger.Debug("got user", funcName, nodeName)
 
 	if userAccess {
-		return apperrors.ErrUserAlreadyInBoard
+		return apperrors.ErrUserAlreadyInTask
 	}
 	logger.Debug("user not in task", funcName, nodeName)
 

@@ -245,9 +245,9 @@ func (s PostgresTaskStorage) AddUser(ctx context.Context, info dto.AddTaskUserIn
 	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
 
 	sql, args, err := sq.
-		Insert("task_user").
-		Columns(taskUserFields...).
-		Values(info.UserID, info.TaskID).
+		Insert("public.task_user").
+		Columns("id_task", "id_user").
+		Values(info.TaskID, info.UserID).
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
 
@@ -306,9 +306,9 @@ func (s *PostgresTaskStorage) CheckAccess(ctx context.Context, info dto.CheckTas
 
 	listSql, args, err := sq.Select("count(*)").
 		From("public.task_user").
-		Where(sq.Eq{
-			"id_task": info.TaskID,
-			"id_user": info.UserID,
+		Where(sq.And{
+			sq.Eq{"id_task": info.TaskID},
+			sq.Eq{"id_user": info.UserID},
 		}).
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
