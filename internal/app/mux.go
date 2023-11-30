@@ -89,13 +89,11 @@ func GetChiMux(manager handlers.Handlers, config config.Config, logger logging.I
 			r.Post("/create/", manager.ChecklistHandler.Create)
 			r.Post("/edit/", manager.ChecklistHandler.Update)
 			r.Delete("/delete/", manager.ChecklistHandler.Delete)
-		})
-		r.Route("/checklist_item", func(r chi.Router) {
-			r.Use(middleware.AuthMiddleware(manager.AuthHandler.GetAuthService(), manager.AuthHandler.GetUserService()))
-			r.Use(middleware.CSRFMiddleware(manager.AuthHandler.GetCSRFService()))
-			r.Post("/create/", manager.ChecklistItemHandler.Create)
-			r.Post("/edit/", manager.ChecklistItemHandler.Update)
-			r.Delete("/delete/", manager.ChecklistItemHandler.Delete)
+			r.Route("/item", func(r chi.Router) {
+				r.Post("/create/", manager.ChecklistItemHandler.Create)
+				r.Post("/edit/", manager.ChecklistItemHandler.Update)
+				r.Delete("/delete/", manager.ChecklistItemHandler.Delete)
+			})
 		})
 		r.Route("/comment", func(r chi.Router) {
 			r.Use(middleware.AuthMiddleware(manager.AuthHandler.GetAuthService(), manager.AuthHandler.GetUserService()))
