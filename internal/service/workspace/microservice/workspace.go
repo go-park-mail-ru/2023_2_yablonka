@@ -41,6 +41,7 @@ func (ws WorkspaceService) GetUserWorkspaces(ctx context.Context, userID dto.Use
 		logger.Debug("Failed to get user guest workspaces", funcName, nodeName)
 		return nil, err
 	}
+
 	return &dto.AllWorkspaces{
 		OwnedWorkspaces: *ownedWorkspaces,
 		GuestWorkspaces: *guestWorkspaces,
