@@ -272,8 +272,8 @@ var ErrorMap = map[error]ErrorResponse{
 	ErrChecklistItemNotCreated:  InternalServerErrorResponse,
 	ErrChecklistItemNotUpdated:  InternalServerErrorResponse,
 	ErrChecklistItemNotDeleted:  InternalServerErrorResponse,
-	ErrUserAlreadyInBoard:       GenericUnauthorizedResponse,
-	ErrUserAlreadyInTask:        GenericUnauthorizedResponse,
+	ErrUserAlreadyInBoard:       StatusConflictResponse,
+	ErrUserAlreadyInTask:        StatusConflictResponse,
 }
 
 func ErrorJSON(err ErrorResponse) []byte {
@@ -290,7 +290,7 @@ func MakeGRPCError(err error) error {
 		log.Println("Error while encoding error", err)
 		response = InternalServerErrorResponse
 	}
-	grpcErr := status.Error(codes.Code(response.Code), response.Message)
+	grpcErr := status.Error(codes.Code(response.Code), err.Error())
 	return grpcErr
 }
 

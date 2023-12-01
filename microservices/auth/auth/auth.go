@@ -26,6 +26,15 @@ type AuthService struct {
 	UnimplementedAuthServiceServer
 }
 
+var AuthServiceErrorCodes = map[error]ErrorCode{
+	nil:                             ErrorCode_OK,
+	apperrors.ErrTokenNotGenerated:  ErrorCode_TOKEN_NOT_GENERATED,
+	apperrors.ErrCouldNotBuildQuery: ErrorCode_COULD_NOT_BUILD_QUERY,
+	apperrors.ErrSessionExpired:     ErrorCode_SESSION_EXPIRED,
+	apperrors.ErrSessionNotCreated:  ErrorCode_SESSION_NOT_CREATED,
+	apperrors.ErrSessionNotFound:    ErrorCode_SESSION_NOT_FOUND,
+}
+
 func NewAuthService(config config.SessionConfig, authStorage storage.IAuthStorage, logger *logging.LogrusLogger) *AuthService {
 	return &AuthService{
 		sessionDuration: config.Duration,
@@ -40,13 +49,16 @@ const nodeName = "microservice_server"
 // AuthUser
 // возвращает уникальную строку авторизации и её длительность
 // или возвращает ошибки apperrors.ErrTokenNotGenerated (500)
-func (a *AuthService) AuthUser(ctx context.Context, id *UserID) (*SessionToken, error) {
+func (a *AuthService) AuthUser(ctx context.Context, id *UserID) (*AuthUserResponse, error) {
 	funcName := "AuthService.AuthUser"
 	expiresAt := time.Now().Add(a.sessionDuration)
+	response := &AuthUserResponse{}
 
 	sessionID, err := generateString(a.sessionIDLength)
 	if err != nil {
-		return &SessionToken{}, apperrors.MakeGRPCError(apperrors.ErrTokenNotGenerated)
+		response.Code = AuthServiceErrorCodes[apperrors.ErrTokenNotGenerated]
+		response.Token = &SessionToken{}
+		return response, nil
 	}
 	a.logger.Debug("Session ID generated", funcName, nodeName)
 
@@ -58,29 +70,37 @@ func (a *AuthService) AuthUser(ctx context.Context, id *UserID) (*SessionToken, 
 
 	err = a.authStorage.CreateSession(ctx, session)
 	if err != nil {
-		return &SessionToken{}, apperrors.MakeGRPCError(err)
+		response.Code = AuthServiceErrorCodes[err]
+		response.Token = &SessionToken{}
+		return response, nil
 	}
 	a.logger.Debug("Session created", funcName, nodeName)
 
-	return &SessionToken{
+	response.Code = AuthServiceErrorCodes[nil]
+	response.Token = &SessionToken{
 		ID:             sessionID,
 		ExpirationDate: timestamppb.New(expiresAt),
-	}, nil
+	}
+	return response, nil
 }
 
 // VerifyAuth
 // проверяет состояние авторизации, возвращает ID авторизированного пользователя
 // или возвращает ошибки apperrors.ErrSessionNotFound (401)
-func (a *AuthService) VerifyAuth(ctx context.Context, token *SessionToken) (*UserID, error) {
+func (a *AuthService) VerifyAuth(ctx context.Context, token *SessionToken) (*VerifyAuthResponse, error) {
 	funcName := "AuthService.VerifyAuth"
 	convertedSession := dto.SessionToken{
 		ID:             token.ID,
 		ExpirationDate: token.ExpirationDate.AsTime(),
 	}
+	response := &VerifyAuthResponse{}
 
 	sessionObj, err := a.authStorage.GetSession(ctx, convertedSession)
 	if err != nil {
-		return &UserID{}, apperrors.MakeGRPCError(err)
+		a.logger.Debug("Session not found", funcName, nodeName)
+		response.Code = AuthServiceErrorCodes[err]
+		response.ID = &UserID{}
+		return response, nil
 	}
 	a.logger.Debug("Found session", funcName, nodeName)
 
@@ -89,26 +109,45 @@ func (a *AuthService) VerifyAuth(ctx context.Context, token *SessionToken) (*Use
 		for _, err = a.LogOut(ctx, token); err != nil; {
 			_, err = a.LogOut(ctx, token)
 		}
-		return &UserID{}, apperrors.MakeGRPCError(apperrors.ErrSessionExpired)
+		response.Code = AuthServiceErrorCodes[apperrors.ErrSessionExpired]
+		response.ID = &UserID{}
+		return response, nil
 	}
-	return &UserID{Value: sessionObj.UserID}, nil
+
+	response.Code = AuthServiceErrorCodes[nil]
+	response.ID = &UserID{Value: sessionObj.UserID}
+	return response, nil
 }
 
 // LogOut
 // удаляет текущую сессию
 // или возвращает ошибку apperrors.ErrSessionNotFound (401)
-func (a *AuthService) LogOut(ctx context.Context, token *SessionToken) (*emptypb.Empty, error) {
+func (a *AuthService) LogOut(ctx context.Context, token *SessionToken) (*LogOutResponse, error) {
+	funcName := "AuthService.LogOut"
 	convertedSession := dto.SessionToken{
 		ID:             token.ID,
 		ExpirationDate: token.ExpirationDate.AsTime(),
 	}
-	return &emptypb.Empty{}, apperrors.MakeGRPCError(a.authStorage.DeleteSession(ctx, convertedSession))
+	response := &LogOutResponse{}
+	err := a.authStorage.DeleteSession(ctx, convertedSession)
+	if err != nil {
+		a.logger.Debug("Failed to delete session with error "+err.Error(), funcName, nodeName)
+	} else {
+		a.logger.Debug("Session deleted", funcName, nodeName)
+	}
+	response.Code = AuthServiceErrorCodes[err]
+
+	return response, nil
 }
 
 // GetLifetime
 // возвращает длительность авторизации
-func (a *AuthService) GetLifetime(ctx context.Context, empty *emptypb.Empty) (*durationpb.Duration, error) {
-	return durationpb.New(a.sessionDuration), nil
+func (a *AuthService) GetLifetime(ctx context.Context, empty *emptypb.Empty) (*GetLifetimeResponse, error) {
+	response := &GetLifetimeResponse{
+		Code:     AuthServiceErrorCodes[nil],
+		Duration: durationpb.New(a.sessionDuration),
+	}
+	return response, nil
 }
 
 // generateString
