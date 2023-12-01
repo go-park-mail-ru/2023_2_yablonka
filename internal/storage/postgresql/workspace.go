@@ -150,8 +150,8 @@ func (s PostgresWorkspaceStorage) GetUserGuestWorkspaces(ctx context.Context, us
 	workspaceQuery, args, err := sq.
 		Select(userGuestWorkspaceFields...).
 		From("public.workspace").
-		Join("public.user_workspace ON public.user_workspace.id_workspace = public.workspace.id").
-		Join("public.user ON public.user.id = public.workspace.id_creator").
+		LeftJoin("public.user_workspace ON public.user_workspace.id_workspace = public.workspace.id").
+		LeftJoin("public.user ON public.user.id = public.user_workspace.id_user").
 		Where(sq.And{
 			sq.NotEq{"public.workspace.id_creator": userID.Value},
 			sq.Eq{"public.user_workspace.id_user": userID.Value},
@@ -172,7 +172,7 @@ func (s PostgresWorkspaceStorage) GetUserGuestWorkspaces(ctx context.Context, us
 		log.Println("Storage -- DB workspaces query failed with error", err.Error())
 		return nil, err
 	}
-	log.Println("Workspaces got")
+	log.Println("Guest workspaces got")
 	defer rows.Close()
 
 	workspaceRows := []dto.UserGuestWorkspaceInfo{}
@@ -190,6 +190,7 @@ func (s PostgresWorkspaceStorage) GetUserGuestWorkspaces(ctx context.Context, us
 			&owner.Name,
 			&owner.Surname,
 		)
+		log.Println("workspace: " + (string)(workspace.ID))
 		if err != nil {
 			fmt.Println("Scanning failed due to error", err.Error())
 			return nil, err

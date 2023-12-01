@@ -229,8 +229,9 @@ func (bs BoardService) AddUser(ctx context.Context, request dto.AddBoardUserRequ
 	logger.Debug("user not found", funcName, nodeName)
 
 	info := dto.AddBoardUserInfo{
-		UserID:  targetUser.ID,
-		BoardID: request.BoardID,
+		UserID:      targetUser.ID,
+		BoardID:     request.BoardID,
+		WorkspaceID: request.WorkspaceID,
 	}
 	return bs.boardStorage.AddUser(ctx, info)
 }
