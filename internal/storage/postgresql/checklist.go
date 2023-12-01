@@ -143,6 +143,9 @@ func (s PostgresChecklistStorage) Update(ctx context.Context, info dto.UpdatedCh
 // удаляет чеклист в БД по id
 // или возвращает ошибки ...
 func (s PostgresChecklistStorage) Delete(ctx context.Context, id dto.ChecklistID) error {
+	funcName := "PostgresChecklistStorage.Delete"
+	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
+
 	sql, args, err := sq.
 		Delete("public.checklist").
 		Where(sq.Eq{"id": id.Value}).
@@ -151,11 +154,14 @@ func (s PostgresChecklistStorage) Delete(ctx context.Context, id dto.ChecklistID
 	if err != nil {
 		return apperrors.ErrCouldNotBuildQuery
 	}
+	logger.Debug("Built query\n\t"+sql+"\nwith args\n\t"+fmt.Sprintf("%+v", args), funcName, nodeName)
 
 	_, err = s.db.Exec(sql, args...)
 	if err != nil {
+		logger.Debug("Failed to delete checklist with error "+err.Error(), funcName, nodeName)
 		return apperrors.ErrChecklistNotDeleted
 	}
+	logger.Debug("Checklist deleted", funcName, nodeName)
 
 	return nil
 }
