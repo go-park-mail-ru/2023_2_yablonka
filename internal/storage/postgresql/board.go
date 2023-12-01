@@ -417,8 +417,6 @@ func (s *PostgreSQLBoardStorage) AddUser(ctx context.Context, info dto.AddBoardU
 	funcName := "PostgreSQLBoardStorage.AddUser"
 	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
 
-	info.WorkspaceID = 1
-
 	tx, err := s.db.BeginTx(ctx, &sql.TxOptions{})
 	if err != nil {
 		return apperrors.ErrCouldNotStartTransaction
