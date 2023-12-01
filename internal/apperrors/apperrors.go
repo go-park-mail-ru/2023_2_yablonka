@@ -285,6 +285,9 @@ func ErrorJSON(err ErrorResponse) []byte {
 }
 
 func MakeGRPCError(err error) error {
+	if err == nil {
+		return nil
+	}
 	response, ok := ErrorMap[err]
 	if !ok {
 		log.Println("Error while encoding error", err)
