@@ -417,6 +417,8 @@ func (s *PostgreSQLBoardStorage) AddUser(ctx context.Context, info dto.AddBoardU
 	funcName := "PostgreSQLBoardStorage.AddUser"
 	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
 
+	info.WorkspaceID = 1
+
 	tx, err := s.db.BeginTx(ctx, &sql.TxOptions{})
 	if err != nil {
 		return apperrors.ErrCouldNotStartTransaction
@@ -458,6 +460,10 @@ func (s *PostgreSQLBoardStorage) AddUser(ctx context.Context, info dto.AddBoardU
 	_, err = tx.Exec(query2, args...)
 	if err != nil {
 		logger.Debug("Insert into user_workspace failed with error "+err.Error(), funcName, nodeName)
+		err = tx.Rollback()
+		for err != nil {
+			err = tx.Rollback()
+		}
 		err = tx.Rollback()
 		for err != nil {
 			err = tx.Rollback()
