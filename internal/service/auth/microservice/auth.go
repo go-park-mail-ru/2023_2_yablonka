@@ -2,6 +2,7 @@ package microservice
 
 import (
 	"context"
+	"server/internal/apperrors"
 	config "server/internal/config"
 	"server/internal/pkg/dto"
 	"server/internal/storage"
@@ -20,6 +21,15 @@ type AuthService struct {
 	client          microservice.AuthServiceClient
 	sessionIDLength uint
 	authStorage     storage.IAuthStorage
+}
+
+var AuthServiceErrors = map[microservice.ErrorCode]error{
+	microservice.ErrorCode_OK:                    nil,
+	microservice.ErrorCode_TOKEN_NOT_GENERATED:   apperrors.ErrTokenNotGenerated,
+	microservice.ErrorCode_COULD_NOT_BUILD_QUERY: apperrors.ErrCouldNotBuildQuery,
+	microservice.ErrorCode_SESSION_EXPIRED:       apperrors.ErrSessionExpired,
+	microservice.ErrorCode_SESSION_NOT_CREATED:   apperrors.ErrSessionNotCreated,
+	microservice.ErrorCode_SESSION_NOT_FOUND:     apperrors.ErrSessionNotFound,
 }
 
 const nodeName = "service"
@@ -44,15 +54,16 @@ func (a *AuthService) AuthUser(ctx context.Context, id dto.UserID) (dto.SessionT
 	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
 
 	logger.Debug("Contacting GRPC server", funcName, nodeName)
-	sessionpb, err := a.client.AuthUser(ctx, &microservice.UserID{Value: id.Value})
-	if err != nil {
-		return dto.SessionToken{}, err
+	serverResponse, _ := a.client.AuthUser(ctx, &microservice.UserID{Value: id.Value})
+	logger.Debug("Response received", funcName, nodeName)
+
+	if serverResponse.Code != microservice.ErrorCode_OK {
+		return dto.SessionToken{}, AuthServiceErrors[serverResponse.Code]
 	}
-	logger.Debug("Info received", funcName, nodeName)
 
 	return dto.SessionToken{
-		ID:             sessionpb.ID,
-		ExpirationDate: sessionpb.ExpirationDate.AsTime(),
+		ID:             serverResponse.Token.ID,
+		ExpirationDate: serverResponse.Token.ExpirationDate.AsTime(),
 	}, nil
 }
 
@@ -64,16 +75,17 @@ func (a *AuthService) VerifyAuth(ctx context.Context, token dto.SessionToken) (d
 	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
 
 	logger.Debug("Contacting GRPC server", funcName, nodeName)
-	uidpb, err := a.client.VerifyAuth(ctx, &microservice.SessionToken{
+	serverResponse, _ := a.client.VerifyAuth(ctx, &microservice.SessionToken{
 		ID:             token.ID,
 		ExpirationDate: timestamppb.New(token.ExpirationDate),
 	})
-	if err != nil {
-		return dto.UserID{}, err
-	}
-	logger.Debug("Info received", funcName, nodeName)
+	logger.Debug("Response received", funcName, nodeName)
 
-	return dto.UserID{Value: uidpb.Value}, nil
+	if serverResponse.Code != microservice.ErrorCode_OK {
+		return dto.UserID{}, AuthServiceErrors[serverResponse.Code]
+	}
+
+	return dto.UserID{Value: serverResponse.ID.Value}, nil
 }
 
 // LogOut
@@ -84,21 +96,28 @@ func (a *AuthService) LogOut(ctx context.Context, token dto.SessionToken) error 
 	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
 
 	logger.Debug("Contacting GRPC server", funcName, nodeName)
-	_, err := a.client.LogOut(ctx, &microservice.SessionToken{
+	serverResponse, _ := a.client.LogOut(ctx, &microservice.SessionToken{
 		ID:             token.ID,
 		ExpirationDate: timestamppb.New(token.ExpirationDate),
 	})
-	logger.Debug("Info received", funcName, nodeName)
+	logger.Debug("Response received", funcName, nodeName)
 
-	return err
+	return AuthServiceErrors[serverResponse.Code]
 }
 
 // GetLifetime
 // возвращает длительность авторизации
 func (a *AuthService) GetLifetime(ctx context.Context) time.Duration {
-	lifetimepb, err := a.client.GetLifetime(ctx, &emptypb.Empty{})
-	if err != nil {
+	funcName := "AuthService.GetLifetime"
+	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
+
+	logger.Debug("Contacting GRPC server", funcName, nodeName)
+	serverResponse, _ := a.client.GetLifetime(ctx, &emptypb.Empty{})
+	logger.Debug("Response received", funcName, nodeName)
+
+	if serverResponse.Code != microservice.ErrorCode_OK {
 		return 0
 	}
-	return lifetimepb.AsDuration()
+
+	return serverResponse.Duration.AsDuration()
 }

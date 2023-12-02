@@ -18,10 +18,39 @@ message UserID {
     uint64 Value = 1;
 }
 
+enum ErrorCode {
+    OK = 0;
+    TOKEN_NOT_GENERATED = 1;
+    COULD_NOT_BUILD_QUERY = 2;
+    SESSION_EXPIRED = 3;
+    SESSION_NOT_CREATED = 4;
+    SESSION_NOT_FOUND = 5;
+}
+
+message AuthUserResponse {
+    ErrorCode Code = 1;
+    SessionToken Token = 2;
+    
+}
+
+message VerifyAuthResponse {
+    ErrorCode Code = 1;
+    UserID ID = 2;
+}
+
+message LogOutResponse {
+    ErrorCode Code = 1;
+}
+
+message GetLifetimeResponse {
+    ErrorCode Code = 1;
+    google.protobuf.Duration Duration = 2;
+}
+
 service AuthService {
-    rpc AuthUser (UserID) returns (SessionToken) {}
-    rpc VerifyAuth (SessionToken) returns (UserID) {}
-    rpc LogOut (SessionToken) returns (google.protobuf.Empty) {}
-    rpc GetLifetime (google.protobuf.Empty) returns (google.protobuf.Duration) {}
+    rpc AuthUser (UserID) returns (AuthUserResponse) {}
+    rpc VerifyAuth (SessionToken) returns (VerifyAuthResponse) {}
+    rpc LogOut (SessionToken) returns (LogOutResponse) {}
+    rpc GetLifetime (google.protobuf.Empty) returns (GetLifetimeResponse) {}
 }
 

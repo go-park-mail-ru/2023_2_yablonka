@@ -128,7 +128,7 @@ func (s *PostgresTaskStorage) ReadMany(ctx context.Context, id dto.TaskIDs) (*[]
 		LeftJoin("public.comment ON public.task.id = public.comment.id_task").
 		LeftJoin("public.checklist ON public.task.id = public.checklist.id_task").
 		Where(sq.Eq{"public.task.id": id.Values}).
-		GroupBy("public.task.id").
+		GroupBy("public.task.id", "public.task.id_list").
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
 	if err != nil {
@@ -178,19 +178,23 @@ func (s *PostgresTaskStorage) ReadMany(ctx context.Context, id dto.TaskIDs) (*[]
 // или возвращает ошибки ...
 func (s PostgresTaskStorage) Update(ctx context.Context, info dto.UpdatedTaskInfo) error {
 	query := sq.Update("public.task")
-	if info.Start != nil {
-		query = query.Set("task_start", &info.Start)
-	}
-	if info.End != nil {
-		query = query.Set("task_end", &info.End)
-	}
-	log.Println(info.Start)
-	log.Println(info.End)
+	/*
+		if info.Start != nil {
+			query = query.Set("task_start", &info.Start)
+		}
+		if info.End != nil {
+			query = query.Set("task_end", &info.End)
+		}
+		log.Println(info.Start)
+		log.Println(info.End)
+	*/
 
 	finalQuery, args, err := query.
 		Set("name", info.Name).
 		Set("description", info.Description).
 		Set("list_position", info.ListPosition).
+		Set("task_start", &info.Start).
+		Set("task_end", &info.End).
 		Where(sq.Eq{"id": info.ID}).
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
@@ -241,9 +245,9 @@ func (s PostgresTaskStorage) AddUser(ctx context.Context, info dto.AddTaskUserIn
 	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
 
 	sql, args, err := sq.
-		Insert("task_user").
-		Columns(taskUserFields...).
-		Values(info.UserID, info.TaskID).
+		Insert("public.task_user").
+		Columns("id_task", "id_user").
+		Values(info.TaskID, info.UserID).
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
 
@@ -273,7 +277,7 @@ func (s PostgresTaskStorage) RemoveUser(ctx context.Context, info dto.RemoveTask
 		Delete("task_user").
 		Where(sq.And{
 			sq.Eq{"id_user": info.UserID},
-			sq.Eq{"id_task": info.UserID},
+			sq.Eq{"id_task": info.TaskID},
 		}).
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
@@ -291,4 +295,36 @@ func (s PostgresTaskStorage) RemoveUser(ctx context.Context, info dto.RemoveTask
 	logger.Debug("query executed", funcName, nodeName)
 
 	return nil
+}
+
+// CheckAccess
+// находит пользователя в доске
+// или возвращает ошибки ...
+func (s *PostgresTaskStorage) CheckAccess(ctx context.Context, info dto.CheckTaskAccessInfo) (bool, error) {
+	funcName := "PostgresTaskStorage.CheckAccess"
+	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
+
+	listSql, args, err := sq.Select("count(*)").
+		From("public.task_user").
+		Where(sq.And{
+			sq.Eq{"id_task": info.TaskID},
+			sq.Eq{"id_user": info.UserID},
+		}).
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
+	if err != nil {
+		return false, apperrors.ErrCouldNotBuildQuery
+	}
+	logger.Debug("Built query\n\t"+listSql+"\nwith args\n\t"+fmt.Sprintf("%+v", args), funcName, nodeName)
+
+	row := s.db.QueryRow(listSql, args...)
+	logger.Debug("Got user row", funcName, nodeName)
+
+	var count uint64
+	if row.Scan(&count) != nil {
+		return false, apperrors.ErrCouldNotGetUser
+	}
+	logger.Debug("checked database", funcName, nodeName)
+
+	return count > 0, nil
 }

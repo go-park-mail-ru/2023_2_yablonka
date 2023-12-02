@@ -28,7 +28,7 @@ type ChecklistHandler struct {
 // @Failure 401  {object}  apperrors.ErrorResponse
 // @Failure 500  {object}  apperrors.ErrorResponse
 //
-// @Router /сhecklist/create/ [post]
+// @Router /checklist/create/ [post]
 func (clh ChecklistHandler) Create(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
 	funcName := "ChecklistHandler.Create"
@@ -90,7 +90,7 @@ func (clh ChecklistHandler) Create(w http.ResponseWriter, r *http.Request) {
 // @Failure 401  {object}  apperrors.ErrorResponse
 // @Failure 500  {object}  apperrors.ErrorResponse
 //
-// @Router /сhecklist/edit/ [post]
+// @Router /checklist/update/ [post]
 func (clh ChecklistHandler) Update(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
 	funcName := "ChecklistHandler.Update"
@@ -150,7 +150,7 @@ func (clh ChecklistHandler) Update(w http.ResponseWriter, r *http.Request) {
 // @Failure 401  {object}  apperrors.ErrorResponse
 // @Failure 500  {object}  apperrors.ErrorResponse
 //
-// @Router /сhecklist/delete/ [delete]
+// @Router /checklist/delete/ [delete]
 func (clh ChecklistHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
 	funcName := "ChecklistHandler.Delete"

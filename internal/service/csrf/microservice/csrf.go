@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"server/internal/apperrors"
 	config "server/internal/config"
 	"server/internal/pkg/dto"
 	"server/internal/storage"
@@ -49,8 +50,8 @@ func (cs *CSRFService) SetupCSRF(ctx context.Context, id dto.UserID) (dto.CSRFDa
 
 	logger.Debug("Contacting GRPC server", funcName, nodeName)
 	csrfpb, err := cs.client.SetupCSRF(ctx, &microservice.UserID{Value: id.Value})
-	if err != nil {
-		return dto.CSRFData{}, err
+	if handledErr := apperrors.HandleGRPCError(err); handledErr != nil {
+		return dto.CSRFData{}, handledErr
 	}
 	logger.Debug("Info received", funcName, nodeName)
 
@@ -73,7 +74,7 @@ func (cs *CSRFService) VerifyCSRF(ctx context.Context, token dto.CSRFToken) erro
 	})
 	logger.Debug("Info received", funcName, nodeName)
 
-	return err
+	return apperrors.HandleGRPCError(err)
 }
 
 // DeleteCSRF
@@ -89,5 +90,5 @@ func (cs *CSRFService) DeleteCSRF(ctx context.Context, token dto.CSRFToken) erro
 	})
 	logger.Debug("Info received", funcName, nodeName)
 
-	return err
+	return apperrors.HandleGRPCError(err)
 }

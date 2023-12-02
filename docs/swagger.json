@@ -573,6 +573,318 @@
                 }
             }
         },
+        "/checklist/create/": {
+            "post": {
+                "description": "Создать чеклист",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "checklists"
+                ],
+                "summary": "Создать чеклист",
+                "parameters": [
+                    {
+                        "description": "данные нового чеклиста",
+                        "name": "newChecklistInfo",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.NewChecklistInfo"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "объект чеклиста",
+                        "schema": {
+                            "$ref": "#/definitions/doc_structs.ChecklistResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/checklist/delete/": {
+            "delete": {
+                "description": "Удалить чеклист",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "checklists"
+                ],
+                "summary": "Удалить чеклист",
+                "parameters": [
+                    {
+                        "description": "id чеклиста",
+                        "name": "ChecklistID",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.ChecklistID"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "no content",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/checklist/item/create/": {
+            "post": {
+                "description": "Создать элемент чеклиста",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "checklistItems"
+                ],
+                "summary": "Создать элемент чеклиста",
+                "parameters": [
+                    {
+                        "description": "данные нового элемента чеклистаа",
+                        "name": "newChecklistItemInfo",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.NewChecklistItemInfo"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "объект элемента чеклиста",
+                        "schema": {
+                            "$ref": "#/definitions/doc_structs.ChecklistItemResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/checklist/item/delete/": {
+            "delete": {
+                "description": "Удалить элемент чеклиста",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "checklistItems"
+                ],
+                "summary": "Удалить элемент чеклиста",
+                "parameters": [
+                    {
+                        "description": "id элемента чеклиста",
+                        "name": "ChecklistItemID",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.ChecklistItemID"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "no content",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/checklist/item/update/": {
+            "post": {
+                "description": "Обновить элемент чеклиста",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "checklistItems"
+                ],
+                "summary": "Обновить элемент чеклиста",
+                "parameters": [
+                    {
+                        "description": "обновленные данные элемент чеклистаа",
+                        "name": "ChecklistItemInfo",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.UpdatedChecklistItemInfo"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "no content",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/checklist/update/": {
+            "post": {
+                "description": "Обновить чеклист",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "checklists"
+                ],
+                "summary": "Обновить чеклист",
+                "parameters": [
+                    {
+                        "description": "обновленные данные чеклиста",
+                        "name": "ChecklistInfo",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.UpdatedChecklistInfo"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "no content",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/comment/create/": {
             "post": {
                 "description": "Создать комментарий в каком-то задании",
@@ -840,6 +1152,58 @@
                         "description": "вопрос CSAT",
                         "schema": {
                             "$ref": "#/definitions/doc_structs.StatsResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/image/upload/": {
+            "post": {
+                "description": "Загрузить изображение",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "images"
+                ],
+                "summary": "Загрузить изображение",
+                "parameters": [
+                    {
+                        "description": "байты изоьражения",
+                        "name": "image",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.Image"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "ссылка на изображение",
+                        "schema": {
+                            "$ref": "#/definitions/doc_structs.URLResponse"
                         }
                     },
                     "400": {
@@ -1760,6 +2124,14 @@
                 }
             }
         },
+        "doc_structs.URLResponse": {
+            "type": "object",
+            "properties": {
+                "url": {
+                    "$ref": "#/definitions/dto.UrlObj"
+                }
+            }
+        },
         "doc_structs.UserResponse": {
             "type": "object",
             "properties": {
@@ -1776,9 +2148,6 @@
                 },
                 "user_email": {
                     "type": "string"
-                },
-                "workspace_id": {
-                    "type": "integer"
                 }
             }
         },
@@ -1970,6 +2339,17 @@
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/dto.UserPublicInfo"
+                    }
+                }
+            }
+        },
+        "dto.Image": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
                     }
                 }
             }
@@ -2166,9 +2546,6 @@
                     "type": "integer"
                 },
                 "user_id": {
-                    "type": "integer"
-                },
-                "workspace_id": {
                     "type": "integer"
                 }
             }

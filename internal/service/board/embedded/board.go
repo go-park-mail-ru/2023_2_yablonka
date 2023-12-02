@@ -230,8 +230,8 @@ func (bs BoardService) AddUser(ctx context.Context, request dto.AddBoardUserRequ
 
 	info := dto.AddBoardUserInfo{
 		UserID:      targetUser.ID,
-		WorkspaceID: request.WorkspaceID,
 		BoardID:     request.BoardID,
+		WorkspaceID: request.WorkspaceID,
 	}
 	return bs.boardStorage.AddUser(ctx, info)
 }

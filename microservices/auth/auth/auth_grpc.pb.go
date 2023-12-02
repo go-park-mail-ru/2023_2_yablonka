@@ -7,7 +7,6 @@ import (
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
-	durationpb "google.golang.org/protobuf/types/known/durationpb"
 	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )
 
@@ -20,10 +19,10 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type AuthServiceClient interface {
-	AuthUser(ctx context.Context, in *UserID, opts ...grpc.CallOption) (*SessionToken, error)
-	VerifyAuth(ctx context.Context, in *SessionToken, opts ...grpc.CallOption) (*UserID, error)
-	LogOut(ctx context.Context, in *SessionToken, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	GetLifetime(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*durationpb.Duration, error)
+	AuthUser(ctx context.Context, in *UserID, opts ...grpc.CallOption) (*AuthUserResponse, error)
+	VerifyAuth(ctx context.Context, in *SessionToken, opts ...grpc.CallOption) (*VerifyAuthResponse, error)
+	LogOut(ctx context.Context, in *SessionToken, opts ...grpc.CallOption) (*LogOutResponse, error)
+	GetLifetime(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*GetLifetimeResponse, error)
 }
 
 type authServiceClient struct {
@@ -34,8 +33,8 @@ func NewAuthServiceClient(cc grpc.ClientConnInterface) AuthServiceClient {
 	return &authServiceClient{cc}
 }
 
-func (c *authServiceClient) AuthUser(ctx context.Context, in *UserID, opts ...grpc.CallOption) (*SessionToken, error) {
-	out := new(SessionToken)
+func (c *authServiceClient) AuthUser(ctx context.Context, in *UserID, opts ...grpc.CallOption) (*AuthUserResponse, error) {
+	out := new(AuthUserResponse)
 	err := c.cc.Invoke(ctx, "/auth.AuthService/AuthUser", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -43,8 +42,8 @@ func (c *authServiceClient) AuthUser(ctx context.Context, in *UserID, opts ...gr
 	return out, nil
 }
 
-func (c *authServiceClient) VerifyAuth(ctx context.Context, in *SessionToken, opts ...grpc.CallOption) (*UserID, error) {
-	out := new(UserID)
+func (c *authServiceClient) VerifyAuth(ctx context.Context, in *SessionToken, opts ...grpc.CallOption) (*VerifyAuthResponse, error) {
+	out := new(VerifyAuthResponse)
 	err := c.cc.Invoke(ctx, "/auth.AuthService/VerifyAuth", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -52,8 +51,8 @@ func (c *authServiceClient) VerifyAuth(ctx context.Context, in *SessionToken, op
 	return out, nil
 }
 
-func (c *authServiceClient) LogOut(ctx context.Context, in *SessionToken, opts ...grpc.CallOption) (*emptypb.Empty, error) {
-	out := new(emptypb.Empty)
+func (c *authServiceClient) LogOut(ctx context.Context, in *SessionToken, opts ...grpc.CallOption) (*LogOutResponse, error) {
+	out := new(LogOutResponse)
 	err := c.cc.Invoke(ctx, "/auth.AuthService/LogOut", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -61,8 +60,8 @@ func (c *authServiceClient) LogOut(ctx context.Context, in *SessionToken, opts .
 	return out, nil
 }
 
-func (c *authServiceClient) GetLifetime(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*durationpb.Duration, error) {
-	out := new(durationpb.Duration)
+func (c *authServiceClient) GetLifetime(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*GetLifetimeResponse, error) {
+	out := new(GetLifetimeResponse)
 	err := c.cc.Invoke(ctx, "/auth.AuthService/GetLifetime", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -74,10 +73,10 @@ func (c *authServiceClient) GetLifetime(ctx context.Context, in *emptypb.Empty, 
 // All implementations must embed UnimplementedAuthServiceServer
 // for forward compatibility
 type AuthServiceServer interface {
-	AuthUser(context.Context, *UserID) (*SessionToken, error)
-	VerifyAuth(context.Context, *SessionToken) (*UserID, error)
-	LogOut(context.Context, *SessionToken) (*emptypb.Empty, error)
-	GetLifetime(context.Context, *emptypb.Empty) (*durationpb.Duration, error)
+	AuthUser(context.Context, *UserID) (*AuthUserResponse, error)
+	VerifyAuth(context.Context, *SessionToken) (*VerifyAuthResponse, error)
+	LogOut(context.Context, *SessionToken) (*LogOutResponse, error)
+	GetLifetime(context.Context, *emptypb.Empty) (*GetLifetimeResponse, error)
 	mustEmbedUnimplementedAuthServiceServer()
 }
 
@@ -85,16 +84,16 @@ type AuthServiceServer interface {
 type UnimplementedAuthServiceServer struct {
 }
 
-func (UnimplementedAuthServiceServer) AuthUser(context.Context, *UserID) (*SessionToken, error) {
+func (UnimplementedAuthServiceServer) AuthUser(context.Context, *UserID) (*AuthUserResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AuthUser not implemented")
 }
-func (UnimplementedAuthServiceServer) VerifyAuth(context.Context, *SessionToken) (*UserID, error) {
+func (UnimplementedAuthServiceServer) VerifyAuth(context.Context, *SessionToken) (*VerifyAuthResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method VerifyAuth not implemented")
 }
-func (UnimplementedAuthServiceServer) LogOut(context.Context, *SessionToken) (*emptypb.Empty, error) {
+func (UnimplementedAuthServiceServer) LogOut(context.Context, *SessionToken) (*LogOutResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method LogOut not implemented")
 }
-func (UnimplementedAuthServiceServer) GetLifetime(context.Context, *emptypb.Empty) (*durationpb.Duration, error) {
+func (UnimplementedAuthServiceServer) GetLifetime(context.Context, *emptypb.Empty) (*GetLifetimeResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetLifetime not implemented")
 }
 func (UnimplementedAuthServiceServer) mustEmbedUnimplementedAuthServiceServer() {}

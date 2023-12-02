@@ -2,6 +2,7 @@ package microservice
 
 import (
 	"context"
+	"server/internal/apperrors"
 	"server/internal/pkg/dto"
 	"server/internal/storage"
 	microservice "server/microservices/csat/csat_answer"
@@ -33,5 +34,6 @@ func (cs CSATAnswerService) Create(ctx context.Context, info dto.NewCSATAnswer) 
 		QuestionID: info.QuestionID,
 		Rating:     info.Rating,
 	})
-	return err
+
+	return apperrors.HandleGRPCError(err)
 }

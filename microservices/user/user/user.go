@@ -42,7 +42,7 @@ func (us UserService) RegisterUser(ctx context.Context, info *AuthInfo) (*User, 
 	_, err := us.storage.GetWithLogin(sCtx, dto.UserLogin{Value: info.Email})
 
 	if err == nil {
-		return &User{}, apperrors.ErrUserAlreadyExists
+		return &User{}, apperrors.MakeGRPCError(apperrors.ErrUserAlreadyExists)
 	}
 	us.logger.Debug("User doesn't exist", funcName, nodeName)
 
@@ -52,7 +52,7 @@ func (us UserService) RegisterUser(ctx context.Context, info *AuthInfo) (*User, 
 		PasswordHash: hashFromAuthInfo(info.Email, info.Password),
 	})
 	if err != nil {
-		return &User{}, err
+		return &User{}, apperrors.MakeGRPCError(err)
 	}
 
 	convertedUser := convertUser(user)
@@ -70,12 +70,12 @@ func (us UserService) CheckPassword(ctx context.Context, info *AuthInfo) (*User,
 	user, err := us.storage.GetWithLogin(sCtx, dto.UserLogin{Value: info.Email})
 	if err != nil {
 		us.logger.Debug("User not found", funcName, nodeName)
-		return &User{}, err
+		return &User{}, apperrors.MakeGRPCError(err)
 	}
 	us.logger.Debug("User found", funcName, nodeName)
 
 	if user.PasswordHash != hashFromAuthInfo(info.Email, info.Password) {
-		return &User{}, apperrors.ErrWrongPassword
+		return &User{}, apperrors.MakeGRPCError(apperrors.ErrWrongPassword)
 	}
 	us.logger.Debug("Password match", funcName, nodeName)
 
@@ -94,7 +94,7 @@ func (us UserService) GetWithID(ctx context.Context, id *UserID) (*User, error) 
 	user, err := us.storage.GetWithID(sCtx, dto.UserID{Value: id.Value})
 	if err != nil {
 		us.logger.Debug("Failed to get user with error "+err.Error(), funcName, nodeName)
-		return &User{}, err
+		return &User{}, apperrors.MakeGRPCError(err)
 	}
 	us.logger.Debug("Got user", funcName, nodeName)
 
@@ -112,19 +112,20 @@ func (us UserService) UpdatePassword(ctx context.Context, info *PasswordChangeIn
 
 	oldLoginInfo, err := us.storage.GetLoginInfoWithID(sCtx, dto.UserID{Value: info.UserID})
 	if err != nil {
-		return &emptypb.Empty{}, apperrors.ErrUserNotFound
+		return &emptypb.Empty{}, apperrors.MakeGRPCError(apperrors.ErrUserNotFound)
 	}
 	us.logger.Debug("User found", funcName, nodeName)
 
 	if oldLoginInfo.PasswordHash != hashFromAuthInfo(oldLoginInfo.Email, info.OldPassword) {
-		return &emptypb.Empty{}, apperrors.ErrWrongPassword
+		return &emptypb.Empty{}, apperrors.MakeGRPCError(apperrors.ErrWrongPassword)
 	}
 	us.logger.Debug("Old verified", funcName, nodeName)
 
-	return &emptypb.Empty{}, us.storage.UpdatePassword(sCtx, dto.PasswordHashesInfo{
-		UserID:          info.UserID,
-		NewPasswordHash: hashFromAuthInfo(oldLoginInfo.Email, info.NewPassword),
-	})
+	return &emptypb.Empty{}, apperrors.MakeGRPCError(
+		us.storage.UpdatePassword(sCtx, dto.PasswordHashesInfo{
+			UserID:          info.UserID,
+			NewPasswordHash: hashFromAuthInfo(oldLoginInfo.Email, info.NewPassword),
+		}))
 }
 
 // UpdateProfile
@@ -133,12 +134,13 @@ func (us UserService) UpdatePassword(ctx context.Context, info *PasswordChangeIn
 func (us UserService) UpdateProfile(ctx context.Context, info *UserProfileInfo) (*emptypb.Empty, error) {
 	sCtx := context.WithValue(ctx, dto.LoggerKey, us.logger)
 
-	return &emptypb.Empty{}, us.storage.UpdateProfile(sCtx, dto.UserProfileInfo{
-		UserID:      info.UserID,
-		Name:        info.Name,
-		Surname:     info.Surname,
-		Description: info.Description,
-	})
+	return &emptypb.Empty{}, apperrors.MakeGRPCError(
+		us.storage.UpdateProfile(sCtx, dto.UserProfileInfo{
+			UserID:      info.UserID,
+			Name:        info.Name,
+			Surname:     info.Surname,
+			Description: info.Description,
+		}))
 }
 
 // UpdateProfile
@@ -161,13 +163,14 @@ func (us UserService) UpdateAvatar(ctx context.Context, info *AvatarChangeInfo) 
 	f, err := os.Create(fileLocation)
 	if err != nil {
 		us.logger.Debug("Failed to create file with error: "+err.Error(), funcName, nodeName)
-		return nil, err
+		return nil, apperrors.MakeGRPCError(err)
 	}
 
 	us.logger.Debug(fmt.Sprintf("Writing %v bytes", len(info.Avatar)), funcName, nodeName)
 	_, err = f.Write(info.Avatar)
 	if err != nil {
 		us.logger.Debug("Failed to write to file with error: "+err.Error(), funcName, nodeName)
+		return nil, apperrors.MakeGRPCError(err)
 	}
 
 	defer f.Close()
@@ -179,7 +182,7 @@ func (us UserService) UpdateAvatar(ctx context.Context, info *AvatarChangeInfo) 
 			us.logger.Debug("Failed to remove file after unsuccessful update with error: "+err.Error(), funcName, nodeName)
 			errDelete = os.Remove(fileLocation)
 		}
-		return nil, err
+		return nil, apperrors.MakeGRPCError(err)
 	}
 
 	return &UrlObj{Value: avatarUrlInfo.Url}, nil
@@ -190,7 +193,7 @@ func (us UserService) UpdateAvatar(ctx context.Context, info *AvatarChangeInfo) 
 // или возвращает ошибку apperrors.ErrUserNotFound (409)
 func (us UserService) DeleteUser(ctx context.Context, id *UserID) (*emptypb.Empty, error) {
 	sCtx := context.WithValue(ctx, dto.LoggerKey, us.logger)
-	return &emptypb.Empty{}, us.storage.Delete(sCtx, dto.UserID{Value: id.Value})
+	return &emptypb.Empty{}, apperrors.MakeGRPCError(us.storage.Delete(sCtx, dto.UserID{Value: id.Value}))
 }
 
 // TODO salt

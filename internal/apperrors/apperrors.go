@@ -6,6 +6,9 @@ import (
 	"log"
 	"net/http"
 	"server/internal/pkg/dto"
+
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 // Ошибки, связанные с конфигурацией сервера
@@ -24,6 +27,12 @@ var (
 	ErrDatabasePWMissing = errors.New("database PW is missing")
 	// ErrInvalidLoggingLevel ошибка: в полученном конфиге указан неправильный уровень логгирования
 	ErrInvalidLoggingLevel = errors.New("incorrect logging level provided (accepted values -- debug, info, warning, error)")
+)
+
+// Ошибки, связанные с GRPC
+var (
+	// ErrGRPCServerError ошибка: ошибка сервера
+	ErrGRPCServerError = errors.New("GRPC server error")
 )
 
 // Ошибки, связанные с авторизацией
@@ -168,6 +177,8 @@ var (
 	ErrCouldNotAddTaskUser = errors.New("couldn't add user to task")
 	// ErrCouldNotRemoveTaskUser ошибка: не удалось удалить пользователя с карточки
 	ErrCouldNotRemoveTaskUser = errors.New("couldn't remove user from task")
+	// ErrUserAlreadyInTask ошибка: пользователь уже есть в задании
+	ErrUserAlreadyInTask = errors.New("user already in task")
 )
 
 // ErrorResponse
@@ -222,6 +233,7 @@ var StatusConflictResponse = ErrorResponse{
 // ErrorMap
 // карта для связи ошибок приложения и ответа бэкэнд-сервера
 var ErrorMap = map[error]ErrorResponse{
+	ErrGRPCServerError:          InternalServerErrorResponse,
 	ErrUserNotFound:             WrongLoginResponse,
 	ErrWrongPassword:            WrongLoginResponse,
 	ErrUserAlreadyExists:        StatusConflictResponse,
@@ -260,6 +272,8 @@ var ErrorMap = map[error]ErrorResponse{
 	ErrChecklistItemNotCreated:  InternalServerErrorResponse,
 	ErrChecklistItemNotUpdated:  InternalServerErrorResponse,
 	ErrChecklistItemNotDeleted:  InternalServerErrorResponse,
+	ErrUserAlreadyInBoard:       StatusConflictResponse,
+	ErrUserAlreadyInTask:        StatusConflictResponse,
 }
 
 func ErrorJSON(err ErrorResponse) []byte {
@@ -268,6 +282,31 @@ func ErrorJSON(err ErrorResponse) []byte {
 	}
 	jsonResponse, _ := json.Marshal(response)
 	return jsonResponse
+}
+
+func MakeGRPCError(err error) error {
+	if err == nil {
+		return nil
+	}
+	response, ok := ErrorMap[err]
+	if !ok {
+		log.Println("Error while encoding error", err)
+		response = InternalServerErrorResponse
+	}
+	grpcErr := status.Error(codes.Code(response.Code), err.Error())
+	return grpcErr
+}
+
+func HandleGRPCError(err error) error {
+	status, ok := status.FromError(err)
+	if ok {
+		if status.Code() == codes.OK {
+			return nil
+		}
+		return status.Err()
+	} else {
+		return ErrGRPCServerError
+	}
 }
 
 func ReturnError(err ErrorResponse, w http.ResponseWriter, r *http.Request) {

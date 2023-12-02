@@ -18,7 +18,7 @@ services:
       db:
         condition: service_healthy
     links:
-      - db
+      - db 
     # "echo 'Migrating CSAT database' &&
     # ./tern migrate -c db/migrations/csat/tern.conf -m db/migrations/csat/ &&
     # echo 'Finished CSAT database migrations' &&

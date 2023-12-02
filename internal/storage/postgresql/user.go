@@ -127,10 +127,12 @@ func (s *PostgresUserStorage) GetLoginInfoWithID(ctx context.Context, id dto.Use
 // создает нового пользователя в БД по данным
 // или возвращает ошибки ...
 func (s *PostgresUserStorage) Create(ctx context.Context, info dto.SignupInfo) (*entities.User, error) {
+	defaultAvatar := "avatar.jpg"
+
 	sql, args, err := sq.
 		Insert("public.user").
 		Columns("email", "password_hash", "avatar_url").
-		Values(info.Email, info.PasswordHash, "avatar.jpg").
+		Values(info.Email, info.PasswordHash, defaultAvatar).
 		Suffix("RETURNING id").
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
@@ -142,6 +144,7 @@ func (s *PostgresUserStorage) Create(ctx context.Context, info dto.SignupInfo) (
 	user := entities.User{
 		Email:        info.Email,
 		PasswordHash: info.PasswordHash,
+		AvatarURL:    &defaultAvatar,
 	}
 
 	query := s.db.QueryRow(sql, args...)

@@ -2,6 +2,7 @@ package csat_microservice
 
 import (
 	context "context"
+	"server/internal/apperrors"
 	"server/internal/pkg/dto"
 	"server/internal/storage"
 
@@ -27,11 +28,11 @@ func NewCSATQuestionService(storage storage.ICSATQuestionStorage) *CSATQuestionS
 func (cs CSATQuestionService) CheckRating(ctx context.Context, info *NewCSATAnswerInfo) (*emptypb.Empty, error) {
 	questionType, err := cs.storage.GetQuestionType(ctx, dto.CSATQuestionID{Value: info.QuestionID})
 	if err != nil {
-		return &emptypb.Empty{}, err
+		return &emptypb.Empty{}, apperrors.MakeGRPCError(err)
 	}
 
 	if info.Rating > questionType.MaxRating {
-		return &emptypb.Empty{}, err
+		return &emptypb.Empty{}, apperrors.MakeGRPCError(err)
 	}
 
 	return &emptypb.Empty{}, nil
@@ -43,7 +44,7 @@ func (cs CSATQuestionService) CheckRating(ctx context.Context, info *NewCSATAnsw
 func (cs CSATQuestionService) GetAll(ctx context.Context, empty *emptypb.Empty) (*AllQuestionStats, error) {
 	questionStats, err := cs.storage.GetAll(ctx)
 	if err != nil {
-		return &AllQuestionStats{}, err
+		return &AllQuestionStats{}, apperrors.MakeGRPCError(err)
 	}
 
 	convertedQuestions := []*CSATQuestionFull{}
@@ -67,7 +68,7 @@ func (cs CSATQuestionService) GetAll(ctx context.Context, empty *emptypb.Empty) 
 func (cs CSATQuestionService) GetStats(ctx context.Context, empty *emptypb.Empty) (*AllQuestionsWithStats, error) {
 	stats, err := cs.storage.GetStats(ctx)
 	if err != nil {
-		return &AllQuestionsWithStats{}, err
+		return &AllQuestionsWithStats{}, apperrors.MakeGRPCError(err)
 	}
 
 	convertedQuestions := []*QuestionWithStats{}
@@ -100,7 +101,7 @@ func (cs CSATQuestionService) GetStats(ctx context.Context, empty *emptypb.Empty
 func (cs CSATQuestionService) Create(ctx context.Context, info *NewCSATQuestionInfo) (*CSATQuestionFull, error) {
 	questionType, err := cs.storage.GetQuestionTypeWithName(ctx, dto.CSATQuestionTypeName{Value: info.Type})
 	if err != nil {
-		return &CSATQuestionFull{}, err
+		return &CSATQuestionFull{}, apperrors.MakeGRPCError(err)
 	}
 	verifiedInfo := dto.NewCSATQuestion{
 		Content: info.Content,
@@ -108,7 +109,7 @@ func (cs CSATQuestionService) Create(ctx context.Context, info *NewCSATQuestionI
 	}
 	question, err := cs.storage.Create(ctx, verifiedInfo)
 	if err != nil {
-		return &CSATQuestionFull{}, err
+		return &CSATQuestionFull{}, apperrors.MakeGRPCError(err)
 	}
 	question.Type = info.Type
 	convertedQuestion := &CSATQuestionFull{
@@ -125,14 +126,14 @@ func (cs CSATQuestionService) Create(ctx context.Context, info *NewCSATQuestionI
 func (cs CSATQuestionService) Update(ctx context.Context, info *UpdatedCSATQuestionInfo) (*emptypb.Empty, error) {
 	questionType, err := cs.storage.GetQuestionType(ctx, dto.CSATQuestionID{Value: info.ID})
 	if err != nil {
-		return &emptypb.Empty{}, nil
+		return &emptypb.Empty{}, apperrors.MakeGRPCError(err)
 	}
 	updatedQuestion := dto.UpdatedCSATQuestion{
 		ID:      info.ID,
 		Content: info.Content,
 		Type:    questionType.ID,
 	}
-	return &emptypb.Empty{}, cs.storage.Update(ctx, updatedQuestion)
+	return &emptypb.Empty{}, apperrors.MakeGRPCError(cs.storage.Update(ctx, updatedQuestion))
 }
 
 // Delete
@@ -142,5 +143,5 @@ func (cs CSATQuestionService) Delete(ctx context.Context, id *CSATQuestionID) (*
 	convertedID := dto.CSATQuestionID{
 		Value: id.Value,
 	}
-	return &emptypb.Empty{}, cs.storage.Delete(ctx, convertedID)
+	return &emptypb.Empty{}, apperrors.MakeGRPCError(cs.storage.Delete(ctx, convertedID))
 }

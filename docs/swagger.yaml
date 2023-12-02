@@ -69,6 +69,11 @@ definitions:
       thumbnail_url:
         $ref: '#/definitions/dto.UrlObj'
     type: object
+  doc_structs.URLResponse:
+    properties:
+      url:
+        $ref: '#/definitions/dto.UrlObj'
+    type: object
   doc_structs.UserResponse:
     properties:
       user:
@@ -80,8 +85,6 @@ definitions:
         type: integer
       user_email:
         type: string
-      workspace_id:
-        type: integer
     type: object
   dto.AddTaskUserInfo:
     properties:
@@ -205,6 +208,13 @@ definitions:
       users:
         items:
           $ref: '#/definitions/dto.UserPublicInfo'
+        type: array
+    type: object
+  dto.Image:
+    properties:
+      data:
+        items:
+          type: integer
         type: array
     type: object
   dto.ListID:
@@ -331,8 +341,6 @@ definitions:
       board_id:
         type: integer
       user_id:
-        type: integer
-      workspace_id:
         type: integer
     type: object
   dto.RemoveTaskUserInfo:
@@ -1009,6 +1017,210 @@ paths:
       summary: Удалить пользователя из доски
       tags:
       - boards
+  /checklist/create/:
+    post:
+      consumes:
+      - application/json
+      description: Создать чеклист
+      parameters:
+      - description: данные нового чеклиста
+        in: body
+        name: newChecklistInfo
+        required: true
+        schema:
+          $ref: '#/definitions/dto.NewChecklistInfo'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: объект чеклиста
+          schema:
+            $ref: '#/definitions/doc_structs.ChecklistResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+      summary: Создать чеклист
+      tags:
+      - checklists
+  /checklist/delete/:
+    delete:
+      consumes:
+      - application/json
+      description: Удалить чеклист
+      parameters:
+      - description: id чеклиста
+        in: body
+        name: ChecklistID
+        required: true
+        schema:
+          $ref: '#/definitions/dto.ChecklistID'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: no content
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+      summary: Удалить чеклист
+      tags:
+      - checklists
+  /checklist/item/create/:
+    post:
+      consumes:
+      - application/json
+      description: Создать элемент чеклиста
+      parameters:
+      - description: данные нового элемента чеклистаа
+        in: body
+        name: newChecklistItemInfo
+        required: true
+        schema:
+          $ref: '#/definitions/dto.NewChecklistItemInfo'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: объект элемента чеклиста
+          schema:
+            $ref: '#/definitions/doc_structs.ChecklistItemResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+      summary: Создать элемент чеклиста
+      tags:
+      - checklistItems
+  /checklist/item/delete/:
+    delete:
+      consumes:
+      - application/json
+      description: Удалить элемент чеклиста
+      parameters:
+      - description: id элемента чеклиста
+        in: body
+        name: ChecklistItemID
+        required: true
+        schema:
+          $ref: '#/definitions/dto.ChecklistItemID'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: no content
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+      summary: Удалить элемент чеклиста
+      tags:
+      - checklistItems
+  /checklist/item/update/:
+    post:
+      consumes:
+      - application/json
+      description: Обновить элемент чеклиста
+      parameters:
+      - description: обновленные данные элемент чеклистаа
+        in: body
+        name: ChecklistItemInfo
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdatedChecklistItemInfo'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: no content
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+      summary: Обновить элемент чеклиста
+      tags:
+      - checklistItems
+  /checklist/update/:
+    post:
+      consumes:
+      - application/json
+      description: Обновить чеклист
+      parameters:
+      - description: обновленные данные чеклиста
+        in: body
+        name: ChecklistInfo
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdatedChecklistInfo'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: no content
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+      summary: Обновить чеклист
+      tags:
+      - checklists
   /comment/create/:
     post:
       consumes:
@@ -1199,6 +1411,40 @@ paths:
       summary: Статистика ответов CSAT
       tags:
       - csat
+  /image/upload/:
+    post:
+      consumes:
+      - application/json
+      description: Загрузить изображение
+      parameters:
+      - description: байты изоьражения
+        in: body
+        name: image
+        required: true
+        schema:
+          $ref: '#/definitions/dto.Image'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ссылка на изображение
+          schema:
+            $ref: '#/definitions/doc_structs.URLResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+      summary: Загрузить изображение
+      tags:
+      - images
   /list/create/:
     post:
       consumes:

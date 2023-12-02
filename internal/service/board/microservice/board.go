@@ -122,7 +122,7 @@ func (bs BoardService) GetFullBoard(ctx context.Context, info dto.IndividualBoar
 	if err != nil {
 		return nil, err
 	}
-	logger.Debug("Got checklists", funcName, nodeName)
+	logger.Debug("Got checklist items", funcName, nodeName)
 
 	return &dto.FullBoardResult{
 		Users:          *users,
@@ -217,23 +217,43 @@ func (bs BoardService) AddUser(ctx context.Context, request dto.AddBoardUserRequ
 	funcName := "BoardService.AddUser"
 	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
 
-	requestingUserID := ctx.Value(dto.UserObjKey).(*entities.User).ID
+	accessInfo := dto.CheckBoardAccessInfo{
+		UserID:  ctx.Value(dto.UserObjKey).(*entities.User).ID,
+		BoardID: request.BoardID,
+	}
+	requestingUserAccess, err := bs.boardStorage.CheckAccess(ctx, accessInfo)
+	if err != nil {
+		return apperrors.ErrCouldNotGetUser
+	}
+	logger.Debug("got user", funcName, nodeName)
 
-	if !hasAccess(bs.boardStorage, ctx, requestingUserID, request.BoardID) {
+	if !requestingUserAccess {
 		return apperrors.ErrNoBoardAccess
 	}
-	logger.Debug("user has access to board", funcName, nodeName)
+	logger.Debug("Requesting user has access to board", funcName, nodeName)
 
 	targetUser, err := bs.userStorage.GetWithLogin(ctx, dto.UserLogin{Value: request.UserEmail})
-	if err == nil {
+	if err != nil {
+		return apperrors.ErrUserNotFound
+	}
+	logger.Debug("user found", funcName, nodeName)
+
+	accessInfo.UserID = targetUser.ID
+	userAccess, err := bs.boardStorage.CheckAccess(ctx, accessInfo)
+	if err != nil {
+		return apperrors.ErrCouldNotGetUser
+	}
+	logger.Debug("got user", funcName, nodeName)
+
+	if userAccess {
 		return apperrors.ErrUserAlreadyInBoard
 	}
-	logger.Debug("user not found", funcName, nodeName)
+	logger.Debug("user not in board", funcName, nodeName)
 
 	info := dto.AddBoardUserInfo{
 		UserID:      targetUser.ID,
-		WorkspaceID: request.WorkspaceID,
 		BoardID:     request.BoardID,
+		WorkspaceID: request.WorkspaceID,
 	}
 	return bs.boardStorage.AddUser(ctx, info)
 }
@@ -244,28 +264,32 @@ func (bs BoardService) RemoveUser(ctx context.Context, info dto.RemoveBoardUserI
 	funcName := "BoardService.RemoveUser"
 	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
 
-	requestingUserID := ctx.Value(dto.UserObjKey).(*entities.User).ID
-	if !hasAccess(bs.boardStorage, ctx, requestingUserID, info.BoardID) {
+	accessInfo := dto.CheckBoardAccessInfo{
+		UserID:  ctx.Value(dto.UserObjKey).(*entities.User).ID,
+		BoardID: info.BoardID,
+	}
+	requestingUserAccess, err := bs.boardStorage.CheckAccess(ctx, accessInfo)
+	if err != nil {
+		return apperrors.ErrCouldNotGetUser
+	}
+	logger.Debug("got user", funcName, nodeName)
+
+	if !requestingUserAccess {
 		return apperrors.ErrNoBoardAccess
 	}
 	logger.Debug("user has access to board", funcName, nodeName)
 
-	return bs.boardStorage.RemoveUser(ctx, info)
-}
-
-func hasAccess(storage storage.IBoardStorage, ctx context.Context, userID uint64, boardID uint64) bool {
-	hasAccess := false
-
-	boardUsers, err := storage.GetUsers(ctx, dto.BoardID{Value: boardID})
+	accessInfo.UserID = info.UserID
+	userAccess, err := bs.boardStorage.CheckAccess(ctx, accessInfo)
 	if err != nil {
-		return hasAccess
+		return apperrors.ErrCouldNotGetUser
 	}
+	logger.Debug("got user", funcName, nodeName)
 
-	for _, user := range *boardUsers {
-		if user.ID == userID {
-			hasAccess = true
-		}
+	if !userAccess {
+		return apperrors.ErrNoBoardAccess
 	}
+	logger.Debug("user in board", funcName, nodeName)
 
-	return hasAccess
+	return bs.boardStorage.RemoveUser(ctx, info)
 }
