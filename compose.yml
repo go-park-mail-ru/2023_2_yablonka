@@ -22,6 +22,11 @@ services:
     # "echo 'Migrating CSAT database' &&
     # ./tern migrate -c db/migrations/csat/tern.conf -m db/migrations/csat/ &&
     # echo 'Finished CSAT database migrations' &&
+    # echo 'Making file storage subdirs' &&
+    # echo 'User avatars...' &&
+    # mkdir -p img/user_avatars &&
+    # echo 'Board thumbnails...' &&
+    # mkdir -p img/board_thumbnails &&
     command: >
         sh -c "echo 'Migrating main database' &&
               ./tern migrate -c db/migrations/public/tern.conf -m db/migrations/public/ &&
@@ -31,7 +36,7 @@ services:
     env_file:
       - ./config/.env
     volumes:
-      - ./img:/img/
+      - ./img:/img:rw
 
   microservices:
     build: 

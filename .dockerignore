@@ -7,4 +7,5 @@ test_commands.txt
 README.md
 test
 mocks*
+*.ps1
 .github
