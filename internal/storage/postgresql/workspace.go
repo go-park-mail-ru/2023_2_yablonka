@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"server/internal/apperrors"
+	logger "server/internal/logging"
 	"server/internal/pkg/dto"
 	"server/internal/pkg/entities"
 	"time"
@@ -43,6 +44,9 @@ func NewWorkspaceStorage(db *sql.DB) *PostgresWorkspaceStorage {
 // находит рабочие пространства, связанные с пользователем в БД
 // или возвращает ошибки ...
 func (s PostgresWorkspaceStorage) GetUserOwnedWorkspaces(ctx context.Context, userID dto.UserID) (*[]dto.UserOwnedWorkspaceInfo, error) {
+	funcName := "PostgreSQLWorkspaceStorage.GetUserOwnedWorkspaces"
+	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
+
 	workspaceQuery, args, err := sq.
 		Select("id", "name").
 		From("public.workspace").
@@ -51,20 +55,20 @@ func (s PostgresWorkspaceStorage) GetUserOwnedWorkspaces(ctx context.Context, us
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
 	if err != nil {
-		log.Println("Storage -- Failed to build query")
+		logger.Debug("Failed to build query with error "+err.Error(), funcName, nodeName)
 		return nil, apperrors.ErrCouldNotBuildQuery
 	}
-	log.Println("Built user owned workspaces query\n\t", workspaceQuery, "\nwith args\n\t", args)
+	logger.Debug("Built owned workspace query\n\t"+workspaceQuery+"\nwith args\n\t"+fmt.Sprintf("%+v", args), funcName, nodeName)
 
 	rows, err := s.db.Query(workspaceQuery, args...)
 	if err != nil {
-		log.Println("Storage -- DB workspaces query failed with error", err.Error())
+		logger.Debug("DB workspaces query failed with error "+err.Error(), funcName, nodeName)
 		return nil, err
 	}
 	defer rows.Close()
-	log.Println("Workspaces got")
+	logger.Debug("Workspaces got", funcName, nodeName)
 
-	workspaces := map[uint64]dto.UserOwnedWorkspaceInfo{}
+	workspaces := []dto.UserOwnedWorkspaceInfo{}
 	var ownedID []uint64
 	for rows.Next() {
 		var workspace dto.UserOwnedWorkspaceInfo
@@ -74,10 +78,10 @@ func (s PostgresWorkspaceStorage) GetUserOwnedWorkspaces(ctx context.Context, us
 			&workspace.Name,
 		)
 		if err != nil {
-			fmt.Println("Scanning failed due to error", err.Error())
+			logger.Debug("Scanning failed due to error "+err.Error(), funcName, nodeName)
 			return nil, err
 		}
-		workspaces[workspace.ID] = workspace
+		workspaces = append(workspaces, workspace)
 		ownedID = append(ownedID, workspace.ID)
 	}
 
@@ -90,18 +94,18 @@ func (s PostgresWorkspaceStorage) GetUserOwnedWorkspaces(ctx context.Context, us
 		ToSql()
 
 	if err != nil {
-		log.Println("Storage -- Failed to build query")
+		logger.Debug("Failed to build query with error "+err.Error(), funcName, nodeName)
 		return nil, apperrors.ErrCouldNotBuildQuery
 	}
 
-	log.Println("Built boards query\n\t", boardQuery, "\nwith args\n\t", args)
+	logger.Debug("Built query\n\t"+boardQuery+"\nwith args\n\t"+fmt.Sprintf("%+v", args), funcName, nodeName)
 
 	rows, err = s.db.Query(boardQuery, args...)
 	if err != nil {
-		log.Println("Storage -- DB boards query failed with error", err.Error())
+		logger.Debug("DB boards query failed with error "+err.Error(), funcName, nodeName)
 		return nil, err
 	}
-	log.Println("Boards got")
+	logger.Debug("Boards got", funcName, nodeName)
 	defer rows.Close()
 
 	boards := []BoardReturn{}
@@ -116,11 +120,12 @@ func (s PostgresWorkspaceStorage) GetUserOwnedWorkspaces(ctx context.Context, us
 			&board.ThumbnailURL,
 		)
 		if err != nil {
-			fmt.Println("Scanning failed due to error", err.Error())
+			logger.Debug("Scanning failed due to error "+err.Error(), funcName, nodeName)
 			return nil, err
 		}
 		boards = append(boards, board)
 	}
+	logger.Debug("Board rows scanned", funcName, nodeName)
 
 	for _, boardRow := range boards {
 		board := dto.WorkspaceBoardInfo{
@@ -129,24 +134,21 @@ func (s PostgresWorkspaceStorage) GetUserOwnedWorkspaces(ctx context.Context, us
 			Description:  boardRow.Description,
 			ThumbnailURL: boardRow.ThumbnailURL,
 		}
-		ws := workspaces[boardRow.WorkspaceID]
+		ws := getMatchingOwnedWorkspace(&workspaces, boardRow.WorkspaceID)
 		ws.Boards = append(ws.Boards, board)
-		workspaces[boardRow.WorkspaceID] = ws
 	}
-	log.Println("Boards appended to workspaces")
+	logger.Debug("Boards appended to workspaces", funcName, nodeName)
 
-	var result []dto.UserOwnedWorkspaceInfo
-	for _, value := range workspaces {
-		result = append(result, value)
-	}
-
-	return &result, nil
+	return &workspaces, nil
 }
 
 // GetUserGuestWorkspaces
 // находит рабочие пространства, связанные с пользователем в БД
 // или возвращает ошибки ...
 func (s PostgresWorkspaceStorage) GetUserGuestWorkspaces(ctx context.Context, userID dto.UserID) (*[]dto.UserGuestWorkspaceInfo, error) {
+	funcName := "PostgreSQLWorkspaceStorage.GetUserOwnedWorkspaces"
+	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
+
 	workspaceQuery, args, err := sq.
 		Select(userGuestWorkspaceFields...).
 		From("public.workspace").
@@ -161,18 +163,18 @@ func (s PostgresWorkspaceStorage) GetUserGuestWorkspaces(ctx context.Context, us
 		ToSql()
 
 	if err != nil {
-		log.Println("Storage -- Failed to build query")
+		logger.Debug("Failed to build query with error "+err.Error(), funcName, nodeName)
 		return nil, apperrors.ErrCouldNotBuildQuery
 	}
 
-	log.Println("Built user guest workspaces query\n\t", workspaceQuery, "\nwith args\n\t", args)
+	logger.Debug("Built guest workspace query\n\t"+workspaceQuery+"\nwith args\n\t"+fmt.Sprintf("%+v", args), funcName, nodeName)
 
 	rows, err := s.db.Query(workspaceQuery, args...)
 	if err != nil {
-		log.Println("Storage -- DB workspaces query failed with error", err.Error())
+		logger.Debug("DB workspaces query failed with error "+err.Error(), funcName, nodeName)
 		return nil, err
 	}
-	log.Println("Guest workspaces got")
+	logger.Debug("Guest workspaces got", funcName, nodeName)
 	defer rows.Close()
 
 	workspaceRows := []dto.UserGuestWorkspaceInfo{}
@@ -190,19 +192,13 @@ func (s PostgresWorkspaceStorage) GetUserGuestWorkspaces(ctx context.Context, us
 			&owner.Name,
 			&owner.Surname,
 		)
-		log.Println("workspace: " + (string)(workspace.ID))
 		if err != nil {
-			fmt.Println("Scanning failed due to error", err.Error())
+			logger.Debug("Scanning failed due to error "+err.Error(), funcName, nodeName)
 			return nil, err
 		}
 		workspace.Owner = owner
 		workspaceRows = append(workspaceRows, workspace)
 		guestWorkspaceID = append(guestWorkspaceID, workspace.ID)
-	}
-
-	workspaces := map[uint64]dto.UserGuestWorkspaceInfo{}
-	for _, row := range workspaceRows {
-		workspaces[row.ID] = row
 	}
 
 	boardQuery, args, err := sq.
@@ -218,18 +214,18 @@ func (s PostgresWorkspaceStorage) GetUserGuestWorkspaces(ctx context.Context, us
 		ToSql()
 
 	if err != nil {
-		log.Println("Storage -- Failed to build query")
+		logger.Debug("Failed to build query with error "+err.Error(), funcName, nodeName)
 		return nil, apperrors.ErrCouldNotBuildQuery
 	}
 
-	log.Println("Built boards query\n\t", boardQuery, "\nwith args\n\t", args)
+	logger.Debug("Built boards query\n\t"+workspaceQuery+"\nwith args\n\t"+fmt.Sprintf("%+v", args), funcName, nodeName)
 
 	rows, err = s.db.Query(boardQuery, args...)
 	if err != nil {
-		log.Println("Storage -- DB boards query failed with error", err.Error())
+		logger.Debug("DB workspaces query failed with error "+err.Error(), funcName, nodeName)
 		return nil, err
 	}
-	log.Println("Boards got")
+	logger.Debug("Boards got", funcName, nodeName)
 	defer rows.Close()
 
 	boardRows := []BoardReturn{}
@@ -243,12 +239,12 @@ func (s PostgresWorkspaceStorage) GetUserGuestWorkspaces(ctx context.Context, us
 			&board.ThumbnailURL,
 		)
 		if err != nil {
-			fmt.Println("Scanning failed due to error", err.Error())
+			logger.Debug("Scanning failed due to error "+err.Error(), funcName, nodeName)
 			return nil, err
 		}
 		boardRows = append(boardRows, board)
 	}
-	log.Println("Boards collected")
+	logger.Debug("Boards collected", funcName, nodeName)
 
 	for _, boardRow := range boardRows {
 		board := dto.WorkspaceBoardInfo{
@@ -257,18 +253,12 @@ func (s PostgresWorkspaceStorage) GetUserGuestWorkspaces(ctx context.Context, us
 			Description:  boardRow.Description,
 			ThumbnailURL: boardRow.ThumbnailURL,
 		}
-		ws := workspaces[boardRow.WorkspaceID]
+		ws := getMatchingGuestWorkspace(&workspaceRows, boardRow.WorkspaceID)
 		ws.Boards = append(ws.Boards, board)
-		workspaces[boardRow.WorkspaceID] = ws
 	}
-	log.Println("Boards appended to workspaces")
+	logger.Debug("Boards appended", funcName, nodeName)
 
-	var result []dto.UserGuestWorkspaceInfo
-	for _, workspace := range workspaces {
-		result = append(result, workspace)
-	}
-
-	return &result, nil
+	return &workspaceRows, nil
 }
 
 // GetWorkspace
@@ -461,5 +451,24 @@ func (s PostgresWorkspaceStorage) Delete(ctx context.Context, id dto.WorkspaceID
 		return apperrors.ErrWorkspaceNotDeleted
 	}
 
+	return nil
+}
+
+func getMatchingOwnedWorkspace(workspaces *[]dto.UserOwnedWorkspaceInfo, workspaceID uint64) *dto.UserOwnedWorkspaceInfo {
+	log.Println("Loookin")
+	for _, workspace := range *workspaces {
+		if workspace.ID == workspaceID {
+			return &workspace
+		}
+	}
+	return nil
+}
+
+func getMatchingGuestWorkspace(workspaces *[]dto.UserGuestWorkspaceInfo, workspaceID uint64) *dto.UserGuestWorkspaceInfo {
+	for _, workspace := range *workspaces {
+		if workspace.ID == workspaceID {
+			return &workspace
+		}
+	}
 	return nil
 }
