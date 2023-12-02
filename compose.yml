@@ -33,6 +33,8 @@ services:
               echo 'Finished main database migrations' &&
               echo 'Starting backend' &&
               ./yablonka-backend"
+    volumes:
+      - /home/ubuntu/ProjectTrello/Files/img:/img:rw
     env_file:
       - ./config/.env
 
@@ -58,7 +60,7 @@ services:
               echo 'Starting microservices' &&
               ./yablonka-microservices"
     volumes:
-      - ./img:/img:rw
+      - /home/ubuntu/ProjectTrello/Files/img:/img:rw
   
   db:
     image: postgres:latest
