@@ -32,7 +32,7 @@ COPY --from=build-stage ./app/yablonka-backend ./yablonka-backend
 COPY --from=build-stage ./app/config/.env ./config/.env
 COPY --from=build-stage ./app/config/config.yml ./config/config.yml
 
-RUN mkdir -p /img
+RUN mkdir -p /img /img/user_avatars /img/board_thumbnails
 RUN chown -R nonroot:nonroot /img 
 
 EXPOSE 8080
