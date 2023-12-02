@@ -35,8 +35,6 @@ services:
               ./yablonka-backend"
     env_file:
       - ./config/.env
-    volumes:
-      - ./img:/img:rw
 
   microservices:
     build: 
@@ -59,6 +57,8 @@ services:
               echo 'Finished main database migrations' &&
               echo 'Starting microservices' &&
               ./yablonka-microservices"
+    volumes:
+      - ./img:/img:rw
   
   db:
     image: postgres:latest
