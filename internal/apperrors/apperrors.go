@@ -6,9 +6,6 @@ import (
 	"log"
 	"net/http"
 	"server/internal/pkg/dto"
-
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 )
 
 // Ошибки, связанные с конфигурацией сервера
@@ -65,20 +62,26 @@ var (
 	ErrQuestionNotUpdated = errors.New("couldn't обновить question")
 	// ErrCouldNotGetQuestionType ошибка: не удалось удалить вопрос CSAT в БД
 	ErrQuestionNotDeleted = errors.New("couldn't delete question")
+	// ErrAnswerRatingTooBig ошибка: у полученного ответа рейтинг выше доступного для вопроса
+	ErrAnswerRatingTooBig = errors.New("provided rating is too big for this question type")
 )
 
 // Ошибки, связанные с AuthService
 var (
-	// ErrTokenNotGenerated ошибка: у полученного JWT неправильный метод подписи
-	ErrTokenNotGenerated = errors.New("the system had trouble generating a session token")
+	// ErrTokenNotGenerated ошибка: не удалось сгенерировать токен
+	ErrTokenNotGenerated = errors.New("failed to generate token")
 	// ErrSessionExpired ошибка: время действия сессии истекло
 	ErrSessionExpired = errors.New("user session has expired")
 	// ErrSessionNotFound ошибка: полученной сессии нет в хранилище
 	ErrSessionNotFound = errors.New("no session found for provided session ID")
 	// ErrSessionNotCreated ошибка: полученной сессии нет в хранилище
 	ErrSessionNotCreated = errors.New("session couldn't be created")
-	// ErrCSRFNotFound ошибка: полученного CSRF нет в хранилище
-	ErrCSRFNotFound = errors.New("provided CSRF not found in storage")
+	// ErrCSRFExpired ошибка: время действия сессии истекло
+	ErrCSRFExpired = errors.New("user CSRF has expired")
+	// ErrCSRFNotFound ошибка: полученной сессии нет в хранилище
+	ErrCSRFNotFound = errors.New("no CSRF found for provided CSRF ID")
+	// ErrCSRFNotCreated ошибка: полученной сессии нет в хранилище
+	ErrCSRFNotCreated = errors.New("CSRF couldn't be created")
 )
 
 // Ошибки, связанные с Commentervice
@@ -93,6 +96,12 @@ var (
 	ErrCouldNotBuildQuery       = errors.New("error building an SQL query")
 	ErrCouldNotStartTransaction = errors.New("error starting a transaction")
 	ErrCouldNotCollectRows      = errors.New("couldn't collect rows")
+	// ErrFailedToCreateFile ошибка: не удалось создать файл
+	ErrFailedToCreateFile = errors.New("failed to create file")
+	// ErrFailedToSaveFile ошибка: не удалось сохранить файл
+	ErrFailedToSaveFile = errors.New("failed to save file")
+	// ErrFailedToDeleteFile ошибка: не удалось удалить файл
+	ErrFailedToDeleteFile = errors.New("failed to delete file")
 )
 
 // Ошибки, связанные с BoardService
@@ -240,6 +249,8 @@ var ErrorMap = map[error]ErrorResponse{
 	ErrUserNotCreated:           InternalServerErrorResponse,
 	ErrTokenNotGenerated:        InternalServerErrorResponse,
 	ErrCSRFNotFound:             GenericUnauthorizedResponse,
+	ErrCSRFNotCreated:           InternalServerErrorResponse,
+	ErrCSRFExpired:              GenericUnauthorizedResponse,
 	ErrSessionDurationMissing:   InternalServerErrorResponse,
 	ErrSessionNullDuration:      InternalServerErrorResponse,
 	ErrSessionIDLengthMissing:   InternalServerErrorResponse,
@@ -248,6 +259,8 @@ var ErrorMap = map[error]ErrorResponse{
 	ErrSessionExpired:           GenericUnauthorizedResponse,
 	ErrSessionNotCreated:        InternalServerErrorResponse,
 	ErrCouldNotBuildQuery:       InternalServerErrorResponse,
+	ErrCouldNotCollectRows:      InternalServerErrorResponse,
+	ErrCouldNotStartTransaction: InternalServerErrorResponse,
 	ErrSessionNotFound:          GenericUnauthorizedResponse,
 	ErrWorkspaceNotCreated:      InternalServerErrorResponse,
 	ErrCouldNotGetWorkspace:     InternalServerErrorResponse,
@@ -274,6 +287,10 @@ var ErrorMap = map[error]ErrorResponse{
 	ErrChecklistItemNotDeleted:  InternalServerErrorResponse,
 	ErrUserAlreadyInBoard:       StatusConflictResponse,
 	ErrUserAlreadyInTask:        StatusConflictResponse,
+	ErrFailedToCreateFile:       InternalServerErrorResponse,
+	ErrFailedToSaveFile:         InternalServerErrorResponse,
+	ErrFailedToDeleteFile:       InternalServerErrorResponse,
+	ErrAnswerRatingTooBig:       BadRequestResponse,
 }
 
 func ErrorJSON(err ErrorResponse) []byte {
@@ -282,31 +299,6 @@ func ErrorJSON(err ErrorResponse) []byte {
 	}
 	jsonResponse, _ := json.Marshal(response)
 	return jsonResponse
-}
-
-func MakeGRPCError(err error) error {
-	if err == nil {
-		return nil
-	}
-	response, ok := ErrorMap[err]
-	if !ok {
-		log.Println("Error while encoding error", err)
-		response = InternalServerErrorResponse
-	}
-	grpcErr := status.Error(codes.Code(response.Code), err.Error())
-	return grpcErr
-}
-
-func HandleGRPCError(err error) error {
-	status, ok := status.FromError(err)
-	if ok {
-		if status.Code() == codes.OK {
-			return nil
-		}
-		return status.Err()
-	} else {
-		return ErrGRPCServerError
-	}
 }
 
 func ReturnError(err ErrorResponse, w http.ResponseWriter, r *http.Request) {
