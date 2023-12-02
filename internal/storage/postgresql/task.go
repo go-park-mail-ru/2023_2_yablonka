@@ -128,7 +128,7 @@ func (s *PostgresTaskStorage) ReadMany(ctx context.Context, id dto.TaskIDs) (*[]
 		LeftJoin("public.comment ON public.task.id = public.comment.id_task").
 		LeftJoin("public.checklist ON public.task.id = public.checklist.id_task").
 		Where(sq.Eq{"public.task.id": id.Values}).
-		GroupBy("public.task.id").
+		GroupBy("public.task.id", "public.task.id_list").
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
 	if err != nil {

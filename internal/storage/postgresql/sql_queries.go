@@ -16,20 +16,20 @@ var (
 
 	// allListFields     = []string{"id", "id_board", "name", "list_position"}
 	allListTaskAggFields = []string{"public.list.id", "public.list.id_board", "public.list.name", "public.list.list_position",
-		"array_remove(array_agg(public.task.id), NULL)"}
+		"array_remove(array_agg(public.task.id ORDER BY public.task.list_position), NULL)"}
 
 	allTaskFields = []string{"public.task.id", "public.task.id_list", "public.task.date_created",
 		"public.task.name", "public.task.description", "public.task.list_position", "public.task.task_start", "public.task.task_end",
-		"array_remove(array_agg(public.task_user.id_user), NULL)",
-		"array_remove(array_agg(public.comment.id), NULL)",
-		"array_remove(array_agg(public.checklist.id), NULL)",
+		"array_remove(array_agg(public.task_user.id_user ORDER BY public.task_user.id_user), NULL)",
+		"array_remove(array_agg(public.comment.id ORDER BY public.comment.date_created), NULL)",
+		"array_remove(array_agg(public.checklist.id ORDER BY public.checklist.list_position), NULL)",
 	}
 	allChecklistFields = []string{"public.checklist.id", "public.checklist.id_task", "public.checklist.name", "public.checklist.list_position",
-		"array_remove(array_agg(public.checklist_item.id), NULL)",
+		"array_remove(array_agg(public.checklist_item.id ORDER BY public.checklist_item.list_position), NULL)",
 	}
 	allTaskAggFields = []string{"public.task.id", "public.task.id_list", "public.task.date_created", "public.task.name",
 		"public.task.description", "public.task.list_position", "public.task.task_start", "public.task.task_end",
-		"array_remove(array_agg(public.task_user.id_user), NULL)",
+		"array_remove(array_agg(public.task_user.id_user ORDER BY public.task_user.id_user), NULL)",
 	}
 	newTaskFields    = []string{"id_list", "name", "list_position"}
 	allSessionFields = []string{"id_user", "expiration_date"}
