@@ -88,7 +88,7 @@ func (s PostgresChecklistStorage) ReadMany(ctx context.Context, ids dto.Checklis
 		return nil, apperrors.ErrCouldNotCollectRows
 	}
 	defer rows.Close()
-	logger.Debug("Got task rows", funcName, nodeName)
+	logger.Debug("Got checklist rows", funcName, nodeName)
 
 	checklists := []dto.ChecklistInfo{}
 	for rows.Next() {
