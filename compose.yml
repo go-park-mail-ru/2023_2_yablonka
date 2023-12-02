@@ -22,16 +22,21 @@ services:
     # "echo 'Migrating CSAT database' &&
     # ./tern migrate -c db/migrations/csat/tern.conf -m db/migrations/csat/ &&
     # echo 'Finished CSAT database migrations' &&
+    # echo 'Making file storage subdirs' &&
+    # echo 'User avatars...' &&
+    # mkdir -p img/user_avatars &&
+    # echo 'Board thumbnails...' &&
+    # mkdir -p img/board_thumbnails &&
     command: >
         sh -c "echo 'Migrating main database' &&
               ./tern migrate -c db/migrations/public/tern.conf -m db/migrations/public/ &&
               echo 'Finished main database migrations' &&
               echo 'Starting backend' &&
               ./yablonka-backend"
+    volumes:
+      - /home/ubuntu/ProjectTrello/Files/img:/img:rw
     env_file:
       - ./config/.env
-    volumes:
-      - ./img:/img/
 
   microservices:
     build: 
@@ -54,6 +59,8 @@ services:
               echo 'Finished main database migrations' &&
               echo 'Starting microservices' &&
               ./yablonka-microservices"
+    volumes:
+      - /home/ubuntu/ProjectTrello/Files/img:/img:rw
   
   db:
     image: postgres:latest

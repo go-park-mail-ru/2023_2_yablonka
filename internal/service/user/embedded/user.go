@@ -113,29 +113,29 @@ func (us UserService) UpdateProfile(ctx context.Context, info dto.UserProfileInf
 // обновляет аватарку пользователя
 // или возвращает ошибку apperrors.ErrUserNotFound (409)
 func (us UserService) UpdateAvatar(ctx context.Context, info dto.AvatarChangeInfo) (*dto.UrlObj, error) {
-	baseURL := ctx.Value(dto.BaseURLKey).(string)
 	funcName := "UserService.UpdateAvatar"
 	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
 
-	cwd, _ := os.Getwd()
-	fileLocation := "img/user_avatars/" + strconv.FormatUint(info.UserID, 10) + ".png"
+	fileName := hashFromFileInfo(info.Filename, strconv.FormatUint(info.UserID, 10), info.Mimetype)
+
+	// TODO Update
+	fileLocation := "img/user_avatars/" + fileName + ".png"
 	logger.Debug("Relative path: "+fileLocation, funcName, nodeName)
-	logger.Debug("CWD: "+cwd, funcName, nodeName)
 	avatarUrlInfo := dto.ImageUrlInfo{
 		ID:  info.UserID,
-		Url: baseURL + fileLocation,
+		Url: fileLocation,
 	}
-	logger.Debug("Full URL: "+avatarUrlInfo.Url, funcName, nodeName)
 	f, err := os.Create(fileLocation)
 	if err != nil {
 		logger.Debug("Failed to create file with error: "+err.Error(), funcName, nodeName)
-		return nil, err
+		return nil, apperrors.ErrFailedToCreateFile
 	}
 
 	logger.Debug(fmt.Sprintf("Writing %v bytes", len(info.Avatar)), funcName, nodeName)
 	_, err = f.Write(info.Avatar)
 	if err != nil {
 		logger.Debug("Failed to write to file with error: "+err.Error(), funcName, nodeName)
+		return nil, apperrors.ErrFailedToSaveFile
 	}
 
 	defer f.Close()
@@ -145,7 +145,8 @@ func (us UserService) UpdateAvatar(ctx context.Context, info dto.AvatarChangeInf
 		errDelete := os.Remove(fileLocation)
 		for errDelete != nil {
 			logger.Debug("Failed to remove file after unsuccessful update with error: "+err.Error(), funcName, nodeName)
-			errDelete = os.Remove(fileLocation)
+			os.Remove(fileLocation)
+			return nil, apperrors.ErrFailedToDeleteFile
 		}
 		return nil, err
 	}
@@ -164,5 +165,11 @@ func (us UserService) DeleteUser(ctx context.Context, id dto.UserID) error {
 func hashFromAuthInfo(email string, password string) string {
 	hasher := sha256.New()
 	hasher.Write([]byte(email + password))
+	return fmt.Sprintf("%x", hasher.Sum(nil))
+}
+
+func hashFromFileInfo(filename string, id string, mimetype string) string {
+	hasher := sha256.New()
+	hasher.Write([]byte(filename + id + mimetype))
 	return fmt.Sprintf("%x", hasher.Sum(nil))
 }

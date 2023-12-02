@@ -164,8 +164,10 @@ type IndividualBoardRequest struct {
 // AvatarChangeInfo
 // структура для изменения аватарки
 type AvatarChangeInfo struct {
-	UserID uint64 `json:"-" valid:"-"`
-	Avatar []byte `json:"avatar" valid:"-"`
+	UserID   uint64 `json:"-" valid:"-"`
+	Avatar   []byte `json:"avatar" valid:"-"`
+	Filename string `json:"filename" valid:"-"`
+	Mimetype string `json:"mimetype" valid:"-"`
 }
 
 // ImageRequest

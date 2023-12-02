@@ -26,6 +26,15 @@ type CSRFService struct {
 	UnimplementedCSRFServiceServer
 }
 
+var CSRFServiceErrorCodes = map[error]ErrorCode{
+	nil:                             ErrorCode_OK,
+	apperrors.ErrTokenNotGenerated:  ErrorCode_TOKEN_NOT_GENERATED,
+	apperrors.ErrCouldNotBuildQuery: ErrorCode_COULD_NOT_BUILD_QUERY,
+	apperrors.ErrCSRFExpired:        ErrorCode_CSRF_EXPIRED,
+	apperrors.ErrCSRFNotCreated:     ErrorCode_CSRF_NOT_CREATED,
+	apperrors.ErrCSRFNotFound:       ErrorCode_CSRF_NOT_FOUND,
+}
+
 const nodeName = "microservice_server"
 
 // NewAuthService
@@ -41,20 +50,27 @@ func NewCSRFService(config config.SessionConfig, CSRFStorage storage.ICSRFStorag
 
 // GetLifetime
 // возвращает длительность авторизации
-func (cs *CSRFService) GetLifetime(ctx context.Context, empty *emptypb.Empty) (*durationpb.Duration, error) {
-	return durationpb.New(cs.sessionDuration), nil
+func (cs *CSRFService) GetLifetime(ctx context.Context, empty *emptypb.Empty) (*GetLifetimeResponse, error) {
+	response := &GetLifetimeResponse{
+		Code:     CSRFServiceErrorCodes[nil],
+		Response: durationpb.New(cs.sessionDuration),
+	}
+	return response, nil
 }
 
 // SetupCSRF
 // возвращает уникальную строку CSRF и её длительность
 // или возвращает ошибки apperrors.ErrTokenNotGenerated (500)
-func (cs *CSRFService) SetupCSRF(ctx context.Context, id *UserID) (*CSRFData, error) {
+func (cs *CSRFService) SetupCSRF(ctx context.Context, id *UserID) (*SetupCSRFResponse, error) {
 	funcName := "CSRFService.SetupCSRF"
 	expiresAt := time.Now().Add(cs.sessionDuration)
+	response := &SetupCSRFResponse{}
 
 	token, err := generateToken(cs.sessionIDLength)
 	if err != nil {
-		return &CSRFData{}, apperrors.MakeGRPCError(apperrors.ErrTokenNotGenerated)
+		response.Code = CSRFServiceErrorCodes[apperrors.ErrTokenNotGenerated]
+		response.Response = &CSRFData{}
+		return response, nil
 	}
 	cs.logger.Debug("CSRF token generated", funcName, nodeName)
 
@@ -66,24 +82,32 @@ func (cs *CSRFService) SetupCSRF(ctx context.Context, id *UserID) (*CSRFData, er
 
 	err = cs.csrfStorage.Create(ctx, csrf)
 	if err != nil {
-		return &CSRFData{}, apperrors.MakeGRPCError(err)
+		response.Code = CSRFServiceErrorCodes[err]
+		response.Response = &CSRFData{}
+		return response, nil
 	}
 	cs.logger.Debug("CSRF session created", funcName, nodeName)
 
-	return &CSRFData{
+	response.Code = CSRFServiceErrorCodes[nil]
+	response.Response = &CSRFData{
 		ID:             token,
 		ExpirationDate: timestamppb.New(expiresAt),
-	}, nil
+	}
+
+	return response, nil
 }
 
 // VerifyCSRF
 // проверяет состояние CSRF, возвращает ID авторизированного пользователя
 // или возвращает ошибки apperrors.ErrTokenNotGenerated (500)
-func (cs *CSRFService) VerifyCSRF(ctx context.Context, token *CSRFToken) (*emptypb.Empty, error) {
+func (cs *CSRFService) VerifyCSRF(ctx context.Context, token *CSRFToken) (*VerifyCSRFResponse, error) {
 	funcName := "CSRFService.VerifyCSRF"
+	response := &VerifyCSRFResponse{}
+
 	CSRFObj, err := cs.csrfStorage.Get(ctx, dto.CSRFToken{Value: token.Value})
 	if err != nil {
-		return &emptypb.Empty{}, apperrors.MakeGRPCError(err)
+		response.Code = CSRFServiceErrorCodes[err]
+		return response, nil
 	}
 	cs.logger.Debug("CSRF token found", funcName, nodeName)
 
@@ -92,18 +116,26 @@ func (cs *CSRFService) VerifyCSRF(ctx context.Context, token *CSRFToken) (*empty
 		for _, err = cs.DeleteCSRF(ctx, token); err != nil; {
 			_, err = cs.DeleteCSRF(ctx, token)
 		}
-		return &emptypb.Empty{}, apperrors.MakeGRPCError(apperrors.ErrSessionExpired)
+		response.Code = CSRFServiceErrorCodes[apperrors.ErrCSRFExpired]
+		return response, nil
 	}
 	cs.logger.Debug("CSRF token is still good", funcName, nodeName)
 
-	return &emptypb.Empty{}, nil
+	response.Code = CSRFServiceErrorCodes[nil]
+
+	return response, nil
 }
 
 // DeleteCSRF
 // удаляет CSRF
 // или возвращает ошибку apperrors.ErrSessionNotFound (401)
-func (cs *CSRFService) DeleteCSRF(ctx context.Context, token *CSRFToken) (*emptypb.Empty, error) {
-	return &emptypb.Empty{}, apperrors.MakeGRPCError(cs.csrfStorage.Delete(ctx, dto.CSRFToken{Value: token.Value}))
+func (cs *CSRFService) DeleteCSRF(ctx context.Context, token *CSRFToken) (*DeleteCSRFResponse, error) {
+	response := &DeleteCSRFResponse{}
+
+	err := cs.csrfStorage.Delete(ctx, dto.CSRFToken{Value: token.Value})
+	response.Code = CSRFServiceErrorCodes[err]
+
+	return response, nil
 }
 
 // generateString
