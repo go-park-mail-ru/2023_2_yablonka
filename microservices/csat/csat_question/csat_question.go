@@ -14,6 +14,17 @@ type CSATQuestionService struct {
 	UnimplementedCSATQuestionServiceServer
 }
 
+var CSATQuestionServiceErrorCodes = map[error]ErrorCode{
+	nil:                                  ErrorCode_OK,
+	apperrors.ErrCouldNotBuildQuery:      ErrorCode_COULD_NOT_BUILD_QUERY,
+	apperrors.ErrCouldNotCreateQuestion:  ErrorCode_COULD_NOT_CREATE_QUESTION,
+	apperrors.ErrCouldNotGetQuestions:    ErrorCode_COULD_NOT_GET_QUESTIONS,
+	apperrors.ErrCouldNotGetQuestionType: ErrorCode_COULD_NOT_GET_QUESTION_TYPE,
+	apperrors.ErrQuestionNotUpdated:      ErrorCode_QUESTION_NOT_UPDATED,
+	apperrors.ErrQuestionNotDeleted:      ErrorCode_QUESTION_NOT_DELETED,
+	apperrors.ErrAnswerRatingTooBig:      ErrorCode_ANSWER_RATING_TOO_BIG,
+}
+
 // NewCSATQuestionService
 // возвращает NewCSATQuestionService с инициализированным хранилищем
 func NewCSATQuestionService(storage storage.ICSATQuestionStorage) *CSATQuestionService {
@@ -25,26 +36,36 @@ func NewCSATQuestionService(storage storage.ICSATQuestionStorage) *CSATQuestionS
 // GetQuestionType
 // возвращает тип CSAT вопроса по его id
 // или возвращает ошибки ...
-func (cs CSATQuestionService) CheckRating(ctx context.Context, info *NewCSATAnswerInfo) (*emptypb.Empty, error) {
+func (cs CSATQuestionService) CheckRating(ctx context.Context, info *NewCSATAnswerInfo) (*CheckRatingResponse, error) {
+	response := &CheckRatingResponse{}
+
 	questionType, err := cs.storage.GetQuestionType(ctx, dto.CSATQuestionID{Value: info.QuestionID})
 	if err != nil {
-		return &emptypb.Empty{}, apperrors.MakeGRPCError(err)
+		response.Code = CSATQuestionServiceErrorCodes[err]
+		return response, nil
 	}
 
 	if info.Rating > questionType.MaxRating {
-		return &emptypb.Empty{}, apperrors.MakeGRPCError(err)
+		response.Code = CSATQuestionServiceErrorCodes[apperrors.ErrCouldNotCollectRows]
+		return response, nil
 	}
 
-	return &emptypb.Empty{}, nil
+	response.Code = CSATQuestionServiceErrorCodes[nil]
+
+	return response, nil
 }
 
 // GetAll
 // возвращает все вопросы CSAT
 // или возвращает ошибки ...
-func (cs CSATQuestionService) GetAll(ctx context.Context, empty *emptypb.Empty) (*AllQuestionStats, error) {
+func (cs CSATQuestionService) GetAll(ctx context.Context, empty *emptypb.Empty) (*GetAllResponse, error) {
+	response := &GetAllResponse{}
+
 	questionStats, err := cs.storage.GetAll(ctx)
 	if err != nil {
-		return &AllQuestionStats{}, apperrors.MakeGRPCError(err)
+		response.Code = CSATQuestionServiceErrorCodes[err]
+		response.Response = &AllQuestionStats{}
+		return response, nil
 	}
 
 	convertedQuestions := []*CSATQuestionFull{}
@@ -55,20 +76,25 @@ func (cs CSATQuestionService) GetAll(ctx context.Context, empty *emptypb.Empty) 
 			Content: question.Content,
 		})
 	}
-	convertedStats := &AllQuestionStats{
+	response.Code = CSATQuestionServiceErrorCodes[nil]
+	response.Response = &AllQuestionStats{
 		Questions: convertedQuestions,
 	}
 
-	return convertedStats, nil
+	return response, nil
 }
 
 // GetStats
 // возвращает статистику по вопросам
 // или возвращает ошибки ...
-func (cs CSATQuestionService) GetStats(ctx context.Context, empty *emptypb.Empty) (*AllQuestionsWithStats, error) {
+func (cs CSATQuestionService) GetStats(ctx context.Context, empty *emptypb.Empty) (*GetStatsResponse, error) {
+	response := &GetStatsResponse{}
+
 	stats, err := cs.storage.GetStats(ctx)
 	if err != nil {
-		return &AllQuestionsWithStats{}, apperrors.MakeGRPCError(err)
+		response.Code = CSATQuestionServiceErrorCodes[err]
+		response.Response = &AllQuestionsWithStats{}
+		return response, nil
 	}
 
 	convertedQuestions := []*QuestionWithStats{}
@@ -88,20 +114,25 @@ func (cs CSATQuestionService) GetStats(ctx context.Context, empty *emptypb.Empty
 			Stats:   convertedRatings,
 		})
 	}
-	convertedStats := AllQuestionsWithStats{
+	response.Response = &AllQuestionsWithStats{
 		Questions: convertedQuestions,
 	}
+	response.Code = CSATQuestionServiceErrorCodes[nil]
 
-	return &convertedStats, nil
+	return response, nil
 }
 
 // Create
 // создает новый вопрос CSAT
 // или возвращает ошибки ...
-func (cs CSATQuestionService) Create(ctx context.Context, info *NewCSATQuestionInfo) (*CSATQuestionFull, error) {
+func (cs CSATQuestionService) Create(ctx context.Context, info *NewCSATQuestionInfo) (*CreateResponse, error) {
+	response := &CreateResponse{}
+
 	questionType, err := cs.storage.GetQuestionTypeWithName(ctx, dto.CSATQuestionTypeName{Value: info.Type})
 	if err != nil {
-		return &CSATQuestionFull{}, apperrors.MakeGRPCError(err)
+		response.Code = CSATQuestionServiceErrorCodes[err]
+		response.Response = &CSATQuestionFull{}
+		return response, nil
 	}
 	verifiedInfo := dto.NewCSATQuestion{
 		Content: info.Content,
@@ -109,39 +140,56 @@ func (cs CSATQuestionService) Create(ctx context.Context, info *NewCSATQuestionI
 	}
 	question, err := cs.storage.Create(ctx, verifiedInfo)
 	if err != nil {
-		return &CSATQuestionFull{}, apperrors.MakeGRPCError(err)
+		response.Code = CSATQuestionServiceErrorCodes[err]
+		response.Response = &CSATQuestionFull{}
+		return response, nil
 	}
+
 	question.Type = info.Type
-	convertedQuestion := &CSATQuestionFull{
+	response.Code = CSATQuestionServiceErrorCodes[nil]
+	response.Response = &CSATQuestionFull{
 		ID:      question.ID,
 		Type:    question.Type,
 		Content: question.Content,
 	}
-	return convertedQuestion, nil
+
+	return response, nil
 }
 
 // Update
 // обновляет вопрос CSAT
 // или возвращает ошибки ...
-func (cs CSATQuestionService) Update(ctx context.Context, info *UpdatedCSATQuestionInfo) (*emptypb.Empty, error) {
+func (cs CSATQuestionService) Update(ctx context.Context, info *UpdatedCSATQuestionInfo) (*UpdateResponse, error) {
+	response := &UpdateResponse{}
+
 	questionType, err := cs.storage.GetQuestionType(ctx, dto.CSATQuestionID{Value: info.ID})
 	if err != nil {
-		return &emptypb.Empty{}, apperrors.MakeGRPCError(err)
+		response.Code = CSATQuestionServiceErrorCodes[err]
+		return response, nil
 	}
+
 	updatedQuestion := dto.UpdatedCSATQuestion{
 		ID:      info.ID,
 		Content: info.Content,
 		Type:    questionType.ID,
 	}
-	return &emptypb.Empty{}, apperrors.MakeGRPCError(cs.storage.Update(ctx, updatedQuestion))
+	err = cs.storage.Update(ctx, updatedQuestion)
+	response.Code = CSATQuestionServiceErrorCodes[err]
+
+	return response, nil
 }
 
 // Delete
 // удаляет вопрос CSAT по id
 // или возвращает ошибки ...
-func (cs CSATQuestionService) Delete(ctx context.Context, id *CSATQuestionID) (*emptypb.Empty, error) {
+func (cs CSATQuestionService) Delete(ctx context.Context, id *CSATQuestionID) (*DeleteResponse, error) {
+	response := &DeleteResponse{}
+
 	convertedID := dto.CSATQuestionID{
 		Value: id.Value,
 	}
-	return &emptypb.Empty{}, apperrors.MakeGRPCError(cs.storage.Delete(ctx, convertedID))
+	err := cs.storage.Delete(ctx, convertedID)
+	response.Code = CSATQuestionServiceErrorCodes[err]
+
+	return response, nil
 }

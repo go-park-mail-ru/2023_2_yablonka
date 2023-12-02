@@ -5,13 +5,16 @@ import (
 	"server/internal/apperrors"
 	"server/internal/pkg/dto"
 	"server/internal/storage"
-
-	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 type CSATAnswerService struct {
 	storage storage.ICSATAnswerStorage
 	UnimplementedCSATAnswerServiceServer
+}
+
+var CSATAnswerServiceErrorCodes = map[error]ErrorCode{
+	nil:                             ErrorCode_OK,
+	apperrors.ErrCouldNotBuildQuery: ErrorCode_COULD_NOT_BUILD_QUERY,
 }
 
 // NewBoardService
@@ -25,11 +28,16 @@ func NewCSATAnswerService(storage storage.ICSATAnswerStorage) *CSATAnswerService
 // Create
 // создает новый ответ CSAT
 // или возвращает ошибки ...
-func (cs CSATAnswerService) Create(ctx context.Context, info *NewCSATAnswer) (*emptypb.Empty, error) {
+func (cs CSATAnswerService) Create(ctx context.Context, info *NewCSATAnswer) (*CreateResponse, error) {
 	convertedInfo := dto.NewCSATAnswer{
 		UserID:     info.UserID,
 		QuestionID: info.QuestionID,
 		Rating:     info.Rating,
 	}
-	return &emptypb.Empty{}, apperrors.MakeGRPCError(cs.storage.Create(ctx, convertedInfo))
+	response := &CreateResponse{}
+
+	err := cs.storage.Create(ctx, convertedInfo)
+
+	response.Code = CSATAnswerServiceErrorCodes[err]
+	return response, nil
 }

@@ -2,6 +2,7 @@ package embedded
 
 import (
 	"context"
+	"server/internal/apperrors"
 	"server/internal/pkg/dto"
 	"server/internal/storage"
 )
@@ -28,7 +29,7 @@ func (cs CSATQuestionService) CheckRating(ctx context.Context, info dto.NewCSATA
 	}
 
 	if info.Rating > questionType.MaxRating {
-		return err
+		return apperrors.ErrAnswerRatingTooBig
 	}
 
 	return nil
