@@ -1,0 +1,104 @@
+syntax = "proto3";
+package user;
+
+option go_package = "./;user_microservice";
+
+enum ErrorCode {
+	OK = 0;
+	COULD_NOT_BUILD_QUERY = 1;
+	USER_NOT_FOUND = 2;
+	WRONG_PASSWORD = 3;
+	USER_ALREADY_EXISTS = 4;
+	USER_NOT_CREATED = 5;
+	USER_NOT_UPDATED = 6;
+	USER_NOT_DELETED = 7;
+	COULD_NOT_GET_USER = 8;
+	FAILED_TO_CREATE_FILE = 9;
+	FAILED_TO_SAVE_FILE = 10;
+	FAILED_TO_DELETE_FILE = 11;
+}
+
+message User {
+	uint64 ID = 1;
+	string Email = 2;
+	string PasswordHash = 3;
+	string Name = 4;
+	string Surname = 5;
+	string AvatarURL = 6;
+	string Description = 7;
+}
+
+message AuthInfo {
+    string Email = 1;
+    string Password = 2;
+}
+
+message UserID {
+    uint64 Value = 1;
+}
+
+message PasswordChangeInfo {
+    uint64 UserID = 1;
+    string OldPassword = 2;
+    string NewPassword = 3;
+}
+
+message UserProfileInfo {
+	uint64 UserID = 1;
+	string Name = 2;
+	string Surname = 3;
+	string Description = 4;
+}
+
+message AvatarChangeInfo {
+	uint64 UserID = 1;
+	bytes Avatar = 2;
+	string Filename = 3;
+	string Mimetype = 4;
+}
+
+message UrlObj {
+	string Value = 1;
+}
+
+message RegisterUserResponse {
+	ErrorCode Code = 1;
+	User Response = 2;
+}
+
+message CheckPasswordResponse {
+	ErrorCode Code = 1;
+	User Response = 2;
+}
+
+message GetWithIDResponse {
+	ErrorCode Code = 1;
+	User Response = 2;
+}
+
+message UpdatePasswordResponse {
+	ErrorCode Code = 1;
+}
+
+message UpdateProfileResponse {
+	ErrorCode Code = 1;
+}
+
+message UpdateAvatarResponse {
+	ErrorCode Code = 1;
+	UrlObj Response = 2;
+}
+
+message DeleteUserResponse {
+	ErrorCode Code = 1;
+}
+
+service UserService {
+	rpc RegisterUser (AuthInfo) returns (RegisterUserResponse) {}
+	rpc CheckPassword (AuthInfo) returns (CheckPasswordResponse) {}
+	rpc GetWithID (UserID) returns (GetWithIDResponse) {}
+	rpc UpdatePassword(PasswordChangeInfo) returns (UpdatePasswordResponse) {}
+	rpc UpdateProfile(UserProfileInfo) returns (UpdateProfileResponse) {}
+	rpc UpdateAvatar(AvatarChangeInfo) returns (UpdateAvatarResponse) {}
+	rpc DeleteUser(UserID) returns (DeleteUserResponse) {}
+}

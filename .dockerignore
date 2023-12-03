@@ -1,4 +1,3 @@
-deployments
 .env
 .git*
 coverage
@@ -6,4 +5,7 @@ main.exe
 main
 test_commands.txt
 README.md
+test
+mocks*
+*.ps1
 .github

@@ -1,0 +1,54 @@
+syntax = "proto3";
+package auth;
+
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/duration.proto";
+
+// protoc --go_out=. --go-grpc_out=. --go-grpc_opt=paths=source_relative --go_opt=paths=source_relative *.proto  
+option go_package = "./;auth_microservice";
+
+message SessionToken {
+    string ID = 1;
+    google.protobuf.Timestamp ExpirationDate = 2;
+}
+
+message UserID {
+    uint64 Value = 1;
+}
+
+enum ErrorCode {
+    OK = 0;
+    COULD_NOT_BUILD_QUERY = 1;
+    TOKEN_NOT_GENERATED = 2;
+    SESSION_EXPIRED = 3;
+    SESSION_NOT_CREATED = 4;
+    SESSION_NOT_FOUND = 5;
+}
+
+message AuthUserResponse {
+    ErrorCode Code = 1;
+    SessionToken Response = 2;
+}
+
+message VerifyAuthResponse {
+    ErrorCode Code = 1;
+    UserID Response = 2;
+}
+
+message LogOutResponse {
+    ErrorCode Code = 1;
+}
+
+message GetLifetimeResponse {
+    ErrorCode Code = 1;
+    google.protobuf.Duration Response = 2;
+}
+
+service AuthService {
+    rpc AuthUser (UserID) returns (AuthUserResponse) {}
+    rpc VerifyAuth (SessionToken) returns (VerifyAuthResponse) {}
+    rpc LogOut (SessionToken) returns (LogOutResponse) {}
+    rpc GetLifetime (google.protobuf.Empty) returns (GetLifetimeResponse) {}
+}
+

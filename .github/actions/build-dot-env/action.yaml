@@ -24,6 +24,22 @@ inputs:
   session_id_length:
     description: "The length of the session ID string"
     required: true
+  migrator_pw:
+    description: "Password for the migrator"
+    required: true
+  postgres_user:
+    description: "Username of the DB owner user"
+    required: true
+  postgres_pwd:
+    description: "Password of the DB owner user"
+    required: true
+  postgres_table:
+    description: "Name of the DB Table"
+    required: true
+  postgres_host:
+    description: "Host for the DB connection (should be db for Docker)"
+    required: false
+    default: "localhost"
 
 runs:
   using: "composite"
@@ -40,6 +56,11 @@ runs:
         echo "SESSION_DURATION_MINUTES=${{ inputs.session_minutes }}" >> ${{ inputs.location }}.env
         echo "SESSION_DURATION_SECONDS=${{ inputs.session_seconds }}" >> ${{ inputs.location }}.env
         echo "SESSION_ID_LENGTH=${{ inputs.session_id_length }}" >> ${{ inputs.location }}.env
+        echo "MIGRATOR_PASSWORD=\"${{ inputs.migrator_pw }}\"" >> ${{ inputs.location }}.env
+        echo "POSTGRES_USER=\"${{ inputs.postgres_user }}\"" >> ${{ inputs.location }}.env
+        echo "POSTGRES_PASSWORD=\"${{ inputs.postgres_pw }}\"" >> ${{ inputs.location }}.env
+        echo "POSTGRES_DB=\"${{ inputs.postgres_table }}\"" >> ${{ inputs.location }}.env
+        echo "POSTGRES_HOST=\"${{ inputs.postgres_host }}\"" >> ${{ inputs.location }}.env
 
     - name: "Verify file exists"
       shell: bash

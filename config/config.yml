@@ -1,0 +1,66 @@
+# config.yml
+
+server:
+  host: '213.219.215.40'
+  backend_port: 8080
+  frontend_port: 8081
+  swagger_port: 8082
+  # !! MUST match the container_name of the microservice container in compose.yml
+  # Client will fail to connect otherwise
+  microservice_host: 'microservices'
+  microservice_port: 8083
+
+cors:
+  allowed_methods:
+    - GET
+    - POST
+    - OPTIONS
+    - DELETE
+  allowed_hosts:
+    - localhost:8080
+    - localhost:8081
+    - localhost:8082
+    - localhost:8083
+    - 213.219.215.40:8080
+    - 213.219.215.40:8081
+    - 213.219.215.40:8082
+    - 213.219.215.40:8083
+    - http://microservices:8080
+    - http://microservices:8081
+    - http://microservices:8082
+    - http://microservices:8083
+    - http://localhost:8080
+    - http://localhost:8081
+    - http://localhost:8082
+    - http://localhost:8083
+    - http://213.219.215.40:8080
+    - http://213.219.215.40:8081
+    - http://213.219.215.40:8082
+    - http://213.219.215.40:8083
+  allowed_headers:
+    - Acccess-Control-Allow-Origin
+    - Content-Type
+    - X-Csrf-Token
+  exposed_headers:
+    - X-Csrf-Token
+  allow_credentials: true
+  debug: true
+
+db:
+  user: postgres
+  port: 5432
+  db_name: Tabula
+  app_name: Tabula
+  schema: public
+  connection_timeout: 5
+
+logging:
+  # Accepted levels: trace, debug, info, warning, error
+  level: debug
+  disable_timestamp: false
+  full_timestamp: true
+  # If true, report_caller setting will be based on level being trace
+  # If false, report_caller setting will use the config value
+  level_based_report: true
+  report_caller: true
+  disable_level_truncation: true

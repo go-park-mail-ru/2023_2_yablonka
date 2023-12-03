@@ -5,19 +5,104 @@ definitions:
       error_response:
         type: string
     type: object
-  doc_structs.UserBoardsResponse:
+  doc_structs.AllQuestionsResponse:
     properties:
-      boards:
+      questions:
         items:
-          $ref: '#/definitions/entities.Board'
+          $ref: '#/definitions/dto.CSATQuestionFull'
         type: array
-      user:
-        $ref: '#/definitions/entities.User'
+    type: object
+  doc_structs.AllWorkspacesResponse:
+    properties:
+      workspaces:
+        $ref: '#/definitions/dto.AllWorkspaces'
+    type: object
+  doc_structs.AvatarUploadResponse:
+    properties:
+      avatar_url:
+        $ref: '#/definitions/dto.UrlObj'
+    type: object
+  doc_structs.BoardResponse:
+    properties:
+      board:
+        $ref: '#/definitions/dto.FullBoardResult'
+    type: object
+  doc_structs.ChecklistItemResponse:
+    properties:
+      checklist_item:
+        $ref: '#/definitions/dto.ChecklistItemInfo'
+    type: object
+  doc_structs.ChecklistResponse:
+    properties:
+      checklist:
+        $ref: '#/definitions/dto.ChecklistInfo'
+    type: object
+  doc_structs.CommentResponse:
+    properties:
+      comment:
+        $ref: '#/definitions/entities.Comment'
+    type: object
+  doc_structs.ListResponse:
+    properties:
+      list:
+        $ref: '#/definitions/entities.List'
+    type: object
+  doc_structs.QuestionResponse:
+    properties:
+      question:
+        $ref: '#/definitions/dto.CSATQuestionFull'
+    type: object
+  doc_structs.StatsResponse:
+    properties:
+      questions:
+        items:
+          $ref: '#/definitions/dto.QuestionWithStats'
+        type: array
+    type: object
+  doc_structs.TaskResponse:
+    properties:
+      task:
+        $ref: '#/definitions/entities.Task'
+    type: object
+  doc_structs.ThumbnailUploadResponse:
+    properties:
+      thumbnail_url:
+        $ref: '#/definitions/dto.UrlObj'
+    type: object
+  doc_structs.URLResponse:
+    properties:
+      url:
+        $ref: '#/definitions/dto.UrlObj'
     type: object
   doc_structs.UserResponse:
     properties:
       user:
-        $ref: '#/definitions/entities.User'
+        $ref: '#/definitions/dto.UserPublicInfo'
+    type: object
+  dto.AddBoardUserRequest:
+    properties:
+      board_id:
+        type: integer
+      user_email:
+        type: string
+    type: object
+  dto.AddTaskUserInfo:
+    properties:
+      task_id:
+        type: integer
+      user_id:
+        type: integer
+    type: object
+  dto.AllWorkspaces:
+    properties:
+      guestWorkspaces:
+        items:
+          $ref: '#/definitions/dto.UserGuestWorkspaceInfo'
+        type: array
+      yourWorkspaces:
+        items:
+          $ref: '#/definitions/dto.UserOwnedWorkspaceInfo'
+        type: array
     type: object
   dto.AuthInfo:
     properties:
@@ -26,42 +111,533 @@ definitions:
       password:
         type: string
     type: object
-  dto.UserInfo:
+  dto.AvatarChangeInfo:
     properties:
-      email:
-        type: string
-      id:
-        type: integer
+      avatar:
+        items:
+          type: integer
+        type: array
     type: object
-  entities.Board:
+  dto.BoardID:
     properties:
       board_id:
         type: integer
-      guests:
-        items:
-          $ref: '#/definitions/dto.UserInfo'
-        type: array
-      name:
+    type: object
+  dto.CSATQuestionFull:
+    properties:
+      content:
         type: string
-      owner:
-        $ref: '#/definitions/dto.UserInfo'
-      thumbnail_url:
+      question_id:
+        type: integer
+      type:
         type: string
     type: object
-  entities.User:
+  dto.ChecklistID:
     properties:
+      id:
+        type: integer
+    type: object
+  dto.ChecklistInfo:
+    properties:
+      id:
+        type: integer
+      items:
+        items:
+          type: string
+        type: array
+      list_position:
+        type: integer
+      name:
+        type: string
+      task_id:
+        type: integer
+    type: object
+  dto.ChecklistItemID:
+    properties:
+      id:
+        type: integer
+    type: object
+  dto.ChecklistItemInfo:
+    properties:
+      checklist_id:
+        type: integer
+      done:
+        type: boolean
+      id:
+        type: integer
+      list_position:
+        type: integer
+      name:
+        type: string
+    type: object
+  dto.CommentInfo:
+    properties:
+      date_created:
+        type: string
+      id:
+        type: integer
+      text:
+        type: string
+      user_id:
+        type: integer
+    type: object
+  dto.FullBoardResult:
+    properties:
+      board:
+        $ref: '#/definitions/dto.SingleBoardInfo'
+      cards:
+        items:
+          $ref: '#/definitions/dto.SingleTaskInfo'
+        type: array
+      checklist_items:
+        items:
+          $ref: '#/definitions/dto.ChecklistItemInfo'
+        type: array
+      checklists:
+        items:
+          $ref: '#/definitions/dto.ChecklistInfo'
+        type: array
+      comments:
+        items:
+          $ref: '#/definitions/dto.CommentInfo'
+        type: array
+      lists:
+        items:
+          $ref: '#/definitions/dto.SingleListInfo'
+        type: array
+      users:
+        items:
+          $ref: '#/definitions/dto.UserPublicInfo'
+        type: array
+    type: object
+  dto.Image:
+    properties:
+      data:
+        items:
+          type: integer
+        type: array
+    type: object
+  dto.ListID:
+    properties:
+      id:
+        type: integer
+    type: object
+  dto.NewBoardRequest:
+    properties:
+      name:
+        type: string
+      thumbnail:
+        items:
+          type: integer
+        type: array
+      workspace_id:
+        type: integer
+    type: object
+  dto.NewCSATAnswerInfo:
+    properties:
+      id:
+        type: integer
+      id_question:
+        type: integer
+      rating:
+        type: integer
+    type: object
+  dto.NewCSATQuestionInfo:
+    properties:
+      content:
+        type: string
+      type:
+        type: string
+    type: object
+  dto.NewChecklistInfo:
+    properties:
+      list_position:
+        type: integer
+      name:
+        type: string
+      task_id:
+        type: integer
+    type: object
+  dto.NewChecklistItemInfo:
+    properties:
+      checklist_id:
+        type: integer
+      done:
+        type: boolean
+      list_position:
+        type: integer
+      name:
+        type: string
+    type: object
+  dto.NewCommentInfo:
+    properties:
+      task_id:
+        type: integer
+      text:
+        type: string
+      user_id:
+        type: integer
+    type: object
+  dto.NewListInfo:
+    properties:
+      board_id:
+        type: integer
+      description:
+        type: string
+      list_position:
+        type: integer
+      name:
+        type: string
+    type: object
+  dto.NewTaskInfo:
+    properties:
+      list_id:
+        type: integer
+      list_position:
+        type: integer
+      name:
+        type: string
+    type: object
+  dto.NewWorkspaceInfo:
+    properties:
+      description:
+        type: string
+      name:
+        type: string
+      owner_id:
+        type: integer
+    type: object
+  dto.PasswordChangeInfo:
+    properties:
+      new_password:
+        type: string
+      old_password:
+        type: string
+    type: object
+  dto.QuestionWithStats:
+    properties:
+      content:
+        type: string
+      question_id:
+        type: integer
+      stats:
+        items:
+          $ref: '#/definitions/dto.RatingStats'
+        type: array
+      type:
+        type: string
+    type: object
+  dto.RatingStats:
+    properties:
+      average:
+        type: integer
+      count:
+        type: integer
+      rating:
+        type: integer
+    type: object
+  dto.RemoveBoardUserInfo:
+    properties:
+      board_id:
+        type: integer
+      user_id:
+        type: integer
+    type: object
+  dto.RemoveTaskUserInfo:
+    properties:
+      task_id:
+        type: integer
+      user_id:
+        type: integer
+    type: object
+  dto.SingleBoardInfo:
+    properties:
+      board_id:
+        type: integer
+      date_created:
+        type: string
+      name:
+        type: string
+      owner_id:
+        type: integer
+      thumbnail_url:
+        type: string
+      workspace_id:
+        type: integer
+    type: object
+  dto.SingleListInfo:
+    properties:
+      board_id:
+        type: integer
+      cards:
+        items:
+          type: string
+        type: array
+      id:
+        type: integer
+      list_position:
+        type: integer
+      name:
+        type: string
+    type: object
+  dto.SingleTaskInfo:
+    properties:
+      checklists:
+        items:
+          type: string
+        type: array
+      comments:
+        items:
+          type: string
+        type: array
+      date_created:
+        type: string
+      description:
+        type: string
+      end:
+        type: string
+      id:
+        type: integer
+      list_id:
+        type: integer
+      list_position:
+        type: integer
+      name:
+        type: string
+      start:
+        type: string
+      users:
+        items:
+          type: string
+        type: array
+    type: object
+  dto.TaskID:
+    properties:
+      id:
+        type: integer
+    type: object
+  dto.UpdatedBoardInfo:
+    properties:
+      id:
+        type: integer
+      name:
+        type: string
+    type: object
+  dto.UpdatedBoardThumbnailInfo:
+    properties:
+      id:
+        type: integer
+      thumbnail:
+        items:
+          type: integer
+        type: array
+    type: object
+  dto.UpdatedCSATQuestionInfo:
+    properties:
+      content:
+        type: string
+      id:
+        type: integer
+      type:
+        type: string
+    type: object
+  dto.UpdatedChecklistInfo:
+    properties:
+      id:
+        type: integer
+      list_position:
+        type: integer
+      name:
+        type: string
+    type: object
+  dto.UpdatedChecklistItemInfo:
+    properties:
+      done:
+        type: boolean
+      id:
+        type: integer
+      list_position:
+        type: integer
+      name:
+        type: string
+    type: object
+  dto.UpdatedListInfo:
+    properties:
+      description:
+        type: string
+      id:
+        type: integer
+      list_position:
+        type: integer
+      name:
+        type: string
+    type: object
+  dto.UpdatedTaskInfo:
+    properties:
+      description:
+        type: string
+      end:
+        type: string
+      id:
+        type: integer
+      list_position:
+        type: integer
+      name:
+        type: string
+      start:
+        type: string
+    type: object
+  dto.UpdatedWorkspaceInfo:
+    properties:
+      description:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+    type: object
+  dto.UrlObj:
+    properties:
+      url:
+        type: string
+    type: object
+  dto.UserGuestWorkspaceInfo:
+    properties:
+      boards:
+        items:
+          $ref: '#/definitions/dto.WorkspaceBoardInfo'
+        type: array
+      workspace_id:
+        type: integer
+      workspace_name:
+        type: string
+      workspace_owner:
+        $ref: '#/definitions/dto.UserOwnerInfo'
+    type: object
+  dto.UserOwnedWorkspaceInfo:
+    properties:
+      boards:
+        items:
+          $ref: '#/definitions/dto.WorkspaceBoardInfo'
+        type: array
+      workspace_id:
+        type: integer
+      workspace_name:
+        type: string
+    type: object
+  dto.UserOwnerInfo:
+    properties:
+      owner_email:
+        type: string
+      owner_id:
+        type: integer
+      owner_name:
+        type: string
+      owner_surname:
+        type: string
+    type: object
+  dto.UserProfileInfo:
+    properties:
+      description:
+        type: string
+      name:
+        type: string
+      surname:
+        type: string
+    type: object
+  dto.UserPublicInfo:
+    properties:
+      avatar_url:
+        type: string
+      description:
+        type: string
       email:
         type: string
       name:
         type: string
       surname:
         type: string
+      user_id:
+        type: integer
+    type: object
+  dto.WorkspaceBoardInfo:
+    properties:
+      description:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
       thumbnail_url:
+        type: string
+    type: object
+  dto.WorkspaceID:
+    properties:
+      workspace_id:
+        type: integer
+    type: object
+  entities.Comment:
+    properties:
+      date_created:
+        type: string
+      id:
+        type: integer
+      task_id:
+        type: integer
+      text:
         type: string
       user_id:
         type: integer
     type: object
-host: localhost:8080
+  entities.List:
+    properties:
+      board_id:
+        type: integer
+      description:
+        type: string
+      id:
+        type: integer
+      list_position:
+        type: integer
+      name:
+        type: string
+      tasks:
+        items:
+          $ref: '#/definitions/entities.Task'
+        type: array
+    type: object
+  entities.Task:
+    properties:
+      checklists:
+        items:
+          type: integer
+        type: array
+      comments:
+        items:
+          type: integer
+        type: array
+      date_created:
+        type: string
+      description:
+        type: string
+      end:
+        type: string
+      id:
+        type: integer
+      list_id:
+        type: integer
+      list_position:
+        type: integer
+      name:
+        type: string
+      start:
+        type: string
+      users:
+        items:
+          type: integer
+        type: array
+    type: object
+host: localhost:8082
 info:
   contact:
     email: kdanil01@mail.ru
@@ -74,34 +650,6 @@ info:
   title: LA TABULA API
   version: "2.0"
 paths:
-  /api/v2/user/boards/:
-    get:
-      consumes:
-      - application/json
-      description: Выводит и созданные им доски и те, в которых он гость. Работает
-        только для авторизированного пользователя.
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Пользователь и его доски
-          schema:
-            $ref: '#/definitions/doc_structs.UserBoardsResponse'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/apperrors.ErrorResponse'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/apperrors.ErrorResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/apperrors.ErrorResponse'
-      summary: Вывести все доски текущего пользователя
-      tags:
-      - boards
   /auth/login/:
     post:
       consumes:
@@ -171,9 +719,9 @@ paths:
       - application/json
       description: Также вводит пользователя в систему
       parameters:
-      - description: Эл. почта и логин пользователя
+      - description: Базовые данные пользователя
         in: body
-        name: authData
+        name: signup
         required: true
         schema:
           $ref: '#/definitions/dto.AuthInfo'
@@ -231,4 +779,1184 @@ paths:
       summary: Подтвердить вход
       tags:
       - auth
+  /board/:
+    post:
+      consumes:
+      - application/json
+      description: Получить доску
+      parameters:
+      - description: id доски
+        in: body
+        name: boardID
+        required: true
+        schema:
+          $ref: '#/definitions/dto.BoardID'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: объект доски
+          schema:
+            $ref: '#/definitions/doc_structs.BoardResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+      summary: Получить доску
+      tags:
+      - boards
+  /board/create/:
+    post:
+      consumes:
+      - application/json
+      description: Создать доску
+      parameters:
+      - description: данные новой доски
+        in: body
+        name: newBoardRequest
+        required: true
+        schema:
+          $ref: '#/definitions/dto.NewBoardRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: объект доски
+          schema:
+            $ref: '#/definitions/doc_structs.BoardResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+      summary: Создать доску
+      tags:
+      - boards
+  /board/delete/:
+    delete:
+      consumes:
+      - application/json
+      description: Удалить доску
+      parameters:
+      - description: id доски
+        in: body
+        name: boardID
+        required: true
+        schema:
+          $ref: '#/definitions/dto.BoardID'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: no content
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+      summary: Удалить доску
+      tags:
+      - boards
+  /board/update/:
+    post:
+      consumes:
+      - application/json
+      description: Обновить доску
+      parameters:
+      - description: обновленные данные доски
+        in: body
+        name: boardInfo
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdatedBoardInfo'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: no content
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+      summary: Обновить доску
+      tags:
+      - boards
+  /board/update/change_thumbnail/:
+    post:
+      consumes:
+      - application/json
+      description: Обновить картинку доску
+      parameters:
+      - description: обновленные данные задания
+        in: body
+        name: boardInfo
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdatedBoardThumbnailInfo'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Ссылка на новую картинку
+          schema:
+            $ref: '#/definitions/doc_structs.ThumbnailUploadResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+      summary: Обновить картинку доски
+      tags:
+      - boards
+  /board/user/add/:
+    post:
+      consumes:
+      - application/json
+      description: Добавить пользователя в доску
+      parameters:
+      - description: мэйл пользователя, id доски и воркспейса
+        in: body
+        name: info
+        required: true
+        schema:
+          $ref: '#/definitions/dto.AddBoardUserRequest'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: no content
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+      summary: Добавить пользователя в доску
+      tags:
+      - boards
+  /board/user/remove/:
+    delete:
+      consumes:
+      - application/json
+      description: Удалить пользователя из доски
+      parameters:
+      - description: id пользователя, доски и воркспейса
+        in: body
+        name: info
+        required: true
+        schema:
+          $ref: '#/definitions/dto.RemoveBoardUserInfo'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: no content
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+      summary: Удалить пользователя из доски
+      tags:
+      - boards
+  /checklist/create/:
+    post:
+      consumes:
+      - application/json
+      description: Создать чеклист
+      parameters:
+      - description: данные нового чеклиста
+        in: body
+        name: newChecklistInfo
+        required: true
+        schema:
+          $ref: '#/definitions/dto.NewChecklistInfo'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: объект чеклиста
+          schema:
+            $ref: '#/definitions/doc_structs.ChecklistResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+      summary: Создать чеклист
+      tags:
+      - checklists
+  /checklist/delete/:
+    delete:
+      consumes:
+      - application/json
+      description: Удалить чеклист
+      parameters:
+      - description: id чеклиста
+        in: body
+        name: ChecklistID
+        required: true
+        schema:
+          $ref: '#/definitions/dto.ChecklistID'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: no content
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+      summary: Удалить чеклист
+      tags:
+      - checklists
+  /checklist/item/create/:
+    post:
+      consumes:
+      - application/json
+      description: Создать элемент чеклиста
+      parameters:
+      - description: данные нового элемента чеклистаа
+        in: body
+        name: newChecklistItemInfo
+        required: true
+        schema:
+          $ref: '#/definitions/dto.NewChecklistItemInfo'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: объект элемента чеклиста
+          schema:
+            $ref: '#/definitions/doc_structs.ChecklistItemResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+      summary: Создать элемент чеклиста
+      tags:
+      - checklistItems
+  /checklist/item/delete/:
+    delete:
+      consumes:
+      - application/json
+      description: Удалить элемент чеклиста
+      parameters:
+      - description: id элемента чеклиста
+        in: body
+        name: ChecklistItemID
+        required: true
+        schema:
+          $ref: '#/definitions/dto.ChecklistItemID'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: no content
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+      summary: Удалить элемент чеклиста
+      tags:
+      - checklistItems
+  /checklist/item/update/:
+    post:
+      consumes:
+      - application/json
+      description: Обновить элемент чеклиста
+      parameters:
+      - description: обновленные данные элемент чеклистаа
+        in: body
+        name: ChecklistItemInfo
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdatedChecklistItemInfo'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: no content
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+      summary: Обновить элемент чеклиста
+      tags:
+      - checklistItems
+  /checklist/update/:
+    post:
+      consumes:
+      - application/json
+      description: Обновить чеклист
+      parameters:
+      - description: обновленные данные чеклиста
+        in: body
+        name: ChecklistInfo
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdatedChecklistInfo'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: no content
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+      summary: Обновить чеклист
+      tags:
+      - checklists
+  /comment/create/:
+    post:
+      consumes:
+      - application/json
+      description: Создать комментарий в каком-то задании
+      parameters:
+      - description: данные нового комментария
+        in: body
+        name: newCommentInfo
+        required: true
+        schema:
+          $ref: '#/definitions/dto.NewCommentInfo'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: объект комментария
+          schema:
+            $ref: '#/definitions/doc_structs.CommentResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+      summary: Создать комментарий
+      tags:
+      - comments
+  /csat/answer/:
+    post:
+      consumes:
+      - application/json
+      description: Создать ответит на опрос CSAT
+      parameters:
+      - description: данные ответа CSAT
+        in: body
+        name: CSATAnswerInfo
+        required: true
+        schema:
+          $ref: '#/definitions/dto.NewCSATAnswerInfo'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: no content
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+      summary: Ответить на опрос CSAT
+      tags:
+      - csat
+  /csat/question/all:
+    get:
+      consumes:
+      - application/json
+      description: Получить вопросы CSAT
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: все вопросы
+          schema:
+            $ref: '#/definitions/doc_structs.AllQuestionsResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+      summary: Получить вопросы CSAT
+      tags:
+      - csat
+  /csat/question/create/:
+    post:
+      consumes:
+      - application/json
+      description: Создать вопрос CSAT
+      parameters:
+      - description: данные нового вопроса CSAT
+        in: body
+        name: newQuestionInfo
+        required: true
+        schema:
+          $ref: '#/definitions/dto.NewCSATQuestionInfo'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: вопрос CSAT
+          schema:
+            $ref: '#/definitions/doc_structs.QuestionResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+      summary: Создать вопрос CSAT
+      tags:
+      - csat
+  /csat/question/update/:
+    post:
+      consumes:
+      - application/json
+      description: Обновить вопрос CSAT
+      parameters:
+      - description: данные обновленного вопроса CSAT
+        in: body
+        name: updatedQuestionInfo
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdatedCSATQuestionInfo'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: no content
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+      summary: Обновить вопрос CSAT
+      tags:
+      - csat
+  /csat/stats:
+    get:
+      consumes:
+      - application/json
+      description: Получить количество и среднее ответов на опросы CSAT
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: вопрос CSAT
+          schema:
+            $ref: '#/definitions/doc_structs.StatsResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+      summary: Статистика ответов CSAT
+      tags:
+      - csat
+  /image/upload/:
+    post:
+      consumes:
+      - application/json
+      description: Загрузить изображение
+      parameters:
+      - description: байты изоьражения
+        in: body
+        name: image
+        required: true
+        schema:
+          $ref: '#/definitions/dto.Image'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ссылка на изображение
+          schema:
+            $ref: '#/definitions/doc_structs.URLResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+      summary: Загрузить изображение
+      tags:
+      - images
+  /list/create/:
+    post:
+      consumes:
+      - application/json
+      description: Создать список
+      parameters:
+      - description: данные нового списка
+        in: body
+        name: newListInfo
+        required: true
+        schema:
+          $ref: '#/definitions/dto.NewListInfo'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: объект списка
+          schema:
+            $ref: '#/definitions/doc_structs.ListResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+      summary: Создать список
+      tags:
+      - lists
+  /list/delete/:
+    delete:
+      consumes:
+      - application/json
+      description: Удалить список
+      parameters:
+      - description: id списка
+        in: body
+        name: listID
+        required: true
+        schema:
+          $ref: '#/definitions/dto.ListID'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: no content
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+      summary: Удалить список
+      tags:
+      - lists
+  /list/edit/:
+    post:
+      consumes:
+      - application/json
+      description: Обновить список
+      parameters:
+      - description: обновленные данные списка
+        in: body
+        name: listInfo
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdatedListInfo'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: no content
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+      summary: Обновить список
+      tags:
+      - lists
+  /task/:
+    post:
+      consumes:
+      - application/json
+      description: Получить задание
+      parameters:
+      - description: id задания
+        in: body
+        name: taskID
+        required: true
+        schema:
+          $ref: '#/definitions/dto.TaskID'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: объект задания
+          schema:
+            $ref: '#/definitions/doc_structs.TaskResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+      summary: Получить задание
+      tags:
+      - tasks
+  /task/create/:
+    post:
+      consumes:
+      - application/json
+      description: Создать задание
+      parameters:
+      - description: данные нового задания
+        in: body
+        name: newTaskInfo
+        required: true
+        schema:
+          $ref: '#/definitions/dto.NewTaskInfo'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: объект задания
+          schema:
+            $ref: '#/definitions/doc_structs.TaskResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+      summary: Создать задание
+      tags:
+      - tasks
+  /task/delete/:
+    delete:
+      consumes:
+      - application/json
+      description: Удалить задание
+      parameters:
+      - description: id задания
+        in: body
+        name: taskID
+        required: true
+        schema:
+          $ref: '#/definitions/dto.TaskID'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: no content
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+      summary: Удалить задание
+      tags:
+      - tasks
+  /task/update/:
+    post:
+      consumes:
+      - application/json
+      description: Обновить задание
+      parameters:
+      - description: обновленные данные задания
+        in: body
+        name: taskInfo
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdatedTaskInfo'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: no content
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+      summary: Обновить задание
+      tags:
+      - tasks
+  /task/user/add/:
+    post:
+      consumes:
+      - application/json
+      description: Добавить пользователя на карточку
+      parameters:
+      - description: ID пользователя и ID карточки, на которую добавляют пользователя
+        in: body
+        name: taskInfo
+        required: true
+        schema:
+          $ref: '#/definitions/dto.AddTaskUserInfo'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: no content
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+      summary: Добавить пользователя на карточку
+      tags:
+      - tasks
+  /task/user/remove/:
+    post:
+      consumes:
+      - application/json
+      description: Удалить пользователя из карточки
+      parameters:
+      - description: ID пользователя и ID карточки, из которой удаляют пользователя
+        in: body
+        name: taskInfo
+        required: true
+        schema:
+          $ref: '#/definitions/dto.RemoveTaskUserInfo'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: no content
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+      summary: Удалить пользователя из карточки
+      tags:
+      - tasks
+  /user/edit/:
+    post:
+      consumes:
+      - application/json
+      description: В ответ ничего не шлёт
+      parameters:
+      - description: Имя, фамилия, описание пользователя
+        in: body
+        name: newProfileInfo
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UserProfileInfo'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: no content
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+      summary: Поменять данные профиля
+      tags:
+      - auth
+  /user/edit/change_avatar/:
+    post:
+      consumes:
+      - application/json
+      description: В ответ шлёт ссылку на файл
+      parameters:
+      - description: id пользователя, изображение
+        in: body
+        name: avatarChangeInfo
+        required: true
+        schema:
+          $ref: '#/definitions/dto.AvatarChangeInfo'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Объект пользователя
+          schema:
+            $ref: '#/definitions/doc_structs.AvatarUploadResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+      summary: Поменять аватарку
+      tags:
+      - auth
+  /user/edit/change_password/:
+    post:
+      consumes:
+      - application/json
+      description: Получает старый и новый пароли
+      parameters:
+      - description: Старый и новый пароли пользователя
+        in: body
+        name: passwords
+        required: true
+        schema:
+          $ref: '#/definitions/dto.PasswordChangeInfo'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: no content
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+      summary: Поменять пароль
+      tags:
+      - user
+  /user/workspaces:
+    get:
+      consumes:
+      - application/json
+      description: Выводит и созданные им рабочие пространства и те, в которых он
+        гость. Работает только для авторизированного пользователя.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Пользователь и его рабочие пространства
+          schema:
+            $ref: '#/definitions/doc_structs.AllWorkspacesResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+      summary: Вывести все рабочие пространства и доски текущего пользователя
+      tags:
+      - workspaces
+  /workspace/create/:
+    post:
+      consumes:
+      - application/json
+      description: Создать рабочее пространство
+      parameters:
+      - description: данные нового рабочего пространства
+        in: body
+        name: newWorkspaceInfo
+        required: true
+        schema:
+          $ref: '#/definitions/dto.NewWorkspaceInfo'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Пользователь и его рабочие пространства
+          schema:
+            $ref: '#/definitions/doc_structs.AllWorkspacesResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+      summary: Создать рабочее пространство
+      tags:
+      - workspaces
+  /workspace/delete/:
+    delete:
+      consumes:
+      - application/json
+      description: Удалить рабочее пространство
+      parameters:
+      - description: id рабочего пространства
+        in: body
+        name: workspaceID
+        required: true
+        schema:
+          $ref: '#/definitions/dto.WorkspaceID'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: no content
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+      summary: Удалить рабочее пространство
+      tags:
+      - workspaces
+  /workspace/update/:
+    post:
+      consumes:
+      - application/json
+      description: Обновить рабочее пространство
+      parameters:
+      - description: обновленные данные рабочего пространства
+        in: body
+        name: workspaceInfo
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdatedWorkspaceInfo'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: no content
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+      summary: Обновить рабочее пространство
+      tags:
+      - workspaces
 swagger: "2.0"

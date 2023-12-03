@@ -1,0 +1,112 @@
+networks:
+  monitoring:
+    driver: bridge
+
+volumes:
+  prometheus_data: {}
+
+services:
+  server:
+    build: 
+      context: .
+      dockerfile: ./deployments/backend/Dockerfile
+    container_name: backend
+    ports: 
+      - 8080:8080
+    tty: true
+    depends_on:
+      db:
+        condition: service_healthy
+    links:
+      - db 
+    # "echo 'Migrating CSAT database' &&
+    # ./tern migrate -c db/migrations/csat/tern.conf -m db/migrations/csat/ &&
+    # echo 'Finished CSAT database migrations' &&
+    # echo 'Making file storage subdirs' &&
+    # echo 'User avatars...' &&
+    # mkdir -p img/user_avatars &&
+    # echo 'Board thumbnails...' &&
+    # mkdir -p img/board_thumbnails &&
+    command: >
+        sh -c "echo 'Migrating main database' &&
+              ./tern migrate -c db/migrations/public/tern.conf -m db/migrations/public/ &&
+              echo 'Finished main database migrations' &&
+              echo 'Starting backend' &&
+              ./yablonka-backend"
+    volumes:
+      - /home/ubuntu/ProjectTrello/Files/img:/img:rw
+    env_file:
+      - ./config/.env
+
+  microservices:
+    build: 
+      context: .
+      dockerfile: ./deployments/microservices/Dockerfile
+    container_name: micro
+    env_file:
+      - ./config/.env
+    ports:
+      - 8083:8083
+    tty: true
+    depends_on:
+      db:
+        condition: service_healthy
+    links:
+      - db
+    command: >
+        sh -c "echo 'Migrating main database' &&
+              ./tern migrate -c db/migrations/public/tern.conf -m db/migrations/public/ &&
+              echo 'Finished main database migrations' &&
+              echo 'Starting microservices' &&
+              ./yablonka-microservices"
+    volumes:
+      - /home/ubuntu/ProjectTrello/Files/img:/img:rw
+  
+  db:
+    image: postgres:latest
+    container_name: database
+    env_file:
+      - ./config/.env
+    ports:
+      - 5432:5432
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  node-exporter:
+    image: prom/node-exporter:latest
+    container_name: node-exporter
+    restart: unless-stopped
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.rootfs=/rootfs'
+      - '--path.sysfs=/host/sys'
+      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
+    expose:
+      - 9100
+    networks:
+      - monitoring
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    restart: unless-stopped
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--web.enable-lifecycle'
+    expose:
+      - 9090
+    networks:
+      - monitoring
