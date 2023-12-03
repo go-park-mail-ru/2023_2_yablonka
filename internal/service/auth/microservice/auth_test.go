@@ -6,6 +6,7 @@ import (
 	"log"
 	"reflect"
 	"server/internal/config"
+	logging "server/internal/logging"
 	"server/internal/pkg/dto"
 	"server/internal/storage"
 	auth_microservice "server/microservices/auth/auth"
@@ -18,29 +19,35 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 )
 
+func getLogger() logging.ILogger {
+	logger, _ := logging.NewLogrusLogger(&config.LoggingConfig{
+		Level:                  "debug",
+		DisableTimestamp:       false,
+		FullTimestamp:          true,
+		LevelBasedReport:       true,
+		DisableLevelTruncation: true,
+		ReportCaller:           true,
+	})
+	return &logger
+}
+
 func TestAuthService_AuthUser(t *testing.T) {
-	type fields struct {
-		sessionDuration time.Duration
-		client          auth_microservice.AuthServiceClient
-		sessionIDLength uint
-		authStorage     storage.IAuthStorage
-	}
 	type args struct {
-		ctx context.Context
-		id  dto.UserID
+		id dto.UserID
 	}
 	tests := []struct {
 		name    string
-		fields  fields
 		args    args
 		want    dto.SessionToken
 		wantErr bool
 	}{
 		{
-			name:    "Normal query",
-			fields:  fields{},
-			args:    args{},
-			want:    dto.SessionToken{},
+			name: "Happy path",
+			args: args{},
+			want: dto.SessionToken{
+				ID:             "",
+				ExpirationDate: time.Now(),
+			},
 			wantErr: false,
 		},
 	}
@@ -58,11 +65,13 @@ func TestAuthService_AuthUser(t *testing.T) {
 			}
 			defer grcpConn.Close()
 
+			ctx := context.WithValue(context.Background(), dto.LoggerKey, getLogger())
+
 			cfg, _ := config.NewSessionConfig()
 
 			a := NewAuthService(*cfg, storage, grcpConn)
 
-			got, err := a.AuthUser(tt.args.ctx, tt.args.id)
+			got, err := a.AuthUser(ctx, tt.args.id)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("AuthUser() error = %v, wantErr %v", err, tt.wantErr)
 				return

@@ -1,6 +1,5 @@
 package handlers_test
 
-/*
 import (
 	"bytes"
 	"context"
@@ -612,5 +611,3 @@ func TestUserHandler_ChangeProfile(t *testing.T) {
 // 		})
 // 	}
 // }
-
-*/
