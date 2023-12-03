@@ -62,8 +62,8 @@ func TestPostgresAuthStorage_CreateSession(t *testing.T) {
 
 			s := NewAuthStorage(db)
 
-			if err := s.CreateSession(ctx, tt.args.session); (err != nil) != tt.wantErr {
-				t.Errorf("CreateSession() error = %v, wantErr %v", err, tt.wantErr)
+			if err := s.CreateSession(ctx, tt.args.session); (err != nil) == tt.wantErr {
+				t.Errorf("CreateSession() error = %v, wantErr %v", err != nil, tt.wantErr)
 			}
 
 			if err := mock.ExpectationsWereMet(); err != nil {
