@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"reflect"
+	"server/internal/apperrors"
 	"server/internal/config"
 	logging "server/internal/logging"
 	"server/internal/pkg/dto"
@@ -40,15 +41,24 @@ func TestAuthService_AuthUser(t *testing.T) {
 		args    args
 		want    dto.SessionToken
 		wantErr bool
+		err     error
 	}{
 		{
 			name: "Happy path",
 			args: args{},
 			want: dto.SessionToken{
-				ID:             "",
-				ExpirationDate: time.Now(),
+				ID:             "Session ID",
+				ExpirationDate: time.Now().Add(time.Duration(14 * 24 * time.Hour)),
 			},
 			wantErr: false,
+			err:     nil,
+		},
+		{
+			name:    "Bad request",
+			args:    args{},
+			want:    dto.SessionToken{},
+			wantErr: true,
+			err:     apperrors.ErrTokenNotGenerated,
 		},
 	}
 	for _, tt := range tests {
@@ -68,6 +78,12 @@ func TestAuthService_AuthUser(t *testing.T) {
 			ctx := context.WithValue(context.Background(), dto.LoggerKey, getLogger())
 
 			cfg, _ := config.NewSessionConfig()
+
+			if !tt.wantErr {
+				storage.EXPECT().CreateSession(ctx, tt.args.id).Return(tt.want, nil)
+			} else {
+				storage.EXPECT().CreateSession(ctx, tt.args.id).Return(nil, tt.err)
+			}
 
 			a := NewAuthService(*cfg, storage, grcpConn)
 
