@@ -32,13 +32,13 @@ func (ws WorkspaceService) GetUserWorkspaces(ctx context.Context, userID dto.Use
 
 	ownedWorkspaces, err := ws.storage.GetUserOwnedWorkspaces(ctx, userID)
 	if err != nil {
-		logger.Debug("Failed to get user owned workspaces", funcName, nodeName)
+		logger.DebugFmt("Failed to get user owned workspaces", funcName, nodeName)
 		return nil, err
 	}
 
 	guestWorkspaces, err := ws.storage.GetUserGuestWorkspaces(ctx, userID)
 	if err != nil {
-		logger.Debug("Failed to get user guest workspaces", funcName, nodeName)
+		logger.DebugFmt("Failed to get user guest workspaces", funcName, nodeName)
 		return nil, err
 	}
 	return &dto.AllWorkspaces{

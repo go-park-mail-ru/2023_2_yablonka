@@ -40,9 +40,9 @@ func (us UserService) RegisterUser(ctx context.Context, info dto.AuthInfo) (*ent
 	if err == nil {
 		return nil, apperrors.ErrUserAlreadyExists
 	}
-	logger.Debug("User doesn't exist", funcName, nodeName)
+	logger.DebugFmt("User doesn't exist", funcName, nodeName)
 
-	logger.Debug("Creating user", funcName, nodeName)
+	logger.DebugFmt("Creating user", funcName, nodeName)
 	return us.storage.Create(ctx, dto.SignupInfo{
 		Email:        info.Email,
 		PasswordHash: hashFromAuthInfo(info.Email, info.Password),
@@ -58,15 +58,15 @@ func (us UserService) CheckPassword(ctx context.Context, info dto.AuthInfo) (*en
 
 	user, err := us.storage.GetWithLogin(ctx, dto.UserLogin{Value: info.Email})
 	if err != nil {
-		logger.Debug("User not found", funcName, nodeName)
+		logger.DebugFmt("User not found", funcName, nodeName)
 		return nil, err
 	}
-	logger.Debug("User found", funcName, nodeName)
+	logger.DebugFmt("User found", funcName, nodeName)
 
 	if user.PasswordHash != hashFromAuthInfo(info.Email, info.Password) {
 		return nil, apperrors.ErrWrongPassword
 	}
-	logger.Debug("Password match", funcName, nodeName)
+	logger.DebugFmt("Password match", funcName, nodeName)
 
 	return user, nil
 }
@@ -89,12 +89,12 @@ func (us UserService) UpdatePassword(ctx context.Context, info dto.PasswordChang
 	if err != nil {
 		return apperrors.ErrUserNotFound
 	}
-	logger.Debug("User found", funcName, nodeName)
+	logger.DebugFmt("User found", funcName, nodeName)
 
 	if oldLoginInfo.PasswordHash != hashFromAuthInfo(oldLoginInfo.Email, info.OldPassword) {
 		return apperrors.ErrWrongPassword
 	}
-	logger.Debug("Old verified", funcName, nodeName)
+	logger.DebugFmt("Old verified", funcName, nodeName)
 
 	return us.storage.UpdatePassword(ctx, dto.PasswordHashesInfo{
 		UserID:          info.UserID,
@@ -119,23 +119,23 @@ func (us UserService) UpdateAvatar(ctx context.Context, info dto.AvatarChangeInf
 
 	cwd, _ := os.Getwd()
 	fileLocation := "img/user_avatars/" + strconv.FormatUint(info.UserID, 10) + ".png"
-	logger.Debug("Relative path: "+fileLocation, funcName, nodeName)
-	logger.Debug("CWD: "+cwd, funcName, nodeName)
+	logger.DebugFmt("Relative path: "+fileLocation, funcName, nodeName)
+	logger.DebugFmt("CWD: "+cwd, funcName, nodeName)
 	avatarUrlInfo := dto.ImageUrlInfo{
 		ID:  info.UserID,
 		Url: baseURL + fileLocation,
 	}
-	logger.Debug("Full URL: "+avatarUrlInfo.Url, funcName, nodeName)
+	logger.DebugFmt("Full URL: "+avatarUrlInfo.Url, funcName, nodeName)
 	f, err := os.Create(fileLocation)
 	if err != nil {
-		logger.Debug("Failed to create file with error: "+err.Error(), funcName, nodeName)
+		logger.DebugFmt("Failed to create file with error: "+err.Error(), funcName, nodeName)
 		return nil, err
 	}
 
-	logger.Debug(fmt.Sprintf("Writing %v bytes", len(info.Avatar)), funcName, nodeName)
+	logger.DebugFmt(fmt.Sprintf("Writing %v bytes", len(info.Avatar)), funcName, nodeName)
 	_, err = f.Write(info.Avatar)
 	if err != nil {
-		logger.Debug("Failed to write to file with error: "+err.Error(), funcName, nodeName)
+		logger.DebugFmt("Failed to write to file with error: "+err.Error(), funcName, nodeName)
 	}
 
 	defer f.Close()
@@ -144,7 +144,7 @@ func (us UserService) UpdateAvatar(ctx context.Context, info dto.AvatarChangeInf
 	if err != nil {
 		errDelete := os.Remove(fileLocation)
 		for errDelete != nil {
-			logger.Debug("Failed to remove file after unsuccessful update with error: "+err.Error(), funcName, nodeName)
+			logger.DebugFmt("Failed to remove file after unsuccessful update with error: "+err.Error(), funcName, nodeName)
 			errDelete = os.Remove(fileLocation)
 		}
 		return nil, err

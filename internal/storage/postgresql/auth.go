@@ -3,8 +3,9 @@ package postgresql
 import (
 	"context"
 	"database/sql"
-	"log"
+	"fmt"
 	"server/internal/apperrors"
+	logger "server/internal/logging"
 	"server/internal/pkg/dto"
 	"server/internal/pkg/entities"
 
@@ -29,33 +30,35 @@ func NewAuthStorage(db *sql.DB) *PostgresAuthStorage {
 // сохраняет сессию в хранилище, возвращает ID сесссии для куки
 // или возвращает ошибку ErrTokenNotGenerated (500), ErrCouldntBuildQuery (500), ErrSessionNotCreated(500)
 func (s PostgresAuthStorage) CreateSession(ctx context.Context, session *entities.Session) error {
-	log.Println("Storage -- saving session")
+	funcName := "PostgresAuthStorage.CreateSession"
+	errorMessage := "Creating session in failed with error: "
+	failBorder := ">>>>>>>>>>>>>>>>>>> PostgresAuthStorage.CreateSession FAIL <<<<<<<<<<<<<<<<<<<<<<<"
+	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
 
-	sql, args, err := sq.
+	logger.Debug(">>>>>>>>>>>>>>>> PostgresAuthStorage.CreateSession <<<<<<<<<<<<<<<<<<<")
+
+	query, args, err := sq.
 		Insert("public.session").
 		Columns("id_user", "expiration_date", "id_session").
 		Values(session.UserID, session.ExpiryDate, session.SessionID).
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
-
 	if err != nil {
-		log.Println("Failed to build query")
+		logger.DebugFmt(errorMessage, funcName, nodeName)
+		logger.Debug(failBorder)
 		return apperrors.ErrCouldNotBuildQuery
 	}
+	logger.DebugFmt("Built query\n\t"+query+"\nwith args\n\t"+fmt.Sprintf("%+v", args), funcName, nodeName)
 
-	log.Println("Query formed:", sql)
-
-	_, err = s.db.Exec(sql, args...)
-
-	log.Println("Queried DB")
-
+	_, err = s.db.Exec(query, args...)
 	if err != nil {
-		log.Println("Failed to store session")
-		log.Println("Returned error", err.Error())
+		logger.DebugFmt(errorMessage, funcName, nodeName)
+		logger.Debug(failBorder)
 		return apperrors.ErrSessionNotCreated
 	}
+	logger.DebugFmt("Executed query", funcName, nodeName)
 
-	log.Println("Stored session")
+	logger.Debug(">>>>>>>>>>>>>>>> PostgresAuthStorage.CreateSession SUCCESS <<<<<<<<<<<<<<<<<<<")
 
 	return nil
 }

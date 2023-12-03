@@ -2,6 +2,9 @@ package postgresql
 
 import (
 	"context"
+	"server/internal/config"
+	logging "server/internal/logging"
+	"server/internal/pkg/dto"
 	"server/internal/pkg/entities"
 	"testing"
 	"time"
@@ -9,9 +12,22 @@ import (
 	"github.com/DATA-DOG/go-sqlmock"
 )
 
+func getLogger() logging.ILogger {
+	logger, _ := logging.NewLogrusLogger(&config.LoggingConfig{
+		Level:                  "debug",
+		DisableTimestamp:       false,
+		FullTimestamp:          true,
+		LevelBasedReport:       true,
+		DisableLevelTruncation: true,
+		ReportCaller:           true,
+	})
+	return &logger
+}
+
 func TestPostgresAuthStorage_CreateSession(t *testing.T) {
 	type args struct {
 		session *entities.Session
+		query   func(mock sqlmock.Sqlmock, args args)
 	}
 	tests := []struct {
 		name    string
@@ -21,21 +37,38 @@ func TestPostgresAuthStorage_CreateSession(t *testing.T) {
 		{
 			name: "Normal session",
 			args: args{
-				&entities.Session{
+				session: &entities.Session{
 					SessionID:  "sdfgsdfgsdfgsdfgsdfgsdf",
 					UserID:     1,
 					ExpiryDate: time.Now(),
 				},
+				query: func(mock sqlmock.Sqlmock, args args) {
+					mock.ExpectExec("INSERT INTO public.session").
+						WithArgs(
+							args.session.UserID,
+							args.session.ExpiryDate,
+							args.session.SessionID,
+						).
+						WillReturnResult(sqlmock.NewResult(1, 1))
+				},
 			},
-			wantErr: false,
 		},
 		{
 			name: "Bad query",
 			args: args{
-				&entities.Session{
+				session: &entities.Session{
 					SessionID:  ".",
 					UserID:     0,
 					ExpiryDate: time.Now(),
+				},
+				query: func(mock sqlmock.Sqlmock, args args) {
+					mock.ExpectExec("INSERT INTO public.session").
+						WithArgs(
+							args.session.UserID,
+							args.session.ExpiryDate,
+							args.session.SessionID,
+						).
+						WillReturnResult(sqlmock.NewResult(1, 1))
 				},
 			},
 			wantErr: true,
@@ -50,15 +83,9 @@ func TestPostgresAuthStorage_CreateSession(t *testing.T) {
 			}
 			defer db.Close()
 
-			ctx := context.Background()
+			ctx := context.WithValue(context.Background(), dto.LoggerKey, getLogger())
 
-			mock.ExpectExec("INSERT INTO public.session").
-				WithArgs(
-					tt.args.session.UserID,
-					tt.args.session.ExpiryDate,
-					tt.args.session.SessionID,
-				).
-				WillReturnResult(sqlmock.NewResult(1, 1))
+			tt.args.query(mock, tt.args)
 
 			s := NewAuthStorage(db)
 

@@ -60,7 +60,7 @@ func (a *AuthService) AuthUser(ctx context.Context, id *UserID) (*AuthUserRespon
 		response.Token = &SessionToken{}
 		return response, nil
 	}
-	a.logger.Debug("Session ID generated", funcName, nodeName)
+	a.logger.DebugFmt("Session ID generated", funcName, nodeName)
 
 	session := &entities.Session{
 		SessionID:  sessionID,
@@ -74,7 +74,7 @@ func (a *AuthService) AuthUser(ctx context.Context, id *UserID) (*AuthUserRespon
 		response.Token = &SessionToken{}
 		return response, nil
 	}
-	a.logger.Debug("Session created", funcName, nodeName)
+	a.logger.DebugFmt("Session created", funcName, nodeName)
 
 	response.Code = AuthServiceErrorCodes[nil]
 	response.Token = &SessionToken{
@@ -97,15 +97,15 @@ func (a *AuthService) VerifyAuth(ctx context.Context, token *SessionToken) (*Ver
 
 	sessionObj, err := a.authStorage.GetSession(ctx, convertedSession)
 	if err != nil {
-		a.logger.Debug("Session not found", funcName, nodeName)
+		a.logger.DebugFmt("Session not found", funcName, nodeName)
 		response.Code = AuthServiceErrorCodes[err]
 		response.ID = &UserID{}
 		return response, nil
 	}
-	a.logger.Debug("Found session", funcName, nodeName)
+	a.logger.DebugFmt("Found session", funcName, nodeName)
 
 	if sessionObj.ExpiryDate.Before(time.Now()) {
-		a.logger.Debug("Deleting expired session", funcName, nodeName)
+		a.logger.DebugFmt("Deleting expired session", funcName, nodeName)
 		for _, err = a.LogOut(ctx, token); err != nil; {
 			_, err = a.LogOut(ctx, token)
 		}
@@ -131,9 +131,9 @@ func (a *AuthService) LogOut(ctx context.Context, token *SessionToken) (*LogOutR
 	response := &LogOutResponse{}
 	err := a.authStorage.DeleteSession(ctx, convertedSession)
 	if err != nil {
-		a.logger.Debug("Failed to delete session with error "+err.Error(), funcName, nodeName)
+		a.logger.DebugFmt("Failed to delete session with error "+err.Error(), funcName, nodeName)
 	} else {
-		a.logger.Debug("Session deleted", funcName, nodeName)
+		a.logger.DebugFmt("Session deleted", funcName, nodeName)
 	}
 	response.Code = AuthServiceErrorCodes[err]
 

@@ -48,12 +48,12 @@ func (cs *CSRFService) SetupCSRF(ctx context.Context, id dto.UserID) (dto.CSRFDa
 	funcName := "CSRFService.SetupCSRF"
 	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
 
-	logger.Debug("Contacting GRPC server", funcName, nodeName)
+	logger.DebugFmt("Contacting GRPC server", funcName, nodeName)
 	csrfpb, err := cs.client.SetupCSRF(ctx, &microservice.UserID{Value: id.Value})
 	if handledErr := apperrors.HandleGRPCError(err); handledErr != nil {
 		return dto.CSRFData{}, handledErr
 	}
-	logger.Debug("Info received", funcName, nodeName)
+	logger.DebugFmt("Info received", funcName, nodeName)
 
 	return dto.CSRFData{
 		Token:          csrfpb.ID,
@@ -68,11 +68,11 @@ func (cs *CSRFService) VerifyCSRF(ctx context.Context, token dto.CSRFToken) erro
 	funcName := "CSRFService.VerifyCSRF"
 	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
 
-	logger.Debug("Contacting GRPC server", funcName, nodeName)
+	logger.DebugFmt("Contacting GRPC server", funcName, nodeName)
 	_, err := cs.client.VerifyCSRF(ctx, &microservice.CSRFToken{
 		Value: token.Value,
 	})
-	logger.Debug("Info received", funcName, nodeName)
+	logger.DebugFmt("Info received", funcName, nodeName)
 
 	return apperrors.HandleGRPCError(err)
 }
@@ -84,11 +84,11 @@ func (cs *CSRFService) DeleteCSRF(ctx context.Context, token dto.CSRFToken) erro
 	funcName := "CSRFService.DeleteCSRF"
 	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
 
-	logger.Debug("Contacting GRPC server", funcName, nodeName)
+	logger.DebugFmt("Contacting GRPC server", funcName, nodeName)
 	_, err := cs.client.DeleteCSRF(ctx, &microservice.CSRFToken{
 		Value: token.Value,
 	})
-	logger.Debug("Info received", funcName, nodeName)
+	logger.DebugFmt("Info received", funcName, nodeName)
 
 	return apperrors.HandleGRPCError(err)
 }

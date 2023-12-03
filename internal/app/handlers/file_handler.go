@@ -48,7 +48,7 @@ func (fh FileHandler) UploadImage(w http.ResponseWriter, r *http.Request) {
 		apperrors.ReturnError(apperrors.BadRequestResponse, w, r)
 		return
 	}
-	logger.Debug("JSON Decoded", funcName, nodeName)
+	logger.DebugFmt("JSON Decoded", funcName, nodeName)
 
 	url, err := fh.fs.Upload(rCtx, image)
 	if err != nil {
@@ -57,7 +57,7 @@ func (fh FileHandler) UploadImage(w http.ResponseWriter, r *http.Request) {
 		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
 		return
 	}
-	logger.Debug("Uploaded image", funcName, nodeName)
+	logger.DebugFmt("Uploaded image", funcName, nodeName)
 
 	response := dto.JSONResponse{
 		Body: url,
@@ -69,7 +69,7 @@ func (fh FileHandler) UploadImage(w http.ResponseWriter, r *http.Request) {
 		apperrors.ReturnError(apperrors.InternalServerErrorResponse, w, r)
 		return
 	}
-	logger.Debug("response written", funcName, nodeName)
+	logger.DebugFmt("response written", funcName, nodeName)
 
 	logger.Info("---------------------------------- Uploading image SUCCESS ----------------------------------")
 }

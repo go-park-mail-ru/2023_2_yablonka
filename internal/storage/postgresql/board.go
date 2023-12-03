@@ -66,7 +66,7 @@ func (s *PostgreSQLBoardStorage) GetById(ctx context.Context, id dto.BoardID) (*
 	if err != nil {
 		return nil, apperrors.ErrCouldNotBuildQuery
 	}
-	logger.Debug("Built query\n\t"+boardSql+"\nwith args\n\t"+fmt.Sprintf("%+v", args), funcName, nodeName)
+	logger.DebugFmt("Built query\n\t"+boardSql+"\nwith args\n\t"+fmt.Sprintf("%+v", args), funcName, nodeName)
 
 	row := s.db.QueryRow(boardSql, args...)
 
@@ -82,7 +82,7 @@ func (s *PostgreSQLBoardStorage) GetById(ctx context.Context, id dto.BoardID) (*
 	if err != nil {
 		return nil, apperrors.ErrCouldNotGetBoard
 	}
-	logger.Debug(fmt.Sprintf("%+v", board), funcName, nodeName)
+	logger.DebugFmt(fmt.Sprintf("%+v", board), funcName, nodeName)
 
 	return &board, nil
 }
@@ -104,14 +104,14 @@ func (s *PostgreSQLBoardStorage) GetUsers(ctx context.Context, id dto.BoardID) (
 	if err != nil {
 		return nil, apperrors.ErrCouldNotBuildQuery
 	}
-	logger.Debug("Built query\n\t"+sql+"\nwith args\n\t"+fmt.Sprintf("%+v", args), funcName, nodeName)
+	logger.DebugFmt("Built query\n\t"+sql+"\nwith args\n\t"+fmt.Sprintf("%+v", args), funcName, nodeName)
 
 	rows, err := s.db.Query(sql, args...)
 	if err != nil {
 		return nil, apperrors.ErrCouldNotGetBoardUsers
 	}
 	defer rows.Close()
-	logger.Debug("Got board users", funcName, nodeName)
+	logger.DebugFmt("Got board users", funcName, nodeName)
 
 	users := []dto.UserPublicInfo{}
 	for rows.Next() {
@@ -130,7 +130,7 @@ func (s *PostgreSQLBoardStorage) GetUsers(ctx context.Context, id dto.BoardID) (
 		}
 		users = append(users, user)
 	}
-	logger.Debug("Parsed results", funcName, nodeName)
+	logger.DebugFmt("Parsed results", funcName, nodeName)
 
 	return &users, nil
 }
@@ -153,15 +153,15 @@ func (s *PostgreSQLBoardStorage) GetLists(ctx context.Context, id dto.BoardID) (
 	if err != nil {
 		return nil, apperrors.ErrCouldNotBuildQuery
 	}
-	logger.Debug("Built query\n\t"+listSql+"\nwith args\n\t"+fmt.Sprintf("%+v", args), funcName, nodeName)
+	logger.DebugFmt("Built query\n\t"+listSql+"\nwith args\n\t"+fmt.Sprintf("%+v", args), funcName, nodeName)
 
 	rows, err := s.db.Query(listSql, args...)
 	if err != nil {
-		logger.Debug(err.Error(), funcName, nodeName)
+		logger.DebugFmt(err.Error(), funcName, nodeName)
 		return nil, apperrors.ErrCouldNotGetList
 	}
 	defer rows.Close()
-	logger.Debug("Got list rows", funcName, nodeName)
+	logger.DebugFmt("Got list rows", funcName, nodeName)
 
 	lists := []dto.SingleListInfo{}
 	for rows.Next() {
@@ -175,12 +175,12 @@ func (s *PostgreSQLBoardStorage) GetLists(ctx context.Context, id dto.BoardID) (
 			(*pq.StringArray)(&list.TaskIDs),
 		)
 		if err != nil {
-			logger.Debug(err.Error(), funcName, nodeName)
+			logger.DebugFmt(err.Error(), funcName, nodeName)
 			return nil, apperrors.ErrCouldNotGetBoard
 		}
 		lists = append(lists, list)
 	}
-	logger.Debug("Collected list info rows", funcName, nodeName)
+	logger.DebugFmt("Collected list info rows", funcName, nodeName)
 
 	return &lists, nil
 }
@@ -203,16 +203,16 @@ func (s *PostgreSQLBoardStorage) CheckAccess(ctx context.Context, info dto.Check
 	if err != nil {
 		return false, apperrors.ErrCouldNotBuildQuery
 	}
-	logger.Debug("Built query\n\t"+listSql+"\nwith args\n\t"+fmt.Sprintf("%+v", args), funcName, nodeName)
+	logger.DebugFmt("Built query\n\t"+listSql+"\nwith args\n\t"+fmt.Sprintf("%+v", args), funcName, nodeName)
 
 	row := s.db.QueryRow(listSql, args...)
-	logger.Debug("Got user row", funcName, nodeName)
+	logger.DebugFmt("Got user row", funcName, nodeName)
 
 	var count uint64
 	if row.Scan(&count) != nil {
 		return false, apperrors.ErrCouldNotGetUser
 	}
-	logger.Debug("checked database", funcName, nodeName)
+	logger.DebugFmt("checked database", funcName, nodeName)
 
 	return count > 0, nil
 }
@@ -431,18 +431,18 @@ func (s *PostgreSQLBoardStorage) AddUser(ctx context.Context, info dto.AddBoardU
 	if err != nil {
 		return apperrors.ErrCouldNotBuildQuery
 	}
-	logger.Debug("Built query\n\t"+query1+"\nwith args\n\t"+fmt.Sprintf("%+v", args), funcName, nodeName)
+	logger.DebugFmt("Built query\n\t"+query1+"\nwith args\n\t"+fmt.Sprintf("%+v", args), funcName, nodeName)
 
 	_, err = s.db.Exec(query1, args...)
 	if err != nil {
-		logger.Debug("Insert into board_user failed with error "+err.Error(), funcName, nodeName)
+		logger.DebugFmt("Insert into board_user failed with error "+err.Error(), funcName, nodeName)
 		err = tx.Rollback()
 		for err != nil {
 			err = tx.Rollback()
 		}
 		return apperrors.ErrCouldNotAddBoardUser
 	}
-	logger.Debug("query executed", funcName, nodeName)
+	logger.DebugFmt("query executed", funcName, nodeName)
 
 	query2, args, err := sq.
 		Insert("public.user_workspace").
@@ -453,11 +453,11 @@ func (s *PostgreSQLBoardStorage) AddUser(ctx context.Context, info dto.AddBoardU
 	if err != nil {
 		return apperrors.ErrCouldNotBuildQuery
 	}
-	logger.Debug("Built query\n\t"+query2+"\nwith args\n\t"+fmt.Sprintf("%+v", args), funcName, nodeName)
+	logger.DebugFmt("Built query\n\t"+query2+"\nwith args\n\t"+fmt.Sprintf("%+v", args), funcName, nodeName)
 
 	_, err = tx.Exec(query2, args...)
 	if err != nil {
-		logger.Debug("Insert into user_workspace failed with error "+err.Error(), funcName, nodeName)
+		logger.DebugFmt("Insert into user_workspace failed with error "+err.Error(), funcName, nodeName)
 		err = tx.Rollback()
 		for err != nil {
 			err = tx.Rollback()
@@ -468,18 +468,18 @@ func (s *PostgreSQLBoardStorage) AddUser(ctx context.Context, info dto.AddBoardU
 		}
 		return apperrors.ErrCouldNotAddBoardUser
 	}
-	logger.Debug("query executed", funcName, nodeName)
+	logger.DebugFmt("query executed", funcName, nodeName)
 
 	err = tx.Commit()
 	if err != nil {
-		logger.Debug("Failed to commit changes with error "+err.Error(), funcName, nodeName)
+		logger.DebugFmt("Failed to commit changes with error "+err.Error(), funcName, nodeName)
 		err = tx.Rollback()
 		for err != nil {
 			err = tx.Rollback()
 		}
 		return apperrors.ErrCouldNotAddBoardUser
 	}
-	logger.Debug("Changes committed", funcName, nodeName)
+	logger.DebugFmt("Changes committed", funcName, nodeName)
 
 	return nil
 }
@@ -501,14 +501,14 @@ func (s *PostgreSQLBoardStorage) RemoveUser(ctx context.Context, info dto.Remove
 	if err != nil {
 		return apperrors.ErrCouldNotBuildQuery
 	}
-	logger.Debug("Built query\n\t"+query+"\nwith args\n\t"+fmt.Sprintf("%+v", args), funcName, nodeName)
+	logger.DebugFmt("Built query\n\t"+query+"\nwith args\n\t"+fmt.Sprintf("%+v", args), funcName, nodeName)
 
 	_, err = s.db.Exec(query, args...)
 	if err != nil {
-		logger.Debug("Delete failed with error "+err.Error(), funcName, nodeName)
+		logger.DebugFmt("Delete failed with error "+err.Error(), funcName, nodeName)
 		return apperrors.ErrCouldNotRemoveTaskUser
 	}
-	logger.Debug("query executed", funcName, nodeName)
+	logger.DebugFmt("query executed", funcName, nodeName)
 
 	return nil
 }
