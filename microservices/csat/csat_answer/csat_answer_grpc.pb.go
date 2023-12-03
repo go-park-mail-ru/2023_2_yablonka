@@ -7,7 +7,6 @@ import (
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
-	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )
 
 // This is a compile-time assertion to ensure that this generated file
@@ -19,7 +18,7 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type CSATAnswerServiceClient interface {
-	Create(ctx context.Context, in *NewCSATAnswer, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	Create(ctx context.Context, in *NewCSATAnswer, opts ...grpc.CallOption) (*CreateResponse, error)
 }
 
 type cSATAnswerServiceClient struct {
@@ -30,8 +29,8 @@ func NewCSATAnswerServiceClient(cc grpc.ClientConnInterface) CSATAnswerServiceCl
 	return &cSATAnswerServiceClient{cc}
 }
 
-func (c *cSATAnswerServiceClient) Create(ctx context.Context, in *NewCSATAnswer, opts ...grpc.CallOption) (*emptypb.Empty, error) {
-	out := new(emptypb.Empty)
+func (c *cSATAnswerServiceClient) Create(ctx context.Context, in *NewCSATAnswer, opts ...grpc.CallOption) (*CreateResponse, error) {
+	out := new(CreateResponse)
 	err := c.cc.Invoke(ctx, "/csat_microservice.CSATAnswerService/Create", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -43,7 +42,7 @@ func (c *cSATAnswerServiceClient) Create(ctx context.Context, in *NewCSATAnswer,
 // All implementations must embed UnimplementedCSATAnswerServiceServer
 // for forward compatibility
 type CSATAnswerServiceServer interface {
-	Create(context.Context, *NewCSATAnswer) (*emptypb.Empty, error)
+	Create(context.Context, *NewCSATAnswer) (*CreateResponse, error)
 	mustEmbedUnimplementedCSATAnswerServiceServer()
 }
 
@@ -51,7 +50,7 @@ type CSATAnswerServiceServer interface {
 type UnimplementedCSATAnswerServiceServer struct {
 }
 
-func (UnimplementedCSATAnswerServiceServer) Create(context.Context, *NewCSATAnswer) (*emptypb.Empty, error) {
+func (UnimplementedCSATAnswerServiceServer) Create(context.Context, *NewCSATAnswer) (*CreateResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Create not implemented")
 }
 func (UnimplementedCSATAnswerServiceServer) mustEmbedUnimplementedCSATAnswerServiceServer() {}

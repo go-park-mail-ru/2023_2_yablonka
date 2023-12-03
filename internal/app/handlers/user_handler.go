@@ -204,6 +204,7 @@ func (uh UserHandler) ChangeAvatar(w http.ResponseWriter, r *http.Request) {
 		logger.Error(errorMessage + err.Error())
 		logger.Info(failBorder)
 		apperrors.ReturnError(apperrors.BadRequestResponse, w, r)
+		return
 	}
 	logger.DebugFmt("JSON parsed", funcName, nodeName)
 

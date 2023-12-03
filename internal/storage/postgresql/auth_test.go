@@ -2,6 +2,7 @@ package postgresql
 
 import (
 	"context"
+	"server/internal/apperrors"
 	"server/internal/config"
 	logging "server/internal/logging"
 	"server/internal/pkg/dto"
@@ -33,6 +34,7 @@ func TestPostgresAuthStorage_CreateSession(t *testing.T) {
 		name    string
 		args    args
 		wantErr bool
+		err     error
 	}{
 		{
 			name: "Normal session",
@@ -54,7 +56,7 @@ func TestPostgresAuthStorage_CreateSession(t *testing.T) {
 			},
 		},
 		{
-			name: "Bad query",
+			name: "Bad query (Could not build)",
 			args: args{
 				session: &entities.Session{
 					SessionID:  ".",
@@ -72,6 +74,7 @@ func TestPostgresAuthStorage_CreateSession(t *testing.T) {
 				},
 			},
 			wantErr: true,
+			err:     apperrors.ErrCouldNotBuildQuery,
 		},
 	}
 	for _, tt := range tests {
@@ -89,7 +92,7 @@ func TestPostgresAuthStorage_CreateSession(t *testing.T) {
 
 			s := NewAuthStorage(db)
 
-			if err := s.CreateSession(ctx, tt.args.session); (err != nil) == tt.wantErr {
+			if err := s.CreateSession(ctx, tt.args.session); (err != nil) != tt.wantErr {
 				t.Errorf("CreateSession() error = %v, wantErr %v", err != nil, tt.wantErr)
 			}
 

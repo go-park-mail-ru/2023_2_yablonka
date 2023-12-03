@@ -1,7 +1,6 @@
 package config_test
 
 import (
-	"os"
 	"server/internal/apperrors"
 	"server/internal/config"
 	"testing"
@@ -11,8 +10,6 @@ import (
 )
 
 func Test_NewSessionConfig(t *testing.T) {
-	t.Parallel()
-
 	tests := []struct {
 		name          string
 		configObj     *config.SessionConfig
@@ -73,25 +70,18 @@ func Test_NewSessionConfig(t *testing.T) {
 	for _, test := range tests {
 		test := test
 		t.Run(test.name, func(t *testing.T) {
-			t.Parallel()
 			for key, value := range test.envVaribles {
-				os.Setenv(key, value)
+				t.Setenv(key, value)
 			}
 			config, err := config.NewSessionConfig()
 
 			require.Equalf(t, test.configObj, config, test.name)
 			require.ErrorIs(t, err, test.expectedError)
-
-			for key := range test.envVaribles {
-				os.Unsetenv(key)
-			}
 		})
 	}
 }
 
 func Test_GetDBConnectionHost(t *testing.T) {
-	t.Parallel()
-
 	tests := []struct {
 		name           string
 		envVaribles    map[string]string
@@ -112,24 +102,17 @@ func Test_GetDBConnectionHost(t *testing.T) {
 	for _, test := range tests {
 		test := test
 		t.Run(test.name, func(t *testing.T) {
-			t.Parallel()
 			for key, value := range test.envVaribles {
-				os.Setenv(key, value)
+				t.Setenv(key, value)
 			}
 			host := config.GetDBConnectionHost()
 
 			require.Equalf(t, test.expectedResult, host, test.name)
-
-			for key := range test.envVaribles {
-				os.Unsetenv(key)
-			}
 		})
 	}
 }
 
 func Test_GetDBPassword(t *testing.T) {
-	t.Parallel()
-
 	tests := []struct {
 		name           string
 		envVaribles    map[string]string
@@ -153,25 +136,18 @@ func Test_GetDBPassword(t *testing.T) {
 	for _, test := range tests {
 		test := test
 		t.Run(test.name, func(t *testing.T) {
-			t.Parallel()
 			for key, value := range test.envVaribles {
-				os.Setenv(key, value)
+				t.Setenv(key, value)
 			}
 			password, err := config.GetDBPassword()
 
 			require.Equalf(t, test.expectedResult, password, test.name)
 			require.ErrorIs(t, err, test.expectedError)
-
-			for key := range test.envVaribles {
-				os.Unsetenv(key)
-			}
 		})
 	}
 }
 
 func Test_GetSessionDurationEnv(t *testing.T) {
-	t.Parallel()
-
 	tests := []struct {
 		name           string
 		envVaribles    map[string]string
@@ -209,25 +185,18 @@ func Test_GetSessionDurationEnv(t *testing.T) {
 	for _, test := range tests {
 		test := test
 		t.Run(test.name, func(t *testing.T) {
-			t.Parallel()
 			for key, value := range test.envVaribles {
-				os.Setenv(key, value)
+				t.Setenv(key, value)
 			}
 			password, err := config.GetSessionDurationEnv()
 
 			require.Equalf(t, test.expectedResult, password, test.name)
 			require.ErrorIs(t, err, test.expectedError)
-
-			for key := range test.envVaribles {
-				os.Unsetenv(key)
-			}
 		})
 	}
 }
 
 func Test_GetSessionIDLength(t *testing.T) {
-	t.Parallel()
-
 	tests := []struct {
 		name           string
 		envVaribles    map[string]string
@@ -259,18 +228,13 @@ func Test_GetSessionIDLength(t *testing.T) {
 	for _, test := range tests {
 		test := test
 		t.Run(test.name, func(t *testing.T) {
-			t.Parallel()
 			for key, value := range test.envVaribles {
-				os.Setenv(key, value)
+				t.Setenv(key, value)
 			}
 			password, err := config.GetSessionIDLength()
 
 			require.Equalf(t, test.expectedResult, password, test.name)
 			require.Equalf(t, test.hasError, err != nil, test.name)
-
-			for key := range test.envVaribles {
-				os.Unsetenv(key)
-			}
 		})
 	}
 }

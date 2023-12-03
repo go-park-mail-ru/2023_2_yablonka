@@ -57,7 +57,7 @@ func (a *AuthService) AuthUser(ctx context.Context, id *UserID) (*AuthUserRespon
 	sessionID, err := generateString(a.sessionIDLength)
 	if err != nil {
 		response.Code = AuthServiceErrorCodes[apperrors.ErrTokenNotGenerated]
-		response.Token = &SessionToken{}
+		response.Response = &SessionToken{}
 		return response, nil
 	}
 	a.logger.DebugFmt("Session ID generated", funcName, nodeName)
@@ -71,13 +71,13 @@ func (a *AuthService) AuthUser(ctx context.Context, id *UserID) (*AuthUserRespon
 	err = a.authStorage.CreateSession(ctx, session)
 	if err != nil {
 		response.Code = AuthServiceErrorCodes[err]
-		response.Token = &SessionToken{}
+		response.Response = &SessionToken{}
 		return response, nil
 	}
 	a.logger.DebugFmt("Session created", funcName, nodeName)
 
 	response.Code = AuthServiceErrorCodes[nil]
-	response.Token = &SessionToken{
+	response.Response = &SessionToken{
 		ID:             sessionID,
 		ExpirationDate: timestamppb.New(expiresAt),
 	}
@@ -99,7 +99,7 @@ func (a *AuthService) VerifyAuth(ctx context.Context, token *SessionToken) (*Ver
 	if err != nil {
 		a.logger.DebugFmt("Session not found", funcName, nodeName)
 		response.Code = AuthServiceErrorCodes[err]
-		response.ID = &UserID{}
+		response.Response = &UserID{}
 		return response, nil
 	}
 	a.logger.DebugFmt("Found session", funcName, nodeName)
@@ -110,12 +110,12 @@ func (a *AuthService) VerifyAuth(ctx context.Context, token *SessionToken) (*Ver
 			_, err = a.LogOut(ctx, token)
 		}
 		response.Code = AuthServiceErrorCodes[apperrors.ErrSessionExpired]
-		response.ID = &UserID{}
+		response.Response = &UserID{}
 		return response, nil
 	}
 
 	response.Code = AuthServiceErrorCodes[nil]
-	response.ID = &UserID{Value: sessionObj.UserID}
+	response.Response = &UserID{Value: sessionObj.UserID}
 	return response, nil
 }
 
@@ -145,7 +145,7 @@ func (a *AuthService) LogOut(ctx context.Context, token *SessionToken) (*LogOutR
 func (a *AuthService) GetLifetime(ctx context.Context, empty *emptypb.Empty) (*GetLifetimeResponse, error) {
 	response := &GetLifetimeResponse{
 		Code:     AuthServiceErrorCodes[nil],
-		Duration: durationpb.New(a.sessionDuration),
+		Response: durationpb.New(a.sessionDuration),
 	}
 	return response, nil
 }

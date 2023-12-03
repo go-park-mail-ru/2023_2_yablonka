@@ -15,6 +15,11 @@ type CSATAnswerService struct {
 	client  microservice.CSATAnswerServiceClient
 }
 
+var CSATAnswerServiceErrors = map[microservice.ErrorCode]error{
+	microservice.ErrorCode_OK:                    nil,
+	microservice.ErrorCode_COULD_NOT_BUILD_QUERY: apperrors.ErrCouldNotBuildQuery,
+}
+
 // NewBoardService
 // возвращает BoardService с инициализированным хранилищем
 func NewCSATAnswerService(storage storage.ICSATAnswerStorage, connection *grpc.ClientConn) *CSATAnswerService {
@@ -29,11 +34,11 @@ func NewCSATAnswerService(storage storage.ICSATAnswerStorage, connection *grpc.C
 // создает новый ответ CSAT
 // или возвращает ошибки ...
 func (cs CSATAnswerService) Create(ctx context.Context, info dto.NewCSATAnswer) error {
-	_, err := cs.client.Create(ctx, &microservice.NewCSATAnswer{
+	serverResponse, _ := cs.client.Create(ctx, &microservice.NewCSATAnswer{
 		UserID:     info.UserID,
 		QuestionID: info.QuestionID,
 		Rating:     info.Rating,
 	})
 
-	return apperrors.HandleGRPCError(err)
+	return CSATAnswerServiceErrors[serverResponse.Code]
 }

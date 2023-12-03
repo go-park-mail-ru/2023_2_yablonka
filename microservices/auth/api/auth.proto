@@ -1,7 +1,6 @@
 syntax = "proto3";
 package auth;
 
-// import "common/common.proto";
 import "google/protobuf/empty.proto";
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/duration.proto";
@@ -20,8 +19,8 @@ message UserID {
 
 enum ErrorCode {
     OK = 0;
-    TOKEN_NOT_GENERATED = 1;
-    COULD_NOT_BUILD_QUERY = 2;
+    COULD_NOT_BUILD_QUERY = 1;
+    TOKEN_NOT_GENERATED = 2;
     SESSION_EXPIRED = 3;
     SESSION_NOT_CREATED = 4;
     SESSION_NOT_FOUND = 5;
@@ -29,13 +28,12 @@ enum ErrorCode {
 
 message AuthUserResponse {
     ErrorCode Code = 1;
-    SessionToken Token = 2;
-    
+    SessionToken Response = 2;
 }
 
 message VerifyAuthResponse {
     ErrorCode Code = 1;
-    UserID ID = 2;
+    UserID Response = 2;
 }
 
 message LogOutResponse {
@@ -44,7 +42,7 @@ message LogOutResponse {
 
 message GetLifetimeResponse {
     ErrorCode Code = 1;
-    google.protobuf.Duration Duration = 2;
+    google.protobuf.Duration Response = 2;
 }
 
 service AuthService {

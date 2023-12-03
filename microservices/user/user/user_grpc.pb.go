@@ -7,7 +7,6 @@ import (
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
-	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )
 
 // This is a compile-time assertion to ensure that this generated file
@@ -19,13 +18,13 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type UserServiceClient interface {
-	RegisterUser(ctx context.Context, in *AuthInfo, opts ...grpc.CallOption) (*User, error)
-	CheckPassword(ctx context.Context, in *AuthInfo, opts ...grpc.CallOption) (*User, error)
-	GetWithID(ctx context.Context, in *UserID, opts ...grpc.CallOption) (*User, error)
-	UpdatePassword(ctx context.Context, in *PasswordChangeInfo, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	UpdateProfile(ctx context.Context, in *UserProfileInfo, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	UpdateAvatar(ctx context.Context, in *AvatarChangeInfo, opts ...grpc.CallOption) (*UrlObj, error)
-	DeleteUser(ctx context.Context, in *UserID, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	RegisterUser(ctx context.Context, in *AuthInfo, opts ...grpc.CallOption) (*RegisterUserResponse, error)
+	CheckPassword(ctx context.Context, in *AuthInfo, opts ...grpc.CallOption) (*CheckPasswordResponse, error)
+	GetWithID(ctx context.Context, in *UserID, opts ...grpc.CallOption) (*GetWithIDResponse, error)
+	UpdatePassword(ctx context.Context, in *PasswordChangeInfo, opts ...grpc.CallOption) (*UpdatePasswordResponse, error)
+	UpdateProfile(ctx context.Context, in *UserProfileInfo, opts ...grpc.CallOption) (*UpdateProfileResponse, error)
+	UpdateAvatar(ctx context.Context, in *AvatarChangeInfo, opts ...grpc.CallOption) (*UpdateAvatarResponse, error)
+	DeleteUser(ctx context.Context, in *UserID, opts ...grpc.CallOption) (*DeleteUserResponse, error)
 }
 
 type userServiceClient struct {
@@ -36,8 +35,8 @@ func NewUserServiceClient(cc grpc.ClientConnInterface) UserServiceClient {
 	return &userServiceClient{cc}
 }
 
-func (c *userServiceClient) RegisterUser(ctx context.Context, in *AuthInfo, opts ...grpc.CallOption) (*User, error) {
-	out := new(User)
+func (c *userServiceClient) RegisterUser(ctx context.Context, in *AuthInfo, opts ...grpc.CallOption) (*RegisterUserResponse, error) {
+	out := new(RegisterUserResponse)
 	err := c.cc.Invoke(ctx, "/user.UserService/RegisterUser", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -45,8 +44,8 @@ func (c *userServiceClient) RegisterUser(ctx context.Context, in *AuthInfo, opts
 	return out, nil
 }
 
-func (c *userServiceClient) CheckPassword(ctx context.Context, in *AuthInfo, opts ...grpc.CallOption) (*User, error) {
-	out := new(User)
+func (c *userServiceClient) CheckPassword(ctx context.Context, in *AuthInfo, opts ...grpc.CallOption) (*CheckPasswordResponse, error) {
+	out := new(CheckPasswordResponse)
 	err := c.cc.Invoke(ctx, "/user.UserService/CheckPassword", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -54,8 +53,8 @@ func (c *userServiceClient) CheckPassword(ctx context.Context, in *AuthInfo, opt
 	return out, nil
 }
 
-func (c *userServiceClient) GetWithID(ctx context.Context, in *UserID, opts ...grpc.CallOption) (*User, error) {
-	out := new(User)
+func (c *userServiceClient) GetWithID(ctx context.Context, in *UserID, opts ...grpc.CallOption) (*GetWithIDResponse, error) {
+	out := new(GetWithIDResponse)
 	err := c.cc.Invoke(ctx, "/user.UserService/GetWithID", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -63,8 +62,8 @@ func (c *userServiceClient) GetWithID(ctx context.Context, in *UserID, opts ...g
 	return out, nil
 }
 
-func (c *userServiceClient) UpdatePassword(ctx context.Context, in *PasswordChangeInfo, opts ...grpc.CallOption) (*emptypb.Empty, error) {
-	out := new(emptypb.Empty)
+func (c *userServiceClient) UpdatePassword(ctx context.Context, in *PasswordChangeInfo, opts ...grpc.CallOption) (*UpdatePasswordResponse, error) {
+	out := new(UpdatePasswordResponse)
 	err := c.cc.Invoke(ctx, "/user.UserService/UpdatePassword", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -72,8 +71,8 @@ func (c *userServiceClient) UpdatePassword(ctx context.Context, in *PasswordChan
 	return out, nil
 }
 
-func (c *userServiceClient) UpdateProfile(ctx context.Context, in *UserProfileInfo, opts ...grpc.CallOption) (*emptypb.Empty, error) {
-	out := new(emptypb.Empty)
+func (c *userServiceClient) UpdateProfile(ctx context.Context, in *UserProfileInfo, opts ...grpc.CallOption) (*UpdateProfileResponse, error) {
+	out := new(UpdateProfileResponse)
 	err := c.cc.Invoke(ctx, "/user.UserService/UpdateProfile", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -81,8 +80,8 @@ func (c *userServiceClient) UpdateProfile(ctx context.Context, in *UserProfileIn
 	return out, nil
 }
 
-func (c *userServiceClient) UpdateAvatar(ctx context.Context, in *AvatarChangeInfo, opts ...grpc.CallOption) (*UrlObj, error) {
-	out := new(UrlObj)
+func (c *userServiceClient) UpdateAvatar(ctx context.Context, in *AvatarChangeInfo, opts ...grpc.CallOption) (*UpdateAvatarResponse, error) {
+	out := new(UpdateAvatarResponse)
 	err := c.cc.Invoke(ctx, "/user.UserService/UpdateAvatar", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -90,8 +89,8 @@ func (c *userServiceClient) UpdateAvatar(ctx context.Context, in *AvatarChangeIn
 	return out, nil
 }
 
-func (c *userServiceClient) DeleteUser(ctx context.Context, in *UserID, opts ...grpc.CallOption) (*emptypb.Empty, error) {
-	out := new(emptypb.Empty)
+func (c *userServiceClient) DeleteUser(ctx context.Context, in *UserID, opts ...grpc.CallOption) (*DeleteUserResponse, error) {
+	out := new(DeleteUserResponse)
 	err := c.cc.Invoke(ctx, "/user.UserService/DeleteUser", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -103,13 +102,13 @@ func (c *userServiceClient) DeleteUser(ctx context.Context, in *UserID, opts ...
 // All implementations must embed UnimplementedUserServiceServer
 // for forward compatibility
 type UserServiceServer interface {
-	RegisterUser(context.Context, *AuthInfo) (*User, error)
-	CheckPassword(context.Context, *AuthInfo) (*User, error)
-	GetWithID(context.Context, *UserID) (*User, error)
-	UpdatePassword(context.Context, *PasswordChangeInfo) (*emptypb.Empty, error)
-	UpdateProfile(context.Context, *UserProfileInfo) (*emptypb.Empty, error)
-	UpdateAvatar(context.Context, *AvatarChangeInfo) (*UrlObj, error)
-	DeleteUser(context.Context, *UserID) (*emptypb.Empty, error)
+	RegisterUser(context.Context, *AuthInfo) (*RegisterUserResponse, error)
+	CheckPassword(context.Context, *AuthInfo) (*CheckPasswordResponse, error)
+	GetWithID(context.Context, *UserID) (*GetWithIDResponse, error)
+	UpdatePassword(context.Context, *PasswordChangeInfo) (*UpdatePasswordResponse, error)
+	UpdateProfile(context.Context, *UserProfileInfo) (*UpdateProfileResponse, error)
+	UpdateAvatar(context.Context, *AvatarChangeInfo) (*UpdateAvatarResponse, error)
+	DeleteUser(context.Context, *UserID) (*DeleteUserResponse, error)
 	mustEmbedUnimplementedUserServiceServer()
 }
 
@@ -117,25 +116,25 @@ type UserServiceServer interface {
 type UnimplementedUserServiceServer struct {
 }
 
-func (UnimplementedUserServiceServer) RegisterUser(context.Context, *AuthInfo) (*User, error) {
+func (UnimplementedUserServiceServer) RegisterUser(context.Context, *AuthInfo) (*RegisterUserResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RegisterUser not implemented")
 }
-func (UnimplementedUserServiceServer) CheckPassword(context.Context, *AuthInfo) (*User, error) {
+func (UnimplementedUserServiceServer) CheckPassword(context.Context, *AuthInfo) (*CheckPasswordResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CheckPassword not implemented")
 }
-func (UnimplementedUserServiceServer) GetWithID(context.Context, *UserID) (*User, error) {
+func (UnimplementedUserServiceServer) GetWithID(context.Context, *UserID) (*GetWithIDResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetWithID not implemented")
 }
-func (UnimplementedUserServiceServer) UpdatePassword(context.Context, *PasswordChangeInfo) (*emptypb.Empty, error) {
+func (UnimplementedUserServiceServer) UpdatePassword(context.Context, *PasswordChangeInfo) (*UpdatePasswordResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdatePassword not implemented")
 }
-func (UnimplementedUserServiceServer) UpdateProfile(context.Context, *UserProfileInfo) (*emptypb.Empty, error) {
+func (UnimplementedUserServiceServer) UpdateProfile(context.Context, *UserProfileInfo) (*UpdateProfileResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateProfile not implemented")
 }
-func (UnimplementedUserServiceServer) UpdateAvatar(context.Context, *AvatarChangeInfo) (*UrlObj, error) {
+func (UnimplementedUserServiceServer) UpdateAvatar(context.Context, *AvatarChangeInfo) (*UpdateAvatarResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateAvatar not implemented")
 }
-func (UnimplementedUserServiceServer) DeleteUser(context.Context, *UserID) (*emptypb.Empty, error) {
+func (UnimplementedUserServiceServer) DeleteUser(context.Context, *UserID) (*DeleteUserResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteUser not implemented")
 }
 func (UnimplementedUserServiceServer) mustEmbedUnimplementedUserServiceServer() {}

@@ -18,6 +18,21 @@ type UserService struct {
 	client  microservice.UserServiceClient
 }
 
+var UserServiceErrors = map[microservice.ErrorCode]error{
+	microservice.ErrorCode_OK:                    nil,
+	microservice.ErrorCode_COULD_NOT_BUILD_QUERY: apperrors.ErrCouldNotBuildQuery,
+	microservice.ErrorCode_USER_NOT_FOUND:        apperrors.ErrUserNotFound,
+	microservice.ErrorCode_WRONG_PASSWORD:        apperrors.ErrWrongPassword,
+	microservice.ErrorCode_USER_ALREADY_EXISTS:   apperrors.ErrUserAlreadyExists,
+	microservice.ErrorCode_USER_NOT_CREATED:      apperrors.ErrUserNotCreated,
+	microservice.ErrorCode_USER_NOT_UPDATED:      apperrors.ErrUserNotUpdated,
+	microservice.ErrorCode_USER_NOT_DELETED:      apperrors.ErrUserNotDeleted,
+	microservice.ErrorCode_COULD_NOT_GET_USER:    apperrors.ErrCouldNotGetUser,
+	microservice.ErrorCode_FAILED_TO_CREATE_FILE: apperrors.ErrFailedToCreateFile,
+	microservice.ErrorCode_FAILED_TO_SAVE_FILE:   apperrors.ErrFailedToSaveFile,
+	microservice.ErrorCode_FAILED_TO_DELETE_FILE: apperrors.ErrFailedToDeleteFile,
+}
+
 const nodeName = "service"
 
 // NewUserService
@@ -37,15 +52,17 @@ func (us UserService) RegisterUser(ctx context.Context, info dto.AuthInfo) (*ent
 	funcName := "UserService.RegisterUser"
 	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
 
-	logger.DebugFmt("Contacting GRPC server", funcName, nodeName)
-	user, err := us.client.RegisterUser(ctx, &microservice.AuthInfo{
+	logger.Debug("Contacting GRPC server", funcName, nodeName)
+	serverResponse, _ := us.client.RegisterUser(ctx, &microservice.AuthInfo{
 		Email:    info.Email,
 		Password: info.Password,
 	})
-	if handledErr := apperrors.HandleGRPCError(err); handledErr != nil {
-		return &entities.User{}, handledErr
+	logger.Debug("Response received", funcName, nodeName)
+	if serverResponse.Code != microservice.ErrorCode_OK {
+		return &entities.User{}, UserServiceErrors[serverResponse.Code]
 	}
-	logger.DebugFmt("Info received", funcName, nodeName)
+
+	user := serverResponse.Response
 
 	return &entities.User{
 		ID:           user.ID,
@@ -65,15 +82,17 @@ func (us UserService) CheckPassword(ctx context.Context, info dto.AuthInfo) (*en
 	funcName := "UserService.CheckPassword"
 	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
 
-	logger.DebugFmt("Contacting GRPC server", funcName, nodeName)
-	user, err := us.client.CheckPassword(ctx, &microservice.AuthInfo{
+	logger.Debug("Contacting GRPC server", funcName, nodeName)
+	serverResponse, _ := us.client.CheckPassword(ctx, &microservice.AuthInfo{
 		Email:    info.Email,
 		Password: info.Password,
 	})
-	if handledErr := apperrors.HandleGRPCError(err); handledErr != nil {
-		return &entities.User{}, handledErr
+	logger.Debug("Response received", funcName, nodeName)
+	if serverResponse.Code != microservice.ErrorCode_OK {
+		return &entities.User{}, UserServiceErrors[serverResponse.Code]
 	}
-	logger.DebugFmt("Info received", funcName, nodeName)
+
+	user := serverResponse.Response
 
 	return &entities.User{
 		ID:           user.ID,
@@ -93,12 +112,14 @@ func (us UserService) GetWithID(ctx context.Context, id dto.UserID) (*entities.U
 	funcName := "UserService.GetWithID"
 	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
 
-	logger.DebugFmt("Contacting GRPC server", funcName, nodeName)
-	user, err := us.client.GetWithID(ctx, &microservice.UserID{Value: id.Value})
-	if handledErr := apperrors.HandleGRPCError(err); handledErr != nil {
-		return &entities.User{}, handledErr
+	logger.Debug("Contacting GRPC server", funcName, nodeName)
+	serverResponse, _ := us.client.GetWithID(ctx, &microservice.UserID{Value: id.Value})
+	if serverResponse.Code != microservice.ErrorCode_OK {
+		return &entities.User{}, UserServiceErrors[serverResponse.Code]
 	}
-	logger.DebugFmt("Info received", funcName, nodeName)
+	logger.Debug("Info received", funcName, nodeName)
+
+	user := serverResponse.Response
 
 	return &entities.User{
 		ID:           user.ID,
@@ -118,15 +139,15 @@ func (us UserService) UpdatePassword(ctx context.Context, info dto.PasswordChang
 	funcName := "UserService.UpdatePassword"
 	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
 
-	logger.DebugFmt("Contacting GRPC server", funcName, nodeName)
-	_, err := us.client.UpdatePassword(ctx, &microservice.PasswordChangeInfo{
+	logger.Debug("Contacting GRPC server", funcName, nodeName)
+	serverResponse, _ := us.client.UpdatePassword(ctx, &microservice.PasswordChangeInfo{
 		UserID:      info.UserID,
 		OldPassword: info.OldPassword,
 		NewPassword: info.NewPassword,
 	})
 	logger.DebugFmt("Response received", funcName, nodeName)
 
-	return apperrors.HandleGRPCError(err)
+	return UserServiceErrors[serverResponse.Code]
 }
 
 // UpdateProfile
@@ -136,8 +157,8 @@ func (us UserService) UpdateProfile(ctx context.Context, info dto.UserProfileInf
 	funcName := "UserService.UpdateProfile"
 	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
 
-	logger.DebugFmt("Contacting GRPC server", funcName, nodeName)
-	_, err := us.client.UpdateProfile(ctx, &microservice.UserProfileInfo{
+	logger.Debug("Contacting GRPC server", funcName, nodeName)
+	serverResponse, _ := us.client.UpdateProfile(ctx, &microservice.UserProfileInfo{
 		UserID:      info.UserID,
 		Name:        info.Name,
 		Surname:     info.Surname,
@@ -145,7 +166,7 @@ func (us UserService) UpdateProfile(ctx context.Context, info dto.UserProfileInf
 	})
 	logger.DebugFmt("Response received", funcName, nodeName)
 
-	return apperrors.HandleGRPCError(err)
+	return UserServiceErrors[serverResponse.Code]
 }
 
 // UpdateProfile
@@ -155,16 +176,19 @@ func (us UserService) UpdateAvatar(ctx context.Context, info dto.AvatarChangeInf
 	funcName := "UserService.UpdateAvatar"
 	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
 
-	logger.DebugFmt("Contacting GRPC server", funcName, nodeName)
-	urlObj, err := us.client.UpdateAvatar(ctx, &microservice.AvatarChangeInfo{
-		UserID:  info.UserID,
-		Avatar:  info.Avatar,
-		BaseURL: ctx.Value(dto.BaseURLKey).(string),
+	logger.Debug("Contacting GRPC server", funcName, nodeName)
+	serverResponse, _ := us.client.UpdateAvatar(ctx, &microservice.AvatarChangeInfo{
+		UserID:   info.UserID,
+		Avatar:   info.Avatar,
+		Filename: info.Filename,
+		Mimetype: info.Mimetype,
 	})
-	logger.DebugFmt("Response received", funcName, nodeName)
-	if handledErr := apperrors.HandleGRPCError(err); handledErr != nil {
-		return &dto.UrlObj{}, handledErr
+	logger.Debug("Response received", funcName, nodeName)
+	if serverResponse.Code != microservice.ErrorCode_OK {
+		return &dto.UrlObj{}, UserServiceErrors[serverResponse.Code]
 	}
+
+	urlObj := serverResponse.Response
 
 	return &dto.UrlObj{Value: urlObj.Value}, nil
 }
@@ -176,9 +200,9 @@ func (us UserService) DeleteUser(ctx context.Context, id dto.UserID) error {
 	funcName := "UserService.UpdateProfile"
 	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
 
-	logger.DebugFmt("Contacting GRPC server", funcName, nodeName)
-	_, err := us.client.DeleteUser(ctx, &microservice.UserID{Value: id.Value})
-	logger.DebugFmt("Response received", funcName, nodeName)
+	logger.Debug("Contacting GRPC server", funcName, nodeName)
+	serverResponse, _ := us.client.DeleteUser(ctx, &microservice.UserID{Value: id.Value})
+	logger.Debug("Response received", funcName, nodeName)
 
-	return apperrors.HandleGRPCError(err)
+	return UserServiceErrors[serverResponse.Code]
 }

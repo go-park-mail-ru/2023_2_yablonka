@@ -62,8 +62,8 @@ func (a *AuthService) AuthUser(ctx context.Context, id dto.UserID) (dto.SessionT
 	}
 
 	return dto.SessionToken{
-		ID:             serverResponse.Token.ID,
-		ExpirationDate: serverResponse.Token.ExpirationDate.AsTime(),
+		ID:             serverResponse.Response.ID,
+		ExpirationDate: serverResponse.Response.ExpirationDate.AsTime(),
 	}, nil
 }
 
@@ -85,7 +85,7 @@ func (a *AuthService) VerifyAuth(ctx context.Context, token dto.SessionToken) (d
 		return dto.UserID{}, AuthServiceErrors[serverResponse.Code]
 	}
 
-	return dto.UserID{Value: serverResponse.ID.Value}, nil
+	return dto.UserID{Value: serverResponse.Response.Value}, nil
 }
 
 // LogOut
@@ -119,5 +119,5 @@ func (a *AuthService) GetLifetime(ctx context.Context) time.Duration {
 		return 0
 	}
 
-	return serverResponse.Duration.AsDuration()
+	return serverResponse.Response.AsDuration()
 }
