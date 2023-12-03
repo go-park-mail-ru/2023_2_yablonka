@@ -134,7 +134,9 @@ func (s PostgresWorkspaceStorage) GetUserOwnedWorkspaces(ctx context.Context, us
 			Description:  boardRow.Description,
 			ThumbnailURL: boardRow.ThumbnailURL,
 		}
+		logger.Debug("Looking for workspace with ID "+fmt.Sprintf("%v", boardRow.WorkspaceID), funcName, nodeName)
 		ws := getMatchingOwnedWorkspace(&workspaces, boardRow.WorkspaceID)
+		logger.Debug(fmt.Sprintf("Received %v", ws), funcName, nodeName)
 		ws.Boards = append(ws.Boards, board)
 	}
 	logger.Debug("Boards appended to workspaces", funcName, nodeName)
@@ -218,7 +220,7 @@ func (s PostgresWorkspaceStorage) GetUserGuestWorkspaces(ctx context.Context, us
 		return nil, apperrors.ErrCouldNotBuildQuery
 	}
 
-	logger.Debug("Built boards query\n\t"+workspaceQuery+"\nwith args\n\t"+fmt.Sprintf("%+v", args), funcName, nodeName)
+	logger.Debug("Built boards query\n\t"+boardQuery+"\nwith args\n\t"+fmt.Sprintf("%+v", args), funcName, nodeName)
 
 	rows, err = s.db.Query(boardQuery, args...)
 	if err != nil {
@@ -253,7 +255,9 @@ func (s PostgresWorkspaceStorage) GetUserGuestWorkspaces(ctx context.Context, us
 			Description:  boardRow.Description,
 			ThumbnailURL: boardRow.ThumbnailURL,
 		}
+		logger.Debug("Looking for workspace with ID "+fmt.Sprintf("%v", boardRow.WorkspaceID), funcName, nodeName)
 		ws := getMatchingGuestWorkspace(&workspaceRows, boardRow.WorkspaceID)
+		logger.Debug(fmt.Sprintf("Received %v", ws), funcName, nodeName)
 		ws.Boards = append(ws.Boards, board)
 	}
 	logger.Debug("Boards appended", funcName, nodeName)
@@ -455,8 +459,8 @@ func (s PostgresWorkspaceStorage) Delete(ctx context.Context, id dto.WorkspaceID
 }
 
 func getMatchingOwnedWorkspace(workspaces *[]dto.UserOwnedWorkspaceInfo, workspaceID uint64) *dto.UserOwnedWorkspaceInfo {
-	log.Println("Loookin")
 	for _, workspace := range *workspaces {
+		log.Println("Looking at workspace with ID", workspace.ID)
 		if workspace.ID == workspaceID {
 			return &workspace
 		}
