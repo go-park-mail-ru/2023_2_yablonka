@@ -34,7 +34,7 @@ func TestPostgresAuthStorage_CreateSession(t *testing.T) {
 			args: args{
 				&entities.Session{
 					SessionID:  ".",
-					UserID:     1,
+					UserID:     0,
 					ExpiryDate: time.Now(),
 				},
 			},
