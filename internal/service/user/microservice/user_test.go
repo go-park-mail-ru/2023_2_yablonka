@@ -2,12 +2,14 @@ package microservice
 
 import (
 	"context"
-	"google.golang.org/grpc"
 	"reflect"
 	"server/internal/pkg/dto"
+	"server/internal/pkg/entities"
 	"server/internal/storage"
 	user_microservice "server/microservices/user/user"
 	"testing"
+
+	"google.golang.org/grpc"
 )
 
 func TestNewUserService(t *testing.T) {

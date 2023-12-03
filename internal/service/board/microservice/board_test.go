@@ -4,8 +4,11 @@ import (
 	"context"
 	"reflect"
 	"server/internal/pkg/dto"
+	"server/internal/pkg/entities"
 	"server/internal/storage"
 	"testing"
+
+	"google.golang.org/grpc"
 )
 
 func TestBoardService_AddUser(t *testing.T) {

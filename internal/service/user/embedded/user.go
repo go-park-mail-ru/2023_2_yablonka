@@ -120,21 +120,21 @@ func (us UserService) UpdateAvatar(ctx context.Context, info dto.AvatarChangeInf
 
 	// TODO Update
 	fileLocation := "img/user_avatars/" + fileName + ".png"
-	logger.Debug("Relative path: "+fileLocation, funcName, nodeName)
+	logger.DebugFmt("Relative path: "+fileLocation, funcName, nodeName)
 	avatarUrlInfo := dto.ImageUrlInfo{
 		ID:  info.UserID,
 		Url: fileLocation,
 	}
 	f, err := os.Create(fileLocation)
 	if err != nil {
-		logger.Debug("Failed to create file with error: "+err.Error(), funcName, nodeName)
+		logger.DebugFmt("Failed to create file with error: "+err.Error(), funcName, nodeName)
 		return nil, apperrors.ErrFailedToCreateFile
 	}
 
 	logger.DebugFmt(fmt.Sprintf("Writing %v bytes", len(info.Avatar)), funcName, nodeName)
 	_, err = f.Write(info.Avatar)
 	if err != nil {
-		logger.Debug("Failed to write to file with error: "+err.Error(), funcName, nodeName)
+		logger.DebugFmt("Failed to write to file with error: "+err.Error(), funcName, nodeName)
 		return nil, apperrors.ErrFailedToSaveFile
 	}
 
@@ -144,7 +144,7 @@ func (us UserService) UpdateAvatar(ctx context.Context, info dto.AvatarChangeInf
 	if err != nil {
 		errDelete := os.Remove(fileLocation)
 		for errDelete != nil {
-			logger.Debug("Failed to remove file after unsuccessful update with error: "+err.Error(), funcName, nodeName)
+			logger.DebugFmt("Failed to remove file after unsuccessful update with error: "+err.Error(), funcName, nodeName)
 			os.Remove(fileLocation)
 			return nil, apperrors.ErrFailedToDeleteFile
 		}

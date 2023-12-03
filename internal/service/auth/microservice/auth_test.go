@@ -38,12 +38,10 @@ func TestAuthService_AuthUser(t *testing.T) {
 	}{
 		{
 			name:    "Normal query",
-			fields:  fields{
-				sessionDuration: time.Duration(),
-			},
-			args:    args
-			want:    dto.SessionToken
-			wantErr: false
+			fields:  fields{},
+			args:    args{},
+			want:    dto.SessionToken{},
+			wantErr: false,
 		},
 	}
 	for _, tt := range tests {

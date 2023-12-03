@@ -201,7 +201,7 @@ func (us UserService) UpdateAvatar(ctx context.Context, info *AvatarChangeInfo) 
 	us.logger.DebugFmt("Full URL: "+avatarUrlInfo.Url, funcName, nodeName)
 	f, err := os.Create(fileLocation)
 	if err != nil {
-		us.logger.Debug("Failed to create file with error: "+err.Error(), funcName, nodeName)
+		us.logger.DebugFmt("Failed to create file with error: "+err.Error(), funcName, nodeName)
 		response.Code = UserServiceErrorCodes[apperrors.ErrFailedToCreateFile]
 		response.Response = &UrlObj{}
 		return response, nil
@@ -221,7 +221,7 @@ func (us UserService) UpdateAvatar(ctx context.Context, info *AvatarChangeInfo) 
 	if err != nil {
 		errDelete := os.Remove(fileLocation)
 		if errDelete != nil {
-			us.logger.Debug("Failed to remove file after unsuccessful update with error: "+err.Error(), funcName, nodeName)
+			us.logger.DebugFmt("Failed to remove file after unsuccessful update with error: "+err.Error(), funcName, nodeName)
 			response.Code = UserServiceErrorCodes[apperrors.ErrFailedToDeleteFile]
 			response.Response = &UrlObj{}
 			return response, nil
