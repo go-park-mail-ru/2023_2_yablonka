@@ -2,6 +2,7 @@ package postgresql
 
 import (
 	"context"
+	"server/internal/apperrors"
 	"server/internal/pkg/entities"
 	"testing"
 	"time"
@@ -17,6 +18,7 @@ func TestPostgresAuthStorage_CreateSession(t *testing.T) {
 		name    string
 		args    args
 		wantErr bool
+		err     error
 	}{
 		{
 			name: "Normal session",
@@ -28,17 +30,18 @@ func TestPostgresAuthStorage_CreateSession(t *testing.T) {
 				},
 			},
 			wantErr: false,
+			err:     nil,
 		},
 		{
-			name: "Bad query",
+			name: "Bad query (Could not build)",
 			args: args{
 				&entities.Session{
-					SessionID:  ".",
-					UserID:     1,
-					ExpiryDate: time.Now(),
+					SessionID: ".",
+					UserID:    0,
 				},
 			},
 			wantErr: true,
+			err:     apperrors.ErrCouldNotBuildQuery,
 		},
 	}
 	for _, tt := range tests {
@@ -52,17 +55,27 @@ func TestPostgresAuthStorage_CreateSession(t *testing.T) {
 
 			ctx := context.Background()
 
-			mock.ExpectExec("INSERT INTO public.session").
-				WithArgs(
-					tt.args.session.UserID,
-					tt.args.session.ExpiryDate,
-					tt.args.session.SessionID,
-				).
-				WillReturnResult(sqlmock.NewResult(1, 1))
+			if !tt.wantErr {
+				mock.ExpectExec("INSERT INTO public.session").
+					WithArgs(
+						tt.args.session.UserID,
+						tt.args.session.ExpiryDate,
+						tt.args.session.SessionID,
+					).
+					WillReturnResult(sqlmock.NewResult(1, 1))
+			} else {
+				mock.ExpectExec("INSERT INTO public.session").
+					WithArgs(
+						tt.args.session.UserID,
+						tt.args.session.ExpiryDate,
+						tt.args.session.SessionID,
+					).
+					WillReturnError(tt.err)
+			}
 
 			s := NewAuthStorage(db)
 
-			if err := s.CreateSession(ctx, tt.args.session); (err != nil) == tt.wantErr {
+			if err := s.CreateSession(ctx, tt.args.session); (err != nil) != tt.wantErr {
 				t.Errorf("CreateSession() error = %v, wantErr %v", err != nil, tt.wantErr)
 			}
 
