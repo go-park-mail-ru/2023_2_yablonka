@@ -135,9 +135,9 @@ func (s PostgresWorkspaceStorage) GetUserOwnedWorkspaces(ctx context.Context, us
 			ThumbnailURL: boardRow.ThumbnailURL,
 		}
 		logger.Debug("Looking for workspace with ID "+fmt.Sprintf("%v", boardRow.WorkspaceID), funcName, nodeName)
-		ws := getMatchingOwnedWorkspace(&workspaces, boardRow.WorkspaceID)
-		logger.Debug(fmt.Sprintf("Received %v", ws), funcName, nodeName)
-		ws.Boards = append(ws.Boards, board)
+		idx := getMatchingOwnedWorkspace(&workspaces, boardRow.WorkspaceID)
+		logger.Debug(fmt.Sprintf("Received %v", idx), funcName, nodeName)
+		workspaces[idx].Boards = append(workspaces[idx].Boards, board)
 	}
 	logger.Debug("Boards appended to workspaces", funcName, nodeName)
 
@@ -256,9 +256,9 @@ func (s PostgresWorkspaceStorage) GetUserGuestWorkspaces(ctx context.Context, us
 			ThumbnailURL: boardRow.ThumbnailURL,
 		}
 		logger.Debug("Looking for workspace with ID "+fmt.Sprintf("%v", boardRow.WorkspaceID), funcName, nodeName)
-		ws := getMatchingGuestWorkspace(&workspaceRows, boardRow.WorkspaceID)
-		logger.Debug(fmt.Sprintf("Received %v", ws), funcName, nodeName)
-		ws.Boards = append(ws.Boards, board)
+		idx := getMatchingGuestWorkspace(&workspaceRows, boardRow.WorkspaceID)
+		logger.Debug(fmt.Sprintf("Received %v", idx), funcName, nodeName)
+		workspaceRows[idx].Boards = append(workspaceRows[idx].Boards, board)
 	}
 	logger.Debug("Boards appended", funcName, nodeName)
 
@@ -458,21 +458,21 @@ func (s PostgresWorkspaceStorage) Delete(ctx context.Context, id dto.WorkspaceID
 	return nil
 }
 
-func getMatchingOwnedWorkspace(workspaces *[]dto.UserOwnedWorkspaceInfo, workspaceID uint64) *dto.UserOwnedWorkspaceInfo {
-	for _, workspace := range *workspaces {
+func getMatchingOwnedWorkspace(workspaces *[]dto.UserOwnedWorkspaceInfo, workspaceID uint64) int {
+	for index, workspace := range *workspaces {
 		log.Println("Looking at workspace with ID", workspace.ID)
 		if workspace.ID == workspaceID {
-			return &workspace
+			return index
 		}
 	}
-	return nil
+	return -1
 }
 
-func getMatchingGuestWorkspace(workspaces *[]dto.UserGuestWorkspaceInfo, workspaceID uint64) *dto.UserGuestWorkspaceInfo {
-	for _, workspace := range *workspaces {
+func getMatchingGuestWorkspace(workspaces *[]dto.UserGuestWorkspaceInfo, workspaceID uint64) int {
+	for index, workspace := range *workspaces {
 		if workspace.ID == workspaceID {
-			return &workspace
+			return index
 		}
 	}
-	return nil
+	return -1
 }
