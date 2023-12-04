@@ -215,7 +215,7 @@ func TestPostgresAuthStorage_GetSession(t *testing.T) {
 					ExpirationDate: time.Now(),
 				},
 				query: func(mock sqlmock.Sqlmock, args args) {
-					mock.ExpectQuery(regexp.QuoteMeta("SELECT (.+) FROM public.session WHERE id = ?")).
+					mock.ExpectQuery(regexp.QuoteMeta("SELECT (.+) FROM public.session WHERE id_session = ?")).
 						WithArgs(
 							args.token.ID,
 						).
