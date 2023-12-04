@@ -67,27 +67,42 @@ func (s PostgresAuthStorage) CreateSession(ctx context.Context, session *entitie
 // находит сессию по строке-токену
 // или возвращает ошибку apperrors.ErrSessionNotFound (401), ErrCouldntBuildQuery(500)
 func (s PostgresAuthStorage) GetSession(ctx context.Context, token dto.SessionToken) (*entities.Session, error) {
-	sql, args, err := sq.
+	funcName := "PostgresAuthStorage.GetSession"
+	errorMessage := "Getting session in failed with error: "
+	failBorder := ">>>>>>>>>>>>>>>>>>> PostgresAuthStorage.GetSession FAIL <<<<<<<<<<<<<<<<<<<<<<<"
+	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
+
+	logger.Debug(">>>>>>>>>>>>>>>> PostgresAuthStorage.GetSession <<<<<<<<<<<<<<<<<<<")
+
+	query, args, err := sq.
 		Select(allSessionFields...).
 		From("public.session").
 		Where(sq.Eq{"id_session": token.ID}).
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
-
 	if err != nil {
+		logger.DebugFmt(errorMessage, funcName, nodeName)
+		logger.Debug(failBorder)
 		return nil, apperrors.ErrCouldNotBuildQuery
 	}
+	logger.DebugFmt("Built query\n\t"+query+"\nwith args\n\t"+fmt.Sprintf("%+v", args), funcName, nodeName)
 
-	row := s.db.QueryRow(sql, args...)
-
-	session := entities.Session{}
+	row := s.db.QueryRow(query, args...)
+	session := entities.Session{
+		SessionID: token.ID,
+	}
 	err = row.Scan(
 		&session.UserID,
 		&session.ExpiryDate,
 	)
 	if err != nil {
+		logger.DebugFmt(errorMessage, funcName, nodeName)
+		logger.Debug(failBorder)
 		return nil, apperrors.ErrSessionNotFound
 	}
+	logger.DebugFmt("Executed query", funcName, nodeName)
+
+	logger.Debug(">>>>>>>>>>>>>>>> PostgresAuthStorage.GetSession SUCCESS <<<<<<<<<<<<<<<<<<<")
 
 	return &session, nil
 }
@@ -96,21 +111,34 @@ func (s PostgresAuthStorage) GetSession(ctx context.Context, token dto.SessionTo
 // удаляет сессию по ID из хранилища, если она существует
 // или возвращает ошибку apperrors.ErrSessionNotFound (401)
 func (s PostgresAuthStorage) DeleteSession(ctx context.Context, token dto.SessionToken) error {
-	sql, args, err := sq.
+	funcName := "PostgresAuthStorage.DeleteSession"
+	errorMessage := "Deleting session in failed with error: "
+	failBorder := ">>>>>>>>>>>>>>>>>>> PostgresAuthStorage.DeleteSession FAIL <<<<<<<<<<<<<<<<<<<<<<<"
+	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
+
+	logger.Debug(">>>>>>>>>>>>>>>> PostgresAuthStorage.DeleteSession <<<<<<<<<<<<<<<<<<<")
+
+	query, args, err := sq.
 		Delete("public.session").
 		Where(sq.Eq{"id_session": token.ID}).
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
-
 	if err != nil {
+		logger.DebugFmt(errorMessage, funcName, nodeName)
+		logger.Debug(failBorder)
 		return apperrors.ErrCouldNotBuildQuery
 	}
+	logger.DebugFmt("Built query\n\t"+query+"\nwith args\n\t"+fmt.Sprintf("%+v", args), funcName, nodeName)
 
-	_, err = s.db.Exec(sql, args...)
-
+	_, err = s.db.Exec(query, args...)
 	if err != nil {
+		logger.DebugFmt(errorMessage, funcName, nodeName)
+		logger.Debug(failBorder)
 		return apperrors.ErrSessionNotFound
 	}
+	logger.DebugFmt("Executed query", funcName, nodeName)
+
+	logger.Debug(">>>>>>>>>>>>>>>> PostgresAuthStorage.DeleteSession SUCCESS <<<<<<<<<<<<<<<<<<<")
 
 	return nil
 }

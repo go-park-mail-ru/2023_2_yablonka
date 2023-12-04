@@ -2,6 +2,7 @@ package postgresql
 
 import (
 	"context"
+	"regexp"
 	"server/internal/apperrors"
 	"server/internal/config"
 	logging "server/internal/logging"
@@ -54,6 +55,8 @@ func TestPostgresAuthStorage_CreateSession(t *testing.T) {
 						WillReturnResult(sqlmock.NewResult(1, 1))
 				},
 			},
+			wantErr: false,
+			err:     nil,
 		},
 		{
 			name: "Bad query (Could not build)",
@@ -70,11 +73,11 @@ func TestPostgresAuthStorage_CreateSession(t *testing.T) {
 							args.session.ExpiryDate,
 							args.session.SessionID,
 						).
-						WillReturnError(apperrors.ErrCouldNotBuildQuery)
+						WillReturnError(apperrors.ErrSessionNotCreated)
 				},
 			},
 			wantErr: true,
-			err:     apperrors.ErrCouldNotBuildQuery,
+			err:     apperrors.ErrSessionNotCreated,
 		},
 	}
 	for _, tt := range tests {
@@ -102,67 +105,150 @@ func TestPostgresAuthStorage_CreateSession(t *testing.T) {
 	}
 }
 
-/*
 func TestPostgresAuthStorage_DeleteSession(t *testing.T) {
-	type fields struct {
-		db *sql.DB
-	}
 	type args struct {
-		ctx   context.Context
 		token dto.SessionToken
+		query func(mock sqlmock.Sqlmock, args args)
 	}
 	tests := []struct {
 		name    string
-		fields  fields
 		args    args
 		wantErr bool
+		err     error
 	}{
-		// TODO: Add test cases.
+		{
+			name: "Happy path",
+			args: args{
+				token: dto.SessionToken{
+					ID:             "sdfgsdfgsdfgsdfgsdfgsdf",
+					ExpirationDate: time.Now(),
+				},
+				query: func(mock sqlmock.Sqlmock, args args) {
+					mock.ExpectExec("DELETE FROM public.session").
+						WithArgs(
+							args.token.ID,
+						).
+						WillReturnResult(sqlmock.NewResult(1, 1))
+				},
+			},
+			wantErr: false,
+			err:     nil,
+		},
+		{
+			name: "Bad request",
+			args: args{
+				token: dto.SessionToken{
+					ID:             "sdfgsdfgsdfgsdfgsdfgsdf",
+					ExpirationDate: time.Now(),
+				},
+				query: func(mock sqlmock.Sqlmock, args args) {
+					mock.ExpectExec("DELETE FROM public.session").
+						WithArgs(
+							args.token.ID,
+						).
+						WillReturnError(apperrors.ErrSessionNotFound)
+				},
+			},
+			wantErr: true,
+			err:     apperrors.ErrSessionNotCreated,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			s := PostgresAuthStorage{
-				db: tt.fields.db,
+			db, mock, err := sqlmock.New()
+			if err != nil {
+				t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 			}
-			if err := s.DeleteSession(tt.args.ctx, tt.args.token); (err != nil) != tt.wantErr {
-				t.Errorf("DeleteSession() error = %v, wantErr %v", err, tt.wantErr)
+			defer db.Close()
+
+			ctx := context.WithValue(context.Background(), dto.LoggerKey, getLogger())
+
+			tt.args.query(mock, tt.args)
+
+			s := NewAuthStorage(db)
+
+			if err := s.DeleteSession(ctx, tt.args.token); (err != nil) != tt.wantErr {
+				t.Errorf("DeleteSession() error = %v, wantErr %v", err != nil, tt.wantErr)
+			}
+
+			if err := mock.ExpectationsWereMet(); err != nil {
+				t.Errorf("there were unfulfilled expectations: %s", err)
 			}
 		})
 	}
 }
 
 func TestPostgresAuthStorage_GetSession(t *testing.T) {
-	type fields struct {
-		db *sql.DB
-	}
 	type args struct {
-		ctx   context.Context
 		token dto.SessionToken
+		query func(mock sqlmock.Sqlmock, args args)
 	}
 	tests := []struct {
 		name    string
-		fields  fields
 		args    args
-		want    *entities.Session
 		wantErr bool
+		err     error
 	}{
-		// TODO: Add test cases.
+		{
+			name: "Happy path",
+			args: args{
+				token: dto.SessionToken{
+					ID:             "sdfgsdfgsdfgsdfgsdfgsdf",
+					ExpirationDate: time.Now(),
+				},
+				query: func(mock sqlmock.Sqlmock, args args) {
+					mock.ExpectQuery(regexp.QuoteMeta("SELECT (.+) FROM public.session WHERE id = ?")).
+						WithArgs(
+							args.token.ID,
+						).
+						WillReturnRows(sqlmock.NewRows([]string{"id_user", "expiration_date"}))
+				},
+			},
+			wantErr: false,
+			err:     nil,
+		},
+		{
+			name: "Bad request",
+			args: args{
+				token: dto.SessionToken{
+					ID:             "sdfgsdfgsdfgsdfgsdfgsdf",
+					ExpirationDate: time.Now(),
+				},
+				query: func(mock sqlmock.Sqlmock, args args) {
+					mock.ExpectQuery(regexp.QuoteMeta("SELECT (.+) FROM public.session WHERE id = ?")).
+						WithArgs(
+							args.token.ID,
+						).
+						WillReturnError(apperrors.ErrSessionNotFound)
+				},
+			},
+			wantErr: true,
+			err:     apperrors.ErrSessionNotFound,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			s := PostgresAuthStorage{
-				db: tt.fields.db,
+			db, mock, err := sqlmock.New()
+			if err != nil {
+				t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 			}
-			got, err := s.GetSession(tt.args.ctx, tt.args.token)
+			defer db.Close()
+
+			ctx := context.WithValue(context.Background(), dto.LoggerKey, getLogger())
+
+			tt.args.query(mock, tt.args)
+
+			s := NewAuthStorage(db)
+
+			_, err = s.GetSession(ctx, tt.args.token)
+
 			if (err != nil) != tt.wantErr {
-				t.Errorf("GetSession() error = %v, wantErr %v", err, tt.wantErr)
-				return
+				t.Errorf("GetSession() error = %v, wantErr %v", err != nil, tt.wantErr)
 			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("GetSession() got = %v, want %v", got, tt.want)
+
+			if err := mock.ExpectationsWereMet(); err != nil {
+				t.Errorf("there were unfulfilled expectations: %s", err)
 			}
 		})
 	}
 }
-
-*/
