@@ -2,6 +2,7 @@ package postgresql
 
 import (
 	"context"
+	"log"
 	"regexp"
 	"server/internal/apperrors"
 	"server/internal/config"
@@ -10,6 +11,8 @@ import (
 	"server/internal/pkg/entities"
 	"testing"
 	"time"
+
+	sq "github.com/Masterminds/squirrel"
 
 	"github.com/DATA-DOG/go-sqlmock"
 )
@@ -197,11 +200,17 @@ func TestPostgresAuthStorage_GetSession(t *testing.T) {
 					ExpirationDate: time.Now(),
 				},
 				query: func(mock sqlmock.Sqlmock, args args) {
-					mock.ExpectQuery(regexp.QuoteMeta("SELECT FROM public.session")).
+					query, _, _ := sq.
+						Select(allSessionFields...).
+						From("public.session").
+						Where(sq.Eq{"id_session": args.token.ID}).
+						PlaceholderFormat(sq.Dollar).
+						ToSql()
+					mock.ExpectQuery(regexp.QuoteMeta(query)).
 						WithArgs(
 							args.token.ID,
 						).
-						WillReturnRows(sqlmock.NewRows([]string{"id_user", "expiration_date"}).AddRow(1, 1))
+						WillReturnRows(sqlmock.NewRows(allSessionFields).AddRow(1, args.token.ExpirationDate))
 				},
 			},
 			wantErr: false,
@@ -215,7 +224,13 @@ func TestPostgresAuthStorage_GetSession(t *testing.T) {
 					ExpirationDate: time.Now(),
 				},
 				query: func(mock sqlmock.Sqlmock, args args) {
-					mock.ExpectQuery(regexp.QuoteMeta("SELECT FROM public.session")).
+					query, _, _ := sq.
+						Select(allSessionFields...).
+						From("public.session").
+						Where(sq.Eq{"id_session": args.token.ID}).
+						PlaceholderFormat(sq.Dollar).
+						ToSql()
+					mock.ExpectQuery(regexp.QuoteMeta(query)).
 						WithArgs(
 							args.token.ID,
 						).
@@ -234,13 +249,14 @@ func TestPostgresAuthStorage_GetSession(t *testing.T) {
 			}
 			defer db.Close()
 
-			ctx := context.WithValue(context.Background(), dto.LoggerKey, getLogger())
-
 			tt.args.query(mock, tt.args)
 
 			s := NewAuthStorage(db)
 
+			ctx := context.WithValue(context.Background(), dto.LoggerKey, getLogger())
 			_, err = s.GetSession(ctx, tt.args.token)
+
+			log.Println(err)
 
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetSession() error = %v, wantErr %v", err != nil, tt.wantErr)
