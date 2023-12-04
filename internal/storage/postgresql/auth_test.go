@@ -197,11 +197,11 @@ func TestPostgresAuthStorage_GetSession(t *testing.T) {
 					ExpirationDate: time.Now(),
 				},
 				query: func(mock sqlmock.Sqlmock, args args) {
-					mock.ExpectQuery(regexp.QuoteMeta("SELECT (.+) FROM public.session")).
+					mock.ExpectQuery(regexp.QuoteMeta("SELECT FROM public.session")).
 						WithArgs(
 							args.token.ID,
 						).
-						WillReturnRows(sqlmock.NewRows([]string{"id_user", "expiration_date"}))
+						WillReturnRows(sqlmock.NewRows([]string{"id_user", "expiration_date"}).AddRow(1, 1))
 				},
 			},
 			wantErr: false,
@@ -215,7 +215,7 @@ func TestPostgresAuthStorage_GetSession(t *testing.T) {
 					ExpirationDate: time.Now(),
 				},
 				query: func(mock sqlmock.Sqlmock, args args) {
-					mock.ExpectQuery(regexp.QuoteMeta("SELECT (.+) FROM public.session")).
+					mock.ExpectQuery(regexp.QuoteMeta("SELECT FROM public.session")).
 						WithArgs(
 							args.token.ID,
 						).
