@@ -109,7 +109,7 @@ func (s *PostgresUserStorage) GetLoginInfoWithID(ctx context.Context, id dto.Use
 	if err != nil {
 		return nil, apperrors.ErrCouldNotBuildQuery
 	}
-	logger.Debug("Built query\n\t"+sql+"\nwith args\n\t"+fmt.Sprintf("%+v", args), funcName, nodeName)
+	logger.DebugFmt("Built query\n\t"+sql+"\nwith args\n\t"+fmt.Sprintf("%+v", args), funcName, nodeName)
 
 	row := s.db.QueryRow(sql, args...)
 
@@ -118,7 +118,7 @@ func (s *PostgresUserStorage) GetLoginInfoWithID(ctx context.Context, id dto.Use
 	if err != nil {
 		return nil, apperrors.ErrUserNotFound
 	}
-	logger.Debug("Parsed result", funcName, nodeName)
+	logger.DebugFmt("Parsed result", funcName, nodeName)
 
 	return &loginInfo, nil
 }
