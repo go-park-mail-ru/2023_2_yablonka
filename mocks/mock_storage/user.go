@@ -115,7 +115,7 @@ func (mr *MockIUserStorageMockRecorder) GetWithLogin(arg0, arg1 any) *gomock.Cal
 }
 
 // UpdateAvatarUrl mocks base method.
-func (m *MockIUserStorage) UpdateAvatarUrl(arg0 context.Context, arg1 dto.ImageUrlInfo) error {
+func (m *MockIUserStorage) UpdateAvatarUrl(arg0 context.Context, arg1 dto.UserImageUrlInfo) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UpdateAvatarUrl", arg0, arg1)
 	ret0, _ := ret[0].(error)

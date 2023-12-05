@@ -22,11 +22,11 @@ func AuthMiddleware(as service.IAuthService, us service.IUserService) func(http.
 			cookie, err := r.Cookie("tabula_user")
 			if err != nil {
 				logger.Error("*************** VERIFICATION FAIL ***************")
-				logger.Debug("Verifying user failed with error "+err.Error(), funcName, "middleware")
+				logger.DebugFmt("Verifying user failed with error "+err.Error(), funcName, "middleware")
 				apperrors.ReturnError(apperrors.GenericUnauthorizedResponse, w, r)
 				return
 			}
-			logger.Debug("Cookie found", funcName, "middleware")
+			logger.DebugFmt("Cookie found", funcName, "middleware")
 
 			token := dto.SessionToken{
 				ID: cookie.Value,
@@ -35,23 +35,23 @@ func AuthMiddleware(as service.IAuthService, us service.IUserService) func(http.
 			userID, err := as.VerifyAuth(rCtx, token)
 			if err != nil {
 				logger.Error("*************** VERIFICATION FAIL ***************")
-				logger.Debug("Verifying user failed with error "+err.Error(), funcName, "middleware")
+				logger.DebugFmt("Verifying user failed with error "+err.Error(), funcName, "middleware")
 				w.Header().Set("X-Csrf-Token", "")
 				apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
 				return
 			}
-			logger.Debug("Session verified", funcName, "middleware")
+			logger.DebugFmt("Session verified", funcName, "middleware")
 
 			userObj, err := us.GetWithID(rCtx, userID)
 			if errors.Is(err, apperrors.ErrUserNotFound) {
 				logger.Error("*************** VERIFICATION FAIL ***************")
-				logger.Debug("Verifying user failed with error "+err.Error(), funcName, "middleware")
+				logger.DebugFmt("Verifying user failed with error "+err.Error(), funcName, "middleware")
 				w.Header().Set("X-Csrf-Token", "")
 				apperrors.ReturnError(apperrors.GenericUnauthorizedResponse, w, r)
 				return
 			} else if err != nil {
 				logger.Error("*************** VERIFICATION FAIL ***************")
-				logger.Debug("Verifying user failed with error "+err.Error(), funcName, "middleware")
+				logger.DebugFmt("Verifying user failed with error "+err.Error(), funcName, "middleware")
 				w.Header().Set("X-Csrf-Token", "")
 				apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
 				return

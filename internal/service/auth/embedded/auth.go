@@ -71,16 +71,16 @@ func (a *AuthService) VerifyAuth(ctx context.Context, token dto.SessionToken) (d
 	if err != nil {
 		return dto.UserID{}, err
 	}
-	logger.Debug("Session found", funcName, nodeName)
+	logger.DebugFmt("Session found", funcName, nodeName)
 
 	if sessionObj.ExpiryDate.Before(time.Now()) {
-		logger.Debug("Deleting expired session", funcName, nodeName)
+		logger.DebugFmt("Deleting expired session", funcName, nodeName)
 		for err = a.LogOut(ctx, token); err != nil; {
 			err = a.LogOut(ctx, token)
 		}
 		return dto.UserID{}, apperrors.ErrSessionExpired
 	}
-	logger.Debug("Session is still good", funcName, nodeName)
+	logger.DebugFmt("Session is still good", funcName, nodeName)
 
 	return dto.UserID{Value: sessionObj.UserID}, nil
 }
