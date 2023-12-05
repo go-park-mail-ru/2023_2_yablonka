@@ -223,11 +223,6 @@ func (s *PostgreSQLBoardStorage) Create(ctx context.Context, info dto.NewBoardIn
 		log.Println("Storage -- Failed to get user")
 		return nil, apperrors.ErrCouldNotBuildQuery
 	}
-	baseURL, ok := ctx.Value(dto.BaseURLKey).(string)
-	if !ok {
-		log.Println("Storage -- Failed to get base url")
-		return nil, apperrors.ErrCouldNotBuildQuery
-	}
 
 	newBoard := &entities.Board{
 		Name: info.Name,
@@ -281,7 +276,7 @@ func (s *PostgreSQLBoardStorage) Create(ctx context.Context, info dto.NewBoardIn
 	if info.ThumbnailURL != nil {
 		url = *info.ThumbnailURL
 	} else {
-		url = baseURL + "img/board_thumbnails/" + strconv.Itoa(boardID) + ".png"
+		url = "img/board_thumbnails/" + strconv.Itoa(boardID) + ".png"
 	}
 
 	newBoard.ThumbnailURL = &url
@@ -290,7 +285,10 @@ func (s *PostgreSQLBoardStorage) Create(ctx context.Context, info dto.NewBoardIn
 	query2, args, err := sq.
 		Update("public.board").
 		Set("thumbnail_url", url).
-		Where(sq.Eq{"id_workspace": info.WorkspaceID}).
+		Where(sq.And{
+			sq.Eq{"id_workspace": info.WorkspaceID},
+			sq.Eq{"id": boardID},
+		}).
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
 

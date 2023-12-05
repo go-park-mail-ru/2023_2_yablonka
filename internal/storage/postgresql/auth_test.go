@@ -30,6 +30,7 @@ func getLogger() logging.ILogger {
 }
 
 func TestPostgresAuthStorage_CreateSession(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		session *entities.Session
 		query   func(mock sqlmock.Sqlmock, args args)
@@ -76,6 +77,27 @@ func TestPostgresAuthStorage_CreateSession(t *testing.T) {
 							args.session.ExpiryDate,
 							args.session.SessionID,
 						).
+						WillReturnError(apperrors.ErrCouldNotBuildQuery)
+				},
+			},
+			wantErr: true,
+			err:     apperrors.ErrCouldNotBuildQuery,
+		},
+		{
+			name: "Bad query (Could not exec)",
+			args: args{
+				session: &entities.Session{
+					SessionID:  ".",
+					UserID:     0,
+					ExpiryDate: time.Now(),
+				},
+				query: func(mock sqlmock.Sqlmock, args args) {
+					mock.ExpectExec("INSERT INTO public.session").
+						WithArgs(
+							args.session.UserID,
+							args.session.ExpiryDate,
+							args.session.SessionID,
+						).
 						WillReturnError(apperrors.ErrSessionNotCreated)
 				},
 			},
@@ -84,7 +106,9 @@ func TestPostgresAuthStorage_CreateSession(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 			db, mock, err := sqlmock.New()
 			if err != nil {
 				t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
@@ -109,6 +133,7 @@ func TestPostgresAuthStorage_CreateSession(t *testing.T) {
 }
 
 func TestPostgresAuthStorage_DeleteSession(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		token dto.SessionToken
 		query func(mock sqlmock.Sqlmock, args args)
@@ -138,7 +163,25 @@ func TestPostgresAuthStorage_DeleteSession(t *testing.T) {
 			err:     nil,
 		},
 		{
-			name: "Bad request",
+			name: "Bad request (Could not build query)",
+			args: args{
+				token: dto.SessionToken{
+					ID:             "sdfgsdfgsdfgsdfgsdfgsdf",
+					ExpirationDate: time.Now(),
+				},
+				query: func(mock sqlmock.Sqlmock, args args) {
+					mock.ExpectExec("DELETE FROM public.session").
+						WithArgs(
+							args.token.ID,
+						).
+						WillReturnError(apperrors.ErrCouldNotBuildQuery)
+				},
+			},
+			wantErr: true,
+			err:     apperrors.ErrCouldNotBuildQuery,
+		},
+		{
+			name: "Bad request (Session not found)",
 			args: args{
 				token: dto.SessionToken{
 					ID:             "sdfgsdfgsdfgsdfgsdfgsdf",
@@ -153,11 +196,13 @@ func TestPostgresAuthStorage_DeleteSession(t *testing.T) {
 				},
 			},
 			wantErr: true,
-			err:     apperrors.ErrSessionNotCreated,
+			err:     apperrors.ErrSessionNotFound,
 		},
 	}
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 			db, mock, err := sqlmock.New()
 			if err != nil {
 				t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
@@ -182,6 +227,7 @@ func TestPostgresAuthStorage_DeleteSession(t *testing.T) {
 }
 
 func TestPostgresAuthStorage_GetSession(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		token dto.SessionToken
 		query func(mock sqlmock.Sqlmock, args args)
@@ -217,7 +263,31 @@ func TestPostgresAuthStorage_GetSession(t *testing.T) {
 			err:     nil,
 		},
 		{
-			name: "Bad request",
+			name: "Bad request (could not build query)",
+			args: args{
+				token: dto.SessionToken{
+					ID:             "sdfgsdfgsdfgsdfgsdfgsdf",
+					ExpirationDate: time.Now(),
+				},
+				query: func(mock sqlmock.Sqlmock, args args) {
+					query, _, _ := sq.
+						Select(allSessionFields...).
+						From("public.session").
+						Where(sq.Eq{"id_session": args.token.ID}).
+						PlaceholderFormat(sq.Dollar).
+						ToSql()
+					mock.ExpectQuery(regexp.QuoteMeta(query)).
+						WithArgs(
+							args.token.ID,
+						).
+						WillReturnError(apperrors.ErrCouldNotBuildQuery)
+				},
+			},
+			wantErr: true,
+			err:     apperrors.ErrCouldNotBuildQuery,
+		},
+		{
+			name: "Bad request (session not found)",
 			args: args{
 				token: dto.SessionToken{
 					ID:             "sdfgsdfgsdfgsdfgsdfgsdf",
@@ -242,7 +312,9 @@ func TestPostgresAuthStorage_GetSession(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 			db, mock, err := sqlmock.New()
 			if err != nil {
 				t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
