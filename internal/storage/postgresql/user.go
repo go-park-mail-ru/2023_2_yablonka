@@ -212,7 +212,7 @@ func (s *PostgresUserStorage) UpdateProfile(ctx context.Context, info dto.UserPr
 // UpdateAvatarUrl
 // обновляет аватарку пользователя в БД
 // или возвращает ошибки ...
-func (s *PostgresUserStorage) UpdateAvatarUrl(ctx context.Context, info dto.ImageUrlInfo) error {
+func (s *PostgresUserStorage) UpdateAvatarUrl(ctx context.Context, info dto.UserImageUrlInfo) error {
 	sql, args, err := sq.
 		Update("public.user").
 		Set("avatar_url", info.Url).

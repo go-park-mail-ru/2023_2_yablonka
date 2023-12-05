@@ -178,7 +178,7 @@ func (bs BoardService) UpdateThumbnail(ctx context.Context, info dto.UpdatedBoar
 	fileLocation := "img/board_thumbnails/" + strconv.FormatUint(info.ID, 10) + ".png"
 	logger.DebugFmt("File location:"+fileLocation, funcName, nodeName)
 
-	thumbnailUrlInfo := dto.ImageUrlInfo{
+	thumbnailUrlInfo := dto.BoardImageUrlInfo{
 		ID:  info.ID,
 		Url: baseURL + fileLocation,
 	}

@@ -194,7 +194,7 @@ func (us UserService) UpdateAvatar(ctx context.Context, info *AvatarChangeInfo) 
 	cwd, _ := os.Getwd()
 	us.logger.DebugFmt("Relative path: "+fileLocation, funcName, nodeName)
 	us.logger.DebugFmt("CWD: "+cwd, funcName, nodeName)
-	avatarUrlInfo := dto.ImageUrlInfo{
+	avatarUrlInfo := dto.UserImageUrlInfo{
 		ID:  info.UserID,
 		Url: fileLocation,
 	}
