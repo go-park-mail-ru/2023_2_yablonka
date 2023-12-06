@@ -210,6 +210,16 @@ func (ah AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 	}
 	logger.DebugFmt("User authorized", funcName, nodeName)
 
+	csrfToken, err := ah.cs.SetupCSRF(rCtx, userID)
+	if err != nil {
+		logger.Error(errorMessage + err.Error())
+		logger.Info(failBorder)
+		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
+		return
+	}
+	w.Header().Set("X-Csrf-Token", csrfToken.Token)
+	logger.DebugFmt("JSON decoded", funcName, nodeName)
+
 	cookie := &http.Cookie{
 		Name:     "tabula_user",
 		Value:    session.ID,
@@ -220,16 +230,6 @@ func (ah AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 	}
 	http.SetCookie(w, cookie)
 	logger.DebugFmt("Cookie set", funcName, nodeName)
-
-	csrfToken, err := ah.cs.SetupCSRF(rCtx, userID)
-	if err != nil {
-		logger.Error(errorMessage + err.Error())
-		logger.Info(failBorder)
-		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
-		return
-	}
-	w.Header().Set("X-Csrf-Token", csrfToken.Token)
-	logger.DebugFmt("JSON decoded", funcName, nodeName)
 
 	publicUserInfo := dto.UserPublicInfo{
 		ID:          user.ID,
