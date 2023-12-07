@@ -348,6 +348,15 @@ func (bh BoardHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	}
 	logger.DebugFmt("JSON Decoded", funcName, nodeName)
 
+	_, ok := rCtx.Value(dto.UserObjKey).(*entities.User)
+	if !ok {
+		logger.Error(errorMessage + "User not found")
+		logger.Info(failBorder)
+		apperrors.ReturnError(apperrors.GenericUnauthorizedResponse, w, r)
+		return
+	}
+	logger.DebugFmt("User object acquired from context", funcName, nodeName)
+
 	err = bh.bs.Delete(rCtx, boardID)
 	if err != nil {
 		logger.Error(errorMessage + err.Error())
@@ -457,7 +466,7 @@ func (bh BoardHandler) AddUser(w http.ResponseWriter, r *http.Request) {
 // @Router /board/user/remove/ [delete]
 func (bh BoardHandler) RemoveUser(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
-	funcName := "AddUser"
+	funcName := "RemoveUser"
 	errorMessage := "Removing user from board failed with error: "
 	failBorder := "---------------------------------- Removing user from board FAIL ----------------------------------"
 
