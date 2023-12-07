@@ -73,7 +73,7 @@ func createConfig(envPath string) (*config.Config, error) {
 	return config, nil
 }
 
-func createMux(mockAuthService *mock_service.MockIAuthService,
+func createAuthMux(mockAuthService *mock_service.MockIAuthService,
 	mockUserService *mock_service.MockIUserService,
 	mockCSRFService *mock_service.MockICSRFService) (http.Handler, error) {
 
@@ -287,7 +287,7 @@ func TestUserHandler_Unit_LogIn(t *testing.T) {
 
 			requestString := tt.args.expectations(mockAuthService, mockUserService, mockCSRFService, tt.args)
 
-			mux, err := createMux(mockAuthService, mockUserService, mockCSRFService)
+			mux, err := createAuthMux(mockAuthService, mockUserService, mockCSRFService)
 			require.Equal(t, nil, err)
 
 			body := bytes.NewReader([]byte(requestString))
@@ -525,7 +525,7 @@ func TestUserHandler_Unit_SignUp(t *testing.T) {
 
 			requestString := tt.args.expectations(mockAuthService, mockUserService, mockCSRFService, tt.args)
 
-			mux, err := createMux(mockAuthService, mockUserService, mockCSRFService)
+			mux, err := createAuthMux(mockAuthService, mockUserService, mockCSRFService)
 			require.Equal(t, nil, err)
 
 			body := bytes.NewReader([]byte(requestString))
@@ -731,7 +731,7 @@ func TestUserHandler_Unit_LogOut(t *testing.T) {
 
 			r.AddCookie(cookie)
 
-			mux, err := createMux(mockAuthService, mockUserService, mockCSRFService)
+			mux, err := createAuthMux(mockAuthService, mockUserService, mockCSRFService)
 			require.Equal(t, nil, err)
 
 			mux.ServeHTTP(w, r)
@@ -973,7 +973,7 @@ func TestAuthHandler_Unit_VerifyAuthEndpoint(t *testing.T) {
 
 			cookie := tt.args.expectations(mockAuthService, mockUserService, mockCSRFService, tt.args)
 
-			mux, err := createMux(mockAuthService, mockUserService, mockCSRFService)
+			mux, err := createAuthMux(mockAuthService, mockUserService, mockCSRFService)
 			require.Equal(t, nil, err)
 
 			body := bytes.NewReader([]byte(""))
