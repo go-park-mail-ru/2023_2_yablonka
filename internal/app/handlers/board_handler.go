@@ -58,7 +58,7 @@ func (bh BoardHandler) GetFullBoard(w http.ResponseWriter, r *http.Request) {
 
 	user, ok := rCtx.Value(dto.UserObjKey).(*entities.User)
 	if !ok {
-		logger.Error("No user object in context!")
+		logger.Error(errorMessage + "User not found")
 		logger.Info(failBorder)
 		apperrors.ReturnError(apperrors.GenericUnauthorizedResponse, w, r)
 		return
@@ -129,7 +129,7 @@ func (bh BoardHandler) Create(w http.ResponseWriter, r *http.Request) {
 
 	user, ok := rCtx.Value(dto.UserObjKey).(*entities.User)
 	if !ok {
-		logger.Error("No user object in context!")
+		logger.Error(errorMessage + "User not found")
 		logger.Info(failBorder)
 		apperrors.ReturnError(apperrors.GenericUnauthorizedResponse, w, r)
 		return
@@ -458,7 +458,7 @@ func (bh BoardHandler) RemoveUser(w http.ResponseWriter, r *http.Request) {
 
 	user, ok := rCtx.Value(dto.UserObjKey).(*entities.User)
 	if !ok {
-		logger.Error("No user object in context!")
+		logger.Error(errorMessage + "User not found")
 		logger.Info(failBorder)
 		apperrors.ReturnError(apperrors.GenericUnauthorizedResponse, w, r)
 		return
