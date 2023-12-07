@@ -211,6 +211,15 @@ func (bh BoardHandler) UpdateData(w http.ResponseWriter, r *http.Request) {
 	}
 	logger.DebugFmt("JSON Decoded", funcName, nodeName)
 
+	_, ok := rCtx.Value(dto.UserObjKey).(*entities.User)
+	if !ok {
+		logger.Error(errorMessage + "User not found")
+		logger.Info(failBorder)
+		apperrors.ReturnError(apperrors.GenericUnauthorizedResponse, w, r)
+		return
+	}
+	logger.DebugFmt("User object acquired from context", funcName, nodeName)
+
 	err = bh.bs.UpdateData(rCtx, boardInfo)
 	if err != nil {
 		logger.Error(errorMessage + err.Error())
@@ -268,6 +277,15 @@ func (bh BoardHandler) UpdateThumbnail(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	logger.DebugFmt("JSON Decoded", funcName, nodeName)
+
+	_, ok := rCtx.Value(dto.UserObjKey).(*entities.User)
+	if !ok {
+		logger.Error(errorMessage + "User not found")
+		logger.Info(failBorder)
+		apperrors.ReturnError(apperrors.GenericUnauthorizedResponse, w, r)
+		return
+	}
+	logger.DebugFmt("User object acquired from context", funcName, nodeName)
 
 	urlObj, err := bh.bs.UpdateThumbnail(rCtx, boardInfo)
 	if err != nil {
