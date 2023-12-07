@@ -172,8 +172,15 @@ type AvatarChangeInfo struct {
 
 // ImageRequest
 // структура для изменения аватарки
-type ImageUrlInfo struct {
+type UserImageUrlInfo struct {
 	ID  uint64 `json:"user_id"`
+	Url string `json:"avatar_url"`
+}
+
+// ImageRequest
+// структура для изменения аватарки
+type BoardImageUrlInfo struct {
+	ID  uint64 `json:"board_id"`
 	Url string `json:"avatar_url"`
 }
 
