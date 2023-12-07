@@ -157,7 +157,7 @@ func (mr *MockIBoardStorageMockRecorder) UpdateData(arg0, arg1 any) *gomock.Call
 }
 
 // UpdateThumbnailUrl mocks base method.
-func (m *MockIBoardStorage) UpdateThumbnailUrl(arg0 context.Context, arg1 dto.ImageUrlInfo) error {
+func (m *MockIBoardStorage) UpdateThumbnailUrl(arg0 context.Context, arg1 dto.BoardImageUrlInfo) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UpdateThumbnailUrl", arg0, arg1)
 	ret0, _ := ret[0].(error)

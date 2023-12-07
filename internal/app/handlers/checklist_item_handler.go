@@ -48,7 +48,7 @@ func (clh ChecklistItemHandler) Create(w http.ResponseWriter, r *http.Request) {
 		apperrors.ReturnError(apperrors.BadRequestResponse, w, r)
 		return
 	}
-	logger.Debug("request struct decoded", funcName, nodeName)
+	logger.DebugFmt("request struct decoded", funcName, nodeName)
 
 	ChecklistItem, err := clh.clis.Create(rCtx, newChecklistItemInfo)
 	if err != nil {
@@ -57,7 +57,7 @@ func (clh ChecklistItemHandler) Create(w http.ResponseWriter, r *http.Request) {
 		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
 		return
 	}
-	logger.Debug("ChecklistItem created", funcName, nodeName)
+	logger.DebugFmt("ChecklistItem created", funcName, nodeName)
 
 	response := dto.JSONResponse{
 		Body: dto.JSONMap{
@@ -71,7 +71,7 @@ func (clh ChecklistItemHandler) Create(w http.ResponseWriter, r *http.Request) {
 		apperrors.ReturnError(apperrors.InternalServerErrorResponse, w, r)
 		return
 	}
-	logger.Debug("response written", funcName, nodeName)
+	logger.DebugFmt("response written", funcName, nodeName)
 
 	logger.Info("---------------------------------- Creating ChecklistItem FAIL ----------------------------------")
 }
@@ -110,7 +110,7 @@ func (clh ChecklistItemHandler) Update(w http.ResponseWriter, r *http.Request) {
 		apperrors.ReturnError(apperrors.BadRequestResponse, w, r)
 		return
 	}
-	logger.Debug("request struct decoded", funcName, nodeName)
+	logger.DebugFmt("request struct decoded", funcName, nodeName)
 
 	err = clh.clis.Update(rCtx, ChecklistItemInfo)
 	if err != nil {
@@ -119,7 +119,7 @@ func (clh ChecklistItemHandler) Update(w http.ResponseWriter, r *http.Request) {
 		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
 		return
 	}
-	logger.Debug("ChecklistItem updated", funcName, nodeName)
+	logger.DebugFmt("ChecklistItem updated", funcName, nodeName)
 
 	response := dto.JSONResponse{
 		Body: dto.JSONMap{},
@@ -131,7 +131,7 @@ func (clh ChecklistItemHandler) Update(w http.ResponseWriter, r *http.Request) {
 		apperrors.ReturnError(apperrors.InternalServerErrorResponse, w, r)
 		return
 	}
-	logger.Debug("response written", funcName, nodeName)
+	logger.DebugFmt("response written", funcName, nodeName)
 
 	logger.Info("---------------------------------- Updating ChecklistItem SUCCESS ----------------------------------")
 }
@@ -170,7 +170,7 @@ func (clh ChecklistItemHandler) Delete(w http.ResponseWriter, r *http.Request) {
 		apperrors.ReturnError(apperrors.BadRequestResponse, w, r)
 		return
 	}
-	logger.Debug("request struct decoded", funcName, nodeName)
+	logger.DebugFmt("request struct decoded", funcName, nodeName)
 
 	err = clh.clis.Delete(rCtx, checklistItemID)
 	if err != nil {
@@ -179,7 +179,7 @@ func (clh ChecklistItemHandler) Delete(w http.ResponseWriter, r *http.Request) {
 		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
 		return
 	}
-	logger.Debug("ChecklistItem deleted", funcName, nodeName)
+	logger.DebugFmt("ChecklistItem deleted", funcName, nodeName)
 
 	response := dto.JSONResponse{
 		Body: dto.JSONMap{},
@@ -191,7 +191,7 @@ func (clh ChecklistItemHandler) Delete(w http.ResponseWriter, r *http.Request) {
 		apperrors.ReturnError(apperrors.InternalServerErrorResponse, w, r)
 		return
 	}
-	logger.Debug("response written", funcName, nodeName)
+	logger.DebugFmt("response written", funcName, nodeName)
 
 	logger.Info("---------------------------------- Deleting ChecklistItem SUCCESS ----------------------------------")
 }
