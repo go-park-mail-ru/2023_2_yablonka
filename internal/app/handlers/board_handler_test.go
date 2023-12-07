@@ -593,7 +593,7 @@ func TestBoardHandler_Unit_UpdateData(t *testing.T) {
 		expectedCode int
 	}{
 		{
-			name: "Successful create",
+			name: "Successful update",
 			args: args{
 				session: dto.SessionToken{
 					ID: "Mock session",
@@ -794,7 +794,7 @@ func TestBoardHandler_Unit_UpdateThumbnail(t *testing.T) {
 		expectedCode int
 	}{
 		{
-			name: "Successful create",
+			name: "Successful update",
 			args: args{
 				session: dto.SessionToken{
 					ID: "Mock session",
@@ -979,146 +979,822 @@ func TestBoardHandler_Unit_UpdateThumbnail(t *testing.T) {
 	}
 }
 
-// func TestBoardHandler_Unit_Delete(t *testing.T) {
-// 	t.Parallel()
+func TestBoardHandler_Unit_Delete(t *testing.T) {
+	t.Parallel()
 
-// 	type args struct {
-// 		user         *entities.User
-// 		session      dto.SessionToken
-// 		boardID      dto.BoardID
-// 		resultBoard  dto.FullBoardResult
-// 		expectations func(bs *mock_service.MockIBoardService, args args) *http.Request
-// 	}
-// 	tests := []struct {
-// 		name         string
-// 		args         args
-// 		wantErr      bool
-// 		expectedCode int
-// 	}{
-// 		// TODO Add cases
-// 	}
-// 	for _, tt := range tests {
-// 		tt := tt
-// 		t.Run(tt.name, func(t *testing.T) {
-// 			t.Parallel()
-// 			ctrl := gomock.NewController(t)
+	type args struct {
+		user         *entities.User
+		session      dto.SessionToken
+		boardID      dto.BoardID
+		expectations func(bs *mock_service.MockIBoardService, args args) *http.Request
+	}
+	tests := []struct {
+		name         string
+		args         args
+		wantErr      bool
+		expectedCode int
+	}{
+		{
+			name: "Successful delete",
+			args: args{
+				session: dto.SessionToken{
+					ID: "Mock session",
+				},
+				user: &entities.User{
+					ID:           uint64(1),
+					Email:        "mock@mail.com",
+					PasswordHash: "Mock hash",
+				},
+				boardID: dto.BoardID{Value: uint64(1)},
+				expectations: func(bs *mock_service.MockIBoardService, args args) *http.Request {
+					cookie := &http.Cookie{
+						Name:     "tabula_user",
+						Value:    args.session.ID,
+						HttpOnly: true,
+						SameSite: http.SameSiteLaxMode,
+						Expires:  args.session.ExpirationDate,
+						Path:     "/api/v2/",
+					}
 
-// 			mockAuthService := mock_service.NewMockIAuthService(ctrl)
-// 			mockBoardService := mock_service.NewMockIBoardService(ctrl)
+					bs.
+						EXPECT().
+						Delete(gomock.Any(), args.boardID).
+						Return(nil)
 
-// 			testRequest := tt.args.expectations(mockBoardService, tt.args)
+					body := bytes.NewReader([]byte(fmt.Sprintf(`{"board_id":%v}`, args.boardID.Value)))
 
-// 			mux, err := createBoardMux(mockAuthService, mockBoardService)
-// 			require.Equal(t, nil, err)
+					r := httptest.
+						NewRequest("DELETE", "/api/v2/board/delete/", body).
+						WithContext(
+							context.WithValue(
+								context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+								dto.UserObjKey, args.user,
+							),
+						)
+					r.AddCookie(cookie)
 
-// 			testRequest.Header.Add("Access-Control-Request-Headers", "content-type")
-// 			testRequest.Header.Add("Origin", "localhost:8081")
-// 			w := httptest.NewRecorder()
+					return r
+				},
+			},
+			wantErr:      false,
+			expectedCode: http.StatusOK,
+		},
+		{
+			name: "Bad request (invalid JSON)",
+			args: args{
+				session: dto.SessionToken{
+					ID: "Mock session",
+				},
+				expectations: func(bs *mock_service.MockIBoardService, args args) *http.Request {
+					cookie := &http.Cookie{}
 
-// 			mux.ServeHTTP(w, testRequest)
+					body := bytes.NewReader([]byte(""))
 
-// 			status := w.Result().StatusCode
+					r := httptest.
+						NewRequest("DELETE", "/api/v2/board/delete/", body).
+						WithContext(
+							context.WithValue(
+								context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+								dto.UserObjKey, args.user,
+							),
+						)
+					r.AddCookie(cookie)
 
-// 			require.EqualValuesf(t, tt.expectedCode, status,
-// 				"Expected code %d (%s), received code %d (%s)",
-// 				tt.expectedCode, http.StatusText(tt.expectedCode),
-// 				w.Code, http.StatusText(w.Code))
-// 		})
-// 	}
-// }
+					return r
+				},
+			},
+			wantErr:      true,
+			expectedCode: http.StatusBadRequest,
+		},
+		{
+			name: "Bad request (unauthorized - no user object in context)",
+			args: args{
+				session: dto.SessionToken{
+					ID: "Mock session",
+				},
+				expectations: func(bs *mock_service.MockIBoardService, args args) *http.Request {
+					cookie := &http.Cookie{
+						Name:     "tabula_user",
+						Value:    args.session.ID,
+						HttpOnly: true,
+						SameSite: http.SameSiteLaxMode,
+						Expires:  args.session.ExpirationDate,
+						Path:     "/api/v2/",
+					}
 
-// func TestBoardHandler_Unit_AddUser(t *testing.T) {
-// 	t.Parallel()
+					body := bytes.NewReader([]byte(fmt.Sprintf(`{"board_id":%v}`, args.boardID.Value)))
 
-// 	type args struct {
-// 		user         *entities.User
-// 		session      dto.SessionToken
-// 		boardID      dto.BoardID
-// 		resultBoard  dto.FullBoardResult
-// 		expectations func(bs *mock_service.MockIBoardService, args args) *http.Request
-// 	}
-// 	tests := []struct {
-// 		name         string
-// 		args         args
-// 		wantErr      bool
-// 		expectedCode int
-// 	}{
-// 		// TODO Add cases
-// 	}
-// 	for _, tt := range tests {
-// 		tt := tt
-// 		t.Run(tt.name, func(t *testing.T) {
-// 			t.Parallel()
-// 			ctrl := gomock.NewController(t)
+					r := httptest.
+						NewRequest("DELETE", "/api/v2/board/delete/", body).
+						WithContext(
+							context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+						)
+					r.AddCookie(cookie)
 
-// 			mockAuthService := mock_service.NewMockIAuthService(ctrl)
-// 			mockBoardService := mock_service.NewMockIBoardService(ctrl)
+					return r
+				},
+			},
+			wantErr:      true,
+			expectedCode: http.StatusUnauthorized,
+		},
+		{
+			name: "Bad request (could not delete board)",
+			args: args{
+				user: &entities.User{
+					ID:           uint64(1),
+					Email:        "mock@mail.com",
+					PasswordHash: "Mock hash",
+				},
+				session: dto.SessionToken{
+					ID: "Mock session",
+				},
+				boardID: dto.BoardID{Value: uint64(1)},
+				expectations: func(bs *mock_service.MockIBoardService, args args) *http.Request {
+					cookie := &http.Cookie{
+						Name:     "tabula_user",
+						Value:    args.session.ID,
+						HttpOnly: true,
+						SameSite: http.SameSiteLaxMode,
+						Expires:  args.session.ExpirationDate,
+						Path:     "/api/v2/",
+					}
 
-// 			testRequest := tt.args.expectations(mockBoardService, tt.args)
+					bs.
+						EXPECT().
+						Delete(gomock.Any(), args.boardID).
+						Return(apperrors.ErrBoardNotDeleted)
 
-// 			mux, err := createBoardMux(mockAuthService, mockBoardService)
-// 			require.Equal(t, nil, err)
+					body := bytes.NewReader([]byte(fmt.Sprintf(`{"board_id":%v}`, args.boardID.Value)))
 
-// 			testRequest.Header.Add("Access-Control-Request-Headers", "content-type")
-// 			testRequest.Header.Add("Origin", "localhost:8081")
-// 			w := httptest.NewRecorder()
+					r := httptest.
+						NewRequest("DELETE", "/api/v2/board/delete/", body).
+						WithContext(
+							context.WithValue(
+								context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+								dto.UserObjKey, args.user,
+							),
+						)
+					r.AddCookie(cookie)
 
-// 			mux.ServeHTTP(w, testRequest)
+					return r
+				},
+			},
+			wantErr:      true,
+			expectedCode: http.StatusInternalServerError,
+		},
+	}
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			ctrl := gomock.NewController(t)
 
-// 			status := w.Result().StatusCode
+			mockAuthService := mock_service.NewMockIAuthService(ctrl)
+			mockBoardService := mock_service.NewMockIBoardService(ctrl)
 
-// 			require.EqualValuesf(t, tt.expectedCode, status,
-// 				"Expected code %d (%s), received code %d (%s)",
-// 				tt.expectedCode, http.StatusText(tt.expectedCode),
-// 				w.Code, http.StatusText(w.Code))
-// 		})
-// 	}
-// }
+			testRequest := tt.args.expectations(mockBoardService, tt.args)
 
-// func TestBoardHandler_Unit_RemoveUser(t *testing.T) {
-// 	t.Parallel()
+			mux, err := createBoardMux(mockAuthService, mockBoardService)
+			require.Equal(t, nil, err)
 
-// 	type args struct {
-// 		user         *entities.User
-// 		session      dto.SessionToken
-// 		boardID      dto.BoardID
-// 		resultBoard  dto.FullBoardResult
-// 		expectations func(bs *mock_service.MockIBoardService, args args) *http.Request
-// 	}
-// 	tests := []struct {
-// 		name         string
-// 		args         args
-// 		wantErr      bool
-// 		expectedCode int
-// 	}{
-// 		// TODO Add cases
-// 	}
-// 	for _, tt := range tests {
-// 		tt := tt
-// 		t.Run(tt.name, func(t *testing.T) {
-// 			t.Parallel()
-// 			ctrl := gomock.NewController(t)
+			testRequest.Header.Add("Access-Control-Request-Headers", "content-type")
+			testRequest.Header.Add("Origin", "localhost:8081")
+			w := httptest.NewRecorder()
 
-// 			mockAuthService := mock_service.NewMockIAuthService(ctrl)
-// 			mockBoardService := mock_service.NewMockIBoardService(ctrl)
+			mux.ServeHTTP(w, testRequest)
 
-// 			testRequest := tt.args.expectations(mockBoardService, tt.args)
+			status := w.Result().StatusCode
 
-// 			mux, err := createBoardMux(mockAuthService, mockBoardService)
-// 			require.Equal(t, nil, err)
+			require.EqualValuesf(t, tt.expectedCode, status,
+				"Expected code %d (%s), received code %d (%s)",
+				tt.expectedCode, http.StatusText(tt.expectedCode),
+				w.Code, http.StatusText(w.Code))
+		})
+	}
+}
 
-// 			testRequest.Header.Add("Access-Control-Request-Headers", "content-type")
-// 			testRequest.Header.Add("Origin", "localhost:8081")
-// 			w := httptest.NewRecorder()
+func TestBoardHandler_Unit_AddUser(t *testing.T) {
+	t.Parallel()
 
-// 			mux.ServeHTTP(w, testRequest)
+	type args struct {
+		user         *entities.User
+		session      dto.SessionToken
+		request      dto.AddBoardUserRequest
+		expectations func(bs *mock_service.MockIBoardService, args args) *http.Request
+	}
+	tests := []struct {
+		name         string
+		args         args
+		wantErr      bool
+		expectedCode int
+	}{
+		{
+			name: "Successful user add",
+			args: args{
+				session: dto.SessionToken{
+					ID: "Mock session",
+				},
+				user: &entities.User{
+					ID:           uint64(1),
+					Email:        "mock@mail.com",
+					PasswordHash: "Mock hash",
+				},
+				request: dto.AddBoardUserRequest{
+					UserEmail:   "seconduser@email.com",
+					BoardID:     uint64(1),
+					WorkspaceID: uint64(1),
+				},
+				expectations: func(bs *mock_service.MockIBoardService, args args) *http.Request {
+					cookie := &http.Cookie{
+						Name:     "tabula_user",
+						Value:    args.session.ID,
+						HttpOnly: true,
+						SameSite: http.SameSiteLaxMode,
+						Expires:  args.session.ExpirationDate,
+						Path:     "/api/v2/",
+					}
 
-// 			status := w.Result().StatusCode
+					bs.
+						EXPECT().
+						AddUser(gomock.Any(), args.request).
+						Return(nil)
 
-// 			require.EqualValuesf(t, tt.expectedCode, status,
-// 				"Expected code %d (%s), received code %d (%s)",
-// 				tt.expectedCode, http.StatusText(tt.expectedCode),
-// 				w.Code, http.StatusText(w.Code))
-// 		})
-// 	}
-// }
+					body := bytes.NewReader([]byte(fmt.Sprintf(
+						`{"user_email":"%s", "board_id":%v, "workspace_id":%v}`,
+						args.request.UserEmail, args.request.BoardID, args.request.WorkspaceID,
+					)))
+
+					r := httptest.
+						NewRequest("POST", "/api/v2/board/user/add/", body).
+						WithContext(
+							context.WithValue(
+								context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+								dto.UserObjKey, args.user,
+							),
+						)
+					r.AddCookie(cookie)
+
+					return r
+				},
+			},
+			wantErr:      false,
+			expectedCode: http.StatusOK,
+		},
+		{
+			name: "Bad request (invalid JSON)",
+			args: args{
+				session: dto.SessionToken{
+					ID: "Mock session",
+				},
+				expectations: func(bs *mock_service.MockIBoardService, args args) *http.Request {
+					cookie := &http.Cookie{}
+
+					body := bytes.NewReader([]byte(""))
+
+					r := httptest.
+						NewRequest("DELETE", "/api/v2/board/delete/", body).
+						WithContext(
+							context.WithValue(
+								context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+								dto.UserObjKey, args.user,
+							),
+						)
+					r.AddCookie(cookie)
+
+					return r
+				},
+			},
+			wantErr:      true,
+			expectedCode: http.StatusBadRequest,
+		},
+		{
+			name: "Bad request (unauthorized - no user object in context)",
+			args: args{
+				session: dto.SessionToken{
+					ID: "Mock session",
+				},
+				expectations: func(bs *mock_service.MockIBoardService, args args) *http.Request {
+					cookie := &http.Cookie{
+						Name:     "tabula_user",
+						Value:    args.session.ID,
+						HttpOnly: true,
+						SameSite: http.SameSiteLaxMode,
+						Expires:  args.session.ExpirationDate,
+						Path:     "/api/v2/",
+					}
+
+					body := bytes.NewReader([]byte(fmt.Sprintf(
+						`{"user_email":"%s", "board_id":%v, "workspace_id":%v}`,
+						args.request.UserEmail, args.request.BoardID, args.request.WorkspaceID,
+					)))
+
+					r := httptest.
+						NewRequest("DELETE", "/api/v2/board/delete/", body).
+						WithContext(
+							context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+						)
+					r.AddCookie(cookie)
+
+					return r
+				},
+			},
+			wantErr:      true,
+			expectedCode: http.StatusUnauthorized,
+		},
+		{
+			name: "Bad request (no board access)",
+			args: args{
+				session: dto.SessionToken{
+					ID: "Mock session",
+				},
+				user: &entities.User{
+					ID:           uint64(1),
+					Email:        "mock@mail.com",
+					PasswordHash: "Mock hash",
+				},
+				request: dto.AddBoardUserRequest{
+					UserEmail:   "seconduser@email.com",
+					BoardID:     uint64(1),
+					WorkspaceID: uint64(1),
+				},
+				expectations: func(bs *mock_service.MockIBoardService, args args) *http.Request {
+					cookie := &http.Cookie{
+						Name:     "tabula_user",
+						Value:    args.session.ID,
+						HttpOnly: true,
+						SameSite: http.SameSiteLaxMode,
+						Expires:  args.session.ExpirationDate,
+						Path:     "/api/v2/",
+					}
+
+					bs.
+						EXPECT().
+						AddUser(gomock.Any(), args.request).
+						Return(apperrors.ErrNoBoardAccess)
+
+					body := bytes.NewReader([]byte(fmt.Sprintf(
+						`{"user_email":"%s", "board_id":%v, "workspace_id":%v}`,
+						args.request.UserEmail, args.request.BoardID, args.request.WorkspaceID,
+					)))
+
+					r := httptest.
+						NewRequest("POST", "/api/v2/board/user/add/", body).
+						WithContext(
+							context.WithValue(
+								context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+								dto.UserObjKey, args.user,
+							),
+						)
+					r.AddCookie(cookie)
+
+					return r
+				},
+			},
+			wantErr:      true,
+			expectedCode: http.StatusForbidden,
+		},
+		{
+			name: "Bad request (user already in board)",
+			args: args{
+				session: dto.SessionToken{
+					ID: "Mock session",
+				},
+				user: &entities.User{
+					ID:           uint64(1),
+					Email:        "mock@mail.com",
+					PasswordHash: "Mock hash",
+				},
+				request: dto.AddBoardUserRequest{
+					UserEmail:   "seconduser@email.com",
+					BoardID:     uint64(1),
+					WorkspaceID: uint64(1),
+				},
+				expectations: func(bs *mock_service.MockIBoardService, args args) *http.Request {
+					cookie := &http.Cookie{
+						Name:     "tabula_user",
+						Value:    args.session.ID,
+						HttpOnly: true,
+						SameSite: http.SameSiteLaxMode,
+						Expires:  args.session.ExpirationDate,
+						Path:     "/api/v2/",
+					}
+
+					bs.
+						EXPECT().
+						AddUser(gomock.Any(), args.request).
+						Return(apperrors.ErrUserAlreadyInBoard)
+
+					body := bytes.NewReader([]byte(fmt.Sprintf(
+						`{"user_email":"%s", "board_id":%v, "workspace_id":%v}`,
+						args.request.UserEmail, args.request.BoardID, args.request.WorkspaceID,
+					)))
+
+					r := httptest.
+						NewRequest("POST", "/api/v2/board/user/add/", body).
+						WithContext(
+							context.WithValue(
+								context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+								dto.UserObjKey, args.user,
+							),
+						)
+					r.AddCookie(cookie)
+
+					return r
+				},
+			},
+			wantErr:      true,
+			expectedCode: http.StatusConflict,
+		},
+		{
+			name: "Bad request (could not add user to board)",
+			args: args{
+				session: dto.SessionToken{
+					ID: "Mock session",
+				},
+				user: &entities.User{
+					ID:           uint64(1),
+					Email:        "mock@mail.com",
+					PasswordHash: "Mock hash",
+				},
+				request: dto.AddBoardUserRequest{
+					UserEmail:   "seconduser@email.com",
+					BoardID:     uint64(1),
+					WorkspaceID: uint64(1),
+				},
+				expectations: func(bs *mock_service.MockIBoardService, args args) *http.Request {
+					cookie := &http.Cookie{
+						Name:     "tabula_user",
+						Value:    args.session.ID,
+						HttpOnly: true,
+						SameSite: http.SameSiteLaxMode,
+						Expires:  args.session.ExpirationDate,
+						Path:     "/api/v2/",
+					}
+
+					bs.
+						EXPECT().
+						AddUser(gomock.Any(), args.request).
+						Return(apperrors.ErrCouldNotAddBoardUser)
+
+					body := bytes.NewReader([]byte(fmt.Sprintf(
+						`{"user_email":"%s", "board_id":%v, "workspace_id":%v}`,
+						args.request.UserEmail, args.request.BoardID, args.request.WorkspaceID,
+					)))
+
+					r := httptest.
+						NewRequest("POST", "/api/v2/board/user/add/", body).
+						WithContext(
+							context.WithValue(
+								context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+								dto.UserObjKey, args.user,
+							),
+						)
+					r.AddCookie(cookie)
+
+					return r
+				},
+			},
+			wantErr:      true,
+			expectedCode: http.StatusInternalServerError,
+		},
+	}
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			ctrl := gomock.NewController(t)
+
+			mockAuthService := mock_service.NewMockIAuthService(ctrl)
+			mockBoardService := mock_service.NewMockIBoardService(ctrl)
+
+			testRequest := tt.args.expectations(mockBoardService, tt.args)
+
+			mux, err := createBoardMux(mockAuthService, mockBoardService)
+			require.Equal(t, nil, err)
+
+			testRequest.Header.Add("Access-Control-Request-Headers", "content-type")
+			testRequest.Header.Add("Origin", "localhost:8081")
+			w := httptest.NewRecorder()
+
+			mux.ServeHTTP(w, testRequest)
+
+			status := w.Result().StatusCode
+
+			require.EqualValuesf(t, tt.expectedCode, status,
+				"Expected code %d (%s), received code %d (%s)",
+				tt.expectedCode, http.StatusText(tt.expectedCode),
+				w.Code, http.StatusText(w.Code))
+		})
+	}
+}
+
+func TestBoardHandler_Unit_RemoveUser(t *testing.T) {
+	t.Parallel()
+
+	type args struct {
+		user         *entities.User
+		session      dto.SessionToken
+		info         dto.RemoveBoardUserInfo
+		expectations func(bs *mock_service.MockIBoardService, args args) *http.Request
+	}
+	tests := []struct {
+		name         string
+		args         args
+		wantErr      bool
+		expectedCode int
+	}{
+		{
+			name: "Successful user remove",
+			args: args{
+				session: dto.SessionToken{
+					ID: "Mock session",
+				},
+				user: &entities.User{
+					ID:           uint64(1),
+					Email:        "mock@mail.com",
+					PasswordHash: "Mock hash",
+				},
+				info: dto.RemoveBoardUserInfo{
+					UserID:  uint64(2),
+					BoardID: uint64(1),
+				},
+				expectations: func(bs *mock_service.MockIBoardService, args args) *http.Request {
+					cookie := &http.Cookie{
+						Name:     "tabula_user",
+						Value:    args.session.ID,
+						HttpOnly: true,
+						SameSite: http.SameSiteLaxMode,
+						Expires:  args.session.ExpirationDate,
+						Path:     "/api/v2/",
+					}
+
+					bs.
+						EXPECT().
+						RemoveUser(gomock.Any(), args.info).
+						Return(nil)
+
+					body := bytes.NewReader([]byte(fmt.Sprintf(
+						`{"user_id":%v, "board_id":%v}`,
+						args.info.UserID, args.info.BoardID,
+					)))
+
+					r := httptest.
+						NewRequest("POST", "/api/v2/board/user/remove/", body).
+						WithContext(
+							context.WithValue(
+								context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+								dto.UserObjKey, args.user,
+							),
+						)
+					r.AddCookie(cookie)
+
+					return r
+				},
+			},
+			wantErr:      false,
+			expectedCode: http.StatusOK,
+		},
+		{
+			name: "Bad request (invalid JSON)",
+			args: args{
+				session: dto.SessionToken{
+					ID: "Mock session",
+				},
+				expectations: func(bs *mock_service.MockIBoardService, args args) *http.Request {
+					cookie := &http.Cookie{}
+
+					body := bytes.NewReader([]byte(""))
+
+					r := httptest.
+						NewRequest("DELETE", "/api/v2/board/delete/", body).
+						WithContext(
+							context.WithValue(
+								context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+								dto.UserObjKey, args.user,
+							),
+						)
+					r.AddCookie(cookie)
+
+					return r
+				},
+			},
+			wantErr:      true,
+			expectedCode: http.StatusBadRequest,
+		},
+		{
+			name: "Bad request (unauthorized - no user object in context)",
+			args: args{
+				session: dto.SessionToken{
+					ID: "Mock session",
+				},
+				expectations: func(bs *mock_service.MockIBoardService, args args) *http.Request {
+					cookie := &http.Cookie{
+						Name:     "tabula_user",
+						Value:    args.session.ID,
+						HttpOnly: true,
+						SameSite: http.SameSiteLaxMode,
+						Expires:  args.session.ExpirationDate,
+						Path:     "/api/v2/",
+					}
+
+					body := bytes.NewReader([]byte(fmt.Sprintf(
+						`{"user_id":%v, "board_id":%v}`,
+						args.info.UserID, args.info.BoardID,
+					)))
+
+					r := httptest.
+						NewRequest("DELETE", "/api/v2/board/delete/", body).
+						WithContext(
+							context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+						)
+					r.AddCookie(cookie)
+
+					return r
+				},
+			},
+			wantErr:      true,
+			expectedCode: http.StatusUnauthorized,
+		},
+		{
+			name: "Bad request (no board access)",
+			args: args{
+				session: dto.SessionToken{
+					ID: "Mock session",
+				},
+				user: &entities.User{
+					ID:           uint64(1),
+					Email:        "mock@mail.com",
+					PasswordHash: "Mock hash",
+				},
+				info: dto.RemoveBoardUserInfo{
+					UserID:  uint64(2),
+					BoardID: uint64(1),
+				},
+				expectations: func(bs *mock_service.MockIBoardService, args args) *http.Request {
+					cookie := &http.Cookie{
+						Name:     "tabula_user",
+						Value:    args.session.ID,
+						HttpOnly: true,
+						SameSite: http.SameSiteLaxMode,
+						Expires:  args.session.ExpirationDate,
+						Path:     "/api/v2/",
+					}
+
+					bs.
+						EXPECT().
+						RemoveUser(gomock.Any(), args.info).
+						Return(apperrors.ErrNoBoardAccess)
+
+					body := bytes.NewReader([]byte(fmt.Sprintf(
+						`{"user_id":%v, "board_id":%v}`,
+						args.info.UserID, args.info.BoardID,
+					)))
+
+					r := httptest.
+						NewRequest("POST", "/api/v2/board/user/remove/", body).
+						WithContext(
+							context.WithValue(
+								context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+								dto.UserObjKey, args.user,
+							),
+						)
+					r.AddCookie(cookie)
+
+					return r
+				},
+			},
+			wantErr:      true,
+			expectedCode: http.StatusForbidden,
+		},
+		{
+			name: "Bad request (user not in board)",
+			args: args{
+				session: dto.SessionToken{
+					ID: "Mock session",
+				},
+				user: &entities.User{
+					ID:           uint64(1),
+					Email:        "mock@mail.com",
+					PasswordHash: "Mock hash",
+				},
+				info: dto.RemoveBoardUserInfo{
+					UserID:  uint64(2),
+					BoardID: uint64(1),
+				},
+				expectations: func(bs *mock_service.MockIBoardService, args args) *http.Request {
+					cookie := &http.Cookie{
+						Name:     "tabula_user",
+						Value:    args.session.ID,
+						HttpOnly: true,
+						SameSite: http.SameSiteLaxMode,
+						Expires:  args.session.ExpirationDate,
+						Path:     "/api/v2/",
+					}
+
+					bs.
+						EXPECT().
+						RemoveUser(gomock.Any(), args.info).
+						Return(apperrors.ErrUserNotInBoard)
+
+					body := bytes.NewReader([]byte(fmt.Sprintf(
+						`{"user_id":%v, "board_id":%v}`,
+						args.info.UserID, args.info.BoardID,
+					)))
+
+					r := httptest.
+						NewRequest("POST", "/api/v2/board/user/remove/", body).
+						WithContext(
+							context.WithValue(
+								context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+								dto.UserObjKey, args.user,
+							),
+						)
+					r.AddCookie(cookie)
+
+					return r
+				},
+			},
+			wantErr:      true,
+			expectedCode: http.StatusConflict,
+		},
+		{
+			name: "Bad request (could not remove user from board)",
+			args: args{
+				session: dto.SessionToken{
+					ID: "Mock session",
+				},
+				user: &entities.User{
+					ID:           uint64(1),
+					Email:        "mock@mail.com",
+					PasswordHash: "Mock hash",
+				},
+				info: dto.RemoveBoardUserInfo{
+					UserID:  uint64(2),
+					BoardID: uint64(1),
+				},
+				expectations: func(bs *mock_service.MockIBoardService, args args) *http.Request {
+					cookie := &http.Cookie{
+						Name:     "tabula_user",
+						Value:    args.session.ID,
+						HttpOnly: true,
+						SameSite: http.SameSiteLaxMode,
+						Expires:  args.session.ExpirationDate,
+						Path:     "/api/v2/",
+					}
+
+					bs.
+						EXPECT().
+						RemoveUser(gomock.Any(), args.info).
+						Return(apperrors.ErrCouldNotRemoveBoardUser)
+
+					body := bytes.NewReader([]byte(fmt.Sprintf(
+						`{"user_id":%v, "board_id":%v}`,
+						args.info.UserID, args.info.BoardID,
+					)))
+
+					r := httptest.
+						NewRequest("POST", "/api/v2/board/user/remove/", body).
+						WithContext(
+							context.WithValue(
+								context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+								dto.UserObjKey, args.user,
+							),
+						)
+					r.AddCookie(cookie)
+
+					return r
+				},
+			},
+			wantErr:      true,
+			expectedCode: http.StatusInternalServerError,
+		},
+	}
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			ctrl := gomock.NewController(t)
+
+			mockAuthService := mock_service.NewMockIAuthService(ctrl)
+			mockBoardService := mock_service.NewMockIBoardService(ctrl)
+
+			testRequest := tt.args.expectations(mockBoardService, tt.args)
+
+			mux, err := createBoardMux(mockAuthService, mockBoardService)
+			require.Equal(t, nil, err)
+
+			testRequest.Header.Add("Access-Control-Request-Headers", "content-type")
+			testRequest.Header.Add("Origin", "localhost:8081")
+			w := httptest.NewRecorder()
+
+			mux.ServeHTTP(w, testRequest)
+
+			status := w.Result().StatusCode
+
+			require.EqualValuesf(t, tt.expectedCode, status,
+				"Expected code %d (%s), received code %d (%s)",
+				tt.expectedCode, http.StatusText(tt.expectedCode),
+				w.Code, http.StatusText(w.Code))
+		})
+	}
+}
