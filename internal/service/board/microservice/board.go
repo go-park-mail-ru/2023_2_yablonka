@@ -287,7 +287,7 @@ func (bs BoardService) RemoveUser(ctx context.Context, info dto.RemoveBoardUserI
 	logger.DebugFmt("got user", funcName, nodeName)
 
 	if !userAccess {
-		return apperrors.ErrNoBoardAccess
+		return apperrors.ErrUserNotInBoard
 	}
 	logger.DebugFmt("user in board", funcName, nodeName)
 
