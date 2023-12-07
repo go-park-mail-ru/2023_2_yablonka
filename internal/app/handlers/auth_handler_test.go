@@ -328,7 +328,7 @@ func TestUserHandler_Unit_LogIn(t *testing.T) {
 	}
 }
 
-func TestUserHandler_SignUp(t *testing.T) {
+func TestUserHandler_Unit_SignUp(t *testing.T) {
 	t.Parallel()
 
 	type args struct {
@@ -510,14 +510,6 @@ func TestUserHandler_SignUp(t *testing.T) {
 			wantErr:      true,
 			expectedCode: http.StatusInternalServerError,
 		},
-		// {
-		// 	name:           "User already exists",
-		// 	email:          "test@email.com",
-		// 	password:       "coolpassword",
-		// 	successful:     false,
-		// 	expectedCode: http.StatusConflict,
-		// 	expectedError:  apperrors.ErrUserAlreadyExists,
-		// },
 	}
 
 	for _, tt := range tests {
@@ -574,315 +566,434 @@ func TestUserHandler_SignUp(t *testing.T) {
 	}
 }
 
-// func TestUserHandler_LogOut(t *testing.T) {
-// 	t.Parallel()
+func TestUserHandler_Unit_LogOut(t *testing.T) {
+	t.Parallel()
 
-// 	tests := []struct {
-// 		name           string
-// 		token          string
-// 		password       string
-// 		successful     bool
-// 		hasCookie      bool
-// 		expiredCookie  bool
-// 		expectedCode int
-// 		expectedError  error
-// 	}{
-// 		{
-// 			name:           "Successful logout",
-// 			token:          "existing session",
-// 			successful:     true,
-// 			expectedCode: http.StatusOK,
-// 		},
-// 		{
-// 			name:           "No cookie",
-// 			successful:     false,
-// 			hasCookie:      false,
-// 			expectedCode: http.StatusUnauthorized,
-// 		},
-// 		{
-// 			name:           "Empty cookie",
-// 			successful:     false,
-// 			hasCookie:      true,
-// 			expectedCode: http.StatusUnauthorized,
-// 			expectedError:  apperrors.ErrSessionNotFound,
-// 		},
-// 		{
-// 			name:           "Expired cookie",
-// 			successful:     false,
-// 			hasCookie:      true,
-// 			expiredCookie:  true,
-// 			expectedCode: http.StatusUnauthorized,
-// 			expectedError:  apperrors.ErrSessionExpired,
-// 		},
-// 	}
+	type args struct {
+		session      dto.SessionToken
+		expectations func(as *mock_service.MockIAuthService, us *mock_service.MockIUserService, cs *mock_service.MockICSRFService, args args) *http.Cookie
+	}
+	tests := []struct {
+		name         string
+		args         args
+		wantErr      bool
+		expectedCode int
+	}{
+		{
+			name: "Successful logout",
+			args: args{
+				session: dto.SessionToken{
+					ID: "Mock LogOut session",
+				},
+				expectations: func(as *mock_service.MockIAuthService, us *mock_service.MockIUserService, cs *mock_service.MockICSRFService, args args) *http.Cookie {
+					cookie := &http.Cookie{
+						Name:     "tabula_user",
+						Value:    args.session.ID,
+						HttpOnly: true,
+						SameSite: http.SameSiteLaxMode,
+						Expires:  args.session.ExpirationDate,
+						Path:     "/api/v2/",
+					}
 
-// 	for _, test := range tests {
-// 		test := test
-// 		t.Run(tt.name, func(t *testing.T) {
-// 			t.Parallel()
+					as.
+						EXPECT().
+						VerifyAuth(gomock.Any(), args.session).
+						Return(dto.UserID{Value: uint64(1)}, nil)
 
-// 			ctrl := gomock.NewController(t)
+					as.
+						EXPECT().
+						LogOut(gomock.Any(), args.session).
+						Return(nil)
 
-// 			mockAuthService := mock_service.NewMockIAuthService(ctrl)
-// 			mockUserService := mock_service.NewMockIUserService(ctrl)
-// 			mockBoardService := mock_service.NewMockIBoardService(ctrl)
-// 			mockWorkspaceService := mock_service.NewMockIWorkspaceService(ctrl)
+					return cookie
+				},
+			},
+			wantErr:      false,
+			expectedCode: http.StatusOK,
+		},
+		{
+			name: "Bad request (No cookie)",
+			args: args{
+				expectations: func(as *mock_service.MockIAuthService, us *mock_service.MockIUserService, cs *mock_service.MockICSRFService, args args) *http.Cookie {
+					return &http.Cookie{}
+				},
+			},
+			wantErr:      true,
+			expectedCode: http.StatusUnauthorized,
+		},
+		{
+			name: "Bad request (Session not found)",
+			args: args{
+				session: dto.SessionToken{
+					ID: "Mock session",
+				},
+				expectations: func(as *mock_service.MockIAuthService, us *mock_service.MockIUserService, cs *mock_service.MockICSRFService, args args) *http.Cookie {
+					cookie := &http.Cookie{
+						Name:     "tabula_user",
+						Value:    args.session.ID,
+						HttpOnly: true,
+						SameSite: http.SameSiteLaxMode,
+						Expires:  args.session.ExpirationDate,
+						Path:     "/api/v2/",
+					}
 
-// 			body := bytes.NewReader([]byte(""))
+					as.
+						EXPECT().
+						VerifyAuth(gomock.Any(), args.session).
+						Return(dto.UserID{}, apperrors.ErrSessionNotFound)
 
-// 			r := httptest.NewRequest("DELETE", "/api/v2/auth/logout/", body)
-// 			r.Header.Add("Access-Control-Request-Headers", "content-type")
-// 			r.Header.Add("Origin", "localhost:8081")
-// 			w := httptest.NewRecorder()
+					return cookie
+				},
+			},
+			wantErr:      true,
+			expectedCode: http.StatusUnauthorized,
+		},
+		{
+			name: "Bad request (Session expired)",
+			args: args{
+				session: dto.SessionToken{
+					ID: "Mock LogOut session",
+				},
+				expectations: func(as *mock_service.MockIAuthService, us *mock_service.MockIUserService, cs *mock_service.MockICSRFService, args args) *http.Cookie {
+					cookie := &http.Cookie{
+						Name:     "tabula_user",
+						Value:    args.session.ID,
+						HttpOnly: true,
+						SameSite: http.SameSiteLaxMode,
+						Expires:  args.session.ExpirationDate,
+						Path:     "/api/v2/",
+					}
 
-// 			if !tt.wantErr {
-// 				cookie := &http.Cookie{
-// 					Name:     "tabula_user",
-// 					Value:    tt.token,
-// 					HttpOnly: true,
-// 					SameSite: http.SameSiteLaxMode,
-// 					Expires:  time.Now().Add(time.Duration(time.Hour)),
-// 					Path:     "/api/v2/",
-// 				}
+					as.
+						EXPECT().
+						VerifyAuth(gomock.Any(), args.session).
+						Return(dto.UserID{}, apperrors.ErrSessionExpired)
 
-// 				r.AddCookie(cookie)
+					return cookie
+				},
+			},
+			wantErr:      true,
+			expectedCode: http.StatusUnauthorized,
+		},
+		{
+			name: "Bad request (failed to delete session)",
+			args: args{
+				session: dto.SessionToken{
+					ID: "Mock LogOut session",
+				},
+				expectations: func(as *mock_service.MockIAuthService, us *mock_service.MockIUserService, cs *mock_service.MockICSRFService, args args) *http.Cookie {
+					cookie := &http.Cookie{
+						Name:     "tabula_user",
+						Value:    args.session.ID,
+						HttpOnly: true,
+						SameSite: http.SameSiteLaxMode,
+						Expires:  args.session.ExpirationDate,
+						Path:     "/api/v2/",
+					}
 
-// 				mockAuthService.
-// 					EXPECT().
-// 					VerifyAuth(gomock.Any(), dto.SessionToken{ID: tt.token}).
-// 					Return(dto.UserID{Value: uint64(1)}, nil)
+					as.
+						EXPECT().
+						VerifyAuth(gomock.Any(), args.session).
+						Return(dto.UserID{Value: uint64(1)}, nil)
 
-// 				mockAuthService.
-// 					EXPECT().
-// 					LogOut(gomock.Any(), dto.SessionToken{ID: tt.token}).
-// 					Return(nil)
-// 			} else if tt.hasCookie {
-// 				var duration time.Duration
-// 				mockAuthService.
-// 					EXPECT().
-// 					VerifyAuth(gomock.Any(), dto.SessionToken{ID: tt.token}).
-// 					Return(dto.UserID{Value: uint64(time.Second)}, tt.expectedError)
+					as.
+						EXPECT().
+						LogOut(gomock.Any(), args.session).
+						Return(apperrors.ErrSessionNotFound)
 
-// 				if tt.expiredCookie {
-// 					duration = 0 * time.Hour
-// 				} else {
-// 					duration = 1 * time.Hour
-// 				}
+					return cookie
+				},
+			},
+			wantErr:      true,
+			expectedCode: http.StatusUnauthorized,
+		},
+	}
 
-// 				cookie := &http.Cookie{
-// 					Name:     "tabula_user",
-// 					Value:    tt.token,
-// 					HttpOnly: true,
-// 					SameSite: http.SameSiteLaxMode,
-// 					Expires:  time.Now().Add(duration),
-// 					Path:     "/api/v2/",
-// 				}
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 
-// 				r.AddCookie(cookie)
-// 			}
+			ctrl := gomock.NewController(t)
 
-// 			mux, err := createMux(mockAuthService, mockUserService, mockBoardService, mockWorkspaceService)
-// 			require.Equal(t, nil, err)
+			mockAuthService := mock_service.NewMockIAuthService(ctrl)
+			mockUserService := mock_service.NewMockIUserService(ctrl)
+			mockCSRFService := mock_service.NewMockICSRFService(ctrl)
 
-// 			mux.ServeHTTP(w, r)
+			cookie := tt.args.expectations(mockAuthService, mockUserService, mockCSRFService, tt.args)
 
-// 			status := w.Result().StatusCode
+			body := bytes.NewReader([]byte(""))
 
-// 			require.EqualValuesf(t, tt.expectedCode, status,
-// 				"Expected code %d (%s), received code %d (%s)",
-// 				tt.expectedCode, http.StatusText(tt.expectedCode),
-// 				w.Code, http.StatusText(w.Code))
-// 		})
-// 	}
-// }
+			r := httptest.NewRequest("DELETE", "/api/v2/auth/logout/", body)
+			r.Header.Add("Access-Control-Request-Headers", "content-type")
+			r.Header.Add("Origin", "localhost:8081")
+			w := httptest.NewRecorder()
 
-// func TestUserHandler_ChangePassword(t *testing.T) {
-// 	t.Parallel()
+			r.AddCookie(cookie)
 
-// 	tests := []struct {
-// 		name           string
-// 		token          string
-// 		password       string
-// 		successful     bool
-// 		hasCookie      bool
-// 		expiredCookie  bool
-// 		expectedCode int
-// 		expectedError  error
-// 	}{}
+			mux, err := createMux(mockAuthService, mockUserService, mockCSRFService)
+			require.Equal(t, nil, err)
 
-// 	for _, test := range tests {
-// 		test := test
-// 		t.Run(tt.name, func(t *testing.T) {
-// 			t.Parallel()
+			mux.ServeHTTP(w, r)
 
-// 			ctrl := gomock.NewController(t)
+			status := w.Result().StatusCode
 
-// 			mockAuthService := mock_service.NewMockIAuthService(ctrl)
-// 			mockUserService := mock_service.NewMockIUserService(ctrl)
-// 			mockBoardService := mock_service.NewMockIBoardService(ctrl)
-// 			mockWorkspaceService := mock_service.NewMockIWorkspaceService(ctrl)
+			require.EqualValuesf(t, tt.expectedCode, status,
+				"Expected code %d (%s), received code %d (%s)",
+				tt.expectedCode, http.StatusText(tt.expectedCode),
+				w.Code, http.StatusText(w.Code))
 
-// 			mux, err := createMux(mockAuthService, mockUserService, mockBoardService, mockWorkspaceService)
-// 			require.Equal(t, nil, err)
-// 		})
-// 	}
-// }
+			if !tt.wantErr {
+				require.Equal(t, w.Result().Cookies()[0].Name, "tabula_user", "Expected cookie wasn't found")
+				generatedCookie := w.Result().Cookies()[0].Value
 
-// func TestUserHandler_ChangeProfile(t *testing.T) {
-// 	t.Parallel()
+				require.Empty(t, generatedCookie, "Cookie wasn't reset properly")
+			}
+		})
+	}
+}
 
-// 	newDescription := "New description"
-// 	newSurname := "New surname"
+func TestAuthHandler_Unit_VerifyAuthEndpoint(t *testing.T) {
+	t.Parallel()
 
-// 	tests := []struct {
-// 		name           string
-// 		userID         uint64
-// 		token          string
-// 		oldUserName    string
-// 		newUserName    string
-// 		oldUserSurname string
-// 		newUserSurname string
-// 		newDescription string
-// 		successful     bool
-// 		expiredCookie  bool
-// 		expectedCode int
-// 		expectedError  apperrors.ErrorResponse
-// 	}{
-// 		{
-// 			name:           "Successful update",
-// 			userID:         1,
-// 			token:          "session",
-// 			oldUserName:    "Old name",
-// 			newUserName:    "New name",
-// 			newUserSurname: newSurname,
-// 			newDescription: newDescription,
-// 			successful:     true,
-// 			expectedCode: http.StatusOK,
-// 		},
-// 		// {
-// 		// 	name:           "Unsuccessful update (Unauthorized)",
-// 		// 	userID:         2,
-// 		// 	successful:     false,
-// 		// 	expectedCode: http.StatusUnauthorized,
-// 		// 	expectedError:  apperrors.GenericUnauthorizedResponse,
-// 		// },
-// 	}
+	type args struct {
+		userID       dto.UserID
+		session      dto.SessionToken
+		csrf         dto.CSRFData
+		expectations func(as *mock_service.MockIAuthService, us *mock_service.MockIUserService, cs *mock_service.MockICSRFService, args args) *http.Cookie
+	}
+	tests := []struct {
+		name         string
+		args         args
+		wantErr      bool
+		expectedCode int
+	}{
+		{
+			name: "Successful verification",
+			args: args{
+				userID: dto.UserID{
+					Value: 1,
+				},
+				session: dto.SessionToken{
+					ID: "Mock session",
+				},
+				csrf: dto.CSRFData{
+					Token: "Mock CSRF token",
+				},
+				expectations: func(as *mock_service.MockIAuthService, us *mock_service.MockIUserService, cs *mock_service.MockICSRFService, args args) *http.Cookie {
+					cookie := &http.Cookie{
+						Name:     "tabula_user",
+						Value:    args.session.ID,
+						HttpOnly: true,
+						SameSite: http.SameSiteLaxMode,
+						Expires:  args.session.ExpirationDate,
+						Path:     "/api/v2/",
+					}
 
-// 	for _, test := range tests {
-// 		test := test
-// 		t.Run(tt.name, func(t *testing.T) {
-// 			t.Parallel()
+					as.
+						EXPECT().
+						VerifyAuth(gomock.Any(), args.session).
+						Return(args.userID, nil)
 
-// 			ctrl := gomock.NewController(t)
+					us.
+						EXPECT().
+						GetWithID(gomock.Any(), args.userID).
+						Return(&entities.User{
+							ID:           args.userID.Value,
+							Email:        "mock@mail.com",
+							PasswordHash: "mock hash",
+						}, nil)
 
-// 			mockAuthService := mock_service.NewMockIAuthService(ctrl)
-// 			mockUserService := mock_service.NewMockIUserService(ctrl)
-// 			mockBoardService := mock_service.NewMockIBoardService(ctrl)
-// 			mockWorkspaceService := mock_service.NewMockIWorkspaceService(ctrl)
+					cs.
+						EXPECT().
+						SetupCSRF(gomock.Any(), args.userID).
+						Return(args.csrf, nil)
 
-// 			mux, err := createMux(mockAuthService, mockUserService, mockBoardService, mockWorkspaceService)
-// 			require.Equal(t, nil, err)
+					return cookie
+				},
+			},
+			wantErr:      false,
+			expectedCode: http.StatusOK,
+		},
+		{
+			name: "Bad request (No cookie)",
+			args: args{
+				expectations: func(as *mock_service.MockIAuthService, us *mock_service.MockIUserService, cs *mock_service.MockICSRFService, args args) *http.Cookie {
+					return &http.Cookie{}
+				},
+			},
+			wantErr:      true,
+			expectedCode: http.StatusUnauthorized,
+		},
+		{
+			name: "Bad request (Session not found)",
+			args: args{
+				session: dto.SessionToken{
+					ID: "Mock session",
+				},
+				expectations: func(as *mock_service.MockIAuthService, us *mock_service.MockIUserService, cs *mock_service.MockICSRFService, args args) *http.Cookie {
+					cookie := &http.Cookie{
+						Name:     "tabula_user",
+						Value:    args.session.ID,
+						HttpOnly: true,
+						SameSite: http.SameSiteLaxMode,
+						Expires:  args.session.ExpirationDate,
+						Path:     "/api/v2/",
+					}
 
-// 			newProfileInfo := dto.UserProfileInfo{
-// 				UserID:      tt.userID,
-// 				Name:        tt.newUserName,
-// 				Surname:     tt.newUserSurname,
-// 				Description: tt.newDescription,
-// 			}
+					as.
+						EXPECT().
+						VerifyAuth(gomock.Any(), args.session).
+						Return(dto.UserID{}, apperrors.ErrSessionNotFound)
 
-// 			body := bytes.NewReader([]byte(
-// 				fmt.Sprintf(`{"user_id":%d, "name":"%s", "surname":"%s", "description":"%s"}`,
-// 					tt.userID, tt.newUserName, tt.newUserSurname, tt.newDescription),
-// 			))
+					return cookie
+				},
+			},
+			wantErr:      true,
+			expectedCode: http.StatusUnauthorized,
+		},
+		{
+			name: "Bad request (Session expired)",
+			args: args{
+				session: dto.SessionToken{
+					ID: "Mock LogOut session",
+				},
+				expectations: func(as *mock_service.MockIAuthService, us *mock_service.MockIUserService, cs *mock_service.MockICSRFService, args args) *http.Cookie {
+					cookie := &http.Cookie{
+						Name:     "tabula_user",
+						Value:    args.session.ID,
+						HttpOnly: true,
+						SameSite: http.SameSiteLaxMode,
+						Expires:  args.session.ExpirationDate,
+						Path:     "/api/v2/",
+					}
 
-// 			r := httptest.NewRequest("POST", "/api/v2/user/edit", body)
-// 			r.Header.Add("Access-Control-Request-Headers", "content-type")
-// 			r.Header.Add("Origin", "localhost:8081")
-// 			w := httptest.NewRecorder()
+					as.
+						EXPECT().
+						VerifyAuth(gomock.Any(), args.session).
+						Return(dto.UserID{}, apperrors.ErrSessionExpired)
 
-// 			mockUpdateP := mockUserService.EXPECT().UpdateProfile(gomock.Any(), newProfileInfo)
+					return cookie
+				},
+			},
+			wantErr:      true,
+			expectedCode: http.StatusUnauthorized,
+		},
+		{
+			name: "Bad request (user not found)",
+			args: args{
+				userID: dto.UserID{
+					Value: 1,
+				},
+				session: dto.SessionToken{
+					ID: "Mock session",
+				},
+				expectations: func(as *mock_service.MockIAuthService, us *mock_service.MockIUserService, cs *mock_service.MockICSRFService, args args) *http.Cookie {
+					cookie := &http.Cookie{
+						Name:     "tabula_user",
+						Value:    args.session.ID,
+						HttpOnly: true,
+						SameSite: http.SameSiteLaxMode,
+						Expires:  args.session.ExpirationDate,
+						Path:     "/api/v2/",
+					}
 
-// 			if !tt.wantErr {
-// 				cookie := &http.Cookie{
-// 					Name:     "tabula_user",
-// 					Value:    tt.token,
-// 					HttpOnly: true,
-// 					SameSite: http.SameSiteLaxMode,
-// 					Expires:  time.Now().Add(time.Duration(time.Hour)),
-// 					Path:     "/api/v2/",
-// 				}
+					as.
+						EXPECT().
+						VerifyAuth(gomock.Any(), args.session).
+						Return(args.userID, nil)
 
-// 				r.AddCookie(cookie)
+					us.
+						EXPECT().
+						GetWithID(gomock.Any(), args.userID).
+						Return(&entities.User{}, apperrors.ErrUserNotFound)
 
-// 				mockAuthService.
-// 					EXPECT().
-// 					VerifyAuth(gomock.Any(), dto.SessionToken{ID: tt.token}).
-// 					Return(dto.UserID{Value: tt.userID}, nil)
+					return cookie
+				},
+			},
+			wantErr:      true,
+			expectedCode: http.StatusUnauthorized,
+		},
+		{
+			name: "Bad request (CSRF not created)",
+			args: args{
+				userID: dto.UserID{
+					Value: 1,
+				},
+				session: dto.SessionToken{
+					ID: "Mock session",
+				},
+				expectations: func(as *mock_service.MockIAuthService, us *mock_service.MockIUserService, cs *mock_service.MockICSRFService, args args) *http.Cookie {
+					cookie := &http.Cookie{
+						Name:     "tabula_user",
+						Value:    args.session.ID,
+						HttpOnly: true,
+						SameSite: http.SameSiteLaxMode,
+						Expires:  args.session.ExpirationDate,
+						Path:     "/api/v2/",
+					}
 
-// 				mockUserService.
-// 					EXPECT().
-// 					GetWithID(gomock.Any(), dto.UserID{Value: tt.userID}).
-// 					Return(
-// 						&entities.User{
-// 							ID: tt.userID,
-// 						},
-// 						nil,
-// 					)
+					as.
+						EXPECT().
+						VerifyAuth(gomock.Any(), args.session).
+						Return(args.userID, nil)
 
-// 				mockUpdateP.Return(nil)
-// 			} else {
-// 				mockUpdateP.Return(apperrors.ErrUserNotUpdated)
-// 			}
+					us.
+						EXPECT().
+						GetWithID(gomock.Any(), args.userID).
+						Return(&entities.User{
+							ID:           args.userID.Value,
+							Email:        "mock@mail.com",
+							PasswordHash: "mock hash",
+						}, nil)
 
-// 			mux.ServeHTTP(w, r)
+					cs.
+						EXPECT().
+						SetupCSRF(gomock.Any(), args.userID).
+						Return(dto.CSRFData{}, apperrors.ErrCSRFNotCreated)
 
-// 			status := w.Result().StatusCode
+					return cookie
+				},
+			},
+			wantErr:      true,
+			expectedCode: http.StatusInternalServerError,
+		},
+	}
 
-// 			require.EqualValuesf(t, tt.expectedCode, status,
-// 				"Expected code %d (%s), received code %d (%s)",
-// 				tt.expectedCode, http.StatusText(tt.expectedCode),
-// 				w.Code, http.StatusText(w.Code))
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 
-// 			if !tt.wantErr {
-// 				resultBody := w.Body.Bytes()
-// 				expectedBody := dto.JSONResponse{
-// 					Body: dto.JSONMap{},
-// 				}
-// 				err := json.Unmarshal(resultBody, &expectedBody)
-// 				require.NoError(t, err)
-// 			}
-// 		})
-// 	}
-// }
+			ctrl := gomock.NewController(t)
 
-// func TestUserHandler_ChangeAvatar(t *testing.T) {
-// 	t.Parallel()
+			mockAuthService := mock_service.NewMockIAuthService(ctrl)
+			mockUserService := mock_service.NewMockIUserService(ctrl)
+			mockCSRFService := mock_service.NewMockICSRFService(ctrl)
 
-// 	tests := []struct {
-// 		name           string
-// 		token          string
-// 		password       string
-// 		successful     bool
-// 		hasCookie      bool
-// 		expiredCookie  bool
-// 		expectedCode int
-// 		expectedError  error
-// 	}{}
+			cookie := tt.args.expectations(mockAuthService, mockUserService, mockCSRFService, tt.args)
 
-// 	for _, test := range tests {
-// 		test := test
-// 		t.Run(tt.name, func(t *testing.T) {
-// 			t.Parallel()
+			mux, err := createMux(mockAuthService, mockUserService, mockCSRFService)
+			require.Equal(t, nil, err)
 
-// 			ctrl := gomock.NewController(t)
+			body := bytes.NewReader([]byte(""))
 
-// 			mockAuthService := mock_service.NewMockIAuthService(ctrl)
-// 			mockUserService := mock_service.NewMockIUserService(ctrl)
-// 			mockBoardService := mock_service.NewMockIBoardService(ctrl)
-// 			mockWorkspaceService := mock_service.NewMockIWorkspaceService(ctrl)
+			r := httptest.NewRequest("GET", "/api/v2/auth/verify", body)
+			r.Header.Add("Access-Control-Request-Headers", "content-type")
+			r.Header.Add("Origin", "localhost:8081")
+			w := httptest.NewRecorder()
 
-// 			mux, err := createMux(mockAuthService, mockUserService, mockBoardService, mockWorkspaceService)
-// 			require.Equal(t, nil, err)
-// 		})
-// 	}
-// }
+			r.AddCookie(cookie)
+
+			mux.ServeHTTP(w, r)
+
+			status := w.Result().StatusCode
+
+			require.EqualValuesf(t, tt.expectedCode, status,
+				"Expected code %d (%s), received code %d (%s)",
+				tt.expectedCode, http.StatusText(tt.expectedCode),
+				w.Code, http.StatusText(w.Code))
+
+		})
+	}
+}
