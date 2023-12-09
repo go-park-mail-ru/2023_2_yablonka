@@ -59,11 +59,13 @@ var (
 	// ErrCouldNotGetQuestionType ошибка: не удалось получить тип вопроса CSAT в БД
 	ErrCouldNotGetQuestionType = errors.New("couldn't get question type")
 	// ErrCouldNotGetQuestionType ошибка: не удалось обновить вопрос CSAT в БД
-	ErrQuestionNotUpdated = errors.New("couldn't обновить question")
+	ErrQuestionNotUpdated = errors.New("couldn't update question")
 	// ErrCouldNotGetQuestionType ошибка: не удалось удалить вопрос CSAT в БД
 	ErrQuestionNotDeleted = errors.New("couldn't delete question")
 	// ErrAnswerRatingTooBig ошибка: у полученного ответа рейтинг выше доступного для вопроса
 	ErrAnswerRatingTooBig = errors.New("provided rating is too big for this question type")
+	// ErrCouldNotStoreAnswer ошибка: не удалось сохранить ответ
+	ErrCouldNotStoreAnswer = errors.New("couldn't store answer")
 )
 
 // Ошибки, связанные с AuthService
@@ -304,6 +306,7 @@ var ErrorMap = map[error]ErrorResponse{
 	ErrFailedToSaveFile:         InternalServerErrorResponse,
 	ErrFailedToDeleteFile:       InternalServerErrorResponse,
 	ErrAnswerRatingTooBig:       BadRequestResponse,
+	ErrCouldNotStoreAnswer:      InternalServerErrorResponse,
 }
 
 func ErrorJSON(err ErrorResponse) []byte {

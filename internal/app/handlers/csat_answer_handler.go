@@ -48,19 +48,10 @@ func (ah CSATAnswerHandler) Create(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		logger.Error(errorMessage + err.Error())
 		logger.Info(failBorder)
-		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
+		apperrors.ReturnError(apperrors.BadRequestResponse, w, r)
 		return
 	}
 	logger.DebugFmt("JSON Decoded", funcName, nodeName)
-
-	err = ah.qs.CheckRating(rCtx, CSATAnswerInfo)
-	if err != nil {
-		logger.Error(errorMessage + err.Error())
-		logger.Info(failBorder)
-		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
-		return
-	}
-	logger.DebugFmt("Rating checked", funcName, nodeName)
 
 	user, ok := rCtx.Value(dto.UserObjKey).(*entities.User)
 	if !ok {
@@ -70,6 +61,15 @@ func (ah CSATAnswerHandler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	logger.DebugFmt("User object acquired from context", funcName, nodeName)
+
+	err = ah.qs.CheckRating(rCtx, CSATAnswerInfo)
+	if err != nil {
+		logger.Error(errorMessage + err.Error())
+		logger.Info(failBorder)
+		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
+		return
+	}
+	logger.DebugFmt("Rating checked", funcName, nodeName)
 
 	CSATAnswer := dto.NewCSATAnswer{
 		UserID:     user.ID,
