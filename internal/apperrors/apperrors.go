@@ -192,6 +192,12 @@ var (
 	ErrUserAlreadyInTask = errors.New("user already in task")
 )
 
+// Ошибки, связанные с CommentService
+var (
+	// ErrCommentNotCreated ошибка: не удалось создать элемент чеклиста в БД
+	ErrCommentNotCreated = errors.New("comment couldn't be created")
+)
+
 // ErrorResponse
 // структура для обёртки ошибок приложения в ответ бэкэнд-сервера со статусом
 type ErrorResponse struct {
@@ -290,6 +296,7 @@ var ErrorMap = map[error]ErrorResponse{
 	ErrChecklistItemNotCreated:  InternalServerErrorResponse,
 	ErrChecklistItemNotUpdated:  InternalServerErrorResponse,
 	ErrChecklistItemNotDeleted:  InternalServerErrorResponse,
+	ErrCommentNotCreated:        InternalServerErrorResponse,
 	ErrUserAlreadyInBoard:       StatusConflictResponse,
 	ErrUserNotInBoard:           StatusConflictResponse,
 	ErrUserAlreadyInTask:        StatusConflictResponse,
