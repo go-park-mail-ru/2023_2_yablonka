@@ -60,9 +60,9 @@ func (us UserService) RegisterUser(ctx context.Context, info *AuthInfo) (*Regist
 		response.Response = &User{}
 		return response, nil
 	}
-	us.logger.Debug("User doesn't exist", funcName, nodeName)
+	us.logger.DebugFmt("User doesn't exist", funcName, nodeName)
 
-	us.logger.Debug("Creating user", funcName, nodeName)
+	us.logger.DebugFmt("Creating user", funcName, nodeName)
 	user, err := us.storage.Create(sCtx, dto.SignupInfo{
 		Email:        info.Email,
 		PasswordHash: hashFromAuthInfo(info.Email, info.Password),
@@ -89,19 +89,19 @@ func (us UserService) CheckPassword(ctx context.Context, info *AuthInfo) (*Check
 
 	user, err := us.storage.GetWithLogin(sCtx, dto.UserLogin{Value: info.Email})
 	if err != nil {
-		us.logger.Debug("User not found", funcName, nodeName)
+		us.logger.DebugFmt("User not found", funcName, nodeName)
 		response.Code = UserServiceErrorCodes[err]
 		response.Response = &User{}
 		return response, nil
 	}
-	us.logger.Debug("User found", funcName, nodeName)
+	us.logger.DebugFmt("User found", funcName, nodeName)
 
 	if user.PasswordHash != hashFromAuthInfo(info.Email, info.Password) {
 		response.Code = UserServiceErrorCodes[apperrors.ErrWrongPassword]
 		response.Response = &User{}
 		return response, nil
 	}
-	us.logger.Debug("Password match", funcName, nodeName)
+	us.logger.DebugFmt("Password match", funcName, nodeName)
 
 	response.Code = UserServiceErrorCodes[nil]
 	response.Response = convertUser(user)
@@ -119,12 +119,12 @@ func (us UserService) GetWithID(ctx context.Context, id *UserID) (*GetWithIDResp
 
 	user, err := us.storage.GetWithID(sCtx, dto.UserID{Value: id.Value})
 	if err != nil {
-		us.logger.Debug("Failed to get user with error "+err.Error(), funcName, nodeName)
+		us.logger.DebugFmt("Failed to get user with error "+err.Error(), funcName, nodeName)
 		response.Code = UserServiceErrorCodes[err]
 		response.Response = &User{}
 		return response, nil
 	}
-	us.logger.Debug("Got user", funcName, nodeName)
+	us.logger.DebugFmt("Got user", funcName, nodeName)
 
 	response.Code = UserServiceErrorCodes[nil]
 	response.Response = convertUser(user)
@@ -145,13 +145,13 @@ func (us UserService) UpdatePassword(ctx context.Context, info *PasswordChangeIn
 		response.Code = UserServiceErrorCodes[err]
 		return response, nil
 	}
-	us.logger.Debug("User found", funcName, nodeName)
+	us.logger.DebugFmt("User found", funcName, nodeName)
 
 	if oldLoginInfo.PasswordHash != hashFromAuthInfo(oldLoginInfo.Email, info.OldPassword) {
 		response.Code = UserServiceErrorCodes[apperrors.ErrWrongPassword]
 		return response, nil
 	}
-	us.logger.Debug("Old password verified", funcName, nodeName)
+	us.logger.DebugFmt("Old password verified", funcName, nodeName)
 
 	err = us.storage.UpdatePassword(sCtx, dto.PasswordHashesInfo{
 		UserID:          info.UserID,
@@ -191,20 +191,23 @@ func (us UserService) UpdateAvatar(ctx context.Context, info *AvatarChangeInfo) 
 	fileName := hashFromFileInfo(info.Filename, strconv.FormatUint(info.UserID, 10), info.Mimetype)
 
 	fileLocation := "img/user_avatars/" + fileName + ".png"
-	us.logger.Debug("Relative path: "+fileLocation, funcName, nodeName)
-	avatarUrlInfo := dto.ImageUrlInfo{
+	cwd, _ := os.Getwd()
+	us.logger.DebugFmt("Relative path: "+fileLocation, funcName, nodeName)
+	us.logger.DebugFmt("CWD: "+cwd, funcName, nodeName)
+	avatarUrlInfo := dto.UserImageUrlInfo{
 		ID:  info.UserID,
 		Url: fileLocation,
 	}
+	us.logger.DebugFmt("Full URL: "+avatarUrlInfo.Url, funcName, nodeName)
 	f, err := os.Create(fileLocation)
 	if err != nil {
-		us.logger.Debug("Failed to create file with error: "+err.Error(), funcName, nodeName)
+		us.logger.DebugFmt("Failed to create file with error: "+err.Error(), funcName, nodeName)
 		response.Code = UserServiceErrorCodes[apperrors.ErrFailedToCreateFile]
 		response.Response = &UrlObj{}
 		return response, nil
 	}
 
-	us.logger.Debug(fmt.Sprintf("Writing %v bytes", len(info.Avatar)), funcName, nodeName)
+	us.logger.DebugFmt(fmt.Sprintf("Writing %v bytes", len(info.Avatar)), funcName, nodeName)
 	_, err = f.Write(info.Avatar)
 	if err != nil {
 		response.Code = UserServiceErrorCodes[apperrors.ErrFailedToSaveFile]
@@ -218,7 +221,7 @@ func (us UserService) UpdateAvatar(ctx context.Context, info *AvatarChangeInfo) 
 	if err != nil {
 		errDelete := os.Remove(fileLocation)
 		if errDelete != nil {
-			us.logger.Debug("Failed to remove file after unsuccessful update with error: "+err.Error(), funcName, nodeName)
+			us.logger.DebugFmt("Failed to remove file after unsuccessful update with error: "+err.Error(), funcName, nodeName)
 			response.Code = UserServiceErrorCodes[apperrors.ErrFailedToDeleteFile]
 			response.Response = &UrlObj{}
 			return response, nil

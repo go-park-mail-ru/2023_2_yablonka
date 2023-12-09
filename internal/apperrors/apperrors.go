@@ -110,6 +110,8 @@ var (
 	ErrBoardNotCreated = errors.New("board couldn't be created")
 	// ErrUserAlreadyInBoard ошибка: пользователь уже есть в доске
 	ErrUserAlreadyInBoard = errors.New("user already in board")
+	// ErrUserNotInBoard ошибка: пользователя нет в доске
+	ErrUserNotInBoard = errors.New("user not in board")
 	// ErrWorkspaceNotDeleted ошибка: не удалось получить рабочее прострнство в БД
 	ErrBoardNotUpdated = errors.New("board couldn't be updated")
 	// ErrWorkspaceNotDeleted ошибка: не удалось удалить рабочее прострнство в БД
@@ -188,6 +190,12 @@ var (
 	ErrCouldNotRemoveTaskUser = errors.New("couldn't remove user from task")
 	// ErrUserAlreadyInTask ошибка: пользователь уже есть в задании
 	ErrUserAlreadyInTask = errors.New("user already in task")
+)
+
+// Ошибки, связанные с CommentService
+var (
+	// ErrCommentNotCreated ошибка: не удалось создать элемент чеклиста в БД
+	ErrCommentNotCreated = errors.New("comment couldn't be created")
 )
 
 // ErrorResponse
@@ -270,6 +278,9 @@ var ErrorMap = map[error]ErrorResponse{
 	ErrBoardNotDeleted:          InternalServerErrorResponse,
 	ErrCouldNotGetBoard:         InternalServerErrorResponse,
 	ErrNoBoardAccess:            ForbiddenResponse,
+	ErrCouldNotAddBoardUser:     InternalServerErrorResponse,
+	ErrCouldNotRemoveBoardUser:  InternalServerErrorResponse,
+	ErrCouldNotAddTaskUser:      InternalServerErrorResponse,
 	ErrTaskNotCreated:           InternalServerErrorResponse,
 	ErrTaskNotUpdated:           InternalServerErrorResponse,
 	ErrTaskNotDeleted:           InternalServerErrorResponse,
@@ -285,7 +296,9 @@ var ErrorMap = map[error]ErrorResponse{
 	ErrChecklistItemNotCreated:  InternalServerErrorResponse,
 	ErrChecklistItemNotUpdated:  InternalServerErrorResponse,
 	ErrChecklistItemNotDeleted:  InternalServerErrorResponse,
+	ErrCommentNotCreated:        InternalServerErrorResponse,
 	ErrUserAlreadyInBoard:       StatusConflictResponse,
+	ErrUserNotInBoard:           StatusConflictResponse,
 	ErrUserAlreadyInTask:        StatusConflictResponse,
 	ErrFailedToCreateFile:       InternalServerErrorResponse,
 	ErrFailedToSaveFile:         InternalServerErrorResponse,
