@@ -12,7 +12,7 @@ func JsonHeader(next http.Handler) http.Handler {
 		funcName := "JsonHeader"
 
 		w.Header().Set("Content-Type", "application/json")
-		logger.Debug("Content type header set", funcName, "middleware")
+		logger.DebugFmt("Content type header set", funcName, "middleware")
 
 		next.ServeHTTP(w, r)
 	})
