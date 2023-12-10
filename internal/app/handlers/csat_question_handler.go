@@ -210,7 +210,7 @@ func (qh CSATQuestionHandler) GetStats(w http.ResponseWriter, r *http.Request) {
 
 	logger.Info("---------------------------------- Getting CSAT question stats ----------------------------------")
 
-	answers, err := qh.qs.GetStats(rCtx)
+	questions, err := qh.qs.GetStats(rCtx)
 	if err != nil {
 		logger.Error(errorMessage + err.Error())
 		logger.Info(failBorder)
@@ -221,7 +221,7 @@ func (qh CSATQuestionHandler) GetStats(w http.ResponseWriter, r *http.Request) {
 
 	response := dto.JSONResponse{
 		Body: dto.JSONMap{
-			"questions": answers,
+			"questions": questions,
 		},
 	}
 	err = WriteResponse(response, w, r)

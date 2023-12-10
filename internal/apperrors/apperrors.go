@@ -307,6 +307,7 @@ var ErrorMap = map[error]ErrorResponse{
 	ErrFailedToDeleteFile:       InternalServerErrorResponse,
 	ErrAnswerRatingTooBig:       BadRequestResponse,
 	ErrCouldNotStoreAnswer:      InternalServerErrorResponse,
+	ErrCouldNotGetQuestions:     InternalServerErrorResponse,
 }
 
 func ErrorJSON(err ErrorResponse) []byte {
