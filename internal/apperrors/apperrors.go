@@ -310,6 +310,7 @@ var ErrorMap = map[error]ErrorResponse{
 	ErrCouldNotStoreAnswer:      InternalServerErrorResponse,
 	ErrCouldNotRollback:         InternalServerErrorResponse,
 	ErrCouldNotGetQuestions:     InternalServerErrorResponse,
+	ErrCouldNotCreateQuestion:   InternalServerErrorResponse,
 }
 
 func ErrorJSON(err ErrorResponse) []byte {

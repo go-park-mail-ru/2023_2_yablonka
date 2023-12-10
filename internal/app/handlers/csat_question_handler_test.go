@@ -1,7 +1,9 @@
 package handlers_test
 
 import (
+	"bytes"
 	"context"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"server/internal/app/handlers"
@@ -224,48 +226,124 @@ func TestCSATQuestionHandler_Unit_GetQuestions(t *testing.T) {
 	}
 }
 
-// func TestCSATQuestionHandler_Unit_Create(t *testing.T) {
-// 	t.Parallel()
+func TestCSATQuestionHandler_Unit_Create(t *testing.T) {
+	t.Parallel()
 
-// 	type args struct {
-// 		expectations func(cs *mock_service.MockICSATQuestionService, args args) *http.Request
-// 	}
-// 	tests := []struct {
-// 		name         string
-// 		args         args
-// 		wantErr      bool
-// 		expectedCode int
-// 	}{
-// 		// TODO Add cases
-// 	}
-// 	for _, tt := range tests {
-// 		tt := tt
-// 		t.Run(tt.name, func(t *testing.T) {
-// 			t.Parallel()
-// 			ctrl := gomock.NewController(t)
+	type args struct {
+		newQuestion    dto.NewCSATQuestionInfo
+		resultQuestion dto.CSATQuestionFull
+		expectations   func(cs *mock_service.MockICSATQuestionService, args args) *http.Request
+	}
+	tests := []struct {
+		name         string
+		args         args
+		wantErr      bool
+		expectedCode int
+	}{
+		{
+			name: "Successful create",
+			args: args{
+				newQuestion: dto.NewCSATQuestionInfo{
+					Content: "Mock new question",
+					Type:    "Mock new question type",
+				},
+				resultQuestion: dto.CSATQuestionFull{
+					ID:      uint64(1),
+					Content: "Mock new question",
+					Type:    "Mock new question type",
+				},
+				expectations: func(qs *mock_service.MockICSATQuestionService, args args) *http.Request {
+					body := bytes.NewReader([]byte(fmt.Sprintf(`{"content":"%s", "type":"%s"}`,
+						args.newQuestion.Content, args.newQuestion.Type)))
 
-// 			mockCSATQuestionService := mock_service.NewMockICSATQuestionService(ctrl)
+					r := httptest.
+						NewRequest("POST", "/csat/question/create/", body).
+						WithContext(
+							context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+						)
 
-// 			testRequest := tt.args.expectations(mockCSATQuestionService, tt.args)
+					qs.
+						EXPECT().
+						Create(gomock.Any(), args.newQuestion).
+						Return(&args.resultQuestion, nil)
 
-// 			mux, err := createCSATQuestionMux(mockCSATQuestionService)
-// 			require.Equal(t, nil, err)
+					return r
+				},
+			},
+			wantErr:      false,
+			expectedCode: http.StatusOK,
+		},
+		{
+			name: "Bad request (invalid JSON)",
+			args: args{
+				expectations: func(qs *mock_service.MockICSATQuestionService, args args) *http.Request {
+					body := bytes.NewReader([]byte(""))
 
-// 			testRequest.Header.Add("Access-Control-Request-Headers", "content-type")
-// 			testRequest.Header.Add("Origin", "localhost:8081")
-// 			w := httptest.NewRecorder()
+					r := httptest.
+						NewRequest("POST", "/csat/question/create/", body).
+						WithContext(
+							context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+						)
 
-// 			mux.ServeHTTP(w, testRequest)
+					return r
+				},
+			},
+			wantErr:      true,
+			expectedCode: http.StatusBadRequest,
+		},
+		{
+			name: "Bad request (could not get questions)",
+			args: args{
+				expectations: func(qs *mock_service.MockICSATQuestionService, args args) *http.Request {
+					body := bytes.NewReader([]byte(fmt.Sprintf(`{"content":"%s", "type":"%s"}`,
+						args.newQuestion.Content, args.newQuestion.Type)))
 
-// 			status := w.Result().StatusCode
+					r := httptest.
+						NewRequest("POST", "/csat/question/create/", body).
+						WithContext(
+							context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+						)
 
-// 			require.EqualValuesf(t, tt.expectedCode, status,
-// 				"Expected code %d (%s), received code %d (%s)",
-// 				tt.expectedCode, http.StatusText(tt.expectedCode),
-// 				w.Code, http.StatusText(w.Code))
-// 		})
-// 	}
-// }
+					qs.
+						EXPECT().
+						Create(gomock.Any(), args.newQuestion).
+						Return(&dto.CSATQuestionFull{}, apperrors.ErrCouldNotCreateQuestion)
+
+					return r
+				},
+			},
+			wantErr:      true,
+			expectedCode: http.StatusInternalServerError,
+		},
+	}
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			ctrl := gomock.NewController(t)
+
+			mockCSATQuestionService := mock_service.NewMockICSATQuestionService(ctrl)
+
+			testRequest := tt.args.expectations(mockCSATQuestionService, tt.args)
+
+			mux, err := createCSATQuestionMux(mockCSATQuestionService)
+			require.Equal(t, nil, err)
+
+			testRequest.Header.Add("Access-Control-Request-Headers", "content-type")
+			testRequest.Header.Add("Origin", "localhost:8081")
+			w := httptest.NewRecorder()
+
+			mux.ServeHTTP(w, testRequest)
+
+			status := w.Result().StatusCode
+
+			require.EqualValuesf(t, tt.expectedCode, status,
+				"Expected code %d (%s), received code %d (%s)",
+				tt.expectedCode, http.StatusText(tt.expectedCode),
+				w.Code, http.StatusText(w.Code))
+		})
+	}
+}
 
 // func TestCSATQuestionHandler_Unit_Update(t *testing.T) {
 // 	t.Parallel()
