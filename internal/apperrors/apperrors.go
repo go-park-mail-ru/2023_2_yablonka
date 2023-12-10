@@ -98,6 +98,7 @@ var (
 	ErrCouldNotBuildQuery       = errors.New("error building an SQL query")
 	ErrCouldNotStartTransaction = errors.New("error starting a transaction")
 	ErrCouldNotCollectRows      = errors.New("couldn't collect rows")
+	ErrCouldNotRollback         = errors.New("couldn't rollback a transaction")
 	// ErrFailedToCreateFile ошибка: не удалось создать файл
 	ErrFailedToCreateFile = errors.New("failed to create file")
 	// ErrFailedToSaveFile ошибка: не удалось сохранить файл
@@ -307,6 +308,7 @@ var ErrorMap = map[error]ErrorResponse{
 	ErrFailedToDeleteFile:       InternalServerErrorResponse,
 	ErrAnswerRatingTooBig:       BadRequestResponse,
 	ErrCouldNotStoreAnswer:      InternalServerErrorResponse,
+	ErrCouldNotRollback:         InternalServerErrorResponse,
 	ErrCouldNotGetQuestions:     InternalServerErrorResponse,
 }
 

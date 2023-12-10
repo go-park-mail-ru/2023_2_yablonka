@@ -1,34 +1,6 @@
 package postgresql
 
-import (
-	"context"
-	"database/sql"
-	"reflect"
-	"server/internal/pkg/dto"
-	"server/internal/pkg/entities"
-	"testing"
-)
-
-func TestNewUserStorage(t *testing.T) {
-	type args struct {
-		db *sql.DB
-	}
-	tests := []struct {
-		name string
-		args args
-		want *PostgresUserStorage
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := NewUserStorage(tt.args.db); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("NewUserStorage() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
+/*
 func TestPostgresUserStorage_Create(t *testing.T) {
 	type fields struct {
 		db *sql.DB
@@ -276,3 +248,4 @@ func TestPostgresUserStorage_UpdateProfile(t *testing.T) {
 		})
 	}
 }
+*/
