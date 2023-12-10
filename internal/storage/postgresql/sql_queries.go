@@ -34,10 +34,10 @@ var (
 	newTaskFields    = []string{"id_list", "name", "list_position"}
 	allSessionFields = []string{"id_user", "expiration_date"}
 
-	allWorkspaceAndBoardFields = []string{
-		"public.workspace.id", "public.workspace.name", "public.workspace.description", "public.workspace.date_created",
-		"public.board.id", "public.board.name", "public.board.description", "public.board.date_created", "public.board.thumbnail_url",
-	}
+	// allWorkspaceAndBoardFields = []string{
+	// 	"public.workspace.id", "public.workspace.name", "public.workspace.description", "public.workspace.date_created",
+	// 	"public.board.id", "public.board.name", "public.board.description", "public.board.date_created", "public.board.thumbnail_url",
+	// }
 
 	// userOwnedWorkspaceFields = []string{
 	// 	"public.workspace.id", "public.workspace.name", "public.workspace.date_created", "public.workspace.description",
