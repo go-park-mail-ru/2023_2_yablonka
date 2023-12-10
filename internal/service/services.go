@@ -33,23 +33,6 @@ type Services struct {
 	CSATAnswer    ICSATSAnswerService
 }
 
-func NewEmbeddedServices(storages *storage.Storages, config config.SessionConfig) *Services {
-	return &Services{
-		Auth:          auth.NewEmbeddedAuthService(storages.Auth, config),
-		User:          user.NewEmbeddedUserService(storages.User),
-		Board:         board.NewEmbeddedBoardService(storages.Board, storages.Task, storages.User, storages.Comment, storages.Checklist, storages.ChecklistItem),
-		CSRF:          csrf.NewEmbeddedCSRFService(storages.CSRF, config),
-		List:          list.NewEmbeddedListService(storages.List),
-		Task:          task.NewEmbeddedTaskService(storages.Task),
-		Comment:       comment.NewEmbeddedCommentService(storages.Comment),
-		Checklist:     checklist.NewEmbeddedChecklistService(storages.Checklist),
-		ChecklistItem: checklist_item.NewEmbeddedChecklistItemService(storages.ChecklistItem),
-		Workspace:     workspace.NewEmbeddedWorkspaceService(storages.Workspace),
-		CSATAnswer:    csat.NewEmbeddedCSATAnswerService(storages.CSATAnswer),
-		CSATQuestion:  csat.NewEmbeddedCSATQuestionService(storages.CSATQuestion),
-	}
-}
-
 func NewMicroServices(storages *storage.Storages, config config.SessionConfig, conn *grpc.ClientConn) *Services {
 	return &Services{
 		Auth:          auth.NewMicroAuthService(storages.Auth, config, conn),
