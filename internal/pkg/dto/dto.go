@@ -172,8 +172,15 @@ type AvatarChangeInfo struct {
 
 // ImageRequest
 // структура для изменения аватарки
-type ImageUrlInfo struct {
+type UserImageUrlInfo struct {
 	ID  uint64 `json:"user_id"`
+	Url string `json:"avatar_url"`
+}
+
+// ImageRequest
+// структура для изменения аватарки
+type BoardImageUrlInfo struct {
+	ID  uint64 `json:"board_id"`
 	Url string `json:"avatar_url"`
 }
 
@@ -407,6 +414,18 @@ type UserID struct {
 	Value uint64 `json:"user_id"`
 }
 
+type GuestWorkspaceReturn struct {
+	WorkspaceID          uint64
+	WorkspaceName        string
+	WorkspaceDateCreated time.Time
+	UserOwnerInfo
+}
+
+type BoardReturn struct {
+	WorkspaceID uint64
+	WorkspaceBoardInfo
+}
+
 // SessionToken
 // DTO для токена сессии
 type SessionToken struct {
@@ -430,9 +449,9 @@ type CSRFToken struct {
 // NewWorkspaceInfo
 // DTO для нового рабочего пространства
 type NewWorkspaceInfo struct {
-	Name        *string `json:"name"`
-	Description *string `json:"description"`
-	OwnerID     uint64  `json:"owner_id"`
+	Name        string `json:"name"`
+	Description string `json:"description"`
+	OwnerID     uint64 `json:"owner_id"`
 }
 
 // ListID

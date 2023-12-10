@@ -80,15 +80,15 @@ func (s PostgresChecklistStorage) ReadMany(ctx context.Context, ids dto.Checklis
 		log.Println("Storage -- Failed to build query with error", err.Error())
 		return nil, apperrors.ErrCouldNotBuildQuery
 	}
-	logger.Debug("Built query\n\t"+query+"\nwith args\n\t"+fmt.Sprintf("%+v", args), funcName, nodeName)
+	logger.DebugFmt("Built query\n\t"+query+"\nwith args\n\t"+fmt.Sprintf("%+v", args), funcName, nodeName)
 
 	rows, err := s.db.Query(query, args...)
 	if err != nil {
-		logger.Debug(err.Error(), funcName, nodeName)
+		logger.DebugFmt(err.Error(), funcName, nodeName)
 		return nil, apperrors.ErrCouldNotCollectRows
 	}
 	defer rows.Close()
-	logger.Debug("Got checklist rows", funcName, nodeName)
+	logger.DebugFmt("Got checklist rows", funcName, nodeName)
 
 	checklists := []dto.ChecklistInfo{}
 	for rows.Next() {
@@ -102,12 +102,12 @@ func (s PostgresChecklistStorage) ReadMany(ctx context.Context, ids dto.Checklis
 			(*pq.StringArray)(&checklist.Items),
 		)
 		if err != nil {
-			logger.Debug(err.Error(), funcName, nodeName)
+			logger.DebugFmt(err.Error(), funcName, nodeName)
 			return nil, apperrors.ErrCouldNotGetChecklist
 		}
 		checklists = append(checklists, checklist)
 	}
-	logger.Debug("Got checklists from DB", funcName, nodeName)
+	logger.DebugFmt("Got checklists from DB", funcName, nodeName)
 
 	return &checklists, nil
 }
@@ -154,14 +154,14 @@ func (s PostgresChecklistStorage) Delete(ctx context.Context, id dto.ChecklistID
 	if err != nil {
 		return apperrors.ErrCouldNotBuildQuery
 	}
-	logger.Debug("Built query\n\t"+sql+"\nwith args\n\t"+fmt.Sprintf("%+v", args), funcName, nodeName)
+	logger.DebugFmt("Built query\n\t"+sql+"\nwith args\n\t"+fmt.Sprintf("%+v", args), funcName, nodeName)
 
 	_, err = s.db.Exec(sql, args...)
 	if err != nil {
-		logger.Debug("Failed to delete checklist with error "+err.Error(), funcName, nodeName)
+		logger.DebugFmt("Failed to delete checklist with error "+err.Error(), funcName, nodeName)
 		return apperrors.ErrChecklistNotDeleted
 	}
-	logger.Debug("Checklist deleted", funcName, nodeName)
+	logger.DebugFmt("Checklist deleted", funcName, nodeName)
 
 	return nil
 }

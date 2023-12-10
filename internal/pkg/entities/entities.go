@@ -38,7 +38,7 @@ type User struct {
 type Workspace struct {
 	ID          uint64               `json:"id"`
 	Name        string               `json:"name"`
-	Description *string              `json:"description"`
+	Description string               `json:"description"`
 	DateCreated time.Time            `json:"date_created"`
 	Users       []dto.UserPublicInfo `json:"users"`
 	Boards      []Board              `json:"boards"`
