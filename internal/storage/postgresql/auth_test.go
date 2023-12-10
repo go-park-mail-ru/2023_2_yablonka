@@ -19,7 +19,7 @@ import (
 
 func getLogger() logging.ILogger {
 	logger, _ := logging.NewLogrusLogger(&config.LoggingConfig{
-		Level:                  "debug",
+		Level:                  "info",
 		DisableTimestamp:       false,
 		FullTimestamp:          true,
 		LevelBasedReport:       true,

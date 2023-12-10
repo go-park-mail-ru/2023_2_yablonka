@@ -44,7 +44,7 @@ func (s PostgresAuthStorage) CreateSession(ctx context.Context, session *entitie
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
 	if err != nil {
-		logger.DebugFmt(errorMessage, funcName, nodeName)
+		logger.DebugFmt(errorMessage+err.Error(), funcName, nodeName)
 		logger.Debug(failBorder)
 		return apperrors.ErrCouldNotBuildQuery
 	}
@@ -52,7 +52,7 @@ func (s PostgresAuthStorage) CreateSession(ctx context.Context, session *entitie
 
 	_, err = s.db.Exec(query, args...)
 	if err != nil {
-		logger.DebugFmt(errorMessage, funcName, nodeName)
+		logger.DebugFmt(errorMessage+err.Error(), funcName, nodeName)
 		logger.Debug(failBorder)
 		return apperrors.ErrSessionNotCreated
 	}
@@ -81,7 +81,7 @@ func (s PostgresAuthStorage) GetSession(ctx context.Context, token dto.SessionTo
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
 	if err != nil {
-		logger.DebugFmt(errorMessage, funcName, nodeName)
+		logger.DebugFmt(errorMessage+err.Error(), funcName, nodeName)
 		logger.Debug(failBorder)
 		return nil, apperrors.ErrCouldNotBuildQuery
 	}
@@ -96,7 +96,7 @@ func (s PostgresAuthStorage) GetSession(ctx context.Context, token dto.SessionTo
 		&session.ExpiryDate,
 	)
 	if err != nil {
-		logger.DebugFmt(errorMessage, funcName, nodeName)
+		logger.DebugFmt(errorMessage+err.Error(), funcName, nodeName)
 		logger.Debug(failBorder)
 		return nil, apperrors.ErrSessionNotFound
 	}
@@ -124,7 +124,7 @@ func (s PostgresAuthStorage) DeleteSession(ctx context.Context, token dto.Sessio
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
 	if err != nil {
-		logger.DebugFmt(errorMessage, funcName, nodeName)
+		logger.DebugFmt(errorMessage+err.Error(), funcName, nodeName)
 		logger.Debug(failBorder)
 		return apperrors.ErrCouldNotBuildQuery
 	}
@@ -132,7 +132,7 @@ func (s PostgresAuthStorage) DeleteSession(ctx context.Context, token dto.Sessio
 
 	_, err = s.db.Exec(query, args...)
 	if err != nil {
-		logger.DebugFmt(errorMessage, funcName, nodeName)
+		logger.DebugFmt(errorMessage+err.Error(), funcName, nodeName)
 		logger.Debug(failBorder)
 		return apperrors.ErrSessionNotFound
 	}

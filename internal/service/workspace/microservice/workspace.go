@@ -48,12 +48,16 @@ func (ws WorkspaceService) GetUserWorkspaces(ctx context.Context, userID dto.Use
 	}, nil
 }
 
-// GetByID
+/*
+
+// GetWorkspace
 // находит рабочее пространство в БД по его id
 // или возвращает ошибки ...
 func (ws WorkspaceService) GetWorkspace(ctx context.Context, id dto.WorkspaceID) (*entities.Workspace, error) {
 	return ws.storage.GetWorkspace(ctx, id)
 }
+
+*/
 
 // Create
 // создает новоt рабочее пространство по данным
@@ -67,13 +71,6 @@ func (ws WorkspaceService) Create(ctx context.Context, info dto.NewWorkspaceInfo
 // или возвращает ошибки .....
 func (ws WorkspaceService) UpdateData(ctx context.Context, info dto.UpdatedWorkspaceInfo) error {
 	return ws.storage.UpdateData(ctx, info)
-}
-
-// UpdateUsers
-// обновляет список пользователей рабочего пространства
-// или возвращает ошибки ...
-func (ws WorkspaceService) UpdateUsers(ctx context.Context, info dto.ChangeWorkspaceGuestsInfo) error {
-	return ws.storage.UpdateUsers(ctx, info)
 }
 
 // Delete

@@ -49,6 +49,7 @@ var (
 		"public.workspace.id", "public.workspace.name", "public.workspace.date_created",
 		"public.user.id", "public.user.email", "public.user.name", "public.user.surname",
 	}
+	guestBoardFields = []string{"public.board.id_workspace", "public.board.id", "public.board.name", "public.board.description", "public.board.thumbnail_url"}
 
 	newCommentFields = []string{
 		"id_task", "id_user", "content",
