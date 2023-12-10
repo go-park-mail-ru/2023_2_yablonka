@@ -90,7 +90,7 @@ func TestCSATQuestionHandler_Unit_GetStats(t *testing.T) {
 
 					qs.
 						EXPECT().
-						GetAll(gomock.Any()).
+						GetStats(gomock.Any()).
 						Return(&[]dto.QuestionWithStats{}, apperrors.ErrCouldNotGetQuestions)
 
 					return r
