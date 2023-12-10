@@ -77,15 +77,15 @@ func (s PostgresChecklistItemStorage) ReadMany(ctx context.Context, ids dto.Chec
 		log.Println("Storage -- Failed to build query with error", err.Error())
 		return nil, apperrors.ErrCouldNotBuildQuery
 	}
-	logger.Debug("Built query\n\t"+query+"\nwith args\n\t"+fmt.Sprintf("%+v", args), funcName, nodeName)
+	logger.DebugFmt("Built query\n\t"+query+"\nwith args\n\t"+fmt.Sprintf("%+v", args), funcName, nodeName)
 
 	rows, err := s.db.Query(query, args...)
 	if err != nil {
-		logger.Debug(err.Error(), funcName, nodeName)
+		logger.DebugFmt(err.Error(), funcName, nodeName)
 		return nil, apperrors.ErrCouldNotCollectRows
 	}
 	defer rows.Close()
-	logger.Debug("Got checklist item rows", funcName, nodeName)
+	logger.DebugFmt("Got checklist item rows", funcName, nodeName)
 
 	checklistItems := []dto.ChecklistItemInfo{}
 	for rows.Next() {
@@ -99,12 +99,12 @@ func (s PostgresChecklistItemStorage) ReadMany(ctx context.Context, ids dto.Chec
 			&checklistItem.Done,
 		)
 		if err != nil {
-			logger.Debug(err.Error(), funcName, nodeName)
+			logger.DebugFmt(err.Error(), funcName, nodeName)
 			return nil, apperrors.ErrCouldNotGetChecklistItem
 		}
 		checklistItems = append(checklistItems, checklistItem)
 	}
-	logger.Debug("Got checklistItems from DB", funcName, nodeName)
+	logger.DebugFmt("Got checklistItems from DB", funcName, nodeName)
 
 	return &checklistItems, nil
 }

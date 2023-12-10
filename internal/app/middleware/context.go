@@ -19,12 +19,12 @@ func SetContext(sc config.ServerConfig, logger logger.ILogger) func(http.Handler
 			logger.Info(r.URL.Path)
 
 			rCtx := context.WithValue(r.Context(), dto.LoggerKey, logger)
-			logger.Debug("Added logger to context", funcName, "middleware")
+			logger.DebugFmt("Added logger to context", funcName, "middleware")
 
 			rCtx = context.WithValue(rCtx, dto.BaseURLKey,
 				"http://"+sc.Host+":"+strconv.FormatUint(uint64(sc.BackendPort), 10)+"/",
 			)
-			logger.Debug("Added base URL to context", funcName, "middleware")
+			logger.DebugFmt("Added base URL to context", funcName, "middleware")
 
 			logger.Info("*************** CONTEXT SET UP ***************")
 

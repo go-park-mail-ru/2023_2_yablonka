@@ -49,7 +49,7 @@ func (ch CommentHandler) Create(w http.ResponseWriter, r *http.Request) {
 		apperrors.ReturnError(apperrors.BadRequestResponse, w, r)
 		return
 	}
-	logger.Debug("JSON Decoded", funcName, nodeName)
+	logger.DebugFmt("JSON Decoded", funcName, nodeName)
 
 	comment, err := ch.cs.Create(rCtx, newCommentInfo)
 	if err != nil {
@@ -58,7 +58,7 @@ func (ch CommentHandler) Create(w http.ResponseWriter, r *http.Request) {
 		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
 		return
 	}
-	logger.Debug("Comment created", funcName, nodeName)
+	logger.DebugFmt("Comment created", funcName, nodeName)
 
 	response := dto.JSONResponse{
 		Body: dto.JSONMap{
@@ -72,7 +72,7 @@ func (ch CommentHandler) Create(w http.ResponseWriter, r *http.Request) {
 		apperrors.ReturnError(apperrors.InternalServerErrorResponse, w, r)
 		return
 	}
-	logger.Debug("response written", funcName, nodeName)
+	logger.DebugFmt("response written", funcName, nodeName)
 
 	logger.Info("---------------------------------- Create comment SUCCESS ----------------------------------")
 }
