@@ -59,11 +59,13 @@ var (
 	// ErrCouldNotGetQuestionType ошибка: не удалось получить тип вопроса CSAT в БД
 	ErrCouldNotGetQuestionType = errors.New("couldn't get question type")
 	// ErrCouldNotGetQuestionType ошибка: не удалось обновить вопрос CSAT в БД
-	ErrQuestionNotUpdated = errors.New("couldn't обновить question")
+	ErrQuestionNotUpdated = errors.New("couldn't update question")
 	// ErrCouldNotGetQuestionType ошибка: не удалось удалить вопрос CSAT в БД
 	ErrQuestionNotDeleted = errors.New("couldn't delete question")
 	// ErrAnswerRatingTooBig ошибка: у полученного ответа рейтинг выше доступного для вопроса
 	ErrAnswerRatingTooBig = errors.New("provided rating is too big for this question type")
+	// ErrCouldNotStoreAnswer ошибка: не удалось сохранить ответ
+	ErrCouldNotStoreAnswer = errors.New("couldn't store answer")
 )
 
 // Ошибки, связанные с AuthService
@@ -96,6 +98,7 @@ var (
 	ErrCouldNotBuildQuery       = errors.New("error building an SQL query")
 	ErrCouldNotStartTransaction = errors.New("error starting a transaction")
 	ErrCouldNotCollectRows      = errors.New("couldn't collect rows")
+	ErrCouldNotRollback         = errors.New("couldn't rollback a transaction")
 	// ErrFailedToCreateFile ошибка: не удалось создать файл
 	ErrFailedToCreateFile = errors.New("failed to create file")
 	// ErrFailedToSaveFile ошибка: не удалось сохранить файл
@@ -110,6 +113,8 @@ var (
 	ErrBoardNotCreated = errors.New("board couldn't be created")
 	// ErrUserAlreadyInBoard ошибка: пользователь уже есть в доске
 	ErrUserAlreadyInBoard = errors.New("user already in board")
+	// ErrUserNotInBoard ошибка: пользователя нет в доске
+	ErrUserNotInBoard = errors.New("user not in board")
 	// ErrWorkspaceNotDeleted ошибка: не удалось получить рабочее прострнство в БД
 	ErrBoardNotUpdated = errors.New("board couldn't be updated")
 	// ErrWorkspaceNotDeleted ошибка: не удалось удалить рабочее прострнство в БД
@@ -188,6 +193,12 @@ var (
 	ErrCouldNotRemoveTaskUser = errors.New("couldn't remove user from task")
 	// ErrUserAlreadyInTask ошибка: пользователь уже есть в задании
 	ErrUserAlreadyInTask = errors.New("user already in task")
+)
+
+// Ошибки, связанные с CommentService
+var (
+	// ErrCommentNotCreated ошибка: не удалось создать элемент чеклиста в БД
+	ErrCommentNotCreated = errors.New("comment couldn't be created")
 )
 
 // ErrorResponse
@@ -270,6 +281,9 @@ var ErrorMap = map[error]ErrorResponse{
 	ErrBoardNotDeleted:          InternalServerErrorResponse,
 	ErrCouldNotGetBoard:         InternalServerErrorResponse,
 	ErrNoBoardAccess:            ForbiddenResponse,
+	ErrCouldNotAddBoardUser:     InternalServerErrorResponse,
+	ErrCouldNotRemoveBoardUser:  InternalServerErrorResponse,
+	ErrCouldNotAddTaskUser:      InternalServerErrorResponse,
 	ErrTaskNotCreated:           InternalServerErrorResponse,
 	ErrTaskNotUpdated:           InternalServerErrorResponse,
 	ErrTaskNotDeleted:           InternalServerErrorResponse,
@@ -285,12 +299,16 @@ var ErrorMap = map[error]ErrorResponse{
 	ErrChecklistItemNotCreated:  InternalServerErrorResponse,
 	ErrChecklistItemNotUpdated:  InternalServerErrorResponse,
 	ErrChecklistItemNotDeleted:  InternalServerErrorResponse,
+	ErrCommentNotCreated:        InternalServerErrorResponse,
 	ErrUserAlreadyInBoard:       StatusConflictResponse,
+	ErrUserNotInBoard:           StatusConflictResponse,
 	ErrUserAlreadyInTask:        StatusConflictResponse,
 	ErrFailedToCreateFile:       InternalServerErrorResponse,
 	ErrFailedToSaveFile:         InternalServerErrorResponse,
 	ErrFailedToDeleteFile:       InternalServerErrorResponse,
 	ErrAnswerRatingTooBig:       BadRequestResponse,
+	ErrCouldNotStoreAnswer:      InternalServerErrorResponse,
+	ErrCouldNotRollback:         InternalServerErrorResponse,
 }
 
 func ErrorJSON(err ErrorResponse) []byte {

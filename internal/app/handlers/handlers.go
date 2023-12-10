@@ -133,8 +133,8 @@ func NewTaskHandler(ts service.ITaskService) *TaskHandler {
 	}
 }
 
-// NewCSATHandler
-// возвращает CSATHandler с необходимыми сервисами
+// WriteResponse
+// формирует и отправляет JSON-ответ клиенту
 func WriteResponse(response dto.JSONResponse, w http.ResponseWriter, r *http.Request) error {
 	jsonResponse, err := json.Marshal(response)
 	if err != nil {

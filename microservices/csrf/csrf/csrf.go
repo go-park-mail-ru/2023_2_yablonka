@@ -72,7 +72,7 @@ func (cs *CSRFService) SetupCSRF(ctx context.Context, id *UserID) (*SetupCSRFRes
 		response.Response = &CSRFData{}
 		return response, nil
 	}
-	cs.logger.Debug("CSRF token generated", funcName, nodeName)
+	cs.logger.DebugFmt("CSRF token generated", funcName, nodeName)
 
 	csrf := &entities.CSRF{
 		Token:          token,
@@ -86,7 +86,7 @@ func (cs *CSRFService) SetupCSRF(ctx context.Context, id *UserID) (*SetupCSRFRes
 		response.Response = &CSRFData{}
 		return response, nil
 	}
-	cs.logger.Debug("CSRF session created", funcName, nodeName)
+	cs.logger.DebugFmt("CSRF session created", funcName, nodeName)
 
 	response.Code = CSRFServiceErrorCodes[nil]
 	response.Response = &CSRFData{
@@ -109,17 +109,17 @@ func (cs *CSRFService) VerifyCSRF(ctx context.Context, token *CSRFToken) (*Verif
 		response.Code = CSRFServiceErrorCodes[err]
 		return response, nil
 	}
-	cs.logger.Debug("CSRF token found", funcName, nodeName)
+	cs.logger.DebugFmt("CSRF token found", funcName, nodeName)
 
 	if CSRFObj.ExpirationDate.Before(time.Now()) {
-		cs.logger.Debug("Deleting expired token", funcName, nodeName)
+		cs.logger.DebugFmt("Deleting expired token", funcName, nodeName)
 		for _, err = cs.DeleteCSRF(ctx, token); err != nil; {
 			_, err = cs.DeleteCSRF(ctx, token)
 		}
 		response.Code = CSRFServiceErrorCodes[apperrors.ErrCSRFExpired]
 		return response, nil
 	}
-	cs.logger.Debug("CSRF token is still good", funcName, nodeName)
+	cs.logger.DebugFmt("CSRF token is still good", funcName, nodeName)
 
 	response.Code = CSRFServiceErrorCodes[nil]
 

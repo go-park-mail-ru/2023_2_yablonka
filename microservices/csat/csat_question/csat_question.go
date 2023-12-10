@@ -46,7 +46,7 @@ func (cs CSATQuestionService) CheckRating(ctx context.Context, info *NewCSATAnsw
 	}
 
 	if info.Rating > questionType.MaxRating {
-		response.Code = CSATQuestionServiceErrorCodes[apperrors.ErrCouldNotCollectRows]
+		response.Code = CSATQuestionServiceErrorCodes[apperrors.ErrAnswerRatingTooBig]
 		return response, nil
 	}
 
