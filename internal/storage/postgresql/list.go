@@ -84,14 +84,14 @@ func (s PostgresListStorage) GetTasksWithID(ctx context.Context, ids dto.ListIDs
 	if err != nil {
 		return nil, apperrors.ErrCouldNotBuildQuery
 	}
-	logger.Debug("Built query\n\t"+taskSql+"\nwith args\n\t"+fmt.Sprintf("%+v", args), funcName, nodeName)
+	logger.DebugFmt("Built query\n\t"+taskSql+"\nwith args\n\t"+fmt.Sprintf("%+v", args), funcName, nodeName)
 
 	taskRows, err := s.db.Query(taskSql, args...)
 	if err != nil {
-		return nil, apperrors.ErrCouldNotGetBoard
+		return nil, apperrors.ErrCouldNotGetTask
 	}
 	defer taskRows.Close()
-	logger.Debug("Got task info rows", funcName, nodeName)
+	logger.DebugFmt("Got task info rows", funcName, nodeName)
 
 	tasks := []dto.SingleTaskInfo{}
 	for taskRows.Next() {
@@ -109,11 +109,11 @@ func (s PostgresListStorage) GetTasksWithID(ctx context.Context, ids dto.ListIDs
 			(*pq.StringArray)(&task.UserIDs),
 		)
 		if err != nil {
-			return nil, apperrors.ErrCouldNotGetBoard
+			return nil, apperrors.ErrCouldNotGetTask
 		}
 		tasks = append(tasks, task)
 	}
-	logger.Debug("Collected task info rows", funcName, nodeName)
+	logger.DebugFmt("Collected task info rows", funcName, nodeName)
 
 	return &tasks, nil
 }
