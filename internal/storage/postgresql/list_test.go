@@ -102,7 +102,7 @@ func TestPostgresListStorage_Create(t *testing.T) {
 			s := NewListStorage(db)
 
 			if _, err := s.Create(ctx, *tt.args.info); (err != nil) != tt.wantErr {
-				t.Errorf("PostgresTaskStorage.Create() error = %v, wantErr %v", err != nil, tt.wantErr)
+				t.Errorf("PostgresListStorage.Create() error = %v, wantErr %v", err != nil, tt.wantErr)
 			}
 
 			if err := mock.ExpectationsWereMet(); err != nil {
@@ -186,7 +186,7 @@ func TestPostgresListStorage_Delete(t *testing.T) {
 			s := NewListStorage(db)
 
 			if err := s.Delete(ctx, *tt.args.info); (err != nil) != tt.wantErr {
-				t.Errorf("PostgresTaskStorage.Delete() error = %v, wantErr %v", err != nil, tt.wantErr)
+				t.Errorf("PostgresListStorage.Delete() error = %v, wantErr %v", err != nil, tt.wantErr)
 			}
 
 			if err := mock.ExpectationsWereMet(); err != nil {
@@ -284,7 +284,7 @@ func TestPostgresListStorage_Update(t *testing.T) {
 			s := NewListStorage(db)
 
 			if err := s.Update(ctx, *tt.args.info); (err != nil) != tt.wantErr {
-				t.Errorf("PostgresTaskStorage.Update() error = %v, wantErr %v", err != nil, tt.wantErr)
+				t.Errorf("PostgresListStorage.Update() error = %v, wantErr %v", err != nil, tt.wantErr)
 			}
 
 			if err := mock.ExpectationsWereMet(); err != nil {
@@ -375,7 +375,7 @@ func TestPostgresListStorage_GetTasksWithID(t *testing.T) {
 			s := NewListStorage(db)
 
 			if _, err := s.GetTasksWithID(ctx, *tt.args.info); (err != nil) != tt.wantErr {
-				t.Errorf("PostgresTaskStorage.Update() error = %v, wantErr %v", err != nil, tt.wantErr)
+				t.Errorf("PostgresListStorage.Update() error = %v, wantErr %v", err != nil, tt.wantErr)
 			}
 
 			if err := mock.ExpectationsWereMet(); err != nil {
