@@ -54,6 +54,21 @@ func (mr *MockIBoardStorageMockRecorder) AddUser(arg0, arg1 any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddUser", reflect.TypeOf((*MockIBoardStorage)(nil).AddUser), arg0, arg1)
 }
 
+// CheckAccess mocks base method.
+func (m *MockIBoardStorage) CheckAccess(arg0 context.Context, arg1 dto.CheckBoardAccessInfo) (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CheckAccess", arg0, arg1)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CheckAccess indicates an expected call of CheckAccess.
+func (mr *MockIBoardStorageMockRecorder) CheckAccess(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckAccess", reflect.TypeOf((*MockIBoardStorage)(nil).CheckAccess), arg0, arg1)
+}
+
 // Create mocks base method.
 func (m *MockIBoardStorage) Create(arg0 context.Context, arg1 dto.NewBoardInfo) (*entities.Board, error) {
 	m.ctrl.T.Helper()

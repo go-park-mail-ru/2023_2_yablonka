@@ -168,3 +168,36 @@ func (s PostgresListStorage) Delete(ctx context.Context, id dto.ListID) error {
 
 	return nil
 }
+
+// Create
+// создает новый список в БД по данным
+// или возвращает ошибки ...
+func (s PostgresListStorage) UpdateOrder(ctx context.Context, ids dto.ListIDs) error {
+	caseBuilder := sq.Case()
+
+	for i, id := range ids.Values {
+		caseBuilder = caseBuilder.When(sq.Eq{"id": id}, i)
+	}
+
+	sql, args, err := sq.
+		Update("public.list").
+		Set("list_position", caseBuilder).
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
+
+	if err != nil {
+		log.Println("Storage -- Failed to build query")
+		return apperrors.ErrCouldNotBuildQuery
+	}
+	log.Println("Built list query\n\t", sql, "\nwith args\n\t", args)
+
+	_, err = s.db.Exec(sql, args...)
+	if err != nil {
+		log.Println("Storage -- Failed to create list")
+		return apperrors.ErrListNotCreated
+	}
+
+	log.Println("Storage -- List created")
+
+	return nil
+}

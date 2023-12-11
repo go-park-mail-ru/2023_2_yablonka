@@ -32,7 +32,6 @@ type ListHandler struct {
 func (lh ListHandler) Create(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
 	funcName := "ListHandler.Create"
-	nodeName := "handler"
 	errorMessage := "Creating list failed with error: "
 	failBorder := "---------------------------------- Creating list FAIL ----------------------------------"
 
@@ -94,7 +93,6 @@ func (lh ListHandler) Create(w http.ResponseWriter, r *http.Request) {
 func (lh ListHandler) Update(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
 	funcName := "ListHandler.Update"
-	nodeName := "handler"
 	errorMessage := "Updating failed with error: "
 	failBorder := "---------------------------------- Updating list FAIL ----------------------------------"
 
@@ -154,7 +152,6 @@ func (lh ListHandler) Update(w http.ResponseWriter, r *http.Request) {
 func (lh ListHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
 	funcName := "ListHandler.Delete"
-	nodeName := "handler"
 	errorMessage := "Deleting failed with error: "
 	failBorder := "---------------------------------- Deleting list FAIL ----------------------------------"
 
@@ -194,4 +191,63 @@ func (lh ListHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	logger.DebugFmt("response written", funcName, nodeName)
 
 	logger.Info("---------------------------------- Deleting list SUCCESS ----------------------------------")
+}
+
+// @Summary Обновить порядок списков
+// @Description Поставить списки по порядку в запросе
+// @Tags lists
+//
+// @Accept  json
+// @Produce  json
+//
+// @Param listID body dto.ListIDs true "id списков"
+//
+// @Success 204  {string}  string "no content"
+// @Failure 400  {object}  apperrors.ErrorResponse
+// @Failure 401  {object}  apperrors.ErrorResponse
+// @Failure 500  {object}  apperrors.ErrorResponse
+//
+// @Router /list/reorder/ [delete]
+func (lh ListHandler) UpdateOrder(w http.ResponseWriter, r *http.Request) {
+	rCtx := r.Context()
+	funcName := "ListHandler.UpdateOrder"
+	errorMessage := "Deleting failed with error: "
+	failBorder := "---------------------------------- ListHandler.UpdateOrder FAIL ----------------------------------"
+
+	logger := rCtx.Value(dto.LoggerKey).(logger.ILogger)
+
+	logger.Info("---------------------------------- ListHandler.UpdateOrder ----------------------------------")
+
+	var listIDs dto.ListIDs
+	err := json.NewDecoder(r.Body).Decode(&listIDs)
+	if err != nil {
+		logger.Error(errorMessage + err.Error())
+		logger.Info(failBorder)
+		apperrors.ReturnError(apperrors.BadRequestResponse, w, r)
+		return
+	}
+	logger.DebugFmt("request struct decoded", funcName, nodeName)
+
+	err = lh.ls.UpdateOrder(rCtx, listIDs)
+	if err != nil {
+		logger.Error(errorMessage + err.Error())
+		logger.Info(failBorder)
+		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
+		return
+	}
+	logger.DebugFmt("list deleted", funcName, nodeName)
+
+	response := dto.JSONResponse{
+		Body: dto.JSONMap{},
+	}
+	err = WriteResponse(response, w, r)
+	if err != nil {
+		logger.Error(errorMessage + err.Error())
+		logger.Info(failBorder)
+		apperrors.ReturnError(apperrors.InternalServerErrorResponse, w, r)
+		return
+	}
+	logger.DebugFmt("response written", funcName, nodeName)
+
+	logger.Info("---------------------------------- ListHandler.UpdateOrder SUCCESS ----------------------------------")
 }
