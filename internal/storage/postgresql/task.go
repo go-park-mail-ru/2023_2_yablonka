@@ -83,11 +83,11 @@ func (s *PostgresTaskStorage) Read(ctx context.Context, id dto.TaskID) (*dto.Sin
 	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
 
 	query, args, err := sq.
-		Select(allTaskFields...).
+		Select(allTaskFields2...).
 		From("public.task").
 		Join("public.task_user ON public.task.id = public.task_user.id_task").
 		Join("public.comment ON public.task.id = public.comment.id_task").
-		Where(sq.Eq{"id": id.Value}).
+		Where(sq.Eq{"public.task.id": id.Value}).
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
 	if err != nil {
@@ -107,8 +107,8 @@ func (s *PostgresTaskStorage) Read(ctx context.Context, id dto.TaskID) (*dto.Sin
 		&task.ListPosition,
 		&task.Start,
 		&task.End,
-		&task.UserIDs,
-		&task.CommentIDs,
+		(*pq.StringArray)(&task.UserIDs),
+		(*pq.StringArray)(&task.CommentIDs),
 	); err != nil {
 		log.Println("Failed to query DB with error", err.Error())
 		return nil, apperrors.ErrCouldNotGetTask
