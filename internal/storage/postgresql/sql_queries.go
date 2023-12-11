@@ -24,6 +24,11 @@ var (
 		"array_remove(array_agg(public.comment.id ORDER BY public.comment.date_created), NULL)",
 		"array_remove(array_agg(public.checklist.id ORDER BY public.checklist.list_position), NULL)",
 	}
+	allTaskFields2 = []string{"public.task.id", "public.task.id_list", "public.task.date_created",
+		"public.task.name", "public.task.description", "public.task.list_position", "public.task.task_start", "public.task.task_end",
+		"array_remove(array_agg(public.task_user.id_user ORDER BY public.task_user.id_user), NULL)",
+		"array_remove(array_agg(public.comment.id ORDER BY public.comment.date_created), NULL)",
+	}
 	allChecklistFields = []string{"public.checklist.id", "public.checklist.id_task", "public.checklist.name", "public.checklist.list_position",
 		"array_remove(array_agg(public.checklist_item.id ORDER BY public.checklist_item.list_position), NULL)",
 	}
@@ -34,10 +39,10 @@ var (
 	newTaskFields    = []string{"id_list", "name", "list_position"}
 	allSessionFields = []string{"id_user", "expiration_date"}
 
-	allWorkspaceAndBoardFields = []string{
-		"public.workspace.id", "public.workspace.name", "public.workspace.description", "public.workspace.date_created",
-		"public.board.id", "public.board.name", "public.board.description", "public.board.date_created", "public.board.thumbnail_url",
-	}
+	// allWorkspaceAndBoardFields = []string{
+	// 	"public.workspace.id", "public.workspace.name", "public.workspace.description", "public.workspace.date_created",
+	// 	"public.board.id", "public.board.name", "public.board.description", "public.board.date_created", "public.board.thumbnail_url",
+	// }
 
 	// userOwnedWorkspaceFields = []string{
 	// 	"public.workspace.id", "public.workspace.name", "public.workspace.date_created", "public.workspace.description",
@@ -49,6 +54,7 @@ var (
 		"public.workspace.id", "public.workspace.name", "public.workspace.date_created",
 		"public.user.id", "public.user.email", "public.user.name", "public.user.surname",
 	}
+	guestBoardFields = []string{"public.board.id_workspace", "public.board.id", "public.board.name", "public.board.description", "public.board.thumbnail_url"}
 
 	newCommentFields = []string{
 		"id_task", "id_user", "content",

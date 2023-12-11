@@ -114,7 +114,7 @@ func GetChiMux(manager handlers.Handlers, config config.Config, logger logging.I
 			r.Post("/create/", manager.CSATQuestionHandler.Create)
 			r.Post("/edit/", manager.CSATQuestionHandler.Update)
 		})
-		r.Post("/answer", manager.CSATAnswerHandler.Create)
+		r.Post("/answer/", manager.CSATAnswerHandler.Create)
 	})
 	return mux, nil
 }
