@@ -2,152 +2,384 @@ package postgresql
 
 import (
 	"context"
-	"database/sql"
-	"reflect"
+	"regexp"
+	"server/internal/apperrors"
 	"server/internal/pkg/dto"
-	"server/internal/pkg/entities"
 	"testing"
+	"time"
+
+	"github.com/DATA-DOG/go-sqlmock"
+	sq "github.com/Masterminds/squirrel"
+	"github.com/lib/pq"
 )
 
-func TestNewListStorage(t *testing.T) {
-	type args struct {
-		db *sql.DB
-	}
-	tests := []struct {
-		name string
-		args args
-		want *PostgresListStorage
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := NewListStorage(tt.args.db); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("NewListStorage() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
 func TestPostgresListStorage_Create(t *testing.T) {
-	type fields struct {
-		db *sql.DB
-	}
+	t.Parallel()
 	type args struct {
-		ctx  context.Context
-		info dto.NewListInfo
+		info  *dto.NewListInfo
+		query func(mock sqlmock.Sqlmock, args args)
 	}
 	tests := []struct {
 		name    string
-		fields  fields
 		args    args
-		want    *entities.List
 		wantErr bool
+		err     error
 	}{
-		// TODO: Add test cases.
+		{
+			name: "Happy path",
+			args: args{
+				info: &dto.NewListInfo{
+					BoardID:      1,
+					Name:         "sdfgsdfgsdfgsdfgsdfgsdf",
+					ListPosition: 0,
+				},
+				query: func(mock sqlmock.Sqlmock, args args) {
+					query, _, _ := sq.
+						Insert("public.list").
+						Columns("name", "list_position", "description", "id_board").
+						Values(args.info.Name, args.info.ListPosition, args.info.Description, args.info.BoardID).
+						Suffix("RETURNING id").
+						PlaceholderFormat(sq.Dollar).
+						ToSql()
+					mock.ExpectQuery(regexp.QuoteMeta(query)).
+						WithArgs(
+							args.info.Name,
+							args.info.ListPosition,
+							args.info.Description,
+							args.info.BoardID,
+						).
+						WillReturnRows(sqlmock.NewRows([]string{"id"}).
+							AddRow(1))
+				},
+			},
+			wantErr: false,
+			err:     nil,
+		},
+		{
+			name: "Query fail",
+			args: args{
+				info: &dto.NewListInfo{
+					BoardID:      1,
+					Name:         "sdfgsdfgsdfgsdfgsdfgsdf",
+					ListPosition: 0,
+				},
+				query: func(mock sqlmock.Sqlmock, args args) {
+					query, _, _ := sq.
+						Insert("public.list").
+						Columns("name", "list_position", "description", "id_board").
+						Values(args.info.Name, args.info.ListPosition, args.info.Description, args.info.BoardID).
+						Suffix("RETURNING id").
+						PlaceholderFormat(sq.Dollar).
+						ToSql()
+					mock.ExpectQuery(regexp.QuoteMeta(query)).
+						WithArgs(
+							args.info.Name,
+							args.info.ListPosition,
+							args.info.Description,
+							args.info.BoardID,
+						).
+						WillReturnError(apperrors.ErrListNotCreated)
+				},
+			},
+			wantErr: true,
+			err:     apperrors.ErrListNotCreated,
+		},
 	}
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-			s := PostgresListStorage{
-				db: tt.fields.db,
+			t.Parallel()
+			db, mock, err := sqlmock.New()
+			if err != nil {
+				t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 			}
-			got, err := s.Create(tt.args.ctx, tt.args.info)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("Create() error = %v, wantErr %v", err, tt.wantErr)
-				return
+			defer db.Close()
+
+			ctx := context.WithValue(context.Background(), dto.LoggerKey, getLogger())
+
+			tt.args.query(mock, tt.args)
+
+			s := NewListStorage(db)
+
+			if _, err := s.Create(ctx, *tt.args.info); (err != nil) != tt.wantErr {
+				t.Errorf("PostgresTaskStorage.Create() error = %v, wantErr %v", err != nil, tt.wantErr)
 			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("Create() got = %v, want %v", got, tt.want)
+
+			if err := mock.ExpectationsWereMet(); err != nil {
+				t.Errorf("there were unfulfilled expectations: %s", err)
 			}
 		})
 	}
 }
 
 func TestPostgresListStorage_Delete(t *testing.T) {
-	type fields struct {
-		db *sql.DB
-	}
+	t.Parallel()
 	type args struct {
-		ctx context.Context
-		id  dto.ListID
+		info  *dto.ListID
+		query func(mock sqlmock.Sqlmock, args args)
 	}
 	tests := []struct {
 		name    string
-		fields  fields
 		args    args
 		wantErr bool
+		err     error
 	}{
-		// TODO: Add test cases.
+		{
+			name: "Happy path",
+			args: args{
+				info: &dto.ListID{
+					Value: 1,
+				},
+				query: func(mock sqlmock.Sqlmock, args args) {
+					query, _, _ := sq.
+						Delete("public.list").
+						Where(sq.Eq{"id": args.info.Value}).
+						PlaceholderFormat(sq.Dollar).
+						ToSql()
+					mock.ExpectExec(regexp.QuoteMeta(query)).
+						WithArgs(
+							args.info.Value,
+						).
+						WillReturnResult(sqlmock.NewResult(1, 1))
+				},
+			},
+			wantErr: false,
+			err:     nil,
+		},
+		{
+			name: "Happy path",
+			args: args{
+				info: &dto.ListID{
+					Value: 1,
+				},
+				query: func(mock sqlmock.Sqlmock, args args) {
+					query, _, _ := sq.
+						Delete("public.list").
+						Where(sq.Eq{"id": args.info.Value}).
+						PlaceholderFormat(sq.Dollar).
+						ToSql()
+					mock.ExpectExec(regexp.QuoteMeta(query)).
+						WithArgs(
+							args.info.Value,
+						).
+						WillReturnError(apperrors.ErrListNotDeleted)
+				},
+			},
+			wantErr: true,
+			err:     apperrors.ErrListNotDeleted,
+		},
 	}
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-			s := PostgresListStorage{
-				db: tt.fields.db,
+			t.Parallel()
+			db, mock, err := sqlmock.New()
+			if err != nil {
+				t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 			}
-			if err := s.Delete(tt.args.ctx, tt.args.id); (err != nil) != tt.wantErr {
-				t.Errorf("Delete() error = %v, wantErr %v", err, tt.wantErr)
-			}
-		})
-	}
-}
+			defer db.Close()
 
-func TestPostgresListStorage_GetTasksWithID(t *testing.T) {
-	type fields struct {
-		db *sql.DB
-	}
-	type args struct {
-		ctx context.Context
-		ids dto.ListIDs
-	}
-	tests := []struct {
-		name    string
-		fields  fields
-		args    args
-		want    *[]dto.SingleTaskInfo
-		wantErr bool
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			s := PostgresListStorage{
-				db: tt.fields.db,
+			ctx := context.WithValue(context.Background(), dto.LoggerKey, getLogger())
+
+			tt.args.query(mock, tt.args)
+
+			s := NewListStorage(db)
+
+			if err := s.Delete(ctx, *tt.args.info); (err != nil) != tt.wantErr {
+				t.Errorf("PostgresTaskStorage.Delete() error = %v, wantErr %v", err != nil, tt.wantErr)
 			}
-			got, err := s.GetTasksWithID(tt.args.ctx, tt.args.ids)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("GetTasksWithID() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("GetTasksWithID() got = %v, want %v", got, tt.want)
+
+			if err := mock.ExpectationsWereMet(); err != nil {
+				t.Errorf("there were unfulfilled expectations: %s", err)
 			}
 		})
 	}
 }
 
 func TestPostgresListStorage_Update(t *testing.T) {
-	type fields struct {
-		db *sql.DB
-	}
+	t.Parallel()
 	type args struct {
-		ctx  context.Context
-		info dto.UpdatedListInfo
+		info  *dto.UpdatedListInfo
+		query func(mock sqlmock.Sqlmock, args args)
 	}
 	tests := []struct {
 		name    string
-		fields  fields
 		args    args
 		wantErr bool
+		err     error
 	}{
-		// TODO: Add test cases.
+		{
+			name: "Happy path",
+			args: args{
+				info: &dto.UpdatedListInfo{
+					ID:   1,
+					Name: "sdsd",
+				},
+				query: func(mock sqlmock.Sqlmock, args args) {
+					query, _, _ := sq.
+						Update("public.list").
+						Set("name", args.info.Name).
+						Set("description", args.info.Description).
+						Set("list_position", args.info.ListPosition).
+						Where(sq.Eq{"id": args.info.ID}).
+						PlaceholderFormat(sq.Dollar).
+						ToSql()
+					mock.ExpectExec(regexp.QuoteMeta(query)).
+						WithArgs(
+							args.info.Name,
+							args.info.Description,
+							args.info.ListPosition,
+							args.info.ID,
+						).
+						WillReturnResult(sqlmock.NewResult(1, 1))
+				},
+			},
+			wantErr: false,
+			err:     nil,
+		},
+		{
+			name: "Happy path",
+			args: args{
+				info: &dto.UpdatedListInfo{
+					ID:   1,
+					Name: "sdsd",
+				},
+				query: func(mock sqlmock.Sqlmock, args args) {
+					query, _, _ := sq.
+						Update("public.list").
+						Set("name", args.info.Name).
+						Set("description", args.info.Description).
+						Set("list_position", args.info.ListPosition).
+						Where(sq.Eq{"id": args.info.ID}).
+						PlaceholderFormat(sq.Dollar).
+						ToSql()
+					mock.ExpectExec(regexp.QuoteMeta(query)).
+						WithArgs(
+							args.info.Name,
+							args.info.Description,
+							args.info.ListPosition,
+							args.info.ID,
+						).
+						WillReturnError(apperrors.ErrListNotUpdated)
+				},
+			},
+			wantErr: true,
+			err:     apperrors.ErrListNotUpdated,
+		},
 	}
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-			s := PostgresListStorage{
-				db: tt.fields.db,
+			t.Parallel()
+			db, mock, err := sqlmock.New()
+			if err != nil {
+				t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 			}
-			if err := s.Update(tt.args.ctx, tt.args.info); (err != nil) != tt.wantErr {
-				t.Errorf("Update() error = %v, wantErr %v", err, tt.wantErr)
+			defer db.Close()
+
+			ctx := context.WithValue(context.Background(), dto.LoggerKey, getLogger())
+
+			tt.args.query(mock, tt.args)
+
+			s := NewListStorage(db)
+
+			if err := s.Update(ctx, *tt.args.info); (err != nil) != tt.wantErr {
+				t.Errorf("PostgresTaskStorage.Update() error = %v, wantErr %v", err != nil, tt.wantErr)
+			}
+
+			if err := mock.ExpectationsWereMet(); err != nil {
+				t.Errorf("there were unfulfilled expectations: %s", err)
+			}
+		})
+	}
+}
+
+func TestPostgresListStorage_GetTasksWithID(t *testing.T) {
+	t.Parallel()
+	type args struct {
+		info  *dto.ListIDs
+		query func(mock sqlmock.Sqlmock, args args)
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+		err     error
+	}{
+		{
+			name: "Happy path",
+			args: args{
+				info: &dto.ListIDs{
+					Values: []uint64{1, 2},
+				},
+				query: func(mock sqlmock.Sqlmock, args args) {
+					query, _, _ := sq.
+						Select(allTaskAggFields...).
+						From("public.task").
+						Where(sq.Eq{"public.task.id_list": args.info.Values}).
+						LeftJoin("public.task_user ON public.task_user.id_task = public.task.id").
+						GroupBy("public.task.id", "public.task.id_list").
+						PlaceholderFormat(sq.Dollar).
+						ToSql()
+					mock.ExpectQuery(regexp.QuoteMeta(query)).
+						WithArgs(
+							1, 2,
+						).
+						WillReturnRows(sqlmock.NewRows(allTaskAggFields).
+							AddRow(1, 1, time.Now(), "ame", "dsd", 1, time.Now(), time.Now(), pq.StringArray([]string{})))
+				},
+			},
+			wantErr: false,
+			err:     nil,
+		},
+		{
+			name: "Query failed",
+			args: args{
+				info: &dto.ListIDs{
+					Values: []uint64{1, 2},
+				},
+				query: func(mock sqlmock.Sqlmock, args args) {
+					query, _, _ := sq.
+						Select(allTaskAggFields...).
+						From("public.task").
+						Where(sq.Eq{"public.task.id_list": args.info.Values}).
+						LeftJoin("public.task_user ON public.task_user.id_task = public.task.id").
+						GroupBy("public.task.id", "public.task.id_list").
+						PlaceholderFormat(sq.Dollar).
+						ToSql()
+					mock.ExpectQuery(regexp.QuoteMeta(query)).
+						WithArgs(
+							1, 2,
+						).
+						WillReturnError(apperrors.ErrCouldNotGetTask)
+				},
+			},
+			wantErr: true,
+			err:     apperrors.ErrCouldNotGetTask,
+		},
+	}
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			db, mock, err := sqlmock.New()
+			if err != nil {
+				t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
+			}
+			defer db.Close()
+
+			ctx := context.WithValue(context.Background(), dto.LoggerKey, getLogger())
+
+			tt.args.query(mock, tt.args)
+
+			s := NewListStorage(db)
+
+			if _, err := s.GetTasksWithID(ctx, *tt.args.info); (err != nil) != tt.wantErr {
+				t.Errorf("PostgresTaskStorage.Update() error = %v, wantErr %v", err != nil, tt.wantErr)
+			}
+
+			if err := mock.ExpectationsWereMet(); err != nil {
+				t.Errorf("there were unfulfilled expectations: %s", err)
 			}
 		})
 	}

@@ -88,7 +88,7 @@ func (s PostgresListStorage) GetTasksWithID(ctx context.Context, ids dto.ListIDs
 
 	taskRows, err := s.db.Query(taskSql, args...)
 	if err != nil {
-		return nil, apperrors.ErrCouldNotGetBoard
+		return nil, apperrors.ErrCouldNotGetTask
 	}
 	defer taskRows.Close()
 	logger.DebugFmt("Got task info rows", funcName, nodeName)
@@ -109,7 +109,7 @@ func (s PostgresListStorage) GetTasksWithID(ctx context.Context, ids dto.ListIDs
 			(*pq.StringArray)(&task.UserIDs),
 		)
 		if err != nil {
-			return nil, apperrors.ErrCouldNotGetBoard
+			return nil, apperrors.ErrCouldNotGetTask
 		}
 		tasks = append(tasks, task)
 	}
