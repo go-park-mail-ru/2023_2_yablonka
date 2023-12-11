@@ -88,7 +88,7 @@ func (ts TaskService) RemoveUser(ctx context.Context, info dto.RemoveTaskUserInf
 	logger.DebugFmt("got user", funcName, nodeName)
 
 	if !userAccess {
-		return apperrors.ErrUserAlreadyInTask
+		return apperrors.ErrUserNotInTask
 	}
 	logger.DebugFmt("user not in task", funcName, nodeName)
 

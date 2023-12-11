@@ -193,6 +193,8 @@ var (
 	ErrCouldNotRemoveTaskUser = errors.New("couldn't remove user from task")
 	// ErrUserAlreadyInTask ошибка: пользователь уже есть в задании
 	ErrUserAlreadyInTask = errors.New("user already in task")
+	// ErrUserNotInTask ошибка: пользователь уже есть в задании
+	ErrUserNotInTask = errors.New("user not in task")
 )
 
 // Ошибки, связанные с CommentService
@@ -284,6 +286,7 @@ var ErrorMap = map[error]ErrorResponse{
 	ErrCouldNotAddBoardUser:     InternalServerErrorResponse,
 	ErrCouldNotRemoveBoardUser:  InternalServerErrorResponse,
 	ErrCouldNotAddTaskUser:      InternalServerErrorResponse,
+	ErrCouldNotRemoveTaskUser:   InternalServerErrorResponse,
 	ErrTaskNotCreated:           InternalServerErrorResponse,
 	ErrTaskNotUpdated:           InternalServerErrorResponse,
 	ErrTaskNotDeleted:           InternalServerErrorResponse,
@@ -303,6 +306,7 @@ var ErrorMap = map[error]ErrorResponse{
 	ErrUserAlreadyInBoard:       StatusConflictResponse,
 	ErrUserNotInBoard:           StatusConflictResponse,
 	ErrUserAlreadyInTask:        StatusConflictResponse,
+	ErrUserNotInTask:            StatusConflictResponse,
 	ErrFailedToCreateFile:       InternalServerErrorResponse,
 	ErrFailedToSaveFile:         InternalServerErrorResponse,
 	ErrFailedToDeleteFile:       InternalServerErrorResponse,
