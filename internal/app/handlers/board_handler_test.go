@@ -1252,7 +1252,7 @@ func TestBoardHandler_Unit_AddUser(t *testing.T) {
 					body := bytes.NewReader([]byte(""))
 
 					r := httptest.
-						NewRequest("DELETE", "/api/v2/board/delete/", body).
+						NewRequest("POST", "/api/v2/board/user/add/", body).
 						WithContext(
 							context.WithValue(
 								context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
@@ -1289,7 +1289,7 @@ func TestBoardHandler_Unit_AddUser(t *testing.T) {
 					)))
 
 					r := httptest.
-						NewRequest("DELETE", "/api/v2/board/delete/", body).
+						NewRequest("POST", "/api/v2/board/user/add/", body).
 						WithContext(
 							context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
 						)
@@ -1566,7 +1566,7 @@ func TestBoardHandler_Unit_RemoveUser(t *testing.T) {
 					body := bytes.NewReader([]byte(""))
 
 					r := httptest.
-						NewRequest("DELETE", "/api/v2/board/delete/", body).
+						NewRequest("POST", "/api/v2/board/user/remove/", body).
 						WithContext(
 							context.WithValue(
 								context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
@@ -1603,7 +1603,7 @@ func TestBoardHandler_Unit_RemoveUser(t *testing.T) {
 					)))
 
 					r := httptest.
-						NewRequest("DELETE", "/api/v2/board/delete/", body).
+						NewRequest("POST", "/api/v2/board/user/remove/", body).
 						WithContext(
 							context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
 						)
