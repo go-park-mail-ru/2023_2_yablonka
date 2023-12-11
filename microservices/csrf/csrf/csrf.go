@@ -66,6 +66,8 @@ func (cs *CSRFService) SetupCSRF(ctx context.Context, id *UserID) (*SetupCSRFRes
 	expiresAt := time.Now().Add(cs.sessionDuration)
 	response := &SetupCSRFResponse{}
 
+	sCtx := context.WithValue(ctx, dto.LoggerKey, cs.logger)
+
 	token, err := generateToken(cs.sessionIDLength)
 	if err != nil {
 		response.Code = CSRFServiceErrorCodes[apperrors.ErrTokenNotGenerated]
@@ -80,7 +82,7 @@ func (cs *CSRFService) SetupCSRF(ctx context.Context, id *UserID) (*SetupCSRFRes
 		ExpirationDate: expiresAt,
 	}
 
-	err = cs.csrfStorage.Create(ctx, csrf)
+	err = cs.csrfStorage.Create(sCtx, csrf)
 	if err != nil {
 		response.Code = CSRFServiceErrorCodes[err]
 		response.Response = &CSRFData{}
@@ -104,7 +106,9 @@ func (cs *CSRFService) VerifyCSRF(ctx context.Context, token *CSRFToken) (*Verif
 	funcName := "CSRFService.VerifyCSRF"
 	response := &VerifyCSRFResponse{}
 
-	CSRFObj, err := cs.csrfStorage.Get(ctx, dto.CSRFToken{Value: token.Value})
+	sCtx := context.WithValue(ctx, dto.LoggerKey, cs.logger)
+
+	CSRFObj, err := cs.csrfStorage.Get(sCtx, dto.CSRFToken{Value: token.Value})
 	if err != nil {
 		response.Code = CSRFServiceErrorCodes[err]
 		return response, nil
@@ -132,7 +136,9 @@ func (cs *CSRFService) VerifyCSRF(ctx context.Context, token *CSRFToken) (*Verif
 func (cs *CSRFService) DeleteCSRF(ctx context.Context, token *CSRFToken) (*DeleteCSRFResponse, error) {
 	response := &DeleteCSRFResponse{}
 
-	err := cs.csrfStorage.Delete(ctx, dto.CSRFToken{Value: token.Value})
+	sCtx := context.WithValue(ctx, dto.LoggerKey, cs.logger)
+
+	err := cs.csrfStorage.Delete(sCtx, dto.CSRFToken{Value: token.Value})
 	response.Code = CSRFServiceErrorCodes[err]
 
 	return response, nil
