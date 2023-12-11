@@ -64,12 +64,12 @@ func (ts TaskService) AddUser(ctx context.Context, info dto.AddTaskUserInfo) err
 	if err != nil {
 		return apperrors.ErrCouldNotGetUser
 	}
-	logger.Debug("got user", funcName, nodeName)
+	logger.DebugFmt("got user", funcName, nodeName)
 
 	if userAccess {
 		return apperrors.ErrUserAlreadyInTask
 	}
-	logger.Debug("user not in task", funcName, nodeName)
+	logger.DebugFmt("user not in task", funcName, nodeName)
 
 	return ts.taskStorage.AddUser(ctx, info)
 }
@@ -85,12 +85,12 @@ func (ts TaskService) RemoveUser(ctx context.Context, info dto.RemoveTaskUserInf
 	if err != nil {
 		return apperrors.ErrCouldNotGetUser
 	}
-	logger.Debug("got user", funcName, nodeName)
+	logger.DebugFmt("got user", funcName, nodeName)
 
 	if !userAccess {
-		return apperrors.ErrUserAlreadyInTask
+		return apperrors.ErrUserNotInTask
 	}
-	logger.Debug("user not in task", funcName, nodeName)
+	logger.DebugFmt("user not in task", funcName, nodeName)
 
 	return ts.taskStorage.RemoveUser(ctx, info)
 }

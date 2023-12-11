@@ -113,7 +113,7 @@ func (s PostgresCSATQuestionStorage) GetStats(ctx context.Context) (*[]dto.Quest
 	rows, err := s.db.Query(questionQuery, args...)
 	if err != nil {
 		log.Println("Storage -- DB questions query failed with error", err.Error())
-		return nil, err
+		return nil, apperrors.ErrCouldNotGetQuestions
 	}
 	log.Println("questions got")
 	defer rows.Close()
@@ -130,7 +130,7 @@ func (s PostgresCSATQuestionStorage) GetStats(ctx context.Context) (*[]dto.Quest
 		)
 		if err != nil {
 			fmt.Println("Scanning failed due to error", err.Error())
-			return nil, err
+			return nil, apperrors.ErrCouldNotGetQuestions
 		}
 		questions[question.ID] = question
 		questionsID = append(questionsID, question.ID)
@@ -150,7 +150,7 @@ func (s PostgresCSATQuestionStorage) GetStats(ctx context.Context) (*[]dto.Quest
 		return nil, apperrors.ErrCouldNotBuildQuery
 	}
 
-	log.Println("Built boards query\n\t", statsQuery, "\nwith args\n\t", args)
+	log.Println("Built answer stats query\n\t", statsQuery, "\nwith args\n\t", args)
 
 	rows, err = s.db.Query(statsQuery, args...)
 	if err != nil {
@@ -172,7 +172,7 @@ func (s PostgresCSATQuestionStorage) GetStats(ctx context.Context) (*[]dto.Quest
 		)
 		if err != nil {
 			fmt.Println("Scanning failed due to error", err.Error())
-			return nil, err
+			return nil, apperrors.ErrCouldNotGetQuestions
 		}
 		statRows = append(statRows, board)
 	}
