@@ -110,7 +110,7 @@ func (s *PostgresCommentStorage) GetFromTask(ctx context.Context, id dto.TaskID)
 func (s *PostgresCommentStorage) ReadMany(ctx context.Context, ids dto.CommentIDs) (*[]dto.CommentInfo, error) {
 	funcName := "PostgresCommentStorage.ReadMany"
 	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
-	logger.Debug("got logger", funcName, nodeName)
+	logger.DebugFmt("got logger", funcName, nodeName)
 
 	query, args, err := sq.
 		Select(allCommentFields...).
@@ -119,17 +119,17 @@ func (s *PostgresCommentStorage) ReadMany(ctx context.Context, ids dto.CommentID
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
 	if err != nil {
-		logger.Debug(err.Error(), funcName, nodeName)
+		logger.DebugFmt(err.Error(), funcName, nodeName)
 		return nil, apperrors.ErrCouldNotBuildQuery
 	}
-	logger.Debug("Built query\n\t"+query+"\nwith args\n\t"+fmt.Sprintf("%+v", args), funcName, nodeName)
+	logger.DebugFmt("Built query\n\t"+query+"\nwith args\n\t"+fmt.Sprintf("%+v", args), funcName, nodeName)
 
 	rows, err := s.db.Query(query, args...)
 	if err != nil {
 		return nil, apperrors.ErrCouldNotGetBoardUsers
 	}
 	defer rows.Close()
-	logger.Debug("Got comment rows", funcName, nodeName)
+	logger.DebugFmt("Got comment rows", funcName, nodeName)
 
 	comments := []dto.CommentInfo{}
 	for rows.Next() {
@@ -146,7 +146,7 @@ func (s *PostgresCommentStorage) ReadMany(ctx context.Context, ids dto.CommentID
 		}
 		comments = append(comments, comment)
 	}
-	logger.Debug("Got task from DB", funcName, nodeName)
+	logger.DebugFmt("Got task from DB", funcName, nodeName)
 
 	return &comments, nil
 }
