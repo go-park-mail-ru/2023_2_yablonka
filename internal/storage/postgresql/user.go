@@ -76,7 +76,7 @@ func (s *PostgresUserStorage) GetWithLogin(ctx context.Context, login dto.UserLo
 // или возвращает ошибки ...
 func (s *PostgresUserStorage) GetWithID(ctx context.Context, id dto.UserID) (*entities.User, error) {
 	funcName := "PostgresUserStorage.GetWithID"
-	errorMessage := "Creating user failed with error: "
+	errorMessage := "Getting user failed with error: "
 	failBorder := ">>>>>>>>>>>>>>>>>>> PostgresUserStorage.GetWithID FAIL <<<<<<<<<<<<<<<<<<<<<<<"
 	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
 
@@ -98,7 +98,7 @@ func (s *PostgresUserStorage) GetWithID(ctx context.Context, id dto.UserID) (*en
 	row := s.db.QueryRow(sql, args...)
 	user := entities.User{}
 	if row.Scan(&user.ID, &user.Email, &user.PasswordHash, &user.Name, &user.Surname, &user.AvatarURL, &user.Description) != nil {
-		logger.DebugFmt(errorMessage+err.Error(), funcName, nodeName)
+		logger.DebugFmt(errorMessage+apperrors.ErrUserNotFound.Error(), funcName, nodeName)
 		logger.Debug(failBorder)
 		return nil, apperrors.ErrUserNotFound
 	}

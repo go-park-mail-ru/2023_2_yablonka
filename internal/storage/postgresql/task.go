@@ -32,8 +32,12 @@ func NewTaskStorage(db *sql.DB) *PostgresTaskStorage {
 // создает новое задание в БД по данным
 // или возвращает ошибки ...
 func (s PostgresTaskStorage) Create(ctx context.Context, info dto.NewTaskInfo) (*entities.Task, error) {
-	funcName := "PostgreSQLTaskStorage.Create"
+	funcName := "PostgresTaskStorage.Create"
+	errorMessage := "Creating task failed with error: "
+	failBorder := ">>>>>>>>>>>>>>>>>>> PostgresTaskStorage.Create FAIL <<<<<<<<<<<<<<<<<<<<<<<"
 	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
+
+	logger.Debug(">>>>>>>>>>>>>>>> PostgresTaskStorage.Create <<<<<<<<<<<<<<<<<<<")
 
 	sql, args, err := sq.
 		Insert("public.task").
@@ -42,11 +46,11 @@ func (s PostgresTaskStorage) Create(ctx context.Context, info dto.NewTaskInfo) (
 		PlaceholderFormat(sq.Dollar).
 		Suffix("RETURNING id, date_created").
 		ToSql()
-
 	if err != nil {
+		logger.DebugFmt(errorMessage+err.Error(), funcName, nodeName)
+		logger.Debug(failBorder)
 		return nil, apperrors.ErrCouldNotBuildQuery
 	}
-
 	logger.DebugFmt("Built query\n\t"+sql+"\nwith args\n\t"+fmt.Sprintf("%+v", args), funcName, nodeName)
 
 	task := entities.Task{
@@ -57,16 +61,16 @@ func (s PostgresTaskStorage) Create(ctx context.Context, info dto.NewTaskInfo) (
 		Checklists:   []uint64{},
 		Comments:     []uint64{},
 	}
-
-	log.Println("Storage -- Querying DB")
 	query := s.db.QueryRow(sql, args...)
-
 	err = query.Scan(&task.ID, &task.DateCreated)
-
 	if err != nil {
-		log.Println("Storage -- Task failed to create with error", err.Error())
+		logger.DebugFmt(errorMessage+err.Error(), funcName, nodeName)
+		logger.Debug(failBorder)
 		return nil, apperrors.ErrTaskNotCreated
 	}
+	logger.DebugFmt("Created task", funcName, nodeName)
+
+	logger.Debug(">>>>>>>>>>>>>>>> PostgresTaskStorage.Create SUCCESS <<<<<<<<<<<<<<<<<<<")
 
 	return &task, nil
 }
