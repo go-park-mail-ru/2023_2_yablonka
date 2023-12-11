@@ -60,7 +60,7 @@ func (a *AuthService) AuthUser(ctx context.Context, id *UserID) (*AuthUserRespon
 		response.Response = &SessionToken{}
 		return response, nil
 	}
-	a.logger.Debug("Session ID generated", funcName, nodeName)
+	a.logger.DebugFmt("Session ID generated", funcName, nodeName)
 
 	session := &entities.Session{
 		SessionID:  sessionID,
@@ -68,13 +68,15 @@ func (a *AuthService) AuthUser(ctx context.Context, id *UserID) (*AuthUserRespon
 		ExpiryDate: expiresAt,
 	}
 
-	err = a.authStorage.CreateSession(ctx, session)
+	sCtx := context.WithValue(ctx, dto.LoggerKey, a.logger)
+
+	err = a.authStorage.CreateSession(sCtx, session)
 	if err != nil {
 		response.Code = AuthServiceErrorCodes[err]
 		response.Response = &SessionToken{}
 		return response, nil
 	}
-	a.logger.Debug("Session created", funcName, nodeName)
+	a.logger.DebugFmt("Session created", funcName, nodeName)
 
 	response.Code = AuthServiceErrorCodes[nil]
 	response.Response = &SessionToken{
@@ -95,19 +97,21 @@ func (a *AuthService) VerifyAuth(ctx context.Context, token *SessionToken) (*Ver
 	}
 	response := &VerifyAuthResponse{}
 
-	sessionObj, err := a.authStorage.GetSession(ctx, convertedSession)
+	sCtx := context.WithValue(ctx, dto.LoggerKey, a.logger)
+
+	sessionObj, err := a.authStorage.GetSession(sCtx, convertedSession)
 	if err != nil {
-		a.logger.Debug("Session not found", funcName, nodeName)
+		a.logger.DebugFmt("Session not found", funcName, nodeName)
 		response.Code = AuthServiceErrorCodes[err]
 		response.Response = &UserID{}
 		return response, nil
 	}
-	a.logger.Debug("Found session", funcName, nodeName)
+	a.logger.DebugFmt("Found session", funcName, nodeName)
 
 	if sessionObj.ExpiryDate.Before(time.Now()) {
-		a.logger.Debug("Deleting expired session", funcName, nodeName)
-		for _, err = a.LogOut(ctx, token); err != nil; {
-			_, err = a.LogOut(ctx, token)
+		a.logger.DebugFmt("Deleting expired session", funcName, nodeName)
+		for _, err = a.LogOut(sCtx, token); err != nil; {
+			_, err = a.LogOut(sCtx, token)
 		}
 		response.Code = AuthServiceErrorCodes[apperrors.ErrSessionExpired]
 		response.Response = &UserID{}
@@ -129,11 +133,14 @@ func (a *AuthService) LogOut(ctx context.Context, token *SessionToken) (*LogOutR
 		ExpirationDate: token.ExpirationDate.AsTime(),
 	}
 	response := &LogOutResponse{}
-	err := a.authStorage.DeleteSession(ctx, convertedSession)
+
+	sCtx := context.WithValue(ctx, dto.LoggerKey, a.logger)
+
+	err := a.authStorage.DeleteSession(sCtx, convertedSession)
 	if err != nil {
-		a.logger.Debug("Failed to delete session with error "+err.Error(), funcName, nodeName)
+		a.logger.DebugFmt("Failed to delete session with error "+err.Error(), funcName, nodeName)
 	} else {
-		a.logger.Debug("Session deleted", funcName, nodeName)
+		a.logger.DebugFmt("Session deleted", funcName, nodeName)
 	}
 	response.Code = AuthServiceErrorCodes[err]
 

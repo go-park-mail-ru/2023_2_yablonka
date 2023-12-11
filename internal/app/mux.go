@@ -70,6 +70,7 @@ func GetChiMux(manager handlers.Handlers, config config.Config, logger logging.I
 			r.Post("/create/", manager.ListHandler.Create)
 			r.Post("/edit/", manager.ListHandler.Update)
 			r.Delete("/delete/", manager.ListHandler.Delete)
+			r.Delete("/reorder/", manager.ListHandler.UpdateOrder)
 		})
 		r.Route("/task", func(r chi.Router) {
 			r.Use(middleware.AuthMiddleware(manager.AuthHandler.GetAuthService(), manager.AuthHandler.GetUserService()))
@@ -114,7 +115,7 @@ func GetChiMux(manager handlers.Handlers, config config.Config, logger logging.I
 			r.Post("/create/", manager.CSATQuestionHandler.Create)
 			r.Post("/edit/", manager.CSATQuestionHandler.Update)
 		})
-		r.Post("/answer", manager.CSATAnswerHandler.Create)
+		r.Post("/answer/", manager.CSATAnswerHandler.Create)
 	})
 	return mux, nil
 }

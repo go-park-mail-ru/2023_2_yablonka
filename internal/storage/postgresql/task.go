@@ -32,8 +32,12 @@ func NewTaskStorage(db *sql.DB) *PostgresTaskStorage {
 // создает новое задание в БД по данным
 // или возвращает ошибки ...
 func (s PostgresTaskStorage) Create(ctx context.Context, info dto.NewTaskInfo) (*entities.Task, error) {
-	funcName := "PostgreSQLTaskStorage.Create"
+	funcName := "PostgresTaskStorage.Create"
+	errorMessage := "Creating task failed with error: "
+	failBorder := ">>>>>>>>>>>>>>>>>>> PostgresTaskStorage.Create FAIL <<<<<<<<<<<<<<<<<<<<<<<"
 	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
+
+	logger.Debug(">>>>>>>>>>>>>>>> PostgresTaskStorage.Create <<<<<<<<<<<<<<<<<<<")
 
 	sql, args, err := sq.
 		Insert("public.task").
@@ -42,12 +46,12 @@ func (s PostgresTaskStorage) Create(ctx context.Context, info dto.NewTaskInfo) (
 		PlaceholderFormat(sq.Dollar).
 		Suffix("RETURNING id, date_created").
 		ToSql()
-
 	if err != nil {
+		logger.DebugFmt(errorMessage+err.Error(), funcName, nodeName)
+		logger.Debug(failBorder)
 		return nil, apperrors.ErrCouldNotBuildQuery
 	}
-
-	logger.Debug("Built query\n\t"+sql+"\nwith args\n\t"+fmt.Sprintf("%+v", args), funcName, nodeName)
+	logger.DebugFmt("Built query\n\t"+sql+"\nwith args\n\t"+fmt.Sprintf("%+v", args), funcName, nodeName)
 
 	task := entities.Task{
 		Name:         info.Name,
@@ -57,16 +61,16 @@ func (s PostgresTaskStorage) Create(ctx context.Context, info dto.NewTaskInfo) (
 		Checklists:   []uint64{},
 		Comments:     []uint64{},
 	}
-
-	log.Println("Storage -- Querying DB")
 	query := s.db.QueryRow(sql, args...)
-
 	err = query.Scan(&task.ID, &task.DateCreated)
-
 	if err != nil {
-		log.Println("Storage -- Task failed to create with error", err.Error())
+		logger.DebugFmt(errorMessage+err.Error(), funcName, nodeName)
+		logger.Debug(failBorder)
 		return nil, apperrors.ErrTaskNotCreated
 	}
+	logger.DebugFmt("Created task", funcName, nodeName)
+
+	logger.Debug(">>>>>>>>>>>>>>>> PostgresTaskStorage.Create SUCCESS <<<<<<<<<<<<<<<<<<<")
 
 	return &task, nil
 }
@@ -79,18 +83,18 @@ func (s *PostgresTaskStorage) Read(ctx context.Context, id dto.TaskID) (*dto.Sin
 	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
 
 	query, args, err := sq.
-		Select(allTaskFields...).
+		Select(allTaskFields2...).
 		From("public.task").
 		Join("public.task_user ON public.task.id = public.task_user.id_task").
 		Join("public.comment ON public.task.id = public.comment.id_task").
-		Where(sq.Eq{"id": id.Value}).
+		Where(sq.Eq{"public.task.id": id.Value}).
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
 	if err != nil {
 		log.Println("Storage -- Failed to build query with error", err.Error())
 		return nil, apperrors.ErrCouldNotBuildQuery
 	}
-	logger.Debug("Built query\n\t"+query+"\nwith args\n\t"+fmt.Sprintf("%+v", args), funcName, nodeName)
+	logger.DebugFmt("Built query\n\t"+query+"\nwith args\n\t"+fmt.Sprintf("%+v", args), funcName, nodeName)
 
 	task := dto.SingleTaskInfo{}
 	row := s.db.QueryRow(query, args...)
@@ -103,13 +107,13 @@ func (s *PostgresTaskStorage) Read(ctx context.Context, id dto.TaskID) (*dto.Sin
 		&task.ListPosition,
 		&task.Start,
 		&task.End,
-		&task.UserIDs,
-		&task.CommentIDs,
+		(*pq.StringArray)(&task.UserIDs),
+		(*pq.StringArray)(&task.CommentIDs),
 	); err != nil {
 		log.Println("Failed to query DB with error", err.Error())
 		return nil, apperrors.ErrCouldNotGetTask
 	}
-	logger.Debug("Got task from DB", funcName, nodeName)
+	logger.DebugFmt("Got task from DB", funcName, nodeName)
 
 	return &task, nil
 }
@@ -135,15 +139,15 @@ func (s *PostgresTaskStorage) ReadMany(ctx context.Context, id dto.TaskIDs) (*[]
 		log.Println("Storage -- Failed to build query with error", err.Error())
 		return nil, apperrors.ErrCouldNotBuildQuery
 	}
-	logger.Debug("Built query\n\t"+query+"\nwith args\n\t"+fmt.Sprintf("%+v", args), funcName, nodeName)
+	logger.DebugFmt("Built query\n\t"+query+"\nwith args\n\t"+fmt.Sprintf("%+v", args), funcName, nodeName)
 
 	rows, err := s.db.Query(query, args...)
 	if err != nil {
-		logger.Debug(err.Error(), funcName, nodeName)
+		logger.DebugFmt(err.Error(), funcName, nodeName)
 		return nil, apperrors.ErrCouldNotGetBoardUsers
 	}
 	defer rows.Close()
-	logger.Debug("Got task rows", funcName, nodeName)
+	logger.DebugFmt("Got task rows", funcName, nodeName)
 
 	tasks := []dto.SingleTaskInfo{}
 	for rows.Next() {
@@ -163,12 +167,12 @@ func (s *PostgresTaskStorage) ReadMany(ctx context.Context, id dto.TaskIDs) (*[]
 			(*pq.StringArray)(&task.ChecklistIDs),
 		)
 		if err != nil {
-			logger.Debug(err.Error(), funcName, nodeName)
+			logger.DebugFmt(err.Error(), funcName, nodeName)
 			return nil, apperrors.ErrCouldNotGetBoard
 		}
 		tasks = append(tasks, task)
 	}
-	logger.Debug("Got task from DB", funcName, nodeName)
+	logger.DebugFmt("Got task from DB", funcName, nodeName)
 
 	return &tasks, nil
 }
@@ -254,14 +258,14 @@ func (s PostgresTaskStorage) AddUser(ctx context.Context, info dto.AddTaskUserIn
 	if err != nil {
 		return apperrors.ErrCouldNotBuildQuery
 	}
-	logger.Debug("Built query\n\t"+sql+"\nwith args\n\t"+fmt.Sprintf("%+v", args), funcName, nodeName)
+	logger.DebugFmt("Built query\n\t"+sql+"\nwith args\n\t"+fmt.Sprintf("%+v", args), funcName, nodeName)
 
 	_, err = s.db.Exec(sql, args...)
 	if err != nil {
-		logger.Debug("Insert failed with error "+err.Error(), funcName, nodeName)
+		logger.DebugFmt("Insert failed with error "+err.Error(), funcName, nodeName)
 		return apperrors.ErrCouldNotAddTaskUser
 	}
-	logger.Debug("query executed", funcName, nodeName)
+	logger.DebugFmt("query executed", funcName, nodeName)
 
 	return nil
 }
@@ -285,14 +289,14 @@ func (s PostgresTaskStorage) RemoveUser(ctx context.Context, info dto.RemoveTask
 	if err != nil {
 		return apperrors.ErrCouldNotBuildQuery
 	}
-	logger.Debug("Built query\n\t"+sql+"\nwith args\n\t"+fmt.Sprintf("%+v", args), funcName, nodeName)
+	logger.DebugFmt("Built query\n\t"+sql+"\nwith args\n\t"+fmt.Sprintf("%+v", args), funcName, nodeName)
 
 	_, err = s.db.Exec(sql, args...)
 	if err != nil {
-		logger.Debug("Delete failed with error "+err.Error(), funcName, nodeName)
+		logger.DebugFmt("Delete failed with error "+err.Error(), funcName, nodeName)
 		return apperrors.ErrCouldNotRemoveTaskUser
 	}
-	logger.Debug("query executed", funcName, nodeName)
+	logger.DebugFmt("query executed", funcName, nodeName)
 
 	return nil
 }
@@ -315,16 +319,16 @@ func (s *PostgresTaskStorage) CheckAccess(ctx context.Context, info dto.CheckTas
 	if err != nil {
 		return false, apperrors.ErrCouldNotBuildQuery
 	}
-	logger.Debug("Built query\n\t"+listSql+"\nwith args\n\t"+fmt.Sprintf("%+v", args), funcName, nodeName)
+	logger.DebugFmt("Built query\n\t"+listSql+"\nwith args\n\t"+fmt.Sprintf("%+v", args), funcName, nodeName)
 
 	row := s.db.QueryRow(listSql, args...)
-	logger.Debug("Got user row", funcName, nodeName)
+	logger.DebugFmt("Got user row", funcName, nodeName)
 
 	var count uint64
 	if row.Scan(&count) != nil {
 		return false, apperrors.ErrCouldNotGetUser
 	}
-	logger.Debug("checked database", funcName, nodeName)
+	logger.DebugFmt("checked database", funcName, nodeName)
 
 	return count > 0, nil
 }

@@ -51,7 +51,7 @@ func (uh UserHandler) ChangePassword(w http.ResponseWriter, r *http.Request) {
 		apperrors.ReturnError(apperrors.BadRequestResponse, w, r)
 		return
 	}
-	logger.Debug("JSON parsed", funcName, nodeName)
+	logger.DebugFmt("JSON parsed", funcName, nodeName)
 
 	_, err = govalidator.ValidateStruct(passwords)
 	if err != nil {
@@ -60,10 +60,18 @@ func (uh UserHandler) ChangePassword(w http.ResponseWriter, r *http.Request) {
 		apperrors.ReturnError(apperrors.BadRequestResponse, w, r)
 		return
 	}
-	logger.Debug("Request data validated", funcName, nodeName)
+	logger.DebugFmt("Request data validated", funcName, nodeName)
 
-	userID := rCtx.Value(dto.UserObjKey).(*entities.User).ID
-	passwords.UserID = userID
+	user, ok := rCtx.Value(dto.UserObjKey).(*entities.User)
+	if !ok {
+		logger.Error(errorMessage + "User not found")
+		logger.Info(failBorder)
+		apperrors.ReturnError(apperrors.GenericUnauthorizedResponse, w, r)
+		return
+	}
+	logger.DebugFmt("User object acquired from context", funcName, nodeName)
+
+	passwords.UserID = user.ID
 	err = uh.us.UpdatePassword(rCtx, passwords)
 	if err != nil {
 		logger.Error(errorMessage + err.Error())
@@ -71,7 +79,7 @@ func (uh UserHandler) ChangePassword(w http.ResponseWriter, r *http.Request) {
 		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
 		return
 	}
-	logger.Debug("Password updated", funcName, nodeName)
+	logger.DebugFmt("Password updated", funcName, nodeName)
 
 	response := dto.JSONResponse{
 		Body: dto.JSONMap{},
@@ -83,7 +91,7 @@ func (uh UserHandler) ChangePassword(w http.ResponseWriter, r *http.Request) {
 		apperrors.ReturnError(apperrors.InternalServerErrorResponse, w, r)
 		return
 	}
-	logger.Debug("response written", funcName, nodeName)
+	logger.DebugFmt("response written", funcName, nodeName)
 
 	logger.Info("---------------------------------- Changing user's password SUCCESS ----------------------------------")
 }
@@ -120,7 +128,7 @@ func (uh UserHandler) ChangeProfile(w http.ResponseWriter, r *http.Request) {
 		apperrors.ReturnError(apperrors.GenericUnauthorizedResponse, w, r)
 		return
 	}
-	logger.Debug("User object acquired from context", funcName, nodeName)
+	logger.DebugFmt("User object acquired from context", funcName, nodeName)
 
 	err := json.NewDecoder(r.Body).Decode(&newProfileInfo)
 	if err != nil {
@@ -129,7 +137,7 @@ func (uh UserHandler) ChangeProfile(w http.ResponseWriter, r *http.Request) {
 		apperrors.ReturnError(apperrors.BadRequestResponse, w, r)
 		return
 	}
-	logger.Debug("JSON decoded", funcName, nodeName)
+	logger.DebugFmt("JSON decoded", funcName, nodeName)
 
 	_, err = govalidator.ValidateStruct(newProfileInfo)
 	if err != nil {
@@ -138,7 +146,7 @@ func (uh UserHandler) ChangeProfile(w http.ResponseWriter, r *http.Request) {
 		apperrors.ReturnError(apperrors.BadRequestResponse, w, r)
 		return
 	}
-	logger.Debug("Request data validated", funcName, nodeName)
+	logger.DebugFmt("Request data validated", funcName, nodeName)
 
 	newProfileInfo.UserID = user.ID
 	err = uh.us.UpdateProfile(rCtx, newProfileInfo)
@@ -148,7 +156,7 @@ func (uh UserHandler) ChangeProfile(w http.ResponseWriter, r *http.Request) {
 		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
 		return
 	}
-	logger.Debug("User info updated", funcName, nodeName)
+	logger.DebugFmt("User info updated", funcName, nodeName)
 
 	response := dto.JSONResponse{
 		Body: dto.JSONMap{},
@@ -160,7 +168,7 @@ func (uh UserHandler) ChangeProfile(w http.ResponseWriter, r *http.Request) {
 		apperrors.ReturnError(apperrors.InternalServerErrorResponse, w, r)
 		return
 	}
-	logger.Debug("response written", funcName, nodeName)
+	logger.DebugFmt("response written", funcName, nodeName)
 
 	logger.Info("---------------------------------- Changing user's profile SUCCESS ----------------------------------")
 }
@@ -197,7 +205,7 @@ func (uh UserHandler) ChangeAvatar(w http.ResponseWriter, r *http.Request) {
 		apperrors.ReturnError(apperrors.GenericUnauthorizedResponse, w, r)
 		return
 	}
-	logger.Debug("User object acquired from context", funcName, nodeName)
+	logger.DebugFmt("User object acquired from context", funcName, nodeName)
 
 	err := json.NewDecoder(r.Body).Decode(&avatarChangeInfo)
 	if err != nil {
@@ -206,7 +214,7 @@ func (uh UserHandler) ChangeAvatar(w http.ResponseWriter, r *http.Request) {
 		apperrors.ReturnError(apperrors.BadRequestResponse, w, r)
 		return
 	}
-	logger.Debug("JSON parsed", funcName, nodeName)
+	logger.DebugFmt("JSON parsed", funcName, nodeName)
 
 	_, err = govalidator.ValidateStruct(avatarChangeInfo)
 	if err != nil {
@@ -215,7 +223,7 @@ func (uh UserHandler) ChangeAvatar(w http.ResponseWriter, r *http.Request) {
 		apperrors.ReturnError(apperrors.BadRequestResponse, w, r)
 		return
 	}
-	logger.Debug("Request data validated", funcName, nodeName)
+	logger.DebugFmt("Request data validated", funcName, nodeName)
 
 	avatarChangeInfo.UserID = user.ID
 	url, err := uh.us.UpdateAvatar(rCtx, avatarChangeInfo)
@@ -225,7 +233,7 @@ func (uh UserHandler) ChangeAvatar(w http.ResponseWriter, r *http.Request) {
 		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
 		return
 	}
-	logger.Debug("User avatar updated", funcName, nodeName)
+	logger.DebugFmt("User avatar updated", funcName, nodeName)
 
 	response := dto.JSONResponse{
 		Body: dto.JSONMap{
@@ -239,7 +247,7 @@ func (uh UserHandler) ChangeAvatar(w http.ResponseWriter, r *http.Request) {
 		apperrors.ReturnError(apperrors.InternalServerErrorResponse, w, r)
 		return
 	}
-	logger.Debug("response written", funcName, nodeName)
+	logger.DebugFmt("response written", funcName, nodeName)
 
 	logger.Info("---------------------------------- Changing user's avatar SUCCESS ----------------------------------")
 }

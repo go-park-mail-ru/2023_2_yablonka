@@ -26,4 +26,8 @@ type IListStorage interface {
 	// удаляет списсок задач в БД
 	// или возвращает ошибки ...
 	Delete(context.Context, dto.ListID) error
+	// UpdateOrder
+	// изменяет порядок списков по id
+	// или возвращает ошибки ...
+	UpdateOrder(context.Context, dto.ListIDs) error
 }
