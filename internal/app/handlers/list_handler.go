@@ -162,7 +162,7 @@ func (lh ListHandler) Delete(w http.ResponseWriter, r *http.Request) {
 
 	logger.Info("---------------------------------- Deleting list ----------------------------------")
 
-	var listID uint64
+	var listID dto.ListID
 	err := json.NewDecoder(r.Body).Decode(&listID)
 	if err != nil {
 		logger.Error(errorMessage + err.Error())
@@ -172,10 +172,7 @@ func (lh ListHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	}
 	logger.DebugFmt("request struct decoded", funcName, nodeName)
 
-	listIDObj := dto.ListID{
-		Value: listID,
-	}
-	err = lh.ls.Delete(rCtx, listIDObj)
+	err = lh.ls.Delete(rCtx, listID)
 	if err != nil {
 		logger.Error(errorMessage + err.Error())
 		logger.Info(failBorder)

@@ -11,6 +11,7 @@ import (
 	"server/internal/app/handlers"
 	"server/internal/apperrors"
 	"server/internal/pkg/dto"
+	"server/internal/pkg/entities"
 	"server/mocks/mock_service"
 	"testing"
 
@@ -19,29 +20,29 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
-func createChecklistMux(
-	mockChecklistService *mock_service.MockIChecklistService,
+func createListMux(
+	mockListService *mock_service.MockIListService,
 ) (http.Handler, error) {
-	ChecklistHandler := *handlers.NewChecklistHandler(mockChecklistService)
+	ListHandler := *handlers.NewListHandler(mockListService)
 
 	mux := chi.NewRouter()
 	mux.Route("/api/v2", func(r chi.Router) {
-		r.Route("/checklist", func(r chi.Router) {
-			r.Post("/create/", ChecklistHandler.Create)
-			r.Post("/edit/", ChecklistHandler.Update)
-			r.Delete("/delete/", ChecklistHandler.Delete)
+		r.Route("/list", func(r chi.Router) {
+			r.Post("/create/", ListHandler.Create)
+			r.Post("/edit/", ListHandler.Update)
+			r.Delete("/delete/", ListHandler.Delete)
 		})
 	})
 	return mux, nil
 }
 
-func TestChecklistHandler_Create(t *testing.T) {
+func TestListHandler_Create(t *testing.T) {
 	t.Parallel()
 
 	type args struct {
-		newChecklist     dto.NewChecklistInfo
-		createdChecklist *dto.ChecklistInfo
-		expectations     func(cls *mock_service.MockIChecklistService, args args) *http.Request
+		newList      dto.NewListInfo
+		createdList  *entities.List
+		expectations func(cls *mock_service.MockIListService, args args) *http.Request
 	}
 	tests := []struct {
 		name         string
@@ -52,28 +53,28 @@ func TestChecklistHandler_Create(t *testing.T) {
 		{
 			name: "Successful create",
 			args: args{
-				newChecklist: dto.NewChecklistInfo{
-					TaskID:       uint64(1),
-					Name:         "Mock new checklist",
+				newList: dto.NewListInfo{
+					BoardID:      uint64(1),
+					Name:         "Mock new List",
 					ListPosition: uint64(0),
 				},
-				createdChecklist: &dto.ChecklistInfo{
+				createdList: &entities.List{
 					ID:           uint64(1),
-					TaskID:       uint64(1),
-					Name:         "Mock new checklist",
+					BoardID:      uint64(1),
+					Name:         "Mock new List",
 					ListPosition: uint64(0),
 				},
-				expectations: func(cls *mock_service.MockIChecklistService, args args) *http.Request {
+				expectations: func(cls *mock_service.MockIListService, args args) *http.Request {
 					cls.
 						EXPECT().
-						Create(gomock.Any(), args.newChecklist).
-						Return(args.createdChecklist, nil)
+						Create(gomock.Any(), args.newList).
+						Return(args.createdList, nil)
 
-					body := bytes.NewReader([]byte(fmt.Sprintf(`{"task_id":%v, "name":"%s", "list_position":%v}`,
-						args.newChecklist.TaskID, args.newChecklist.Name, args.newChecklist.ListPosition)))
+					body := bytes.NewReader([]byte(fmt.Sprintf(`{"board_id":%v, "name":"%s", "list_position":%v}`,
+						args.newList.BoardID, args.newList.Name, args.newList.ListPosition)))
 
 					r := httptest.
-						NewRequest("POST", "/api/v2/checklist/create/", body).
+						NewRequest("POST", "/api/v2/list/create/", body).
 						WithContext(
 							context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
 						)
@@ -87,22 +88,22 @@ func TestChecklistHandler_Create(t *testing.T) {
 		{
 			name: "Bad request (invalid JSON)",
 			args: args{
-				newChecklist: dto.NewChecklistInfo{
-					TaskID:       uint64(1),
-					Name:         "Mock new checklist",
+				newList: dto.NewListInfo{
+					BoardID:      uint64(1),
+					Name:         "Mock new List",
 					ListPosition: uint64(0),
 				},
-				createdChecklist: &dto.ChecklistInfo{
+				createdList: &entities.List{
 					ID:           uint64(1),
-					TaskID:       uint64(1),
-					Name:         "Mock new checklist",
+					BoardID:      uint64(1),
+					Name:         "Mock new List",
 					ListPosition: uint64(0),
 				},
-				expectations: func(cls *mock_service.MockIChecklistService, args args) *http.Request {
+				expectations: func(cls *mock_service.MockIListService, args args) *http.Request {
 					body := bytes.NewReader([]byte(""))
 
 					r := httptest.
-						NewRequest("POST", "/api/v2/checklist/create/", body).
+						NewRequest("POST", "/api/v2/list/create/", body).
 						WithContext(
 							context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
 						)
@@ -114,24 +115,24 @@ func TestChecklistHandler_Create(t *testing.T) {
 			expectedCode: http.StatusBadRequest,
 		},
 		{
-			name: "Bad request (could not create checklist)",
+			name: "Bad request (could not create List)",
 			args: args{
-				newChecklist: dto.NewChecklistInfo{
-					TaskID:       uint64(1),
-					Name:         "Mock new checklist",
+				newList: dto.NewListInfo{
+					BoardID:      uint64(1),
+					Name:         "Mock new List",
 					ListPosition: uint64(0),
 				},
-				expectations: func(cls *mock_service.MockIChecklistService, args args) *http.Request {
+				expectations: func(cls *mock_service.MockIListService, args args) *http.Request {
 					cls.
 						EXPECT().
-						Create(gomock.Any(), args.newChecklist).
-						Return(&dto.ChecklistInfo{}, apperrors.ErrChecklistNotCreated)
+						Create(gomock.Any(), args.newList).
+						Return(&entities.List{}, apperrors.ErrListNotCreated)
 
-					body := bytes.NewReader([]byte(fmt.Sprintf(`{"task_id":%v, "name":"%s", "list_position":%v}`,
-						args.newChecklist.TaskID, args.newChecklist.Name, args.newChecklist.ListPosition)))
+					body := bytes.NewReader([]byte(fmt.Sprintf(`{"board_id":%v, "name":"%s", "list_position":%v}`,
+						args.newList.BoardID, args.newList.Name, args.newList.ListPosition)))
 
 					r := httptest.
-						NewRequest("POST", "/api/v2/checklist/create/", body).
+						NewRequest("POST", "/api/v2/list/create/", body).
 						WithContext(
 							context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
 						)
@@ -149,11 +150,11 @@ func TestChecklistHandler_Create(t *testing.T) {
 			t.Parallel()
 			ctrl := gomock.NewController(t)
 
-			mockChecklistService := mock_service.NewMockIChecklistService(ctrl)
+			mockListService := mock_service.NewMockIListService(ctrl)
 
-			testRequest := tt.args.expectations(mockChecklistService, tt.args)
+			testRequest := tt.args.expectations(mockListService, tt.args)
 
-			mux, err := createChecklistMux(mockChecklistService)
+			mux, err := createListMux(mockListService)
 			require.Equal(t, nil, err)
 
 			testRequest.Header.Add("Access-Control-Request-Headers", "content-type")
@@ -171,22 +172,22 @@ func TestChecklistHandler_Create(t *testing.T) {
 
 			if !tt.wantErr {
 				responseBody := w.Body.Bytes()
-				var jsonBody map[string]map[string]dto.ChecklistInfo
+				var jsonBody map[string]map[string]entities.List
 				err = json.Unmarshal(responseBody, &jsonBody)
 				require.NoError(t, err, "Error unmarshaling response")
-				require.True(t, reflect.DeepEqual(jsonBody["body"]["checklist"], *tt.args.createdChecklist),
+				require.True(t, reflect.DeepEqual(jsonBody["body"]["list"], *tt.args.createdList),
 					"Board in JSON response doesn't match the board returned by the service")
 			}
 		})
 	}
 }
 
-func TestChecklistHandler_Update(t *testing.T) {
+func TestListHandler_Update(t *testing.T) {
 	t.Parallel()
 
 	type args struct {
-		info         dto.UpdatedChecklistInfo
-		expectations func(cls *mock_service.MockIChecklistService, args args) *http.Request
+		info         dto.UpdatedListInfo
+		expectations func(cls *mock_service.MockIListService, args args) *http.Request
 	}
 	tests := []struct {
 		name         string
@@ -197,12 +198,12 @@ func TestChecklistHandler_Update(t *testing.T) {
 		{
 			name: "Successful update",
 			args: args{
-				info: dto.UpdatedChecklistInfo{
+				info: dto.UpdatedListInfo{
 					ID:           uint64(1),
-					Name:         "Mock updated checklist info",
+					Name:         "Mock updated List info",
 					ListPosition: uint64(1),
 				},
-				expectations: func(cls *mock_service.MockIChecklistService, args args) *http.Request {
+				expectations: func(cls *mock_service.MockIListService, args args) *http.Request {
 					cls.
 						EXPECT().
 						Update(gomock.Any(), args.info).
@@ -212,7 +213,7 @@ func TestChecklistHandler_Update(t *testing.T) {
 						args.info.ID, args.info.Name, args.info.ListPosition)))
 
 					r := httptest.
-						NewRequest("POST", "/api/v2/checklist/edit/", body).
+						NewRequest("POST", "/api/v2/list/edit/", body).
 						WithContext(
 							context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
 						)
@@ -226,11 +227,11 @@ func TestChecklistHandler_Update(t *testing.T) {
 		{
 			name: "Bad request (invalid JSON)",
 			args: args{
-				expectations: func(cls *mock_service.MockIChecklistService, args args) *http.Request {
+				expectations: func(cls *mock_service.MockIListService, args args) *http.Request {
 					body := bytes.NewReader([]byte(""))
 
 					r := httptest.
-						NewRequest("POST", "/api/v2/checklist/edit/", body).
+						NewRequest("POST", "/api/v2/list/edit/", body).
 						WithContext(
 							context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
 						)
@@ -242,24 +243,24 @@ func TestChecklistHandler_Update(t *testing.T) {
 			expectedCode: http.StatusBadRequest,
 		},
 		{
-			name: "Bad request (could not update checklist)",
+			name: "Bad request (could not update List)",
 			args: args{
-				info: dto.UpdatedChecklistInfo{
+				info: dto.UpdatedListInfo{
 					ID:           uint64(1),
-					Name:         "Mock updated checklist info",
+					Name:         "Mock updated List info",
 					ListPosition: uint64(1),
 				},
-				expectations: func(cls *mock_service.MockIChecklistService, args args) *http.Request {
+				expectations: func(cls *mock_service.MockIListService, args args) *http.Request {
 					cls.
 						EXPECT().
 						Update(gomock.Any(), args.info).
-						Return(apperrors.ErrChecklistNotUpdated)
+						Return(apperrors.ErrListNotUpdated)
 
 					body := bytes.NewReader([]byte(fmt.Sprintf(`{"id":%v, "name":"%s", "list_position":%v}`,
 						args.info.ID, args.info.Name, args.info.ListPosition)))
 
 					r := httptest.
-						NewRequest("POST", "/api/v2/checklist/edit/", body).
+						NewRequest("POST", "/api/v2/list/edit/", body).
 						WithContext(
 							context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
 						)
@@ -277,11 +278,11 @@ func TestChecklistHandler_Update(t *testing.T) {
 			t.Parallel()
 			ctrl := gomock.NewController(t)
 
-			mockChecklistService := mock_service.NewMockIChecklistService(ctrl)
+			mockListService := mock_service.NewMockIListService(ctrl)
 
-			testRequest := tt.args.expectations(mockChecklistService, tt.args)
+			testRequest := tt.args.expectations(mockListService, tt.args)
 
-			mux, err := createChecklistMux(mockChecklistService)
+			mux, err := createListMux(mockListService)
 			require.Equal(t, nil, err)
 
 			testRequest.Header.Add("Access-Control-Request-Headers", "content-type")
@@ -300,12 +301,12 @@ func TestChecklistHandler_Update(t *testing.T) {
 	}
 }
 
-func TestChecklistHandler_Delete(t *testing.T) {
+func TestListHandler_Delete(t *testing.T) {
 	t.Parallel()
 
 	type args struct {
-		checklistID  dto.ChecklistID
-		expectations func(cls *mock_service.MockIChecklistService, args args) *http.Request
+		ListID       dto.ListID
+		expectations func(cls *mock_service.MockIListService, args args) *http.Request
 	}
 	tests := []struct {
 		name         string
@@ -316,20 +317,20 @@ func TestChecklistHandler_Delete(t *testing.T) {
 		{
 			name: "Successful delete",
 			args: args{
-				checklistID: dto.ChecklistID{
+				ListID: dto.ListID{
 					Value: uint64(1),
 				},
-				expectations: func(cls *mock_service.MockIChecklistService, args args) *http.Request {
+				expectations: func(cls *mock_service.MockIListService, args args) *http.Request {
 					cls.
 						EXPECT().
-						Delete(gomock.Any(), args.checklistID).
+						Delete(gomock.Any(), args.ListID).
 						Return(nil)
 
 					body := bytes.NewReader([]byte(fmt.Sprintf(`{"id":%v}`,
-						args.checklistID.Value)))
+						args.ListID.Value)))
 
 					r := httptest.
-						NewRequest("DELETE", "/api/v2/checklist/delete/", body).
+						NewRequest("DELETE", "/api/v2/list/delete/", body).
 						WithContext(
 							context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
 						)
@@ -343,11 +344,11 @@ func TestChecklistHandler_Delete(t *testing.T) {
 		{
 			name: "Bad request (invalid JSON)",
 			args: args{
-				expectations: func(cls *mock_service.MockIChecklistService, args args) *http.Request {
+				expectations: func(cls *mock_service.MockIListService, args args) *http.Request {
 					body := bytes.NewReader([]byte(""))
 
 					r := httptest.
-						NewRequest("DELETE", "/api/v2/checklist/delete/", body).
+						NewRequest("DELETE", "/api/v2/list/delete/", body).
 						WithContext(
 							context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
 						)
@@ -359,22 +360,22 @@ func TestChecklistHandler_Delete(t *testing.T) {
 			expectedCode: http.StatusBadRequest,
 		},
 		{
-			name: "Bad request (could not delete checklist)",
+			name: "Bad request (could not delete List)",
 			args: args{
-				checklistID: dto.ChecklistID{
+				ListID: dto.ListID{
 					Value: uint64(1),
 				},
-				expectations: func(cls *mock_service.MockIChecklistService, args args) *http.Request {
+				expectations: func(cls *mock_service.MockIListService, args args) *http.Request {
 					cls.
 						EXPECT().
-						Delete(gomock.Any(), args.checklistID).
-						Return(apperrors.ErrChecklistNotDeleted)
+						Delete(gomock.Any(), args.ListID).
+						Return(apperrors.ErrListNotDeleted)
 
 					body := bytes.NewReader([]byte(fmt.Sprintf(`{"id":%v}`,
-						args.checklistID.Value)))
+						args.ListID.Value)))
 
 					r := httptest.
-						NewRequest("DELETE", "/api/v2/checklist/delete/", body).
+						NewRequest("DELETE", "/api/v2/list/delete/", body).
 						WithContext(
 							context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
 						)
@@ -392,11 +393,11 @@ func TestChecklistHandler_Delete(t *testing.T) {
 			t.Parallel()
 			ctrl := gomock.NewController(t)
 
-			mockChecklistService := mock_service.NewMockIChecklistService(ctrl)
+			mockListService := mock_service.NewMockIListService(ctrl)
 
-			testRequest := tt.args.expectations(mockChecklistService, tt.args)
+			testRequest := tt.args.expectations(mockListService, tt.args)
 
-			mux, err := createChecklistMux(mockChecklistService)
+			mux, err := createListMux(mockListService)
 			require.Equal(t, nil, err)
 
 			testRequest.Header.Add("Access-Control-Request-Headers", "content-type")
