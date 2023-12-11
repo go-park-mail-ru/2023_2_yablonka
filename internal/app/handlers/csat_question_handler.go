@@ -45,7 +45,7 @@ func (qh CSATQuestionHandler) GetQuestions(w http.ResponseWriter, r *http.Reques
 		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
 		return
 	}
-	logger.Debug("Got questions", funcName, nodeName)
+	logger.DebugFmt("Got questions", funcName, nodeName)
 
 	response := dto.JSONResponse{
 		Body: dto.JSONMap{
@@ -59,7 +59,7 @@ func (qh CSATQuestionHandler) GetQuestions(w http.ResponseWriter, r *http.Reques
 		apperrors.ReturnError(apperrors.InternalServerErrorResponse, w, r)
 		return
 	}
-	logger.Debug("response written", funcName, nodeName)
+	logger.DebugFmt("response written", funcName, nodeName)
 
 	logger.Info("---------------------------------- Getting all CSAT questions SUCCESS ----------------------------------")
 }
@@ -98,7 +98,7 @@ func (qh CSATQuestionHandler) Create(w http.ResponseWriter, r *http.Request) {
 		apperrors.ReturnError(apperrors.BadRequestResponse, w, r)
 		return
 	}
-	logger.Debug("JSON Decoded", funcName, nodeName)
+	logger.DebugFmt("JSON Decoded", funcName, nodeName)
 
 	question, err := qh.qs.Create(rCtx, newQuestionInfo)
 	if err != nil {
@@ -107,7 +107,7 @@ func (qh CSATQuestionHandler) Create(w http.ResponseWriter, r *http.Request) {
 		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
 		return
 	}
-	logger.Debug("Task created", funcName, nodeName)
+	logger.DebugFmt("Task created", funcName, nodeName)
 
 	response := dto.JSONResponse{
 		Body: dto.JSONMap{
@@ -121,7 +121,7 @@ func (qh CSATQuestionHandler) Create(w http.ResponseWriter, r *http.Request) {
 		apperrors.ReturnError(apperrors.InternalServerErrorResponse, w, r)
 		return
 	}
-	logger.Debug("response written", funcName, nodeName)
+	logger.DebugFmt("response written", funcName, nodeName)
 
 	logger.Info("---------------------------------- Create CSAT question SUCCESS ----------------------------------")
 }
@@ -160,7 +160,7 @@ func (qh CSATQuestionHandler) Update(w http.ResponseWriter, r *http.Request) {
 		apperrors.ReturnError(apperrors.BadRequestResponse, w, r)
 		return
 	}
-	logger.Debug("JSON Decoded", funcName, nodeName)
+	logger.DebugFmt("JSON Decoded", funcName, nodeName)
 
 	err = qh.qs.Update(rCtx, updatedQuestionInfo)
 	if err != nil {
@@ -169,7 +169,7 @@ func (qh CSATQuestionHandler) Update(w http.ResponseWriter, r *http.Request) {
 		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
 		return
 	}
-	logger.Debug("CSAT question updated", funcName, nodeName)
+	logger.DebugFmt("CSAT question updated", funcName, nodeName)
 
 	response := dto.JSONResponse{
 		Body: dto.JSONMap{},
@@ -181,7 +181,7 @@ func (qh CSATQuestionHandler) Update(w http.ResponseWriter, r *http.Request) {
 		apperrors.ReturnError(apperrors.InternalServerErrorResponse, w, r)
 		return
 	}
-	logger.Debug("response written", funcName, nodeName)
+	logger.DebugFmt("response written", funcName, nodeName)
 
 	logger.Info("---------------------------------- Update CSAT question SUCCESS ----------------------------------")
 }
@@ -210,18 +210,18 @@ func (qh CSATQuestionHandler) GetStats(w http.ResponseWriter, r *http.Request) {
 
 	logger.Info("---------------------------------- Getting CSAT question stats ----------------------------------")
 
-	answers, err := qh.qs.GetStats(rCtx)
+	questions, err := qh.qs.GetStats(rCtx)
 	if err != nil {
 		logger.Error(errorMessage + err.Error())
 		logger.Info(failBorder)
 		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
 		return
 	}
-	logger.Debug("Stats received", funcName, nodeName)
+	logger.DebugFmt("Stats received", funcName, nodeName)
 
 	response := dto.JSONResponse{
 		Body: dto.JSONMap{
-			"questions": answers,
+			"questions": questions,
 		},
 	}
 	err = WriteResponse(response, w, r)
@@ -231,7 +231,7 @@ func (qh CSATQuestionHandler) GetStats(w http.ResponseWriter, r *http.Request) {
 		apperrors.ReturnError(apperrors.InternalServerErrorResponse, w, r)
 		return
 	}
-	logger.Debug("response written", funcName, nodeName)
+	logger.DebugFmt("response written", funcName, nodeName)
 
 	logger.Info("---------------------------------- Getting CSAT question stats SUCCESS ----------------------------------")
 }
