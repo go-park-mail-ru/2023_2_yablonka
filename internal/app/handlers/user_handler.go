@@ -62,8 +62,16 @@ func (uh UserHandler) ChangePassword(w http.ResponseWriter, r *http.Request) {
 	}
 	logger.DebugFmt("Request data validated", funcName, nodeName)
 
-	userID := rCtx.Value(dto.UserObjKey).(*entities.User).ID
-	passwords.UserID = userID
+	user, ok := rCtx.Value(dto.UserObjKey).(*entities.User)
+	if !ok {
+		logger.Error(errorMessage + "User not found")
+		logger.Info(failBorder)
+		apperrors.ReturnError(apperrors.GenericUnauthorizedResponse, w, r)
+		return
+	}
+	logger.DebugFmt("User object acquired from context", funcName, nodeName)
+
+	passwords.UserID = user.ID
 	err = uh.us.UpdatePassword(rCtx, passwords)
 	if err != nil {
 		logger.Error(errorMessage + err.Error())
