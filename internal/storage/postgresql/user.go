@@ -29,6 +29,13 @@ func NewUserStorage(db *sql.DB) *PostgresUserStorage {
 // находит пользователя в БД по почте
 // или возвращает ошибки ...
 func (s *PostgresUserStorage) GetWithLogin(ctx context.Context, login dto.UserLogin) (*entities.User, error) {
+	funcName := "PostgresUserStorage.Create"
+	errorMessage := "Creating user failed with error: "
+	failBorder := ">>>>>>>>>>>>>>>>>>> PostgresUserStorage.Create FAIL <<<<<<<<<<<<<<<<<<<<<<<"
+	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
+
+	logger.Debug(">>>>>>>>>>>>>>>> PostgresUserStorage.Create <<<<<<<<<<<<<<<<<<<")
+
 	log.Println("Looking for user with login", login.Value)
 
 	sql, args, err := sq.
@@ -39,13 +46,12 @@ func (s *PostgresUserStorage) GetWithLogin(ctx context.Context, login dto.UserLo
 		ToSql()
 
 	if err != nil {
+		logger.DebugFmt(errorMessage+err.Error(), funcName, nodeName)
+		logger.Debug(failBorder)
 		return nil, apperrors.ErrCouldNotBuildQuery
 	}
 
-	log.Println("Built query:", sql, "\nwith args:", args)
-
 	row := s.db.QueryRow(sql, args...)
-
 	user := entities.User{}
 	err = row.Scan(
 		&user.ID,
@@ -56,11 +62,9 @@ func (s *PostgresUserStorage) GetWithLogin(ctx context.Context, login dto.UserLo
 		&user.AvatarURL,
 		&user.Description,
 	)
-	log.Println(user)
-	log.Println(err)
-
 	if err != nil {
-		fmt.Println("Error", err.Error())
+		logger.DebugFmt(errorMessage+err.Error(), funcName, nodeName)
+		logger.Debug(failBorder)
 		return nil, apperrors.ErrUserNotFound
 	}
 
@@ -71,6 +75,13 @@ func (s *PostgresUserStorage) GetWithLogin(ctx context.Context, login dto.UserLo
 // находит пользователя в БД по его id
 // или возвращает ошибки ...
 func (s *PostgresUserStorage) GetWithID(ctx context.Context, id dto.UserID) (*entities.User, error) {
+	funcName := "PostgresUserStorage.GetWithID"
+	errorMessage := "Creating user failed with error: "
+	failBorder := ">>>>>>>>>>>>>>>>>>> PostgresUserStorage.GetWithID FAIL <<<<<<<<<<<<<<<<<<<<<<<"
+	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
+
+	logger.Debug(">>>>>>>>>>>>>>>> PostgresUserStorage.GetWithID <<<<<<<<<<<<<<<<<<<")
+
 	sql, args, err := sq.
 		Select(allUserFields...).
 		From("public.user").
@@ -78,14 +89,22 @@ func (s *PostgresUserStorage) GetWithID(ctx context.Context, id dto.UserID) (*en
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
 	if err != nil {
+		logger.DebugFmt(errorMessage+err.Error(), funcName, nodeName)
+		logger.Debug(failBorder)
 		return nil, apperrors.ErrCouldNotBuildQuery
 	}
+	logger.DebugFmt("Built query\n\t"+sql+"\nwith args\n\t"+fmt.Sprintf("%+v", args), funcName, nodeName)
 
 	row := s.db.QueryRow(sql, args...)
 	user := entities.User{}
 	if row.Scan(&user.ID, &user.Email, &user.PasswordHash, &user.Name, &user.Surname, &user.AvatarURL, &user.Description) != nil {
+		logger.DebugFmt(errorMessage+err.Error(), funcName, nodeName)
+		logger.Debug(failBorder)
 		return nil, apperrors.ErrUserNotFound
 	}
+	logger.DebugFmt("Got user", funcName, nodeName)
+
+	logger.Debug(">>>>>>>>>>>>>>>> PostgresUserStorage.GetWithID SUCCESS <<<<<<<<<<<<<<<<<<<")
 
 	return &user, nil
 }
@@ -94,12 +113,12 @@ func (s *PostgresUserStorage) GetWithID(ctx context.Context, id dto.UserID) (*en
 // находит данные логина пользователя в БД по id
 // или возвращает ошибки ...
 func (s *PostgresUserStorage) GetLoginInfoWithID(ctx context.Context, id dto.UserID) (*dto.LoginInfo, error) {
-	funcName := "PostgresUserStorage.Create"
+	funcName := "PostgresUserStorage.GetLoginInfoWithID"
 	errorMessage := "Creating user failed with error: "
-	failBorder := ">>>>>>>>>>>>>>>>>>> PostgresUserStorage.Create FAIL <<<<<<<<<<<<<<<<<<<<<<<"
+	failBorder := ">>>>>>>>>>>>>>>>>>> PostgresUserStorage.GetLoginInfoWithID FAIL <<<<<<<<<<<<<<<<<<<<<<<"
 	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
 
-	logger.Debug(">>>>>>>>>>>>>>>> PostgresUserStorage.Create <<<<<<<<<<<<<<<<<<<")
+	logger.Debug(">>>>>>>>>>>>>>>> PostgresUserStorage.GetLoginInfoWithID <<<<<<<<<<<<<<<<<<<")
 
 	sql, args, err := sq.
 		Select("email", "password_hash").
@@ -123,7 +142,9 @@ func (s *PostgresUserStorage) GetLoginInfoWithID(ctx context.Context, id dto.Use
 		logger.Debug(failBorder)
 		return nil, apperrors.ErrUserNotFound
 	}
-	logger.DebugFmt("Parsed result", funcName, nodeName)
+	logger.DebugFmt("Got user", funcName, nodeName)
+
+	logger.Debug(">>>>>>>>>>>>>>>> PostgresUserStorage.GetLoginInfoWithID SUCCESS <<<<<<<<<<<<<<<<<<<")
 
 	return &loginInfo, nil
 }
