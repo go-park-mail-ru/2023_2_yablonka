@@ -160,7 +160,7 @@ func (s *PostgresUserStorage) Create(ctx context.Context, info dto.SignupInfo) (
 
 	logger.Debug(">>>>>>>>>>>>>>>> PostgresUserStorage.Create <<<<<<<<<<<<<<<<<<<")
 
-	defaultAvatar := "avatar.jpg"
+	defaultAvatar := "img/user_avatars/avatar.jpg"
 
 	query, args, err := sq.
 		Insert("public.user").
