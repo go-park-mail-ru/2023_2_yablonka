@@ -169,8 +169,8 @@ func (s PostgresListStorage) Delete(ctx context.Context, id dto.ListID) error {
 	return nil
 }
 
-// Create
-// создает новый список в БД по данным
+// UpdateOrder
+// меняет порядок списков в БД по данным
 // или возвращает ошибки ...
 func (s PostgresListStorage) UpdateOrder(ctx context.Context, ids dto.ListIDs) error {
 	caseBuilder := sq.Case()

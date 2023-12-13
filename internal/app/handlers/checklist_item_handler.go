@@ -195,3 +195,62 @@ func (clh ChecklistItemHandler) Delete(w http.ResponseWriter, r *http.Request) {
 
 	logger.Info("---------------------------------- Deleting ChecklistItem SUCCESS ----------------------------------")
 }
+
+// @Summary Обновить порядок вещей в чеклисте
+// @Description Обновить вещи в чеклисте по порядку в списке
+// @Tags lists
+//
+// @Accept  json
+// @Produce  json
+//
+// @Param listID body dto.ListIDs true "id списков"
+//
+// @Success 204  {string}  string "no content"
+// @Failure 400  {object}  apperrors.ErrorResponse
+// @Failure 401  {object}  apperrors.ErrorResponse
+// @Failure 500  {object}  apperrors.ErrorResponse
+//
+// @Router /checklist/item/reorder/ [post]
+func (clh ChecklistItemHandler) UpdateOrder(w http.ResponseWriter, r *http.Request) {
+	rCtx := r.Context()
+	funcName := "ListHandler.UpdateOrder"
+	errorMessage := "Updating order failed with error: "
+	failBorder := "---------------------------------- ChecklistItemHandler.UpdateOrder FAIL ----------------------------------"
+
+	logger := rCtx.Value(dto.LoggerKey).(logger.ILogger)
+
+	logger.Info("---------------------------------- ChecklistItemHandler.UpdateOrder ----------------------------------")
+
+	var checklistIDs dto.ChecklistItemIDs
+	err := json.NewDecoder(r.Body).Decode(&checklistIDs)
+	if err != nil {
+		logger.Error(errorMessage + err.Error())
+		logger.Info(failBorder)
+		apperrors.ReturnError(apperrors.BadRequestResponse, w, r)
+		return
+	}
+	logger.DebugFmt("request struct decoded", funcName, nodeName)
+
+	err = clh.clis.UpdateOrder(rCtx, checklistIDs)
+	if err != nil {
+		logger.Error(errorMessage + err.Error())
+		logger.Info(failBorder)
+		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
+		return
+	}
+	logger.DebugFmt("list deleted", funcName, nodeName)
+
+	response := dto.JSONResponse{
+		Body: dto.JSONMap{},
+	}
+	err = WriteResponse(response, w, r)
+	if err != nil {
+		logger.Error(errorMessage + err.Error())
+		logger.Info(failBorder)
+		apperrors.ReturnError(apperrors.InternalServerErrorResponse, w, r)
+		return
+	}
+	logger.DebugFmt("response written", funcName, nodeName)
+
+	logger.Info("---------------------------------- ChecklistItemHandler.UpdateOrder SUCCESS ----------------------------------")
+}

@@ -207,11 +207,11 @@ func (lh ListHandler) Delete(w http.ResponseWriter, r *http.Request) {
 // @Failure 401  {object}  apperrors.ErrorResponse
 // @Failure 500  {object}  apperrors.ErrorResponse
 //
-// @Router /list/reorder/ [delete]
+// @Router /list/reorder/ [post]
 func (lh ListHandler) UpdateOrder(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
 	funcName := "ListHandler.UpdateOrder"
-	errorMessage := "Deleting failed with error: "
+	errorMessage := "Updating order failed with error: "
 	failBorder := "---------------------------------- ListHandler.UpdateOrder FAIL ----------------------------------"
 
 	logger := rCtx.Value(dto.LoggerKey).(logger.ILogger)
@@ -235,7 +235,7 @@ func (lh ListHandler) UpdateOrder(w http.ResponseWriter, r *http.Request) {
 		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
 		return
 	}
-	logger.DebugFmt("list deleted", funcName, nodeName)
+	logger.DebugFmt("list order changed", funcName, nodeName)
 
 	response := dto.JSONResponse{
 		Body: dto.JSONMap{},

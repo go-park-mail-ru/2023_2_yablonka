@@ -25,4 +25,8 @@ type IChecklistItemStorage interface {
 	// удаляет элемент чеклиста в БД
 	// или возвращает ошибки ...
 	Delete(context.Context, dto.ChecklistItemID) error
+	// UpdateOrder
+	// изменяет порядок вещей в чеклистах по id
+	// или возвращает ошибки ...
+	UpdateOrder(context.Context, dto.ChecklistItemIDs) error
 }
