@@ -231,10 +231,12 @@ func (s PostgresTaskStorage) Delete(ctx context.Context, id dto.TaskID) error {
 	if err != nil {
 		return apperrors.ErrCouldNotBuildQuery
 	}
+	log.Println("Built board query\n\t", sql, "\nwith args\n\t", args)
 
 	_, err = s.db.Exec(sql, args...)
 
 	if err != nil {
+		log.Println("Failed to exec query with error", err.Error())
 		return apperrors.ErrTaskNotDeleted
 	}
 
