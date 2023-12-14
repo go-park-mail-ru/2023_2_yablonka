@@ -57,6 +57,11 @@ message AvatarChangeInfo {
 	string Mimetype = 4;
 }
 
+message AvatarRemovalInfo {
+	uint64 UserID = 1;
+	string Filename = 2;
+}
+
 message UrlObj {
 	string Value = 1;
 }
@@ -119,6 +124,16 @@ message UpdateAvatarResponse {
 	UrlObj Response = 2;
 }
 
+message DeleteAvatarRequest {
+    string RequestID = 1;
+	AvatarRemovalInfo Value = 2;
+}
+
+message DeleteAvatarResponse {
+	ErrorCode Code = 1;
+	UrlObj Response = 2;
+}
+
 message DeleteUserRequest {
     string RequestID = 1;
 	UserID Value = 2;
@@ -135,5 +150,6 @@ service UserService {
 	rpc UpdatePassword (UpdatePasswordRequest) returns (UpdatePasswordResponse) {}
 	rpc UpdateProfile (UpdateProfileRequest) returns (UpdateProfileResponse) {}
 	rpc UpdateAvatar (UpdateAvatarRequest) returns (UpdateAvatarResponse) {}
+	rpc DeleteAvatar (DeleteAvatarRequest) returns (DeleteAvatarResponse) {}
 	rpc DeleteUser (DeleteUserRequest) returns (DeleteUserResponse) {}
 }

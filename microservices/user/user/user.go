@@ -212,7 +212,7 @@ func (us UserService) UpdateProfile(ctx context.Context, request *UpdateProfileR
 	return response, nil
 }
 
-// UpdateProfile
+// UpdateAvatar
 // обновляет аватарку пользователя
 // или возвращает ошибку apperrors.ErrUserNotFound (409)
 func (us UserService) UpdateAvatar(ctx context.Context, request *UpdateAvatarRequest) (*UpdateAvatarResponse, error) {
@@ -271,6 +271,40 @@ func (us UserService) UpdateAvatar(ctx context.Context, request *UpdateAvatarReq
 
 	response.Code = UserServiceErrorCodes[nil]
 	response.Response = &UrlObj{Value: avatarUrlInfo.Url}
+
+	return response, nil
+}
+
+// DeleteAvatar
+// удаляет аватарку пользователя
+// или возвращает ошибку apperrors.ErrUserNotFound (409)
+func (us UserService) DeleteAvatar(ctx context.Context, info *AvatarRemovalInfo) (*UpdateAvatarResponse, error) {
+	funcName := "UserService.DeleteAvatar"
+	sCtx := context.WithValue(ctx, dto.LoggerKey, us.logger)
+	response := &UpdateAvatarResponse{}
+
+	err := os.Remove(info.Filename)
+	if err != nil {
+		us.logger.DebugFmt("Failed to remove file after unsuccessful update with error: "+err.Error(), funcName, nodeName)
+		response.Code = UserServiceErrorCodes[apperrors.ErrFailedToDeleteFile]
+		response.Response = &UrlObj{}
+		return response, nil
+	}
+
+	url := dto.UserImageUrlInfo{
+		ID:  info.UserID,
+		Url: "avatar.jpg",
+	}
+
+	err = us.storage.UpdateAvatarUrl(sCtx, url)
+	if err != nil {
+		response.Code = UserServiceErrorCodes[err]
+		response.Response = &UrlObj{}
+		return response, nil
+	}
+
+	response.Code = UserServiceErrorCodes[nil]
+	response.Response = &UrlObj{Value: url.Url}
 
 	return response, nil
 }

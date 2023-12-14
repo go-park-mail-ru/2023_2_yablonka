@@ -24,6 +24,7 @@ type UserServiceClient interface {
 	UpdatePassword(ctx context.Context, in *UpdatePasswordRequest, opts ...grpc.CallOption) (*UpdatePasswordResponse, error)
 	UpdateProfile(ctx context.Context, in *UpdateProfileRequest, opts ...grpc.CallOption) (*UpdateProfileResponse, error)
 	UpdateAvatar(ctx context.Context, in *UpdateAvatarRequest, opts ...grpc.CallOption) (*UpdateAvatarResponse, error)
+	DeleteAvatar(ctx context.Context, in *DeleteAvatarRequest, opts ...grpc.CallOption) (*DeleteAvatarResponse, error)
 	DeleteUser(ctx context.Context, in *DeleteUserRequest, opts ...grpc.CallOption) (*DeleteUserResponse, error)
 }
 
@@ -89,6 +90,15 @@ func (c *userServiceClient) UpdateAvatar(ctx context.Context, in *UpdateAvatarRe
 	return out, nil
 }
 
+func (c *userServiceClient) DeleteAvatar(ctx context.Context, in *DeleteAvatarRequest, opts ...grpc.CallOption) (*DeleteAvatarResponse, error) {
+	out := new(DeleteAvatarResponse)
+	err := c.cc.Invoke(ctx, "/user.UserService/DeleteAvatar", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *userServiceClient) DeleteUser(ctx context.Context, in *DeleteUserRequest, opts ...grpc.CallOption) (*DeleteUserResponse, error) {
 	out := new(DeleteUserResponse)
 	err := c.cc.Invoke(ctx, "/user.UserService/DeleteUser", in, out, opts...)
@@ -108,6 +118,7 @@ type UserServiceServer interface {
 	UpdatePassword(context.Context, *UpdatePasswordRequest) (*UpdatePasswordResponse, error)
 	UpdateProfile(context.Context, *UpdateProfileRequest) (*UpdateProfileResponse, error)
 	UpdateAvatar(context.Context, *UpdateAvatarRequest) (*UpdateAvatarResponse, error)
+	DeleteAvatar(context.Context, *DeleteAvatarRequest) (*DeleteAvatarResponse, error)
 	DeleteUser(context.Context, *DeleteUserRequest) (*DeleteUserResponse, error)
 	mustEmbedUnimplementedUserServiceServer()
 }
@@ -134,7 +145,7 @@ func (UnimplementedUserServiceServer) UpdateProfile(context.Context, *UpdateProf
 func (UnimplementedUserServiceServer) UpdateAvatar(context.Context, *UpdateAvatarRequest) (*UpdateAvatarResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateAvatar not implemented")
 }
-func (UnimplementedUserServiceServer) DeleteUser(context.Context, *DeleteUserRequest) (*DeleteUserResponse, error) {
+func (UnimplementedUserServiceServer) DeleteUser(context.Context, *UserID) (*DeleteUserResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteUser not implemented")
 }
 func (UnimplementedUserServiceServer) mustEmbedUnimplementedUserServiceServer() {}
@@ -254,6 +265,24 @@ func _UserService_UpdateAvatar_Handler(srv interface{}, ctx context.Context, dec
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(UserServiceServer).UpdateAvatar(ctx, req.(*UpdateAvatarRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _UserService_DeleteAvatar_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteAvatarRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServiceServer).DeleteAvatar(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/user.UserService/DeleteAvatar",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServiceServer).DeleteAvatar(ctx, req.(*DeleteAvatarRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }

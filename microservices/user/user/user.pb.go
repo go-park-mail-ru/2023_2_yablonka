@@ -438,6 +438,15 @@ type AvatarChangeInfo struct {
 	Mimetype string `protobuf:"bytes,4,opt,name=Mimetype,proto3" json:"Mimetype,omitempty"`
 }
 
+type AvatarRemovalInfo struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	UserID   uint64 `protobuf:"varint,1,opt,name=UserID,proto3" json:"UserID,omitempty"`
+	Filename string `protobuf:"bytes,3,opt,name=Filename,proto3" json:"Filename,omitempty"`
+}
+
 func (x *AvatarChangeInfo) Reset() {
 	*x = AvatarChangeInfo{}
 	if protoimpl.UnsafeEnabled {
@@ -1510,6 +1519,7 @@ var file_user_api_user_proto_goTypes = []interface{}{
 	(*DeleteUserResponse)(nil),     // 21: user.DeleteUserResponse
 }
 var file_user_api_user_proto_depIdxs = []int32{
+<<<<<<< HEAD
 	2,  // 0: user.RegisterUserRequest.Value:type_name -> user.AuthInfo
 	0,  // 1: user.RegisterUserResponse.Code:type_name -> user.ErrorCode
 	1,  // 2: user.RegisterUserResponse.Response:type_name -> user.User
@@ -1547,6 +1557,40 @@ var file_user_api_user_proto_depIdxs = []int32{
 	18, // [18:18] is the sub-list for extension type_name
 	18, // [18:18] is the sub-list for extension extendee
 	0,  // [0:18] is the sub-list for field type_name
+=======
+	0,  // 0: user.RegisterUserResponse.Code:type_name -> user.ErrorCode
+	1,  // 1: user.RegisterUserResponse.Response:type_name -> user.User
+	0,  // 2: user.CheckPasswordResponse.Code:type_name -> user.ErrorCode
+	1,  // 3: user.CheckPasswordResponse.Response:type_name -> user.User
+	0,  // 4: user.GetWithIDResponse.Code:type_name -> user.ErrorCode
+	1,  // 5: user.GetWithIDResponse.Response:type_name -> user.User
+	0,  // 6: user.UpdatePasswordResponse.Code:type_name -> user.ErrorCode
+	0,  // 7: user.UpdateProfileResponse.Code:type_name -> user.ErrorCode
+	0,  // 8: user.UpdateAvatarResponse.Code:type_name -> user.ErrorCode
+	7,  // 9: user.UpdateAvatarResponse.Response:type_name -> user.UrlObj
+	0,  // 10: user.DeleteUserResponse.Code:type_name -> user.ErrorCode
+	2,  // 11: user.UserService.RegisterUser:input_type -> user.AuthInfo
+	2,  // 12: user.UserService.CheckPassword:input_type -> user.AuthInfo
+	3,  // 13: user.UserService.GetWithID:input_type -> user.UserID
+	4,  // 14: user.UserService.UpdatePassword:input_type -> user.PasswordChangeInfo
+	5,  // 15: user.UserService.UpdateProfile:input_type -> user.UserProfileInfo
+	6,  // 16: user.UserService.UpdateAvatar:input_type -> user.AvatarChangeInfo
+	6,  // 16: user.UserService.DeleteAvatar:input_type -> user.AvatarRemovalInfo
+	3,  // 17: user.UserService.DeleteUser:input_type -> user.UserID
+	8,  // 18: user.UserService.RegisterUser:output_type -> user.RegisterUserResponse
+	9,  // 19: user.UserService.CheckPassword:output_type -> user.CheckPasswordResponse
+	10, // 20: user.UserService.GetWithID:output_type -> user.GetWithIDResponse
+	11, // 21: user.UserService.UpdatePassword:output_type -> user.UpdatePasswordResponse
+	12, // 22: user.UserService.UpdateProfile:output_type -> user.UpdateProfileResponse
+	13, // 23: user.UserService.UpdateAvatar:output_type -> user.UpdateAvatarResponse
+	13, // 23: user.UserService.DeleteAvatar:output_type -> user.UpdateAvatarResponse
+	14, // 24: user.UserService.DeleteUser:output_type -> user.DeleteUserResponse
+	18, // [18:25] is the sub-list for method output_type
+	11, // [11:18] is the sub-list for method input_type
+	11, // [11:11] is the sub-list for extension type_name
+	11, // [11:11] is the sub-list for extension extendee
+	0,  // [0:11] is the sub-list for field type_name
+>>>>>>> 0d1a282e84575c695470dbd03e52f3182cd6cc3d
 }
 
 func init() { file_user_api_user_proto_init() }
