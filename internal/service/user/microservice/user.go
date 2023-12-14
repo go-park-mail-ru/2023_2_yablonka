@@ -237,13 +237,19 @@ func (us UserService) UpdateAvatar(ctx context.Context, info dto.AvatarChangeInf
 func (us UserService) DeleteAvatar(ctx context.Context, info dto.AvatarRemovalInfo) (*dto.UrlObj, error) {
 	funcName := "UserService.DeleteAvatar"
 	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
+	requestID := ctx.Value(dto.RequestIDKey).(uuid.UUID)
 
-	logger.DebugFmt("Contacting GRPC server", funcName, nodeName)
-	serverResponse, _ := us.client.DeleteAvatar(ctx, &microservice.AvatarRemovalInfo{
-		UserID:   info.UserID,
-		Filename: info.AvatarUrl,
-	})
-	logger.DebugFmt("Response received", funcName, nodeName)
+	grpcRequest := &microservice.DeleteAvatarRequest{
+		RequestID: requestID.String(),
+		Value: &microservice.AvatarRemovalInfo{
+			UserID:   info.UserID,
+			Filename: info.AvatarUrl,
+		},
+	}
+
+	logger.DebugFmt("Contacting GRPC server", requestID.String(), funcName, nodeName)
+	serverResponse, _ := us.client.DeleteAvatar(ctx, grpcRequest)
+	logger.DebugFmt("Response received", requestID.String(), funcName, nodeName)
 
 	if serverResponse.Code != microservice.ErrorCode_OK {
 		return &dto.UrlObj{}, UserServiceErrors[serverResponse.Code]

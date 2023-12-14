@@ -271,6 +271,7 @@ func (uh UserHandler) DeleteAvatar(w http.ResponseWriter, r *http.Request) {
 	failBorder := "---------------------------------- Deleting user's avatar FAIL ----------------------------------"
 
 	logger := rCtx.Value(dto.LoggerKey).(logger.ILogger)
+	requestID := rCtx.Value(dto.RequestIDKey).(uuid.UUID)
 
 	logger.Info("---------------------------------- Deleting user's avatar ----------------------------------")
 
@@ -281,7 +282,7 @@ func (uh UserHandler) DeleteAvatar(w http.ResponseWriter, r *http.Request) {
 		apperrors.ReturnError(apperrors.GenericUnauthorizedResponse, w, r)
 		return
 	}
-	logger.DebugFmt("User object acquired from context", funcName, nodeName)
+	logger.DebugFmt("User object acquired from context", requestID.String(), funcName, nodeName)
 
 	avatarRemovalInfo := dto.AvatarRemovalInfo{
 		UserID:    user.ID,
@@ -294,7 +295,7 @@ func (uh UserHandler) DeleteAvatar(w http.ResponseWriter, r *http.Request) {
 		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
 		return
 	}
-	logger.DebugFmt("User avatar deleted", funcName, nodeName)
+	logger.DebugFmt("User avatar deleted", requestID.String(), funcName, nodeName)
 
 	response := dto.JSONResponse{
 		Body: dto.JSONMap{
@@ -308,7 +309,7 @@ func (uh UserHandler) DeleteAvatar(w http.ResponseWriter, r *http.Request) {
 		apperrors.ReturnError(apperrors.InternalServerErrorResponse, w, r)
 		return
 	}
-	logger.DebugFmt("response written", funcName, nodeName)
+	logger.DebugFmt("response written", requestID.String(), funcName, nodeName)
 
 	logger.Info("---------------------------------- Deleting user's avatar SUCCESS ----------------------------------")
 }

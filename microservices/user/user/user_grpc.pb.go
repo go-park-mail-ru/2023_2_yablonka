@@ -145,7 +145,10 @@ func (UnimplementedUserServiceServer) UpdateProfile(context.Context, *UpdateProf
 func (UnimplementedUserServiceServer) UpdateAvatar(context.Context, *UpdateAvatarRequest) (*UpdateAvatarResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateAvatar not implemented")
 }
-func (UnimplementedUserServiceServer) DeleteUser(context.Context, *UserID) (*DeleteUserResponse, error) {
+func (UnimplementedUserServiceServer) DeleteAvatar(context.Context, *DeleteAvatarRequest) (*DeleteAvatarResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteAvatar not implemented")
+}
+func (UnimplementedUserServiceServer) DeleteUser(context.Context, *DeleteUserRequest) (*DeleteUserResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteUser not implemented")
 }
 func (UnimplementedUserServiceServer) mustEmbedUnimplementedUserServiceServer() {}
@@ -335,6 +338,10 @@ var UserService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "UpdateAvatar",
 			Handler:    _UserService_UpdateAvatar_Handler,
+		},
+		{
+			MethodName: "DeleteAvatar",
+			Handler:    _UserService_DeleteAvatar_Handler,
 		},
 		{
 			MethodName: "DeleteUser",
