@@ -16,6 +16,7 @@ import (
 	"server/internal/storage/postgresql"
 
 	"github.com/asaskevich/govalidator"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
@@ -71,7 +72,6 @@ func main() {
 	logger.Info("Connected to GRPC server as client")
 	defer grcpConn.Close()
 
-	// services := service.NewEmbeddedServices(storages, *config.Session)
 	services := service.NewMicroServices(storages, *config.Session, grcpConn)
 	logger.Info("Services configured")
 
@@ -103,6 +103,11 @@ func main() {
 			logger.Info("HTTP server Shutdown: " + err.Error())
 		}
 		close(idleConnsClosed)
+	}()
+
+	go func() {
+		http.Handle("/metrics", promhttp.Handler())
+		http.ListenAndServe(":8012", nil)
 	}()
 
 	if err := server.ListenAndServe(); err != http.ErrServerClosed {
