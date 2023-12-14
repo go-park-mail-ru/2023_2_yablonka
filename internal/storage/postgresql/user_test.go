@@ -12,7 +12,7 @@ import (
 )
 
 func TestPostgresUserStorage_Create(t *testing.T) {
-	defaultAvatar := "avatar.jpg"
+	defaultAvatar := "img/user_avatars/avatar.jpg"
 
 	t.Parallel()
 	type args struct {
