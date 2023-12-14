@@ -728,5 +728,5 @@ const (
 	ErrorKey
 	SIDLengthKey
 	LoggerKey
-	BaseURLKey
+	RequestIDKey
 )

@@ -6,7 +6,8 @@ import (
 	"server/internal/config"
 	logger "server/internal/logging"
 	"server/internal/pkg/dto"
-	"strconv"
+
+	"github.com/google/uuid"
 )
 
 func SetContext(sc config.ServerConfig, logger logger.ILogger) func(http.Handler) http.Handler {
@@ -21,8 +22,8 @@ func SetContext(sc config.ServerConfig, logger logger.ILogger) func(http.Handler
 			rCtx := context.WithValue(r.Context(), dto.LoggerKey, logger)
 			logger.DebugFmt("Added logger to context", funcName, "middleware")
 
-			rCtx = context.WithValue(rCtx, dto.BaseURLKey,
-				"http://"+sc.Host+":"+strconv.FormatUint(uint64(sc.BackendPort), 10)+"/",
+			rCtx = context.WithValue(rCtx, dto.RequestIDKey,
+				uuid.New(),
 			)
 			logger.DebugFmt("Added base URL to context", funcName, "middleware")
 
