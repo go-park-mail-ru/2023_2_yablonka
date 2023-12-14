@@ -10,6 +10,7 @@ import (
 	"server/internal/pkg/entities"
 
 	sq "github.com/Masterminds/squirrel"
+	"github.com/google/uuid"
 )
 
 // PostgresAuthStorage
@@ -34,6 +35,7 @@ func (s PostgresAuthStorage) CreateSession(ctx context.Context, session *entitie
 	errorMessage := "Creating session in failed with error: "
 	failBorder := ">>>>>>>>>>>>>>>>>>> PostgresAuthStorage.CreateSession FAIL <<<<<<<<<<<<<<<<<<<<<<<"
 	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
+	requestID := ctx.Value(dto.RequestIDKey).(uuid.UUID)
 
 	logger.Debug(">>>>>>>>>>>>>>>> PostgresAuthStorage.CreateSession <<<<<<<<<<<<<<<<<<<")
 
@@ -44,19 +46,19 @@ func (s PostgresAuthStorage) CreateSession(ctx context.Context, session *entitie
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
 	if err != nil {
-		logger.DebugFmt(errorMessage+err.Error(), funcName, nodeName)
+		logger.DebugFmt(errorMessage+err.Error(), requestID.String(), funcName, nodeName)
 		logger.Debug(failBorder)
 		return apperrors.ErrCouldNotBuildQuery
 	}
-	logger.DebugFmt("Built query\n\t"+query+"\nwith args\n\t"+fmt.Sprintf("%+v", args), funcName, nodeName)
+	logger.DebugFmt("Built query\n\t"+query+"\nwith args\n\t"+fmt.Sprintf("%+v", args), requestID.String(), funcName, nodeName)
 
 	_, err = s.db.Exec(query, args...)
 	if err != nil {
-		logger.DebugFmt(errorMessage+err.Error(), funcName, nodeName)
+		logger.DebugFmt(errorMessage+err.Error(), requestID.String(), funcName, nodeName)
 		logger.Debug(failBorder)
 		return apperrors.ErrSessionNotCreated
 	}
-	logger.DebugFmt("Executed query", funcName, nodeName)
+	logger.DebugFmt("Executed query", requestID.String(), funcName, nodeName)
 
 	logger.Debug(">>>>>>>>>>>>>>>> PostgresAuthStorage.CreateSession SUCCESS <<<<<<<<<<<<<<<<<<<")
 
@@ -71,6 +73,7 @@ func (s PostgresAuthStorage) GetSession(ctx context.Context, token dto.SessionTo
 	errorMessage := "Getting session in failed with error: "
 	failBorder := ">>>>>>>>>>>>>>>>>>> PostgresAuthStorage.GetSession FAIL <<<<<<<<<<<<<<<<<<<<<<<"
 	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
+	requestID := ctx.Value(dto.RequestIDKey).(uuid.UUID)
 
 	logger.Debug(">>>>>>>>>>>>>>>> PostgresAuthStorage.GetSession <<<<<<<<<<<<<<<<<<<")
 
@@ -81,11 +84,11 @@ func (s PostgresAuthStorage) GetSession(ctx context.Context, token dto.SessionTo
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
 	if err != nil {
-		logger.DebugFmt(errorMessage+err.Error(), funcName, nodeName)
+		logger.DebugFmt(errorMessage+err.Error(), requestID.String(), funcName, nodeName)
 		logger.Debug(failBorder)
 		return nil, apperrors.ErrCouldNotBuildQuery
 	}
-	logger.DebugFmt("Built query\n\t"+query+"\nwith args\n\t"+fmt.Sprintf("%+v", args), funcName, nodeName)
+	logger.DebugFmt("Built query\n\t"+query+"\nwith args\n\t"+fmt.Sprintf("%+v", args), requestID.String(), funcName, nodeName)
 
 	row := s.db.QueryRow(query, args...)
 	session := entities.Session{
@@ -96,11 +99,11 @@ func (s PostgresAuthStorage) GetSession(ctx context.Context, token dto.SessionTo
 		&session.ExpiryDate,
 	)
 	if err != nil {
-		logger.DebugFmt(errorMessage+err.Error(), funcName, nodeName)
+		logger.DebugFmt(errorMessage+err.Error(), requestID.String(), funcName, nodeName)
 		logger.Debug(failBorder)
 		return nil, apperrors.ErrSessionNotFound
 	}
-	logger.DebugFmt("Executed query", funcName, nodeName)
+	logger.DebugFmt("Executed query", requestID.String(), funcName, nodeName)
 
 	logger.Debug(">>>>>>>>>>>>>>>> PostgresAuthStorage.GetSession SUCCESS <<<<<<<<<<<<<<<<<<<")
 
@@ -115,6 +118,7 @@ func (s PostgresAuthStorage) DeleteSession(ctx context.Context, token dto.Sessio
 	errorMessage := "Deleting session in failed with error: "
 	failBorder := ">>>>>>>>>>>>>>>>>>> PostgresAuthStorage.DeleteSession FAIL <<<<<<<<<<<<<<<<<<<<<<<"
 	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
+	requestID := ctx.Value(dto.RequestIDKey).(uuid.UUID)
 
 	logger.Debug(">>>>>>>>>>>>>>>> PostgresAuthStorage.DeleteSession <<<<<<<<<<<<<<<<<<<")
 
@@ -124,19 +128,19 @@ func (s PostgresAuthStorage) DeleteSession(ctx context.Context, token dto.Sessio
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
 	if err != nil {
-		logger.DebugFmt(errorMessage+err.Error(), funcName, nodeName)
+		logger.DebugFmt(errorMessage+err.Error(), requestID.String(), funcName, nodeName)
 		logger.Debug(failBorder)
 		return apperrors.ErrCouldNotBuildQuery
 	}
-	logger.DebugFmt("Built query\n\t"+query+"\nwith args\n\t"+fmt.Sprintf("%+v", args), funcName, nodeName)
+	logger.DebugFmt("Built query\n\t"+query+"\nwith args\n\t"+fmt.Sprintf("%+v", args), requestID.String(), funcName, nodeName)
 
 	_, err = s.db.Exec(query, args...)
 	if err != nil {
-		logger.DebugFmt(errorMessage+err.Error(), funcName, nodeName)
+		logger.DebugFmt(errorMessage+err.Error(), requestID.String(), funcName, nodeName)
 		logger.Debug(failBorder)
 		return apperrors.ErrSessionNotFound
 	}
-	logger.DebugFmt("Executed query", funcName, nodeName)
+	logger.DebugFmt("Executed query", requestID.String(), funcName, nodeName)
 
 	logger.Debug(">>>>>>>>>>>>>>>> PostgresAuthStorage.DeleteSession SUCCESS <<<<<<<<<<<<<<<<<<<")
 

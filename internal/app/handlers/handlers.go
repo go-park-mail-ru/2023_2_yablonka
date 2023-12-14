@@ -23,6 +23,8 @@ type Handlers struct {
 	CSATQuestionHandler
 }
 
+const nodeName string = "storage"
+
 // NewHandlers
 // возвращает HandlerManager со всеми хэндлерами приложения
 func NewHandlers(services *service.Services) *Handlers {

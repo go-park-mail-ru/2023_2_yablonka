@@ -13,6 +13,7 @@ import (
 
 	logging "server/internal/logging"
 
+	"github.com/google/uuid"
 	"google.golang.org/protobuf/types/known/durationpb"
 	"google.golang.org/protobuf/types/known/emptypb"
 	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
@@ -49,8 +50,10 @@ const nodeName = "microservice_server"
 // AuthUser
 // возвращает уникальную строку авторизации и её длительность
 // или возвращает ошибки apperrors.ErrTokenNotGenerated (500)
-func (a *AuthService) AuthUser(ctx context.Context, id *UserID) (*AuthUserResponse, error) {
+func (a *AuthService) AuthUser(ctx context.Context, request *AuthUserRequest) (*AuthUserResponse, error) {
 	funcName := "AuthService.AuthUser"
+	requestID, _ := uuid.Parse(request.RequestID)
+	id := request.Value
 	expiresAt := time.Now().Add(a.sessionDuration)
 	response := &AuthUserResponse{}
 
@@ -60,7 +63,7 @@ func (a *AuthService) AuthUser(ctx context.Context, id *UserID) (*AuthUserRespon
 		response.Response = &SessionToken{}
 		return response, nil
 	}
-	a.logger.DebugFmt("Session ID generated", funcName, nodeName)
+	a.logger.DebugFmt("Session ID generated", requestID.String(), funcName, nodeName)
 
 	session := &entities.Session{
 		SessionID:  sessionID,
@@ -68,7 +71,10 @@ func (a *AuthService) AuthUser(ctx context.Context, id *UserID) (*AuthUserRespon
 		ExpiryDate: expiresAt,
 	}
 
-	sCtx := context.WithValue(ctx, dto.LoggerKey, a.logger)
+	sCtx := context.WithValue(
+		context.WithValue(ctx, dto.LoggerKey, a.logger),
+		dto.RequestIDKey, requestID,
+	)
 
 	err = a.authStorage.CreateSession(sCtx, session)
 	if err != nil {
@@ -76,7 +82,7 @@ func (a *AuthService) AuthUser(ctx context.Context, id *UserID) (*AuthUserRespon
 		response.Response = &SessionToken{}
 		return response, nil
 	}
-	a.logger.DebugFmt("Session created", funcName, nodeName)
+	a.logger.DebugFmt("Session created", requestID.String(), funcName, nodeName)
 
 	response.Code = AuthServiceErrorCodes[nil]
 	response.Response = &SessionToken{
@@ -89,29 +95,36 @@ func (a *AuthService) AuthUser(ctx context.Context, id *UserID) (*AuthUserRespon
 // VerifyAuth
 // проверяет состояние авторизации, возвращает ID авторизированного пользователя
 // или возвращает ошибки apperrors.ErrSessionNotFound (401)
-func (a *AuthService) VerifyAuth(ctx context.Context, token *SessionToken) (*VerifyAuthResponse, error) {
+func (a *AuthService) VerifyAuth(ctx context.Context, request *VerifyAuthRequest) (*VerifyAuthResponse, error) {
 	funcName := "AuthService.VerifyAuth"
+	requestID, _ := uuid.Parse(request.RequestID)
+	token := request.Value
+
 	convertedSession := dto.SessionToken{
 		ID:             token.ID,
 		ExpirationDate: token.ExpirationDate.AsTime(),
 	}
 	response := &VerifyAuthResponse{}
 
-	sCtx := context.WithValue(ctx, dto.LoggerKey, a.logger)
+	sCtx := context.WithValue(
+		context.WithValue(ctx, dto.LoggerKey, a.logger),
+		dto.RequestIDKey, requestID,
+	)
 
 	sessionObj, err := a.authStorage.GetSession(sCtx, convertedSession)
 	if err != nil {
-		a.logger.DebugFmt("Session not found", funcName, nodeName)
+		a.logger.DebugFmt("Session not found", requestID.String(), funcName, nodeName)
 		response.Code = AuthServiceErrorCodes[err]
 		response.Response = &UserID{}
 		return response, nil
 	}
-	a.logger.DebugFmt("Found session", funcName, nodeName)
+	a.logger.DebugFmt("Found session", requestID.String(), funcName, nodeName)
 
 	if sessionObj.ExpiryDate.Before(time.Now()) {
-		a.logger.DebugFmt("Deleting expired session", funcName, nodeName)
-		for _, err = a.LogOut(sCtx, token); err != nil; {
-			_, err = a.LogOut(sCtx, token)
+		a.logger.DebugFmt("Deleting expired session", requestID.String(), funcName, nodeName)
+		logOutRequest := &LogOutRequest{RequestID: request.RequestID, Value: request.Value}
+		for _, err = a.LogOut(sCtx, logOutRequest); err != nil; {
+			_, err = a.LogOut(sCtx, logOutRequest)
 		}
 		response.Code = AuthServiceErrorCodes[apperrors.ErrSessionExpired]
 		response.Response = &UserID{}
@@ -126,21 +139,27 @@ func (a *AuthService) VerifyAuth(ctx context.Context, token *SessionToken) (*Ver
 // LogOut
 // удаляет текущую сессию
 // или возвращает ошибку apperrors.ErrSessionNotFound (401)
-func (a *AuthService) LogOut(ctx context.Context, token *SessionToken) (*LogOutResponse, error) {
+func (a *AuthService) LogOut(ctx context.Context, request *LogOutRequest) (*LogOutResponse, error) {
 	funcName := "AuthService.LogOut"
+	requestID, _ := uuid.Parse(request.RequestID)
+	token := request.Value
+
 	convertedSession := dto.SessionToken{
 		ID:             token.ID,
 		ExpirationDate: token.ExpirationDate.AsTime(),
 	}
 	response := &LogOutResponse{}
 
-	sCtx := context.WithValue(ctx, dto.LoggerKey, a.logger)
+	sCtx := context.WithValue(
+		context.WithValue(ctx, dto.LoggerKey, a.logger),
+		dto.RequestIDKey, requestID,
+	)
 
 	err := a.authStorage.DeleteSession(sCtx, convertedSession)
 	if err != nil {
-		a.logger.DebugFmt("Failed to delete session with error "+err.Error(), funcName, nodeName)
+		a.logger.DebugFmt("Failed to delete session with error "+err.Error(), requestID.String(), funcName, nodeName)
 	} else {
-		a.logger.DebugFmt("Session deleted", funcName, nodeName)
+		a.logger.DebugFmt("Session deleted", requestID.String(), funcName, nodeName)
 	}
 	response.Code = AuthServiceErrorCodes[err]
 

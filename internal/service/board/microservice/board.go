@@ -10,6 +10,7 @@ import (
 	"server/internal/storage"
 	"strconv"
 
+	"github.com/google/uuid"
 	"google.golang.org/grpc"
 )
 
@@ -50,6 +51,7 @@ const nodeName string = "service"
 func (bs BoardService) GetFullBoard(ctx context.Context, info dto.IndividualBoardRequest) (*dto.FullBoardResult, error) {
 	funcName := "BoardService.GetFullBoard"
 	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
+	requestID := ctx.Value(dto.RequestIDKey).(uuid.UUID)
 
 	boardID := dto.BoardID{
 		Value: info.BoardID,
@@ -59,7 +61,7 @@ func (bs BoardService) GetFullBoard(ctx context.Context, info dto.IndividualBoar
 	if err != nil {
 		return nil, err
 	}
-	logger.DebugFmt("Got board users", funcName, nodeName)
+	logger.DebugFmt("Got board users", requestID.String(), funcName, nodeName)
 
 	userHasAccessToBoard := false
 	for _, user := range *users {
@@ -70,19 +72,19 @@ func (bs BoardService) GetFullBoard(ctx context.Context, info dto.IndividualBoar
 	if !userHasAccessToBoard {
 		return nil, apperrors.ErrNoBoardAccess
 	}
-	logger.DebugFmt("User has access to board", funcName, nodeName)
+	logger.DebugFmt("User has access to board", requestID.String(), funcName, nodeName)
 
 	board, err := bs.boardStorage.GetById(ctx, boardID)
 	if err != nil {
 		return nil, err
 	}
-	logger.DebugFmt("Got board", funcName, nodeName)
+	logger.DebugFmt("Got board", requestID.String(), funcName, nodeName)
 
 	lists, err := bs.boardStorage.GetLists(ctx, boardID)
 	if err != nil {
 		return nil, err
 	}
-	logger.DebugFmt("Got lists", funcName, nodeName)
+	logger.DebugFmt("Got lists", requestID.String(), funcName, nodeName)
 
 	taskIDs := dto.TaskIDs{}
 	for _, list := range *lists {
@@ -92,7 +94,7 @@ func (bs BoardService) GetFullBoard(ctx context.Context, info dto.IndividualBoar
 	if err != nil {
 		return nil, err
 	}
-	logger.DebugFmt("Got tasks", funcName, nodeName)
+	logger.DebugFmt("Got tasks", requestID.String(), funcName, nodeName)
 
 	commentIDs := dto.CommentIDs{}
 	checklistIDs := dto.ChecklistIDs{}
@@ -100,19 +102,19 @@ func (bs BoardService) GetFullBoard(ctx context.Context, info dto.IndividualBoar
 		commentIDs.Values = append(commentIDs.Values, task.CommentIDs...)
 		checklistIDs.Values = append(checklistIDs.Values, task.ChecklistIDs...)
 	}
-	logger.DebugFmt("Got comment ids", funcName, nodeName)
+	logger.DebugFmt("Got comment ids", requestID.String(), funcName, nodeName)
 
 	comments, err := bs.commentStorage.ReadMany(ctx, commentIDs)
 	if err != nil {
 		return nil, err
 	}
-	logger.DebugFmt("Got comments", funcName, nodeName)
+	logger.DebugFmt("Got comments", requestID.String(), funcName, nodeName)
 
 	checklists, err := bs.checklistStorage.ReadMany(ctx, checklistIDs)
 	if err != nil {
 		return nil, err
 	}
-	logger.DebugFmt("Got checklists", funcName, nodeName)
+	logger.DebugFmt("Got checklists", requestID.String(), funcName, nodeName)
 
 	checklistItemIDs := dto.ChecklistItemIDs{}
 	for _, checklist := range *checklists {
@@ -122,7 +124,7 @@ func (bs BoardService) GetFullBoard(ctx context.Context, info dto.IndividualBoar
 	if err != nil {
 		return nil, err
 	}
-	logger.DebugFmt("Got checklist items", funcName, nodeName)
+	logger.DebugFmt("Got checklist items", requestID.String(), funcName, nodeName)
 
 	return &dto.FullBoardResult{
 		Users:          *users,
@@ -140,6 +142,7 @@ func (bs BoardService) GetFullBoard(ctx context.Context, info dto.IndividualBoar
 func (bs BoardService) Create(ctx context.Context, board dto.NewBoardInfo) (*entities.Board, error) {
 	funcName := "BoardService.Create"
 	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
+	requestID := ctx.Value(dto.RequestIDKey).(uuid.UUID)
 
 	defaultURL := "main_theme.jpg"
 	if board.Thumbnail == nil {
@@ -149,7 +152,7 @@ func (bs BoardService) Create(ctx context.Context, board dto.NewBoardInfo) (*ent
 	if err != nil {
 		return nil, err
 	}
-	logger.DebugFmt("Board created", funcName, nodeName)
+	logger.DebugFmt("Board created", requestID.String(), funcName, nodeName)
 
 	// thumbnailUrlInfo := dto.ImageUrlInfo{
 	// 	ID:  info.ID,
@@ -161,7 +164,7 @@ func (bs BoardService) Create(ctx context.Context, board dto.NewBoardInfo) (*ent
 	// }
 	// defer f.Close()
 	fileLocation := "img/board_thumbnails/" + strconv.FormatUint(newBoard.ID, 10) + ".png"
-	logger.DebugFmt("Thumbnail location: "+fileLocation, funcName, nodeName)
+	logger.DebugFmt("Thumbnail location: "+fileLocation, requestID.String(), funcName, nodeName)
 	return newBoard, nil
 }
 
@@ -176,21 +179,21 @@ func (bs BoardService) UpdateData(ctx context.Context, info dto.UpdatedBoardInfo
 func (bs BoardService) UpdateThumbnail(ctx context.Context, info dto.UpdatedBoardThumbnailInfo) (*dto.UrlObj, error) {
 	funcName := "BoardService.UpdateThumbnail"
 	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
+	requestID := ctx.Value(dto.RequestIDKey).(uuid.UUID)
 
-	baseURL := ctx.Value(dto.BaseURLKey).(string)
 	fileLocation := "img/board_thumbnails/" + strconv.FormatUint(info.ID, 10) + ".png"
-	logger.DebugFmt("File location:"+fileLocation, funcName, nodeName)
+	logger.DebugFmt("File location:"+fileLocation, requestID.String(), funcName, nodeName)
 
 	thumbnailUrlInfo := dto.BoardImageUrlInfo{
 		ID:  info.ID,
-		Url: baseURL + fileLocation,
+		Url: fileLocation,
 	}
 	f, err := os.Create(thumbnailUrlInfo.Url)
 	if err != nil {
 		return nil, err
 	}
 	defer f.Close()
-	logger.DebugFmt("File created", funcName, nodeName)
+	logger.DebugFmt("File created", requestID.String(), funcName, nodeName)
 
 	err = bs.boardStorage.UpdateThumbnailUrl(ctx, thumbnailUrlInfo)
 	if err != nil {
@@ -200,7 +203,7 @@ func (bs BoardService) UpdateThumbnail(ctx context.Context, info dto.UpdatedBoar
 		}
 		return nil, err
 	}
-	logger.DebugFmt("thumbnail url updated", funcName, nodeName)
+	logger.DebugFmt("thumbnail url updated", requestID.String(), funcName, nodeName)
 
 	return &dto.UrlObj{Value: thumbnailUrlInfo.Url}, nil
 }
@@ -216,6 +219,7 @@ func (bs BoardService) Delete(ctx context.Context, id dto.BoardID) error {
 func (bs BoardService) AddUser(ctx context.Context, request dto.AddBoardUserRequest) error {
 	funcName := "BoardService.AddUser"
 	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
+	requestID := ctx.Value(dto.RequestIDKey).(uuid.UUID)
 
 	accessInfo := dto.CheckBoardAccessInfo{
 		UserID:  ctx.Value(dto.UserObjKey).(*entities.User).ID,
@@ -225,30 +229,30 @@ func (bs BoardService) AddUser(ctx context.Context, request dto.AddBoardUserRequ
 	if err != nil {
 		return apperrors.ErrCouldNotGetUser
 	}
-	logger.DebugFmt("got user", funcName, nodeName)
+	logger.DebugFmt("got user", requestID.String(), funcName, nodeName)
 
 	if !requestingUserAccess {
 		return apperrors.ErrNoBoardAccess
 	}
-	logger.DebugFmt("Requesting user has access to board", funcName, nodeName)
+	logger.DebugFmt("Requesting user has access to board", requestID.String(), funcName, nodeName)
 
 	targetUser, err := bs.userStorage.GetWithLogin(ctx, dto.UserLogin{Value: request.UserEmail})
 	if err != nil {
 		return apperrors.ErrUserNotFound
 	}
-	logger.DebugFmt("user found", funcName, nodeName)
+	logger.DebugFmt("user found", requestID.String(), funcName, nodeName)
 
 	accessInfo.UserID = targetUser.ID
 	userAccess, err := bs.boardStorage.CheckAccess(ctx, accessInfo)
 	if err != nil {
 		return apperrors.ErrCouldNotGetUser
 	}
-	logger.DebugFmt("got user", funcName, nodeName)
+	logger.DebugFmt("got user", requestID.String(), funcName, nodeName)
 
 	if userAccess {
 		return apperrors.ErrUserAlreadyInBoard
 	}
-	logger.DebugFmt("user not in board", funcName, nodeName)
+	logger.DebugFmt("user not in board", requestID.String(), funcName, nodeName)
 
 	info := dto.AddBoardUserInfo{
 		UserID:      targetUser.ID,
@@ -263,6 +267,7 @@ func (bs BoardService) AddUser(ctx context.Context, request dto.AddBoardUserRequ
 func (bs BoardService) RemoveUser(ctx context.Context, info dto.RemoveBoardUserInfo) error {
 	funcName := "BoardService.RemoveUser"
 	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
+	requestID := ctx.Value(dto.RequestIDKey).(uuid.UUID)
 
 	accessInfo := dto.CheckBoardAccessInfo{
 		UserID:  ctx.Value(dto.UserObjKey).(*entities.User).ID,
@@ -272,24 +277,24 @@ func (bs BoardService) RemoveUser(ctx context.Context, info dto.RemoveBoardUserI
 	if err != nil {
 		return apperrors.ErrCouldNotGetUser
 	}
-	logger.DebugFmt("got user", funcName, nodeName)
+	logger.DebugFmt("got user", requestID.String(), funcName, nodeName)
 
 	if !requestingUserAccess {
 		return apperrors.ErrNoBoardAccess
 	}
-	logger.DebugFmt("user has access to board", funcName, nodeName)
+	logger.DebugFmt("user has access to board", requestID.String(), funcName, nodeName)
 
 	accessInfo.UserID = info.UserID
 	userAccess, err := bs.boardStorage.CheckAccess(ctx, accessInfo)
 	if err != nil {
 		return apperrors.ErrCouldNotGetUser
 	}
-	logger.DebugFmt("got user", funcName, nodeName)
+	logger.DebugFmt("got user", requestID.String(), funcName, nodeName)
 
 	if !userAccess {
 		return apperrors.ErrUserNotInBoard
 	}
-	logger.DebugFmt("user in board", funcName, nodeName)
+	logger.DebugFmt("user in board", requestID.String(), funcName, nodeName)
 
 	return bs.boardStorage.RemoveUser(ctx, info)
 }

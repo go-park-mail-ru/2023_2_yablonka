@@ -15,8 +15,8 @@ const nodeName = "microservice"
 func RegisterServices(config *config.Config, storages *storage.Storages, server *grpc.Server, logger *logger.LogrusLogger) {
 	funcName := "CSRF.RegisterServices"
 	csrfServer := csrf.NewCSRFService(*config.Session, storages.CSRF, logger)
-	logger.DebugFmt("CSRF GRPC service created", funcName, nodeName)
+	logger.DebugRequestlessFmt("CSRF GRPC service created", funcName, nodeName)
 
 	csrf.RegisterCSRFServiceServer(server, csrfServer)
-	logger.DebugFmt("CSRF GRPC service registered", funcName, nodeName)
+	logger.DebugRequestlessFmt("CSRF GRPC service registered", funcName, nodeName)
 }

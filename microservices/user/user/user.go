@@ -11,6 +11,8 @@ import (
 	"server/internal/pkg/entities"
 	"server/internal/storage"
 	"strconv"
+
+	"github.com/google/uuid"
 )
 
 const nodeName = "service"
@@ -48,10 +50,16 @@ func NewUserService(storage storage.IUserStorage, logger *logger.LogrusLogger) *
 // RegisterUser
 // создает нового пользователя по данным
 // или возвращает ошибку apperrors.ErrUserAlreadyExists (409)
-func (us UserService) RegisterUser(ctx context.Context, info *AuthInfo) (*RegisterUserResponse, error) {
+func (us UserService) RegisterUser(ctx context.Context, request *RegisterUserRequest) (*RegisterUserResponse, error) {
 	funcName := "UserService.RegisterUser"
-	sCtx := context.WithValue(ctx, dto.LoggerKey, us.logger)
 	response := &RegisterUserResponse{}
+	requestID, _ := uuid.Parse(request.RequestID)
+	info := request.Value
+
+	sCtx := context.WithValue(
+		context.WithValue(ctx, dto.LoggerKey, us.logger),
+		dto.RequestIDKey, requestID,
+	)
 
 	_, err := us.storage.GetWithLogin(sCtx, dto.UserLogin{Value: info.Email})
 
@@ -60,9 +68,9 @@ func (us UserService) RegisterUser(ctx context.Context, info *AuthInfo) (*Regist
 		response.Response = &User{}
 		return response, nil
 	}
-	us.logger.DebugFmt("User doesn't exist", funcName, nodeName)
+	us.logger.DebugFmt("User doesn't exist", requestID.String(), funcName, nodeName)
 
-	us.logger.DebugFmt("Creating user", funcName, nodeName)
+	us.logger.DebugFmt("Creating user", requestID.String(), funcName, nodeName)
 	user, err := us.storage.Create(sCtx, dto.SignupInfo{
 		Email:        info.Email,
 		PasswordHash: hashFromAuthInfo(info.Email, info.Password),
@@ -82,26 +90,32 @@ func (us UserService) RegisterUser(ctx context.Context, info *AuthInfo) (*Regist
 // CheckPassword
 // проверяет пароль пользователя по почте
 // или возвращает ошибки apperrors.ErrUserNotFound (401), apperrors.ErrWrongPassword (401)
-func (us UserService) CheckPassword(ctx context.Context, info *AuthInfo) (*CheckPasswordResponse, error) {
+func (us UserService) CheckPassword(ctx context.Context, request *CheckPasswordRequest) (*CheckPasswordResponse, error) {
 	funcName := "UserService.CheckPassword"
-	sCtx := context.WithValue(ctx, dto.LoggerKey, us.logger)
 	response := &CheckPasswordResponse{}
+	requestID, _ := uuid.Parse(request.RequestID)
+	info := request.Value
+
+	sCtx := context.WithValue(
+		context.WithValue(ctx, dto.LoggerKey, us.logger),
+		dto.RequestIDKey, requestID,
+	)
 
 	user, err := us.storage.GetWithLogin(sCtx, dto.UserLogin{Value: info.Email})
 	if err != nil {
-		us.logger.DebugFmt("User not found", funcName, nodeName)
+		us.logger.DebugFmt("User not found", requestID.String(), funcName, nodeName)
 		response.Code = UserServiceErrorCodes[err]
 		response.Response = &User{}
 		return response, nil
 	}
-	us.logger.DebugFmt("User found", funcName, nodeName)
+	us.logger.DebugFmt("User found", requestID.String(), funcName, nodeName)
 
 	if user.PasswordHash != hashFromAuthInfo(info.Email, info.Password) {
 		response.Code = UserServiceErrorCodes[apperrors.ErrWrongPassword]
 		response.Response = &User{}
 		return response, nil
 	}
-	us.logger.DebugFmt("Password match", funcName, nodeName)
+	us.logger.DebugFmt("Password match", requestID.String(), funcName, nodeName)
 
 	response.Code = UserServiceErrorCodes[nil]
 	response.Response = convertUser(user)
@@ -112,19 +126,25 @@ func (us UserService) CheckPassword(ctx context.Context, info *AuthInfo) (*Check
 // GetWithID
 // находит пользователя по его id
 // или возвращает ошибку apperrors.ErrUserNotFound (401)
-func (us UserService) GetWithID(ctx context.Context, id *UserID) (*GetWithIDResponse, error) {
+func (us UserService) GetWithID(ctx context.Context, request *GetWithIDRequest) (*GetWithIDResponse, error) {
 	funcName := "UserService.GetWithID"
-	sCtx := context.WithValue(ctx, dto.LoggerKey, us.logger)
 	response := &GetWithIDResponse{}
+	requestID, _ := uuid.Parse(request.RequestID)
+	id := request.Value
+
+	sCtx := context.WithValue(
+		context.WithValue(ctx, dto.LoggerKey, us.logger),
+		dto.RequestIDKey, requestID,
+	)
 
 	user, err := us.storage.GetWithID(sCtx, dto.UserID{Value: id.Value})
 	if err != nil {
-		us.logger.DebugFmt("Failed to get user with error "+err.Error(), funcName, nodeName)
+		us.logger.DebugFmt("Failed to get user with error "+err.Error(), requestID.String(), funcName, nodeName)
 		response.Code = UserServiceErrorCodes[err]
 		response.Response = &User{}
 		return response, nil
 	}
-	us.logger.DebugFmt("Got user", funcName, nodeName)
+	us.logger.DebugFmt("Got user", requestID.String(), funcName, nodeName)
 
 	response.Code = UserServiceErrorCodes[nil]
 	response.Response = convertUser(user)
@@ -135,23 +155,29 @@ func (us UserService) GetWithID(ctx context.Context, id *UserID) (*GetWithIDResp
 // UpdatePassword
 // меняет пароль пользователя
 // или возвращает ошибку apperrors.ErrUserNotFound (409)
-func (us UserService) UpdatePassword(ctx context.Context, info *PasswordChangeInfo) (*UpdatePasswordResponse, error) {
+func (us UserService) UpdatePassword(ctx context.Context, request *UpdatePasswordRequest) (*UpdatePasswordResponse, error) {
 	funcName := "UserService.UpdatePassword"
-	sCtx := context.WithValue(ctx, dto.LoggerKey, us.logger)
 	response := &UpdatePasswordResponse{}
+	requestID, _ := uuid.Parse(request.RequestID)
+	info := request.Value
+
+	sCtx := context.WithValue(
+		context.WithValue(ctx, dto.LoggerKey, us.logger),
+		dto.RequestIDKey, requestID,
+	)
 
 	oldLoginInfo, err := us.storage.GetLoginInfoWithID(sCtx, dto.UserID{Value: info.UserID})
 	if err != nil {
 		response.Code = UserServiceErrorCodes[err]
 		return response, nil
 	}
-	us.logger.DebugFmt("User found", funcName, nodeName)
+	us.logger.DebugFmt("User found", requestID.String(), funcName, nodeName)
 
 	if oldLoginInfo.PasswordHash != hashFromAuthInfo(oldLoginInfo.Email, info.OldPassword) {
 		response.Code = UserServiceErrorCodes[apperrors.ErrWrongPassword]
 		return response, nil
 	}
-	us.logger.DebugFmt("Old password verified", funcName, nodeName)
+	us.logger.DebugFmt("Old password verified", requestID.String(), funcName, nodeName)
 
 	err = us.storage.UpdatePassword(sCtx, dto.PasswordHashesInfo{
 		UserID:          info.UserID,
@@ -165,9 +191,15 @@ func (us UserService) UpdatePassword(ctx context.Context, info *PasswordChangeIn
 // UpdateProfile
 // обновляет профиль пользователя
 // или возвращает ошибку apperrors.ErrUserNotFound (409)
-func (us UserService) UpdateProfile(ctx context.Context, info *UserProfileInfo) (*UpdateProfileResponse, error) {
-	sCtx := context.WithValue(ctx, dto.LoggerKey, us.logger)
+func (us UserService) UpdateProfile(ctx context.Context, request *UpdateProfileRequest) (*UpdateProfileResponse, error) {
 	response := &UpdateProfileResponse{}
+	requestID, _ := uuid.Parse(request.RequestID)
+	info := request.Value
+
+	sCtx := context.WithValue(
+		context.WithValue(ctx, dto.LoggerKey, us.logger),
+		dto.RequestIDKey, requestID,
+	)
 
 	err := us.storage.UpdateProfile(sCtx, dto.UserProfileInfo{
 		UserID:      info.UserID,
@@ -183,31 +215,37 @@ func (us UserService) UpdateProfile(ctx context.Context, info *UserProfileInfo) 
 // UpdateProfile
 // обновляет аватарку пользователя
 // или возвращает ошибку apperrors.ErrUserNotFound (409)
-func (us UserService) UpdateAvatar(ctx context.Context, info *AvatarChangeInfo) (*UpdateAvatarResponse, error) {
+func (us UserService) UpdateAvatar(ctx context.Context, request *UpdateAvatarRequest) (*UpdateAvatarResponse, error) {
 	funcName := "UserService.UpdateAvatar"
-	sCtx := context.WithValue(ctx, dto.LoggerKey, us.logger)
 	response := &UpdateAvatarResponse{}
+	requestID, _ := uuid.Parse(request.RequestID)
+	info := request.Value
+
+	sCtx := context.WithValue(
+		context.WithValue(ctx, dto.LoggerKey, us.logger),
+		dto.RequestIDKey, requestID,
+	)
 
 	fileName := hashFromFileInfo(info.Filename, strconv.FormatUint(info.UserID, 10), info.Mimetype)
 
 	fileLocation := "img/user_avatars/" + fileName + ".png"
 	cwd, _ := os.Getwd()
-	us.logger.DebugFmt("Relative path: "+fileLocation, funcName, nodeName)
-	us.logger.DebugFmt("CWD: "+cwd, funcName, nodeName)
+	us.logger.DebugFmt("Relative path: "+fileLocation, requestID.String(), funcName, nodeName)
+	us.logger.DebugFmt("CWD: "+cwd, requestID.String(), funcName, nodeName)
 	avatarUrlInfo := dto.UserImageUrlInfo{
 		ID:  info.UserID,
 		Url: fileLocation,
 	}
-	us.logger.DebugFmt("Full URL: "+avatarUrlInfo.Url, funcName, nodeName)
+	us.logger.DebugFmt("Full URL: "+avatarUrlInfo.Url, requestID.String(), funcName, nodeName)
 	f, err := os.Create(fileLocation)
 	if err != nil {
-		us.logger.DebugFmt("Failed to create file with error: "+err.Error(), funcName, nodeName)
+		us.logger.DebugFmt("Failed to create file with error: "+err.Error(), requestID.String(), funcName, nodeName)
 		response.Code = UserServiceErrorCodes[apperrors.ErrFailedToCreateFile]
 		response.Response = &UrlObj{}
 		return response, nil
 	}
 
-	us.logger.DebugFmt(fmt.Sprintf("Writing %v bytes", len(info.Avatar)), funcName, nodeName)
+	us.logger.DebugFmt(fmt.Sprintf("Writing %v bytes", len(info.Avatar)), requestID.String(), funcName, nodeName)
 	_, err = f.Write(info.Avatar)
 	if err != nil {
 		response.Code = UserServiceErrorCodes[apperrors.ErrFailedToSaveFile]
@@ -221,7 +259,7 @@ func (us UserService) UpdateAvatar(ctx context.Context, info *AvatarChangeInfo) 
 	if err != nil {
 		errDelete := os.Remove(fileLocation)
 		if errDelete != nil {
-			us.logger.DebugFmt("Failed to remove file after unsuccessful update with error: "+err.Error(), funcName, nodeName)
+			us.logger.DebugFmt("Failed to remove file after unsuccessful update with error: "+err.Error(), requestID.String(), funcName, nodeName)
 			response.Code = UserServiceErrorCodes[apperrors.ErrFailedToDeleteFile]
 			response.Response = &UrlObj{}
 			return response, nil
@@ -240,9 +278,15 @@ func (us UserService) UpdateAvatar(ctx context.Context, info *AvatarChangeInfo) 
 // DeleteUser
 // удаляет данного пользователя по id
 // или возвращает ошибку apperrors.ErrUserNotFound (409)
-func (us UserService) DeleteUser(ctx context.Context, id *UserID) (*DeleteUserResponse, error) {
-	sCtx := context.WithValue(ctx, dto.LoggerKey, us.logger)
+func (us UserService) DeleteUser(ctx context.Context, request *DeleteUserRequest) (*DeleteUserResponse, error) {
 	response := &DeleteUserResponse{}
+	requestID, _ := uuid.Parse(request.RequestID)
+	id := request.Value
+
+	sCtx := context.WithValue(
+		context.WithValue(ctx, dto.LoggerKey, us.logger),
+		dto.RequestIDKey, requestID,
+	)
 
 	err := us.storage.Delete(sCtx, dto.UserID{Value: id.Value})
 	response.Code = UserServiceErrorCodes[err]

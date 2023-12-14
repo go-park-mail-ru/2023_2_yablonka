@@ -9,6 +9,8 @@ import (
 	"server/internal/service"
 
 	logger "server/internal/logging"
+
+	"github.com/google/uuid"
 )
 
 type CommentHandler struct {
@@ -38,6 +40,7 @@ func (ch CommentHandler) Create(w http.ResponseWriter, r *http.Request) {
 	failBorder := "---------------------------------- Create comment FAIL ----------------------------------"
 
 	logger := rCtx.Value(dto.LoggerKey).(logger.ILogger)
+	requestID := rCtx.Value(dto.RequestIDKey).(uuid.UUID)
 
 	logger.Info("---------------------------------- Create comment ----------------------------------")
 
@@ -49,7 +52,7 @@ func (ch CommentHandler) Create(w http.ResponseWriter, r *http.Request) {
 		apperrors.ReturnError(apperrors.BadRequestResponse, w, r)
 		return
 	}
-	logger.DebugFmt("JSON Decoded", funcName, nodeName)
+	logger.DebugFmt("JSON Decoded", requestID.String(), funcName, nodeName)
 
 	comment, err := ch.cs.Create(rCtx, newCommentInfo)
 	if err != nil {
@@ -58,7 +61,7 @@ func (ch CommentHandler) Create(w http.ResponseWriter, r *http.Request) {
 		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
 		return
 	}
-	logger.DebugFmt("Comment created", funcName, nodeName)
+	logger.DebugFmt("Comment created", requestID.String(), funcName, nodeName)
 
 	response := dto.JSONResponse{
 		Body: dto.JSONMap{
@@ -72,7 +75,7 @@ func (ch CommentHandler) Create(w http.ResponseWriter, r *http.Request) {
 		apperrors.ReturnError(apperrors.InternalServerErrorResponse, w, r)
 		return
 	}
-	logger.DebugFmt("response written", funcName, nodeName)
+	logger.DebugFmt("response written", requestID.String(), funcName, nodeName)
 
 	logger.Info("---------------------------------- Create comment SUCCESS ----------------------------------")
 }

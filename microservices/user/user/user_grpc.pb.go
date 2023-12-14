@@ -18,13 +18,13 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type UserServiceClient interface {
-	RegisterUser(ctx context.Context, in *AuthInfo, opts ...grpc.CallOption) (*RegisterUserResponse, error)
-	CheckPassword(ctx context.Context, in *AuthInfo, opts ...grpc.CallOption) (*CheckPasswordResponse, error)
-	GetWithID(ctx context.Context, in *UserID, opts ...grpc.CallOption) (*GetWithIDResponse, error)
-	UpdatePassword(ctx context.Context, in *PasswordChangeInfo, opts ...grpc.CallOption) (*UpdatePasswordResponse, error)
-	UpdateProfile(ctx context.Context, in *UserProfileInfo, opts ...grpc.CallOption) (*UpdateProfileResponse, error)
-	UpdateAvatar(ctx context.Context, in *AvatarChangeInfo, opts ...grpc.CallOption) (*UpdateAvatarResponse, error)
-	DeleteUser(ctx context.Context, in *UserID, opts ...grpc.CallOption) (*DeleteUserResponse, error)
+	RegisterUser(ctx context.Context, in *RegisterUserRequest, opts ...grpc.CallOption) (*RegisterUserResponse, error)
+	CheckPassword(ctx context.Context, in *CheckPasswordRequest, opts ...grpc.CallOption) (*CheckPasswordResponse, error)
+	GetWithID(ctx context.Context, in *GetWithIDRequest, opts ...grpc.CallOption) (*GetWithIDResponse, error)
+	UpdatePassword(ctx context.Context, in *UpdatePasswordRequest, opts ...grpc.CallOption) (*UpdatePasswordResponse, error)
+	UpdateProfile(ctx context.Context, in *UpdateProfileRequest, opts ...grpc.CallOption) (*UpdateProfileResponse, error)
+	UpdateAvatar(ctx context.Context, in *UpdateAvatarRequest, opts ...grpc.CallOption) (*UpdateAvatarResponse, error)
+	DeleteUser(ctx context.Context, in *DeleteUserRequest, opts ...grpc.CallOption) (*DeleteUserResponse, error)
 }
 
 type userServiceClient struct {
@@ -35,7 +35,7 @@ func NewUserServiceClient(cc grpc.ClientConnInterface) UserServiceClient {
 	return &userServiceClient{cc}
 }
 
-func (c *userServiceClient) RegisterUser(ctx context.Context, in *AuthInfo, opts ...grpc.CallOption) (*RegisterUserResponse, error) {
+func (c *userServiceClient) RegisterUser(ctx context.Context, in *RegisterUserRequest, opts ...grpc.CallOption) (*RegisterUserResponse, error) {
 	out := new(RegisterUserResponse)
 	err := c.cc.Invoke(ctx, "/user.UserService/RegisterUser", in, out, opts...)
 	if err != nil {
@@ -44,7 +44,7 @@ func (c *userServiceClient) RegisterUser(ctx context.Context, in *AuthInfo, opts
 	return out, nil
 }
 
-func (c *userServiceClient) CheckPassword(ctx context.Context, in *AuthInfo, opts ...grpc.CallOption) (*CheckPasswordResponse, error) {
+func (c *userServiceClient) CheckPassword(ctx context.Context, in *CheckPasswordRequest, opts ...grpc.CallOption) (*CheckPasswordResponse, error) {
 	out := new(CheckPasswordResponse)
 	err := c.cc.Invoke(ctx, "/user.UserService/CheckPassword", in, out, opts...)
 	if err != nil {
@@ -53,7 +53,7 @@ func (c *userServiceClient) CheckPassword(ctx context.Context, in *AuthInfo, opt
 	return out, nil
 }
 
-func (c *userServiceClient) GetWithID(ctx context.Context, in *UserID, opts ...grpc.CallOption) (*GetWithIDResponse, error) {
+func (c *userServiceClient) GetWithID(ctx context.Context, in *GetWithIDRequest, opts ...grpc.CallOption) (*GetWithIDResponse, error) {
 	out := new(GetWithIDResponse)
 	err := c.cc.Invoke(ctx, "/user.UserService/GetWithID", in, out, opts...)
 	if err != nil {
@@ -62,7 +62,7 @@ func (c *userServiceClient) GetWithID(ctx context.Context, in *UserID, opts ...g
 	return out, nil
 }
 
-func (c *userServiceClient) UpdatePassword(ctx context.Context, in *PasswordChangeInfo, opts ...grpc.CallOption) (*UpdatePasswordResponse, error) {
+func (c *userServiceClient) UpdatePassword(ctx context.Context, in *UpdatePasswordRequest, opts ...grpc.CallOption) (*UpdatePasswordResponse, error) {
 	out := new(UpdatePasswordResponse)
 	err := c.cc.Invoke(ctx, "/user.UserService/UpdatePassword", in, out, opts...)
 	if err != nil {
@@ -71,7 +71,7 @@ func (c *userServiceClient) UpdatePassword(ctx context.Context, in *PasswordChan
 	return out, nil
 }
 
-func (c *userServiceClient) UpdateProfile(ctx context.Context, in *UserProfileInfo, opts ...grpc.CallOption) (*UpdateProfileResponse, error) {
+func (c *userServiceClient) UpdateProfile(ctx context.Context, in *UpdateProfileRequest, opts ...grpc.CallOption) (*UpdateProfileResponse, error) {
 	out := new(UpdateProfileResponse)
 	err := c.cc.Invoke(ctx, "/user.UserService/UpdateProfile", in, out, opts...)
 	if err != nil {
@@ -80,7 +80,7 @@ func (c *userServiceClient) UpdateProfile(ctx context.Context, in *UserProfileIn
 	return out, nil
 }
 
-func (c *userServiceClient) UpdateAvatar(ctx context.Context, in *AvatarChangeInfo, opts ...grpc.CallOption) (*UpdateAvatarResponse, error) {
+func (c *userServiceClient) UpdateAvatar(ctx context.Context, in *UpdateAvatarRequest, opts ...grpc.CallOption) (*UpdateAvatarResponse, error) {
 	out := new(UpdateAvatarResponse)
 	err := c.cc.Invoke(ctx, "/user.UserService/UpdateAvatar", in, out, opts...)
 	if err != nil {
@@ -89,7 +89,7 @@ func (c *userServiceClient) UpdateAvatar(ctx context.Context, in *AvatarChangeIn
 	return out, nil
 }
 
-func (c *userServiceClient) DeleteUser(ctx context.Context, in *UserID, opts ...grpc.CallOption) (*DeleteUserResponse, error) {
+func (c *userServiceClient) DeleteUser(ctx context.Context, in *DeleteUserRequest, opts ...grpc.CallOption) (*DeleteUserResponse, error) {
 	out := new(DeleteUserResponse)
 	err := c.cc.Invoke(ctx, "/user.UserService/DeleteUser", in, out, opts...)
 	if err != nil {
@@ -102,13 +102,13 @@ func (c *userServiceClient) DeleteUser(ctx context.Context, in *UserID, opts ...
 // All implementations must embed UnimplementedUserServiceServer
 // for forward compatibility
 type UserServiceServer interface {
-	RegisterUser(context.Context, *AuthInfo) (*RegisterUserResponse, error)
-	CheckPassword(context.Context, *AuthInfo) (*CheckPasswordResponse, error)
-	GetWithID(context.Context, *UserID) (*GetWithIDResponse, error)
-	UpdatePassword(context.Context, *PasswordChangeInfo) (*UpdatePasswordResponse, error)
-	UpdateProfile(context.Context, *UserProfileInfo) (*UpdateProfileResponse, error)
-	UpdateAvatar(context.Context, *AvatarChangeInfo) (*UpdateAvatarResponse, error)
-	DeleteUser(context.Context, *UserID) (*DeleteUserResponse, error)
+	RegisterUser(context.Context, *RegisterUserRequest) (*RegisterUserResponse, error)
+	CheckPassword(context.Context, *CheckPasswordRequest) (*CheckPasswordResponse, error)
+	GetWithID(context.Context, *GetWithIDRequest) (*GetWithIDResponse, error)
+	UpdatePassword(context.Context, *UpdatePasswordRequest) (*UpdatePasswordResponse, error)
+	UpdateProfile(context.Context, *UpdateProfileRequest) (*UpdateProfileResponse, error)
+	UpdateAvatar(context.Context, *UpdateAvatarRequest) (*UpdateAvatarResponse, error)
+	DeleteUser(context.Context, *DeleteUserRequest) (*DeleteUserResponse, error)
 	mustEmbedUnimplementedUserServiceServer()
 }
 
@@ -116,25 +116,25 @@ type UserServiceServer interface {
 type UnimplementedUserServiceServer struct {
 }
 
-func (UnimplementedUserServiceServer) RegisterUser(context.Context, *AuthInfo) (*RegisterUserResponse, error) {
+func (UnimplementedUserServiceServer) RegisterUser(context.Context, *RegisterUserRequest) (*RegisterUserResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RegisterUser not implemented")
 }
-func (UnimplementedUserServiceServer) CheckPassword(context.Context, *AuthInfo) (*CheckPasswordResponse, error) {
+func (UnimplementedUserServiceServer) CheckPassword(context.Context, *CheckPasswordRequest) (*CheckPasswordResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CheckPassword not implemented")
 }
-func (UnimplementedUserServiceServer) GetWithID(context.Context, *UserID) (*GetWithIDResponse, error) {
+func (UnimplementedUserServiceServer) GetWithID(context.Context, *GetWithIDRequest) (*GetWithIDResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetWithID not implemented")
 }
-func (UnimplementedUserServiceServer) UpdatePassword(context.Context, *PasswordChangeInfo) (*UpdatePasswordResponse, error) {
+func (UnimplementedUserServiceServer) UpdatePassword(context.Context, *UpdatePasswordRequest) (*UpdatePasswordResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdatePassword not implemented")
 }
-func (UnimplementedUserServiceServer) UpdateProfile(context.Context, *UserProfileInfo) (*UpdateProfileResponse, error) {
+func (UnimplementedUserServiceServer) UpdateProfile(context.Context, *UpdateProfileRequest) (*UpdateProfileResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateProfile not implemented")
 }
-func (UnimplementedUserServiceServer) UpdateAvatar(context.Context, *AvatarChangeInfo) (*UpdateAvatarResponse, error) {
+func (UnimplementedUserServiceServer) UpdateAvatar(context.Context, *UpdateAvatarRequest) (*UpdateAvatarResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateAvatar not implemented")
 }
-func (UnimplementedUserServiceServer) DeleteUser(context.Context, *UserID) (*DeleteUserResponse, error) {
+func (UnimplementedUserServiceServer) DeleteUser(context.Context, *DeleteUserRequest) (*DeleteUserResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteUser not implemented")
 }
 func (UnimplementedUserServiceServer) mustEmbedUnimplementedUserServiceServer() {}
@@ -151,7 +151,7 @@ func RegisterUserServiceServer(s grpc.ServiceRegistrar, srv UserServiceServer) {
 }
 
 func _UserService_RegisterUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(AuthInfo)
+	in := new(RegisterUserRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -163,13 +163,13 @@ func _UserService_RegisterUser_Handler(srv interface{}, ctx context.Context, dec
 		FullMethod: "/user.UserService/RegisterUser",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(UserServiceServer).RegisterUser(ctx, req.(*AuthInfo))
+		return srv.(UserServiceServer).RegisterUser(ctx, req.(*RegisterUserRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _UserService_CheckPassword_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(AuthInfo)
+	in := new(CheckPasswordRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -181,13 +181,13 @@ func _UserService_CheckPassword_Handler(srv interface{}, ctx context.Context, de
 		FullMethod: "/user.UserService/CheckPassword",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(UserServiceServer).CheckPassword(ctx, req.(*AuthInfo))
+		return srv.(UserServiceServer).CheckPassword(ctx, req.(*CheckPasswordRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _UserService_GetWithID_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(UserID)
+	in := new(GetWithIDRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -199,13 +199,13 @@ func _UserService_GetWithID_Handler(srv interface{}, ctx context.Context, dec fu
 		FullMethod: "/user.UserService/GetWithID",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(UserServiceServer).GetWithID(ctx, req.(*UserID))
+		return srv.(UserServiceServer).GetWithID(ctx, req.(*GetWithIDRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _UserService_UpdatePassword_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(PasswordChangeInfo)
+	in := new(UpdatePasswordRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -217,13 +217,13 @@ func _UserService_UpdatePassword_Handler(srv interface{}, ctx context.Context, d
 		FullMethod: "/user.UserService/UpdatePassword",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(UserServiceServer).UpdatePassword(ctx, req.(*PasswordChangeInfo))
+		return srv.(UserServiceServer).UpdatePassword(ctx, req.(*UpdatePasswordRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _UserService_UpdateProfile_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(UserProfileInfo)
+	in := new(UpdateProfileRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -235,13 +235,13 @@ func _UserService_UpdateProfile_Handler(srv interface{}, ctx context.Context, de
 		FullMethod: "/user.UserService/UpdateProfile",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(UserServiceServer).UpdateProfile(ctx, req.(*UserProfileInfo))
+		return srv.(UserServiceServer).UpdateProfile(ctx, req.(*UpdateProfileRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _UserService_UpdateAvatar_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(AvatarChangeInfo)
+	in := new(UpdateAvatarRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -253,13 +253,13 @@ func _UserService_UpdateAvatar_Handler(srv interface{}, ctx context.Context, dec
 		FullMethod: "/user.UserService/UpdateAvatar",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(UserServiceServer).UpdateAvatar(ctx, req.(*AvatarChangeInfo))
+		return srv.(UserServiceServer).UpdateAvatar(ctx, req.(*UpdateAvatarRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _UserService_DeleteUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(UserID)
+	in := new(DeleteUserRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -271,7 +271,7 @@ func _UserService_DeleteUser_Handler(srv interface{}, ctx context.Context, dec f
 		FullMethod: "/user.UserService/DeleteUser",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(UserServiceServer).DeleteUser(ctx, req.(*UserID))
+		return srv.(UserServiceServer).DeleteUser(ctx, req.(*DeleteUserRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }

@@ -10,6 +10,7 @@ import (
 	"server/internal/pkg/dto"
 
 	sq "github.com/Masterminds/squirrel"
+	"github.com/google/uuid"
 	"github.com/lib/pq"
 )
 
@@ -67,6 +68,7 @@ func (s PostgresChecklistStorage) Create(ctx context.Context, info dto.NewCheckl
 func (s PostgresChecklistStorage) ReadMany(ctx context.Context, ids dto.ChecklistIDs) (*[]dto.ChecklistInfo, error) {
 	funcName := "PostgresChecklistStorage.ReadMany"
 	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
+	requestID := ctx.Value(dto.RequestIDKey).(uuid.UUID)
 
 	query, args, err := sq.
 		Select(allChecklistFields...).
@@ -80,15 +82,15 @@ func (s PostgresChecklistStorage) ReadMany(ctx context.Context, ids dto.Checklis
 		log.Println("Storage -- Failed to build query with error", err.Error())
 		return nil, apperrors.ErrCouldNotBuildQuery
 	}
-	logger.DebugFmt("Built query\n\t"+query+"\nwith args\n\t"+fmt.Sprintf("%+v", args), funcName, nodeName)
+	logger.DebugFmt("Built query\n\t"+query+"\nwith args\n\t"+fmt.Sprintf("%+v", args), requestID.String(), funcName, nodeName)
 
 	rows, err := s.db.Query(query, args...)
 	if err != nil {
-		logger.DebugFmt(err.Error(), funcName, nodeName)
+		logger.DebugFmt(err.Error(), requestID.String(), funcName, nodeName)
 		return nil, apperrors.ErrCouldNotCollectRows
 	}
 	defer rows.Close()
-	logger.DebugFmt("Got checklist rows", funcName, nodeName)
+	logger.DebugFmt("Got checklist rows", requestID.String(), funcName, nodeName)
 
 	checklists := []dto.ChecklistInfo{}
 	for rows.Next() {
@@ -102,12 +104,12 @@ func (s PostgresChecklistStorage) ReadMany(ctx context.Context, ids dto.Checklis
 			(*pq.StringArray)(&checklist.Items),
 		)
 		if err != nil {
-			logger.DebugFmt(err.Error(), funcName, nodeName)
+			logger.DebugFmt(err.Error(), requestID.String(), funcName, nodeName)
 			return nil, apperrors.ErrCouldNotGetChecklist
 		}
 		checklists = append(checklists, checklist)
 	}
-	logger.DebugFmt("Got checklists from DB", funcName, nodeName)
+	logger.DebugFmt("Got checklists from DB", requestID.String(), funcName, nodeName)
 
 	return &checklists, nil
 }
@@ -145,6 +147,7 @@ func (s PostgresChecklistStorage) Update(ctx context.Context, info dto.UpdatedCh
 func (s PostgresChecklistStorage) Delete(ctx context.Context, id dto.ChecklistID) error {
 	funcName := "PostgresChecklistStorage.Delete"
 	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
+	requestID := ctx.Value(dto.RequestIDKey).(uuid.UUID)
 
 	sql, args, err := sq.
 		Delete("public.checklist").
@@ -154,14 +157,14 @@ func (s PostgresChecklistStorage) Delete(ctx context.Context, id dto.ChecklistID
 	if err != nil {
 		return apperrors.ErrCouldNotBuildQuery
 	}
-	logger.DebugFmt("Built query\n\t"+sql+"\nwith args\n\t"+fmt.Sprintf("%+v", args), funcName, nodeName)
+	logger.DebugFmt("Built query\n\t"+sql+"\nwith args\n\t"+fmt.Sprintf("%+v", args), requestID.String(), funcName, nodeName)
 
 	_, err = s.db.Exec(sql, args...)
 	if err != nil {
-		logger.DebugFmt("Failed to delete checklist with error "+err.Error(), funcName, nodeName)
+		logger.DebugFmt("Failed to delete checklist with error "+err.Error(), requestID.String(), funcName, nodeName)
 		return apperrors.ErrChecklistNotDeleted
 	}
-	logger.DebugFmt("Checklist deleted", funcName, nodeName)
+	logger.DebugFmt("Checklist deleted", requestID.String(), funcName, nodeName)
 
 	return nil
 }

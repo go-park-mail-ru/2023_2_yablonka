@@ -11,6 +11,7 @@ import (
 	"server/internal/pkg/entities"
 
 	sq "github.com/Masterminds/squirrel"
+	"github.com/google/uuid"
 	"github.com/lib/pq"
 )
 
@@ -73,6 +74,7 @@ func (s PostgresListStorage) Create(ctx context.Context, info dto.NewListInfo) (
 func (s PostgresListStorage) GetTasksWithID(ctx context.Context, ids dto.ListIDs) (*[]dto.SingleTaskInfo, error) {
 	funcName := "PostgreSQLBoardStorage.GetTasksWithID"
 	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
+	requestID := ctx.Value(dto.RequestIDKey).(uuid.UUID)
 
 	taskSql, args, err := sq.Select(allTaskAggFields...).
 		From("public.task").
@@ -84,14 +86,14 @@ func (s PostgresListStorage) GetTasksWithID(ctx context.Context, ids dto.ListIDs
 	if err != nil {
 		return nil, apperrors.ErrCouldNotBuildQuery
 	}
-	logger.DebugFmt("Built query\n\t"+taskSql+"\nwith args\n\t"+fmt.Sprintf("%+v", args), funcName, nodeName)
+	logger.DebugFmt("Built query\n\t"+taskSql+"\nwith args\n\t"+fmt.Sprintf("%+v", args), requestID.String(), funcName, nodeName)
 
 	taskRows, err := s.db.Query(taskSql, args...)
 	if err != nil {
 		return nil, apperrors.ErrCouldNotGetTask
 	}
 	defer taskRows.Close()
-	logger.DebugFmt("Got task info rows", funcName, nodeName)
+	logger.DebugFmt("Got task info rows", requestID.String(), funcName, nodeName)
 
 	tasks := []dto.SingleTaskInfo{}
 	for taskRows.Next() {
@@ -113,7 +115,7 @@ func (s PostgresListStorage) GetTasksWithID(ctx context.Context, ids dto.ListIDs
 		}
 		tasks = append(tasks, task)
 	}
-	logger.DebugFmt("Collected task info rows", funcName, nodeName)
+	logger.DebugFmt("Collected task info rows", requestID.String(), funcName, nodeName)
 
 	return &tasks, nil
 }

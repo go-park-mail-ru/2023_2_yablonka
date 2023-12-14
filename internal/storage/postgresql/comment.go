@@ -11,6 +11,7 @@ import (
 	"server/internal/pkg/entities"
 
 	sq "github.com/Masterminds/squirrel"
+	"github.com/google/uuid"
 )
 
 // PostgresCommentStorage
@@ -110,7 +111,8 @@ func (s *PostgresCommentStorage) GetFromTask(ctx context.Context, id dto.TaskID)
 func (s *PostgresCommentStorage) ReadMany(ctx context.Context, ids dto.CommentIDs) (*[]dto.CommentInfo, error) {
 	funcName := "PostgresCommentStorage.ReadMany"
 	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
-	logger.DebugFmt("got logger", funcName, nodeName)
+	requestID := ctx.Value(dto.RequestIDKey).(uuid.UUID)
+	logger.DebugFmt("got logger", requestID.String(), funcName, nodeName)
 
 	query, args, err := sq.
 		Select(allCommentFields...).
@@ -119,17 +121,17 @@ func (s *PostgresCommentStorage) ReadMany(ctx context.Context, ids dto.CommentID
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
 	if err != nil {
-		logger.DebugFmt(err.Error(), funcName, nodeName)
+		logger.DebugFmt(err.Error(), requestID.String(), funcName, nodeName)
 		return nil, apperrors.ErrCouldNotBuildQuery
 	}
-	logger.DebugFmt("Built query\n\t"+query+"\nwith args\n\t"+fmt.Sprintf("%+v", args), funcName, nodeName)
+	logger.DebugFmt("Built query\n\t"+query+"\nwith args\n\t"+fmt.Sprintf("%+v", args), requestID.String(), funcName, nodeName)
 
 	rows, err := s.db.Query(query, args...)
 	if err != nil {
 		return nil, apperrors.ErrCouldNotGetBoardUsers
 	}
 	defer rows.Close()
-	logger.DebugFmt("Got comment rows", funcName, nodeName)
+	logger.DebugFmt("Got comment rows", requestID.String(), funcName, nodeName)
 
 	comments := []dto.CommentInfo{}
 	for rows.Next() {
@@ -146,7 +148,7 @@ func (s *PostgresCommentStorage) ReadMany(ctx context.Context, ids dto.CommentID
 		}
 		comments = append(comments, comment)
 	}
-	logger.DebugFmt("Got task from DB", funcName, nodeName)
+	logger.DebugFmt("Got task from DB", requestID.String(), funcName, nodeName)
 
 	return &comments, nil
 }

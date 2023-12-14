@@ -11,6 +11,7 @@ import (
 	"server/internal/pkg/entities"
 
 	sq "github.com/Masterminds/squirrel"
+	"github.com/google/uuid"
 )
 
 // LocalUserStorage
@@ -33,6 +34,7 @@ func (s *PostgresUserStorage) GetWithLogin(ctx context.Context, login dto.UserLo
 	errorMessage := "Creating user failed with error: "
 	failBorder := ">>>>>>>>>>>>>>>>>>> PostgresUserStorage.Create FAIL <<<<<<<<<<<<<<<<<<<<<<<"
 	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
+	requestID := ctx.Value(dto.RequestIDKey).(uuid.UUID)
 
 	logger.Debug(">>>>>>>>>>>>>>>> PostgresUserStorage.Create <<<<<<<<<<<<<<<<<<<")
 
@@ -46,7 +48,7 @@ func (s *PostgresUserStorage) GetWithLogin(ctx context.Context, login dto.UserLo
 		ToSql()
 
 	if err != nil {
-		logger.DebugFmt(errorMessage+err.Error(), funcName, nodeName)
+		logger.DebugFmt(errorMessage+err.Error(), requestID.String(), funcName, nodeName)
 		logger.Debug(failBorder)
 		return nil, apperrors.ErrCouldNotBuildQuery
 	}
@@ -63,7 +65,7 @@ func (s *PostgresUserStorage) GetWithLogin(ctx context.Context, login dto.UserLo
 		&user.Description,
 	)
 	if err != nil {
-		logger.DebugFmt(errorMessage+err.Error(), funcName, nodeName)
+		logger.DebugFmt(errorMessage+err.Error(), requestID.String(), funcName, nodeName)
 		logger.Debug(failBorder)
 		return nil, apperrors.ErrUserNotFound
 	}
@@ -79,6 +81,7 @@ func (s *PostgresUserStorage) GetWithID(ctx context.Context, id dto.UserID) (*en
 	errorMessage := "Getting user failed with error: "
 	failBorder := ">>>>>>>>>>>>>>>>>>> PostgresUserStorage.GetWithID FAIL <<<<<<<<<<<<<<<<<<<<<<<"
 	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
+	requestID := ctx.Value(dto.RequestIDKey).(uuid.UUID)
 
 	logger.Debug(">>>>>>>>>>>>>>>> PostgresUserStorage.GetWithID <<<<<<<<<<<<<<<<<<<")
 
@@ -89,20 +92,20 @@ func (s *PostgresUserStorage) GetWithID(ctx context.Context, id dto.UserID) (*en
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
 	if err != nil {
-		logger.DebugFmt(errorMessage+err.Error(), funcName, nodeName)
+		logger.DebugFmt(errorMessage+err.Error(), requestID.String(), funcName, nodeName)
 		logger.Debug(failBorder)
 		return nil, apperrors.ErrCouldNotBuildQuery
 	}
-	logger.DebugFmt("Built query\n\t"+sql+"\nwith args\n\t"+fmt.Sprintf("%+v", args), funcName, nodeName)
+	logger.DebugFmt("Built query\n\t"+sql+"\nwith args\n\t"+fmt.Sprintf("%+v", args), requestID.String(), funcName, nodeName)
 
 	row := s.db.QueryRow(sql, args...)
 	user := entities.User{}
 	if row.Scan(&user.ID, &user.Email, &user.PasswordHash, &user.Name, &user.Surname, &user.AvatarURL, &user.Description) != nil {
-		logger.DebugFmt(errorMessage+apperrors.ErrUserNotFound.Error(), funcName, nodeName)
+		logger.DebugFmt(errorMessage+apperrors.ErrUserNotFound.Error(), requestID.String(), funcName, nodeName)
 		logger.Debug(failBorder)
 		return nil, apperrors.ErrUserNotFound
 	}
-	logger.DebugFmt("Got user", funcName, nodeName)
+	logger.DebugFmt("Got user", requestID.String(), funcName, nodeName)
 
 	logger.Debug(">>>>>>>>>>>>>>>> PostgresUserStorage.GetWithID SUCCESS <<<<<<<<<<<<<<<<<<<")
 
@@ -117,6 +120,7 @@ func (s *PostgresUserStorage) GetLoginInfoWithID(ctx context.Context, id dto.Use
 	errorMessage := "Creating user failed with error: "
 	failBorder := ">>>>>>>>>>>>>>>>>>> PostgresUserStorage.GetLoginInfoWithID FAIL <<<<<<<<<<<<<<<<<<<<<<<"
 	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
+	requestID := ctx.Value(dto.RequestIDKey).(uuid.UUID)
 
 	logger.Debug(">>>>>>>>>>>>>>>> PostgresUserStorage.GetLoginInfoWithID <<<<<<<<<<<<<<<<<<<")
 
@@ -128,21 +132,21 @@ func (s *PostgresUserStorage) GetLoginInfoWithID(ctx context.Context, id dto.Use
 		ToSql()
 
 	if err != nil {
-		logger.DebugFmt(errorMessage+err.Error(), funcName, nodeName)
+		logger.DebugFmt(errorMessage+err.Error(), requestID.String(), funcName, nodeName)
 		logger.Debug(failBorder)
 		return nil, apperrors.ErrCouldNotBuildQuery
 	}
-	logger.DebugFmt("Built query\n\t"+sql+"\nwith args\n\t"+fmt.Sprintf("%+v", args), funcName, nodeName)
+	logger.DebugFmt("Built query\n\t"+sql+"\nwith args\n\t"+fmt.Sprintf("%+v", args), requestID.String(), funcName, nodeName)
 
 	row := s.db.QueryRow(sql, args...)
 	loginInfo := dto.LoginInfo{}
 	err = row.Scan(&loginInfo.Email, &loginInfo.PasswordHash)
 	if err != nil {
-		logger.DebugFmt(errorMessage+err.Error(), funcName, nodeName)
+		logger.DebugFmt(errorMessage+err.Error(), requestID.String(), funcName, nodeName)
 		logger.Debug(failBorder)
 		return nil, apperrors.ErrUserNotFound
 	}
-	logger.DebugFmt("Got user", funcName, nodeName)
+	logger.DebugFmt("Got user", requestID.String(), funcName, nodeName)
 
 	logger.Debug(">>>>>>>>>>>>>>>> PostgresUserStorage.GetLoginInfoWithID SUCCESS <<<<<<<<<<<<<<<<<<<")
 
@@ -157,6 +161,7 @@ func (s *PostgresUserStorage) Create(ctx context.Context, info dto.SignupInfo) (
 	errorMessage := "Creating user failed with error: "
 	failBorder := ">>>>>>>>>>>>>>>>>>> PostgresUserStorage.Create FAIL <<<<<<<<<<<<<<<<<<<<<<<"
 	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
+	requestID := ctx.Value(dto.RequestIDKey).(uuid.UUID)
 
 	logger.Debug(">>>>>>>>>>>>>>>> PostgresUserStorage.Create <<<<<<<<<<<<<<<<<<<")
 
@@ -170,11 +175,11 @@ func (s *PostgresUserStorage) Create(ctx context.Context, info dto.SignupInfo) (
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
 	if err != nil {
-		logger.DebugFmt(errorMessage+err.Error(), funcName, nodeName)
+		logger.DebugFmt(errorMessage+err.Error(), requestID.String(), funcName, nodeName)
 		logger.Debug(failBorder)
 		return nil, apperrors.ErrCouldNotBuildQuery
 	}
-	logger.DebugFmt("Built query\n\t"+query+"\nwith args\n\t"+fmt.Sprintf("%+v", args), funcName, nodeName)
+	logger.DebugFmt("Built query\n\t"+query+"\nwith args\n\t"+fmt.Sprintf("%+v", args), requestID.String(), funcName, nodeName)
 
 	user := entities.User{
 		Email:        info.Email,
@@ -184,11 +189,11 @@ func (s *PostgresUserStorage) Create(ctx context.Context, info dto.SignupInfo) (
 	row := s.db.QueryRow(query, args...)
 	err = row.Scan(&user.ID)
 	if err != nil {
-		logger.DebugFmt(errorMessage+err.Error(), funcName, nodeName)
+		logger.DebugFmt(errorMessage+err.Error(), requestID.String(), funcName, nodeName)
 		logger.Debug(failBorder)
 		return nil, apperrors.ErrUserNotCreated
 	}
-	logger.DebugFmt("Got user", funcName, nodeName)
+	logger.DebugFmt("Got user", requestID.String(), funcName, nodeName)
 
 	logger.Debug(">>>>>>>>>>>>>>>> PostgresWorkspaceStorage.Create SUCCESS <<<<<<<<<<<<<<<<<<<")
 
@@ -203,6 +208,7 @@ func (s *PostgresUserStorage) UpdatePassword(ctx context.Context, info dto.Passw
 	errorMessage := "Updating user failed with error: "
 	failBorder := ">>>>>>>>>>>>>>>>>>> PostgresUserStorage.UpdatePassword FAIL <<<<<<<<<<<<<<<<<<<<<<<"
 	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
+	requestID := ctx.Value(dto.RequestIDKey).(uuid.UUID)
 
 	logger.Debug(">>>>>>>>>>>>>>>> PostgresUserStorage.UpdatePassword <<<<<<<<<<<<<<<<<<<")
 
@@ -214,19 +220,19 @@ func (s *PostgresUserStorage) UpdatePassword(ctx context.Context, info dto.Passw
 		ToSql()
 
 	if err != nil {
-		logger.DebugFmt(errorMessage+err.Error(), funcName, nodeName)
+		logger.DebugFmt(errorMessage+err.Error(), requestID.String(), funcName, nodeName)
 		logger.Debug(failBorder)
 		return apperrors.ErrCouldNotBuildQuery
 	}
-	logger.DebugFmt("Built query\n\t"+query+"\nwith args\n\t"+fmt.Sprintf("%+v", args), funcName, nodeName)
+	logger.DebugFmt("Built query\n\t"+query+"\nwith args\n\t"+fmt.Sprintf("%+v", args), requestID.String(), funcName, nodeName)
 
 	_, err = s.db.Exec(query, args...)
 	if err != nil {
-		logger.DebugFmt(errorMessage+err.Error(), funcName, nodeName)
+		logger.DebugFmt(errorMessage+err.Error(), requestID.String(), funcName, nodeName)
 		logger.Debug(failBorder)
 		return apperrors.ErrUserNotUpdated
 	}
-	logger.DebugFmt("Password updated", funcName, nodeName)
+	logger.DebugFmt("Password updated", requestID.String(), funcName, nodeName)
 
 	logger.Debug(">>>>>>>>>>>>>>>> PostgresUserStorage.UpdatePassword SUCCESS <<<<<<<<<<<<<<<<<<<")
 
@@ -241,6 +247,7 @@ func (s *PostgresUserStorage) UpdateProfile(ctx context.Context, info dto.UserPr
 	errorMessage := "Updating user failed with error: "
 	failBorder := ">>>>>>>>>>>>>>>>>>> PostgresUserStorage.UpdateProfile FAIL <<<<<<<<<<<<<<<<<<<<<<<"
 	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
+	requestID := ctx.Value(dto.RequestIDKey).(uuid.UUID)
 
 	logger.Debug(">>>>>>>>>>>>>>>> PostgresUserStorage.UpdateProfile <<<<<<<<<<<<<<<<<<<")
 
@@ -253,19 +260,19 @@ func (s *PostgresUserStorage) UpdateProfile(ctx context.Context, info dto.UserPr
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
 	if err != nil {
-		logger.DebugFmt(errorMessage+err.Error(), funcName, nodeName)
+		logger.DebugFmt(errorMessage+err.Error(), requestID.String(), funcName, nodeName)
 		logger.Debug(failBorder)
 		return apperrors.ErrCouldNotBuildQuery
 	}
-	logger.DebugFmt("Built query\n\t"+query+"\nwith args\n\t"+fmt.Sprintf("%+v", args), funcName, nodeName)
+	logger.DebugFmt("Built query\n\t"+query+"\nwith args\n\t"+fmt.Sprintf("%+v", args), requestID.String(), funcName, nodeName)
 
 	_, err = s.db.Exec(query, args...)
 	if err != nil {
-		logger.DebugFmt(errorMessage+err.Error(), funcName, nodeName)
+		logger.DebugFmt(errorMessage+err.Error(), requestID.String(), funcName, nodeName)
 		logger.Debug(failBorder)
 		return apperrors.ErrUserNotUpdated
 	}
-	logger.DebugFmt("Profile updated", funcName, nodeName)
+	logger.DebugFmt("Profile updated", requestID.String(), funcName, nodeName)
 
 	logger.Debug(">>>>>>>>>>>>>>>> PostgresUserStorage.UpdateProfile SUCCESS <<<<<<<<<<<<<<<<<<<")
 
@@ -280,6 +287,7 @@ func (s *PostgresUserStorage) UpdateAvatarUrl(ctx context.Context, info dto.User
 	errorMessage := "Updating user failed with error: "
 	failBorder := ">>>>>>>>>>>>>>>>>>> PostgresUserStorage.UpdateAvatarUrl FAIL <<<<<<<<<<<<<<<<<<<<<<<"
 	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
+	requestID := ctx.Value(dto.RequestIDKey).(uuid.UUID)
 
 	logger.Debug(">>>>>>>>>>>>>>>> PostgresUserStorage.UpdateAvatarUrl <<<<<<<<<<<<<<<<<<<")
 
@@ -290,19 +298,19 @@ func (s *PostgresUserStorage) UpdateAvatarUrl(ctx context.Context, info dto.User
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
 	if err != nil {
-		logger.DebugFmt(errorMessage+err.Error(), funcName, nodeName)
+		logger.DebugFmt(errorMessage+err.Error(), requestID.String(), funcName, nodeName)
 		logger.Debug(failBorder)
 		return apperrors.ErrCouldNotBuildQuery
 	}
-	logger.DebugFmt("Built query\n\t"+query+"\nwith args\n\t"+fmt.Sprintf("%+v", args), funcName, nodeName)
+	logger.DebugFmt("Built query\n\t"+query+"\nwith args\n\t"+fmt.Sprintf("%+v", args), requestID.String(), funcName, nodeName)
 
 	_, err = s.db.Exec(query, args...)
 	if err != nil {
-		logger.DebugFmt(errorMessage+err.Error(), funcName, nodeName)
+		logger.DebugFmt(errorMessage+err.Error(), requestID.String(), funcName, nodeName)
 		logger.Debug(failBorder)
 		return apperrors.ErrUserNotUpdated
 	}
-	logger.DebugFmt("Avatar updated", funcName, nodeName)
+	logger.DebugFmt("Avatar updated", requestID.String(), funcName, nodeName)
 
 	logger.Debug(">>>>>>>>>>>>>>>> PostgresUserStorage.UpdateAvatarUrl SUCCESS <<<<<<<<<<<<<<<<<<<")
 
@@ -317,6 +325,7 @@ func (s *PostgresUserStorage) Delete(ctx context.Context, id dto.UserID) error {
 	errorMessage := "Deleting user failed with error: "
 	failBorder := ">>>>>>>>>>>>>>>>>>> PostgresUserStorage.Delete FAIL <<<<<<<<<<<<<<<<<<<<<<<"
 	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
+	requestID := ctx.Value(dto.RequestIDKey).(uuid.UUID)
 
 	logger.Debug(">>>>>>>>>>>>>>>> PostgresUserStorage.Delete <<<<<<<<<<<<<<<<<<<")
 
@@ -326,19 +335,19 @@ func (s *PostgresUserStorage) Delete(ctx context.Context, id dto.UserID) error {
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
 	if err != nil {
-		logger.DebugFmt(errorMessage+err.Error(), funcName, nodeName)
+		logger.DebugFmt(errorMessage+err.Error(), requestID.String(), funcName, nodeName)
 		logger.Debug(failBorder)
 		return apperrors.ErrCouldNotBuildQuery
 	}
-	logger.DebugFmt("Built query\n\t"+query+"\nwith args\n\t"+fmt.Sprintf("%+v", args), funcName, nodeName)
+	logger.DebugFmt("Built query\n\t"+query+"\nwith args\n\t"+fmt.Sprintf("%+v", args), requestID.String(), funcName, nodeName)
 
 	_, err = s.db.Exec(query, args...)
 	if err != nil {
-		logger.DebugFmt(errorMessage+err.Error(), funcName, nodeName)
+		logger.DebugFmt(errorMessage+err.Error(), requestID.String(), funcName, nodeName)
 		logger.Debug(failBorder)
 		return apperrors.ErrUserNotDeleted
 	}
-	logger.DebugFmt("User deleted", funcName, nodeName)
+	logger.DebugFmt("User deleted", requestID.String(), funcName, nodeName)
 
 	logger.Debug(">>>>>>>>>>>>>>>> PostgresUserStorage.Delete SUCCESS <<<<<<<<<<<<<<<<<<<")
 

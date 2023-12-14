@@ -7,6 +7,8 @@ import (
 	"server/internal/pkg/dto"
 	"server/internal/pkg/entities"
 	"server/internal/storage"
+
+	"github.com/google/uuid"
 )
 
 const nodeName = "service"
@@ -59,17 +61,18 @@ func (ts TaskService) Delete(ctx context.Context, id dto.TaskID) error {
 func (ts TaskService) AddUser(ctx context.Context, info dto.AddTaskUserInfo) error {
 	funcName := "TaskService.AddUser"
 	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
+	requestID := ctx.Value(dto.RequestIDKey).(uuid.UUID)
 
 	userAccess, err := ts.taskStorage.CheckAccess(ctx, (dto.CheckTaskAccessInfo)(info))
 	if err != nil {
 		return apperrors.ErrCouldNotGetUser
 	}
-	logger.DebugFmt("got user", funcName, nodeName)
+	logger.DebugFmt("got user", requestID.String(), funcName, nodeName)
 
 	if userAccess {
 		return apperrors.ErrUserAlreadyInTask
 	}
-	logger.DebugFmt("user not in task", funcName, nodeName)
+	logger.DebugFmt("user not in task", requestID.String(), funcName, nodeName)
 
 	return ts.taskStorage.AddUser(ctx, info)
 }
@@ -80,17 +83,18 @@ func (ts TaskService) AddUser(ctx context.Context, info dto.AddTaskUserInfo) err
 func (ts TaskService) RemoveUser(ctx context.Context, info dto.RemoveTaskUserInfo) error {
 	funcName := "TaskService.RemoveUser"
 	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
+	requestID := ctx.Value(dto.RequestIDKey).(uuid.UUID)
 
 	userAccess, err := ts.taskStorage.CheckAccess(ctx, (dto.CheckTaskAccessInfo)(info))
 	if err != nil {
 		return apperrors.ErrCouldNotGetUser
 	}
-	logger.DebugFmt("got user", funcName, nodeName)
+	logger.DebugFmt("got user", requestID.String(), funcName, nodeName)
 
 	if !userAccess {
 		return apperrors.ErrUserNotInTask
 	}
-	logger.DebugFmt("user not in task", funcName, nodeName)
+	logger.DebugFmt("user not in task", requestID.String(), funcName, nodeName)
 
 	return ts.taskStorage.RemoveUser(ctx, info)
 }

@@ -12,14 +12,13 @@ import (
 	logger "server/internal/logging"
 
 	"github.com/asaskevich/govalidator"
+	"github.com/google/uuid"
 )
 
 type BoardHandler struct {
 	as service.IAuthService
 	bs service.IBoardService
 }
-
-const nodeName = "handler"
 
 // @Summary Получить доску
 // @Description Получить доску
@@ -43,6 +42,7 @@ func (bh BoardHandler) GetFullBoard(w http.ResponseWriter, r *http.Request) {
 	failBorder := "---------------------------------- Get board FAIL ----------------------------------"
 
 	logger := rCtx.Value(dto.LoggerKey).(logger.ILogger)
+	requestID := rCtx.Value(dto.RequestIDKey).(uuid.UUID)
 
 	logger.Info("---------------------------------- Get board ----------------------------------")
 
@@ -54,7 +54,7 @@ func (bh BoardHandler) GetFullBoard(w http.ResponseWriter, r *http.Request) {
 		apperrors.ReturnError(apperrors.BadRequestResponse, w, r)
 		return
 	}
-	logger.DebugFmt("JSON Decoded", funcName, nodeName)
+	logger.DebugFmt("JSON Decoded", requestID.String(), funcName, nodeName)
 
 	user, ok := rCtx.Value(dto.UserObjKey).(*entities.User)
 	if !ok {
@@ -63,7 +63,7 @@ func (bh BoardHandler) GetFullBoard(w http.ResponseWriter, r *http.Request) {
 		apperrors.ReturnError(apperrors.GenericUnauthorizedResponse, w, r)
 		return
 	}
-	logger.DebugFmt("User object acquired from context", funcName, nodeName)
+	logger.DebugFmt("User object acquired from context", requestID.String(), funcName, nodeName)
 
 	boardRequest := dto.IndividualBoardRequest{
 		UserID:  user.ID,
@@ -76,7 +76,7 @@ func (bh BoardHandler) GetFullBoard(w http.ResponseWriter, r *http.Request) {
 		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
 		return
 	}
-	logger.DebugFmt("Got board", funcName, nodeName)
+	logger.DebugFmt("Got board", requestID.String(), funcName, nodeName)
 
 	response := dto.JSONResponse{
 		Body: board,
@@ -88,7 +88,7 @@ func (bh BoardHandler) GetFullBoard(w http.ResponseWriter, r *http.Request) {
 		apperrors.ReturnError(apperrors.InternalServerErrorResponse, w, r)
 		return
 	}
-	logger.DebugFmt("response written", funcName, nodeName)
+	logger.DebugFmt("response written", requestID.String(), funcName, nodeName)
 
 	logger.Info("---------------------------------- Get board SUCCESS ----------------------------------")
 }
@@ -115,6 +115,7 @@ func (bh BoardHandler) Create(w http.ResponseWriter, r *http.Request) {
 	failBorder := "---------------------------------- Create board FAIL ----------------------------------"
 
 	logger := rCtx.Value(dto.LoggerKey).(logger.ILogger)
+	requestID := rCtx.Value(dto.RequestIDKey).(uuid.UUID)
 	logger.Info("---------------------------------- Creating board ----------------------------------")
 
 	var newBoardRequest dto.NewBoardRequest
@@ -125,7 +126,7 @@ func (bh BoardHandler) Create(w http.ResponseWriter, r *http.Request) {
 		apperrors.ReturnError(apperrors.BadRequestResponse, w, r)
 		return
 	}
-	logger.DebugFmt("JSON Decoded", funcName, nodeName)
+	logger.DebugFmt("JSON Decoded", requestID.String(), funcName, nodeName)
 
 	user, ok := rCtx.Value(dto.UserObjKey).(*entities.User)
 	if !ok {
@@ -134,7 +135,7 @@ func (bh BoardHandler) Create(w http.ResponseWriter, r *http.Request) {
 		apperrors.ReturnError(apperrors.GenericUnauthorizedResponse, w, r)
 		return
 	}
-	logger.DebugFmt("User object acquired from context", funcName, nodeName)
+	logger.DebugFmt("User object acquired from context", requestID.String(), funcName, nodeName)
 
 	_, err = govalidator.ValidateStruct(newBoardRequest)
 	if err != nil {
@@ -143,7 +144,7 @@ func (bh BoardHandler) Create(w http.ResponseWriter, r *http.Request) {
 		apperrors.ReturnError(apperrors.BadRequestResponse, w, r)
 		return
 	}
-	logger.DebugFmt("New board data validated", funcName, nodeName)
+	logger.DebugFmt("New board data validated", requestID.String(), funcName, nodeName)
 
 	newBoardInfo := dto.NewBoardInfo{
 		Name:        newBoardRequest.Name,
@@ -158,7 +159,7 @@ func (bh BoardHandler) Create(w http.ResponseWriter, r *http.Request) {
 		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
 		return
 	}
-	logger.DebugFmt("Board created", funcName, nodeName)
+	logger.DebugFmt("Board created", requestID.String(), funcName, nodeName)
 
 	response := dto.JSONResponse{
 		Body: dto.JSONMap{
@@ -172,7 +173,7 @@ func (bh BoardHandler) Create(w http.ResponseWriter, r *http.Request) {
 		apperrors.ReturnError(apperrors.InternalServerErrorResponse, w, r)
 		return
 	}
-	logger.DebugFmt("response written", funcName, nodeName)
+	logger.DebugFmt("response written", requestID.String(), funcName, nodeName)
 
 	logger.Info("---------------------------------- Create board SUCCESS ----------------------------------")
 }
@@ -199,6 +200,7 @@ func (bh BoardHandler) UpdateData(w http.ResponseWriter, r *http.Request) {
 	failBorder := "---------------------------------- Updating board FAIL ----------------------------------"
 
 	logger := rCtx.Value(dto.LoggerKey).(logger.ILogger)
+	requestID := rCtx.Value(dto.RequestIDKey).(uuid.UUID)
 	logger.Info("---------------------------------- Updating board ----------------------------------")
 
 	var boardInfo dto.UpdatedBoardInfo
@@ -209,7 +211,7 @@ func (bh BoardHandler) UpdateData(w http.ResponseWriter, r *http.Request) {
 		apperrors.ReturnError(apperrors.BadRequestResponse, w, r)
 		return
 	}
-	logger.DebugFmt("JSON Decoded", funcName, nodeName)
+	logger.DebugFmt("JSON Decoded", requestID.String(), funcName, nodeName)
 
 	_, ok := rCtx.Value(dto.UserObjKey).(*entities.User)
 	if !ok {
@@ -218,7 +220,7 @@ func (bh BoardHandler) UpdateData(w http.ResponseWriter, r *http.Request) {
 		apperrors.ReturnError(apperrors.GenericUnauthorizedResponse, w, r)
 		return
 	}
-	logger.DebugFmt("User object acquired from context", funcName, nodeName)
+	logger.DebugFmt("User object acquired from context", requestID.String(), funcName, nodeName)
 
 	err = bh.bs.UpdateData(rCtx, boardInfo)
 	if err != nil {
@@ -227,7 +229,7 @@ func (bh BoardHandler) UpdateData(w http.ResponseWriter, r *http.Request) {
 		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
 		return
 	}
-	logger.DebugFmt("board data updated", funcName, nodeName)
+	logger.DebugFmt("board data updated", requestID.String(), funcName, nodeName)
 
 	response := dto.JSONResponse{
 		Body: dto.JSONMap{},
@@ -239,7 +241,7 @@ func (bh BoardHandler) UpdateData(w http.ResponseWriter, r *http.Request) {
 		apperrors.ReturnError(apperrors.InternalServerErrorResponse, w, r)
 		return
 	}
-	logger.DebugFmt("response written", funcName, nodeName)
+	logger.DebugFmt("response written", requestID.String(), funcName, nodeName)
 
 	logger.Info("---------------------------------- Updating board SUCCESS ----------------------------------")
 }
@@ -266,6 +268,7 @@ func (bh BoardHandler) UpdateThumbnail(w http.ResponseWriter, r *http.Request) {
 	failBorder := "---------------------------------- Updating board thumbnail FAIL ----------------------------------"
 
 	logger := rCtx.Value(dto.LoggerKey).(logger.ILogger)
+	requestID := rCtx.Value(dto.RequestIDKey).(uuid.UUID)
 	logger.Info("---------------------------------- Updating board ----------------------------------")
 
 	var boardInfo dto.UpdatedBoardThumbnailInfo
@@ -276,7 +279,7 @@ func (bh BoardHandler) UpdateThumbnail(w http.ResponseWriter, r *http.Request) {
 		apperrors.ReturnError(apperrors.BadRequestResponse, w, r)
 		return
 	}
-	logger.DebugFmt("JSON Decoded", funcName, nodeName)
+	logger.DebugFmt("JSON Decoded", requestID.String(), funcName, nodeName)
 
 	_, ok := rCtx.Value(dto.UserObjKey).(*entities.User)
 	if !ok {
@@ -285,7 +288,7 @@ func (bh BoardHandler) UpdateThumbnail(w http.ResponseWriter, r *http.Request) {
 		apperrors.ReturnError(apperrors.GenericUnauthorizedResponse, w, r)
 		return
 	}
-	logger.DebugFmt("User object acquired from context", funcName, nodeName)
+	logger.DebugFmt("User object acquired from context", requestID.String(), funcName, nodeName)
 
 	urlObj, err := bh.bs.UpdateThumbnail(rCtx, boardInfo)
 	if err != nil {
@@ -294,7 +297,7 @@ func (bh BoardHandler) UpdateThumbnail(w http.ResponseWriter, r *http.Request) {
 		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
 		return
 	}
-	logger.DebugFmt("board thumbnail updated", funcName, nodeName)
+	logger.DebugFmt("board thumbnail updated", requestID.String(), funcName, nodeName)
 
 	response := dto.JSONResponse{
 		Body: dto.JSONMap{
@@ -308,9 +311,9 @@ func (bh BoardHandler) UpdateThumbnail(w http.ResponseWriter, r *http.Request) {
 		apperrors.ReturnError(apperrors.InternalServerErrorResponse, w, r)
 		return
 	}
-	logger.DebugFmt("response written", funcName, nodeName)
+	logger.DebugFmt("response written", requestID.String(), funcName, nodeName)
 
-	logger.DebugFmt("response written", funcName, nodeName)
+	logger.DebugFmt("response written", requestID.String(), funcName, nodeName)
 	logger.Info("---------------------------------- Updating board thumbnail SUCCESS ----------------------------------")
 }
 
@@ -336,6 +339,7 @@ func (bh BoardHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	failBorder := "---------------------------------- Deleting board FAIL ----------------------------------"
 
 	logger := rCtx.Value(dto.LoggerKey).(logger.ILogger)
+	requestID := rCtx.Value(dto.RequestIDKey).(uuid.UUID)
 	logger.Info("---------------------------------- Deleting board ----------------------------------")
 
 	var boardID dto.BoardID
@@ -346,7 +350,7 @@ func (bh BoardHandler) Delete(w http.ResponseWriter, r *http.Request) {
 		apperrors.ReturnError(apperrors.BadRequestResponse, w, r)
 		return
 	}
-	logger.DebugFmt("JSON Decoded", funcName, nodeName)
+	logger.DebugFmt("JSON Decoded", requestID.String(), funcName, nodeName)
 
 	_, ok := rCtx.Value(dto.UserObjKey).(*entities.User)
 	if !ok {
@@ -355,7 +359,7 @@ func (bh BoardHandler) Delete(w http.ResponseWriter, r *http.Request) {
 		apperrors.ReturnError(apperrors.GenericUnauthorizedResponse, w, r)
 		return
 	}
-	logger.DebugFmt("User object acquired from context", funcName, nodeName)
+	logger.DebugFmt("User object acquired from context", requestID.String(), funcName, nodeName)
 
 	err = bh.bs.Delete(rCtx, boardID)
 	if err != nil {
@@ -364,7 +368,7 @@ func (bh BoardHandler) Delete(w http.ResponseWriter, r *http.Request) {
 		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
 		return
 	}
-	logger.DebugFmt("board deleted", funcName, nodeName)
+	logger.DebugFmt("board deleted", requestID.String(), funcName, nodeName)
 
 	response := dto.JSONResponse{
 		Body: dto.JSONMap{},
@@ -376,9 +380,9 @@ func (bh BoardHandler) Delete(w http.ResponseWriter, r *http.Request) {
 		apperrors.ReturnError(apperrors.InternalServerErrorResponse, w, r)
 		return
 	}
-	logger.DebugFmt("response written", funcName, nodeName)
+	logger.DebugFmt("response written", requestID.String(), funcName, nodeName)
 
-	logger.DebugFmt("response written", funcName, nodeName)
+	logger.DebugFmt("response written", requestID.String(), funcName, nodeName)
 	logger.Info("---------------------------------- Deleting board SUCCESS ----------------------------------")
 }
 
@@ -404,6 +408,7 @@ func (bh BoardHandler) AddUser(w http.ResponseWriter, r *http.Request) {
 	failBorder := "---------------------------------- Adding user to board FAIL ----------------------------------"
 
 	logger := rCtx.Value(dto.LoggerKey).(logger.ILogger)
+	requestID := rCtx.Value(dto.RequestIDKey).(uuid.UUID)
 	logger.Info("---------------------------------- Adding user to board ----------------------------------")
 
 	var info dto.AddBoardUserRequest
@@ -414,7 +419,7 @@ func (bh BoardHandler) AddUser(w http.ResponseWriter, r *http.Request) {
 		apperrors.ReturnError(apperrors.BadRequestResponse, w, r)
 		return
 	}
-	logger.DebugFmt("JSON Decoded", funcName, nodeName)
+	logger.DebugFmt("JSON Decoded", requestID.String(), funcName, nodeName)
 
 	_, ok := rCtx.Value(dto.UserObjKey).(*entities.User)
 	if !ok {
@@ -423,7 +428,7 @@ func (bh BoardHandler) AddUser(w http.ResponseWriter, r *http.Request) {
 		apperrors.ReturnError(apperrors.GenericUnauthorizedResponse, w, r)
 		return
 	}
-	logger.DebugFmt("User object acquired from context", funcName, nodeName)
+	logger.DebugFmt("User object acquired from context", requestID.String(), funcName, nodeName)
 
 	err = bh.bs.AddUser(rCtx, info)
 	if err != nil {
@@ -432,7 +437,7 @@ func (bh BoardHandler) AddUser(w http.ResponseWriter, r *http.Request) {
 		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
 		return
 	}
-	logger.DebugFmt("User added", funcName, nodeName)
+	logger.DebugFmt("User added", requestID.String(), funcName, nodeName)
 
 	response := dto.JSONResponse{
 		Body: dto.JSONMap{},
@@ -445,7 +450,7 @@ func (bh BoardHandler) AddUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	logger.DebugFmt("Response written", funcName, nodeName)
+	logger.DebugFmt("Response written", requestID.String(), funcName, nodeName)
 	logger.Info("---------------------------------- Add user to board SUCCESS ----------------------------------")
 }
 
@@ -471,6 +476,7 @@ func (bh BoardHandler) RemoveUser(w http.ResponseWriter, r *http.Request) {
 	failBorder := "---------------------------------- Removing user from board FAIL ----------------------------------"
 
 	logger := rCtx.Value(dto.LoggerKey).(logger.ILogger)
+	requestID := rCtx.Value(dto.RequestIDKey).(uuid.UUID)
 	logger.Info("---------------------------------- Removing user from board ----------------------------------")
 
 	var info dto.RemoveBoardUserInfo
@@ -481,7 +487,7 @@ func (bh BoardHandler) RemoveUser(w http.ResponseWriter, r *http.Request) {
 		apperrors.ReturnError(apperrors.BadRequestResponse, w, r)
 		return
 	}
-	logger.DebugFmt("JSON Decoded", funcName, nodeName)
+	logger.DebugFmt("JSON Decoded", requestID.String(), funcName, nodeName)
 
 	user, ok := rCtx.Value(dto.UserObjKey).(*entities.User)
 	if !ok {
@@ -490,7 +496,7 @@ func (bh BoardHandler) RemoveUser(w http.ResponseWriter, r *http.Request) {
 		apperrors.ReturnError(apperrors.GenericUnauthorizedResponse, w, r)
 		return
 	}
-	logger.DebugFmt("User object acquired from context", funcName, nodeName)
+	logger.DebugFmt("User object acquired from context", requestID.String(), funcName, nodeName)
 
 	if user.ID == info.UserID {
 		logger.Error(errorMessage + "user cannot remove himself from the board")
@@ -506,7 +512,7 @@ func (bh BoardHandler) RemoveUser(w http.ResponseWriter, r *http.Request) {
 		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
 		return
 	}
-	logger.DebugFmt("User removed", funcName, nodeName)
+	logger.DebugFmt("User removed", requestID.String(), funcName, nodeName)
 
 	response := dto.JSONResponse{
 		Body: dto.JSONMap{},
@@ -518,8 +524,8 @@ func (bh BoardHandler) RemoveUser(w http.ResponseWriter, r *http.Request) {
 		apperrors.ReturnError(apperrors.InternalServerErrorResponse, w, r)
 		return
 	}
-	logger.DebugFmt("response written", funcName, nodeName)
+	logger.DebugFmt("response written", requestID.String(), funcName, nodeName)
 
-	logger.DebugFmt("Response written", funcName, nodeName)
+	logger.DebugFmt("Response written", requestID.String(), funcName, nodeName)
 	logger.Info("---------------------------------- Removing user from board SUCCESS ----------------------------------")
 }

@@ -61,9 +61,19 @@ message UrlObj {
 	string Value = 1;
 }
 
+message RegisterUserRequest {
+    string RequestID = 1;
+	AuthInfo Value = 2;
+}
+
 message RegisterUserResponse {
 	ErrorCode Code = 1;
 	User Response = 2;
+}
+
+message CheckPasswordRequest {
+    string RequestID = 1;
+	AuthInfo Value = 2;
 }
 
 message CheckPasswordResponse {
@@ -71,17 +81,37 @@ message CheckPasswordResponse {
 	User Response = 2;
 }
 
+message GetWithIDRequest {
+    string RequestID = 1;
+	UserID Value = 2;
+}
+
 message GetWithIDResponse {
 	ErrorCode Code = 1;
 	User Response = 2;
+}
+
+message UpdatePasswordRequest {
+    string RequestID = 1;
+	PasswordChangeInfo Value = 2;
 }
 
 message UpdatePasswordResponse {
 	ErrorCode Code = 1;
 }
 
+message UpdateProfileRequest {
+    string RequestID = 1;
+	UserProfileInfo Value = 2;
+}
+
 message UpdateProfileResponse {
 	ErrorCode Code = 1;
+}
+
+message UpdateAvatarRequest {
+    string RequestID = 1;
+	AvatarChangeInfo Value = 2;
 }
 
 message UpdateAvatarResponse {
@@ -89,16 +119,21 @@ message UpdateAvatarResponse {
 	UrlObj Response = 2;
 }
 
+message DeleteUserRequest {
+    string RequestID = 1;
+	UserID Value = 2;
+}
+
 message DeleteUserResponse {
 	ErrorCode Code = 1;
 }
 
 service UserService {
-	rpc RegisterUser (AuthInfo) returns (RegisterUserResponse) {}
-	rpc CheckPassword (AuthInfo) returns (CheckPasswordResponse) {}
-	rpc GetWithID (UserID) returns (GetWithIDResponse) {}
-	rpc UpdatePassword(PasswordChangeInfo) returns (UpdatePasswordResponse) {}
-	rpc UpdateProfile(UserProfileInfo) returns (UpdateProfileResponse) {}
-	rpc UpdateAvatar(AvatarChangeInfo) returns (UpdateAvatarResponse) {}
-	rpc DeleteUser(UserID) returns (DeleteUserResponse) {}
+	rpc RegisterUser (RegisterUserRequest) returns (RegisterUserResponse) {}
+	rpc CheckPassword (CheckPasswordRequest) returns (CheckPasswordResponse) {}
+	rpc GetWithID (GetWithIDRequest) returns (GetWithIDResponse) {}
+	rpc UpdatePassword (UpdatePasswordRequest) returns (UpdatePasswordResponse) {}
+	rpc UpdateProfile (UpdateProfileRequest) returns (UpdateProfileResponse) {}
+	rpc UpdateAvatar (UpdateAvatarRequest) returns (UpdateAvatarResponse) {}
+	rpc DeleteUser (DeleteUserRequest) returns (DeleteUserResponse) {}
 }

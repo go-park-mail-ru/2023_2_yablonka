@@ -7,6 +7,8 @@ import (
 	"server/internal/storage"
 
 	logger "server/internal/logging"
+
+	"github.com/google/uuid"
 )
 
 type WorkspaceService struct {
@@ -29,16 +31,17 @@ func NewWorkspaceService(storage storage.IWorkspaceStorage) *WorkspaceService {
 func (ws WorkspaceService) GetUserWorkspaces(ctx context.Context, userID dto.UserID) (*dto.AllWorkspaces, error) {
 	funcName := "WorkspaceService.GetUserWorkspaces"
 	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
+	requestID := ctx.Value(dto.RequestIDKey).(uuid.UUID)
 
 	ownedWorkspaces, err := ws.storage.GetUserOwnedWorkspaces(ctx, userID)
 	if err != nil {
-		logger.DebugFmt("Failed to get user owned workspaces", funcName, nodeName)
+		logger.DebugFmt("Failed to get user owned workspaces", requestID.String(), funcName, nodeName)
 		return nil, err
 	}
 
 	guestWorkspaces, err := ws.storage.GetUserGuestWorkspaces(ctx, userID)
 	if err != nil {
-		logger.DebugFmt("Failed to get user guest workspaces", funcName, nodeName)
+		logger.DebugFmt("Failed to get user guest workspaces", requestID.String(), funcName, nodeName)
 		return nil, err
 	}
 

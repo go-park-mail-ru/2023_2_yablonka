@@ -8,6 +8,8 @@ import (
 	_ "server/internal/pkg/doc_structs"
 	"server/internal/pkg/dto"
 	"server/internal/service"
+
+	"github.com/google/uuid"
 )
 
 type CSATQuestionHandler struct {
@@ -35,6 +37,7 @@ func (qh CSATQuestionHandler) GetQuestions(w http.ResponseWriter, r *http.Reques
 	failBorder := "---------------------------------- Get all CSAT questions FAIL ----------------------------------"
 
 	logger := rCtx.Value(dto.LoggerKey).(logger.ILogger)
+	requestID := rCtx.Value(dto.RequestIDKey).(uuid.UUID)
 
 	logger.Info("---------------------------------- Get all CSAT questions ----------------------------------")
 
@@ -45,7 +48,7 @@ func (qh CSATQuestionHandler) GetQuestions(w http.ResponseWriter, r *http.Reques
 		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
 		return
 	}
-	logger.DebugFmt("Got questions", funcName, nodeName)
+	logger.DebugFmt("Got questions", requestID.String(), funcName, nodeName)
 
 	response := dto.JSONResponse{
 		Body: dto.JSONMap{
@@ -59,7 +62,7 @@ func (qh CSATQuestionHandler) GetQuestions(w http.ResponseWriter, r *http.Reques
 		apperrors.ReturnError(apperrors.InternalServerErrorResponse, w, r)
 		return
 	}
-	logger.DebugFmt("response written", funcName, nodeName)
+	logger.DebugFmt("response written", requestID.String(), funcName, nodeName)
 
 	logger.Info("---------------------------------- Getting all CSAT questions SUCCESS ----------------------------------")
 }
@@ -87,6 +90,7 @@ func (qh CSATQuestionHandler) Create(w http.ResponseWriter, r *http.Request) {
 	failBorder := "---------------------------------- Create CSAT question FAIL ----------------------------------"
 
 	logger := rCtx.Value(dto.LoggerKey).(logger.ILogger)
+	requestID := rCtx.Value(dto.RequestIDKey).(uuid.UUID)
 
 	logger.Info("---------------------------------- Create CSAT question ----------------------------------")
 
@@ -98,7 +102,7 @@ func (qh CSATQuestionHandler) Create(w http.ResponseWriter, r *http.Request) {
 		apperrors.ReturnError(apperrors.BadRequestResponse, w, r)
 		return
 	}
-	logger.DebugFmt("JSON Decoded", funcName, nodeName)
+	logger.DebugFmt("JSON Decoded", requestID.String(), funcName, nodeName)
 
 	question, err := qh.qs.Create(rCtx, newQuestionInfo)
 	if err != nil {
@@ -107,7 +111,7 @@ func (qh CSATQuestionHandler) Create(w http.ResponseWriter, r *http.Request) {
 		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
 		return
 	}
-	logger.DebugFmt("Task created", funcName, nodeName)
+	logger.DebugFmt("Task created", requestID.String(), funcName, nodeName)
 
 	response := dto.JSONResponse{
 		Body: dto.JSONMap{
@@ -121,7 +125,7 @@ func (qh CSATQuestionHandler) Create(w http.ResponseWriter, r *http.Request) {
 		apperrors.ReturnError(apperrors.InternalServerErrorResponse, w, r)
 		return
 	}
-	logger.DebugFmt("response written", funcName, nodeName)
+	logger.DebugFmt("response written", requestID.String(), funcName, nodeName)
 
 	logger.Info("---------------------------------- Create CSAT question SUCCESS ----------------------------------")
 }
@@ -149,6 +153,7 @@ func (qh CSATQuestionHandler) Update(w http.ResponseWriter, r *http.Request) {
 	failBorder := "---------------------------------- Update CSAT question FAIL ----------------------------------"
 
 	logger := rCtx.Value(dto.LoggerKey).(logger.ILogger)
+	requestID := rCtx.Value(dto.RequestIDKey).(uuid.UUID)
 
 	logger.Info("---------------------------------- Update CSAT question ----------------------------------")
 
@@ -160,7 +165,7 @@ func (qh CSATQuestionHandler) Update(w http.ResponseWriter, r *http.Request) {
 		apperrors.ReturnError(apperrors.BadRequestResponse, w, r)
 		return
 	}
-	logger.DebugFmt("JSON Decoded", funcName, nodeName)
+	logger.DebugFmt("JSON Decoded", requestID.String(), funcName, nodeName)
 
 	err = qh.qs.Update(rCtx, updatedQuestionInfo)
 	if err != nil {
@@ -169,7 +174,7 @@ func (qh CSATQuestionHandler) Update(w http.ResponseWriter, r *http.Request) {
 		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
 		return
 	}
-	logger.DebugFmt("CSAT question updated", funcName, nodeName)
+	logger.DebugFmt("CSAT question updated", requestID.String(), funcName, nodeName)
 
 	response := dto.JSONResponse{
 		Body: dto.JSONMap{},
@@ -181,7 +186,7 @@ func (qh CSATQuestionHandler) Update(w http.ResponseWriter, r *http.Request) {
 		apperrors.ReturnError(apperrors.InternalServerErrorResponse, w, r)
 		return
 	}
-	logger.DebugFmt("response written", funcName, nodeName)
+	logger.DebugFmt("response written", requestID.String(), funcName, nodeName)
 
 	logger.Info("---------------------------------- Update CSAT question SUCCESS ----------------------------------")
 }
@@ -207,6 +212,7 @@ func (qh CSATQuestionHandler) GetStats(w http.ResponseWriter, r *http.Request) {
 	failBorder := "---------------------------------- Getting CSAT question stats FAIL ----------------------------------"
 
 	logger := rCtx.Value(dto.LoggerKey).(logger.ILogger)
+	requestID := rCtx.Value(dto.RequestIDKey).(uuid.UUID)
 
 	logger.Info("---------------------------------- Getting CSAT question stats ----------------------------------")
 
@@ -217,7 +223,7 @@ func (qh CSATQuestionHandler) GetStats(w http.ResponseWriter, r *http.Request) {
 		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
 		return
 	}
-	logger.DebugFmt("Stats received", funcName, nodeName)
+	logger.DebugFmt("Stats received", requestID.String(), funcName, nodeName)
 
 	response := dto.JSONResponse{
 		Body: dto.JSONMap{
@@ -231,7 +237,7 @@ func (qh CSATQuestionHandler) GetStats(w http.ResponseWriter, r *http.Request) {
 		apperrors.ReturnError(apperrors.InternalServerErrorResponse, w, r)
 		return
 	}
-	logger.DebugFmt("response written", funcName, nodeName)
+	logger.DebugFmt("response written", requestID.String(), funcName, nodeName)
 
 	logger.Info("---------------------------------- Getting CSAT question stats SUCCESS ----------------------------------")
 }
