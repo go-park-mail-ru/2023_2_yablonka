@@ -35,7 +35,6 @@ type UserHandler struct {
 func (uh UserHandler) ChangePassword(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
 	funcName := "UserHandler.ChangePassword"
-	nodeName := "handler"
 	errorMessage := "Changing user's password failed with error: "
 	failBorder := "---------------------------------- Changing user's password FAIL ----------------------------------"
 
@@ -112,7 +111,6 @@ func (uh UserHandler) ChangePassword(w http.ResponseWriter, r *http.Request) {
 func (uh UserHandler) ChangeProfile(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
 	funcName := "UserHandler.ChangeProfile"
-	nodeName := "handler"
 	errorMessage := "Changing user's profile failed with error: "
 	failBorder := "---------------------------------- Changing user's profile FAIL ----------------------------------"
 
@@ -175,21 +173,20 @@ func (uh UserHandler) ChangeProfile(w http.ResponseWriter, r *http.Request) {
 
 // @Summary Поменять аватарку
 // @Description В ответ шлёт ссылку на файл
-// @Tags auth
+// @Tags user
 //
 // @Accept  json
 // @Produce  json
 //
 // @Param avatarChangeInfo body dto.AvatarChangeInfo true "id пользователя, изображение"
 //
-// @Success 200  {object}  doc_structs.AvatarUploadResponse "Объект пользователя"
+// @Success 200  {object}  doc_structs.AvatarUploadResponse "Ссылка на новую аватарку"
 // @Failure 500  {object}  apperrors.ErrorResponse
 //
 // @Router /user/edit/change_avatar/ [post]
 func (uh UserHandler) ChangeAvatar(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
 	funcName := "UserHandler.ChangeAvatar"
-	nodeName := "handler"
 	errorMessage := "Changing user's avatar failed with error: "
 	failBorder := "---------------------------------- Changing user's avatar FAIL ----------------------------------"
 
@@ -250,4 +247,64 @@ func (uh UserHandler) ChangeAvatar(w http.ResponseWriter, r *http.Request) {
 	logger.DebugFmt("response written", funcName, nodeName)
 
 	logger.Info("---------------------------------- Changing user's avatar SUCCESS ----------------------------------")
+}
+
+// @Summary Удалить аватарку
+// @Description Удалить аватарку
+// @Tags user
+//
+// @Accept  json
+// @Produce  json
+//
+// @Success 200  {object}  doc_structs.AvatarUploadResponse "Ссылка на новую аватарку"
+// @Failure 500  {object}  apperrors.ErrorResponse
+//
+// @Router /user/edit/delete_avatar/ [delete]
+func (uh UserHandler) DeleteAvatar(w http.ResponseWriter, r *http.Request) {
+	rCtx := r.Context()
+	funcName := "UserHandler.DeleteAvatar"
+	errorMessage := "Deleting user's avatar failed with error: "
+	failBorder := "---------------------------------- Deleting user's avatar FAIL ----------------------------------"
+
+	logger := rCtx.Value(dto.LoggerKey).(logger.ILogger)
+
+	logger.Info("---------------------------------- Deleting user's avatar ----------------------------------")
+
+	user, ok := rCtx.Value(dto.UserObjKey).(*entities.User)
+	if !ok {
+		logger.Error(errorMessage + "No user object found")
+		logger.Info(failBorder)
+		apperrors.ReturnError(apperrors.GenericUnauthorizedResponse, w, r)
+		return
+	}
+	logger.DebugFmt("User object acquired from context", funcName, nodeName)
+
+	avatarRemovalInfo := dto.AvatarRemovalInfo{
+		UserID:    user.ID,
+		AvatarUrl: *user.AvatarURL,
+	}
+	defaultUrl, err := uh.us.DeleteAvatar(rCtx, avatarRemovalInfo)
+	if err != nil {
+		logger.Error(errorMessage + err.Error())
+		logger.Info(failBorder)
+		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
+		return
+	}
+	logger.DebugFmt("User avatar deleted", funcName, nodeName)
+
+	response := dto.JSONResponse{
+		Body: dto.JSONMap{
+			"avatar_url": defaultUrl,
+		},
+	}
+	err = WriteResponse(response, w, r)
+	if err != nil {
+		logger.Error(errorMessage + err.Error())
+		logger.Info(failBorder)
+		apperrors.ReturnError(apperrors.InternalServerErrorResponse, w, r)
+		return
+	}
+	logger.DebugFmt("response written", funcName, nodeName)
+
+	logger.Info("---------------------------------- Deleting user's avatar SUCCESS ----------------------------------")
 }

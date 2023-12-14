@@ -184,8 +184,8 @@ func (s PostgresListStorage) UpdateOrder(ctx context.Context, ids dto.ListIDs) e
 		Set("list_position", caseBuilder).
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
-
 	if err != nil {
+		log.Println(err)
 		log.Println("Storage -- Failed to build query")
 		return apperrors.ErrCouldNotBuildQuery
 	}

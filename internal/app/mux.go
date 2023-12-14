@@ -43,6 +43,7 @@ func GetChiMux(manager handlers.Handlers, config config.Config, logger logging.I
 			r.Post("/edit/", manager.UserHandler.ChangeProfile)
 			r.Post("/edit/change_password/", manager.UserHandler.ChangePassword)
 			r.Post("/edit/change_avatar/", manager.UserHandler.ChangeAvatar)
+			r.Delete("/edit/delete_avatar/", manager.UserHandler.DeleteAvatar)
 		})
 		r.Route("/workspace", func(r chi.Router) {
 			r.Use(middleware.AuthMiddleware(manager.AuthHandler.GetAuthService(), manager.AuthHandler.GetUserService()))

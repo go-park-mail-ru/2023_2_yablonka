@@ -193,6 +193,29 @@ func (us UserService) UpdateAvatar(ctx context.Context, info dto.AvatarChangeInf
 	return &dto.UrlObj{Value: urlObj.Value}, nil
 }
 
+// Delete
+// удаляет аватарку пользователя
+// или возвращает ошибку apperrors.ErrUserNotFound (409)
+func (us UserService) DeleteAvatar(ctx context.Context, info dto.AvatarRemovalInfo) (*dto.UrlObj, error) {
+	funcName := "UserService.DeleteAvatar"
+	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
+
+	logger.DebugFmt("Contacting GRPC server", funcName, nodeName)
+	serverResponse, _ := us.client.DeleteAvatar(ctx, &microservice.AvatarRemovalInfo{
+		UserID:   info.UserID,
+		Filename: info.AvatarUrl,
+	})
+	logger.DebugFmt("Response received", funcName, nodeName)
+
+	if serverResponse.Code != microservice.ErrorCode_OK {
+		return &dto.UrlObj{}, UserServiceErrors[serverResponse.Code]
+	}
+
+	return &dto.UrlObj{
+		Value: serverResponse.Response.Value,
+	}, nil
+}
+
 // DeleteUser
 // удаляет данного пользователя по id
 // или возвращает ошибку apperrors.ErrUserNotFound (409)

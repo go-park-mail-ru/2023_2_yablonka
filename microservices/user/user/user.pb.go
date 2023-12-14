@@ -438,6 +438,15 @@ type AvatarChangeInfo struct {
 	Mimetype string `protobuf:"bytes,4,opt,name=Mimetype,proto3" json:"Mimetype,omitempty"`
 }
 
+type AvatarRemovalInfo struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	UserID   uint64 `protobuf:"varint,1,opt,name=UserID,proto3" json:"UserID,omitempty"`
+	Filename string `protobuf:"bytes,3,opt,name=Filename,proto3" json:"Filename,omitempty"`
+}
+
 func (x *AvatarChangeInfo) Reset() {
 	*x = AvatarChangeInfo{}
 	if protoimpl.UnsafeEnabled {
@@ -1090,6 +1099,7 @@ var file_user_api_user_proto_depIdxs = []int32{
 	4,  // 14: user.UserService.UpdatePassword:input_type -> user.PasswordChangeInfo
 	5,  // 15: user.UserService.UpdateProfile:input_type -> user.UserProfileInfo
 	6,  // 16: user.UserService.UpdateAvatar:input_type -> user.AvatarChangeInfo
+	6,  // 16: user.UserService.DeleteAvatar:input_type -> user.AvatarRemovalInfo
 	3,  // 17: user.UserService.DeleteUser:input_type -> user.UserID
 	8,  // 18: user.UserService.RegisterUser:output_type -> user.RegisterUserResponse
 	9,  // 19: user.UserService.CheckPassword:output_type -> user.CheckPasswordResponse
@@ -1097,6 +1107,7 @@ var file_user_api_user_proto_depIdxs = []int32{
 	11, // 21: user.UserService.UpdatePassword:output_type -> user.UpdatePasswordResponse
 	12, // 22: user.UserService.UpdateProfile:output_type -> user.UpdateProfileResponse
 	13, // 23: user.UserService.UpdateAvatar:output_type -> user.UpdateAvatarResponse
+	13, // 23: user.UserService.DeleteAvatar:output_type -> user.UpdateAvatarResponse
 	14, // 24: user.UserService.DeleteUser:output_type -> user.DeleteUserResponse
 	18, // [18:25] is the sub-list for method output_type
 	11, // [11:18] is the sub-list for method input_type

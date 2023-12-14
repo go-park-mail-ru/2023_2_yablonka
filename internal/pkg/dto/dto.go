@@ -408,10 +408,15 @@ type CheckTaskAccessInfo struct {
 	TaskID uint64 `json:"task_id"`
 }
 
-// WorkspaceID
+// UserID
 // DTO для id пользователя
 type UserID struct {
 	Value uint64 `json:"user_id"`
+}
+
+type AvatarRemovalInfo struct {
+	UserID    uint64 `json:"user_id"`
+	AvatarUrl string `json:"avatar_url"`
 }
 
 type GuestWorkspaceReturn struct {

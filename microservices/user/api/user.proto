@@ -100,5 +100,6 @@ service UserService {
 	rpc UpdatePassword(PasswordChangeInfo) returns (UpdatePasswordResponse) {}
 	rpc UpdateProfile(UserProfileInfo) returns (UpdateProfileResponse) {}
 	rpc UpdateAvatar(AvatarChangeInfo) returns (UpdateAvatarResponse) {}
+	rpc DeleteAvatar(AvatarRemovalInfo) returns (UpdateAvatarResponse) {}
 	rpc DeleteUser(UserID) returns (DeleteUserResponse) {}
 }
