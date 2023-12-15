@@ -1,7 +1,3 @@
-networks:
-  monitoring:
-    driver: bridge
-
 volumes:
   prometheus_data: {}
 

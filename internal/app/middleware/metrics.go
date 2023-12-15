@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"fmt"
 	"net/http"
 	logging "server/internal/logging"
 
@@ -27,7 +28,7 @@ type middleware struct {
 // value.
 func (m *middleware) WrapHandler(name string, next http.Handler) http.HandlerFunc {
 	reg := prometheus.WrapRegistererWith(prometheus.Labels{"handler": name}, m.registry)
-	m.logger.DebugFmt("$$$$$$$$$$ Set prometheus handler label "+name, "", "WrapHandler", "middleware")
+	m.logger.DebugFmt("Set prometheus handler label "+name, "", "WrapHandler", "middleware")
 
 	requestsTotal := promauto.With(reg).NewCounterVec(
 		prometheus.CounterOpts{
@@ -81,8 +82,10 @@ func (m *middleware) WrapHandler(name string, next http.Handler) http.HandlerFun
 // New returns a Middleware interface.
 func NewPromMiddleware(logger logging.ILogger, registry prometheus.Registerer, buckets []float64) PrometheusMiddleware {
 	if buckets == nil {
-		buckets = prometheus.ExponentialBuckets(0.1, 1.5, 5)
+		buckets = prometheus.ExponentialBuckets(0.004, 1.75, 10)
 	}
+
+	logger.DebugFmt(fmt.Sprintf("Buckets: %v", buckets), "", "NewPromMiddleware", "middleware")
 
 	return &middleware{
 		logger:   logger,
