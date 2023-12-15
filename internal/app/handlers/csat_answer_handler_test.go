@@ -14,6 +14,7 @@ import (
 	"testing"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 )
@@ -95,8 +96,11 @@ func TestCSATAnswerHandler_Unit_Create(t *testing.T) {
 						NewRequest("POST", "/csat/answer/", body).
 						WithContext(
 							context.WithValue(
-								context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
-								dto.UserObjKey, args.user,
+								context.WithValue(
+									context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+									dto.UserObjKey, args.user,
+								),
+								dto.RequestIDKey, uuid.New(),
 							),
 						)
 					r.AddCookie(cookie)
@@ -128,7 +132,10 @@ func TestCSATAnswerHandler_Unit_Create(t *testing.T) {
 					r := httptest.
 						NewRequest("POST", "/csat/answer/", body).
 						WithContext(
-							context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+							context.WithValue(
+								context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+								dto.RequestIDKey, uuid.New(),
+							),
 						)
 					r.AddCookie(cookie)
 
@@ -165,7 +172,10 @@ func TestCSATAnswerHandler_Unit_Create(t *testing.T) {
 					r := httptest.
 						NewRequest("POST", "/csat/answer/", body).
 						WithContext(
-							context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+							context.WithValue(
+								context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+								dto.RequestIDKey, uuid.New(),
+							),
 						)
 					r.AddCookie(cookie)
 
@@ -213,8 +223,11 @@ func TestCSATAnswerHandler_Unit_Create(t *testing.T) {
 						NewRequest("POST", "/csat/answer/", body).
 						WithContext(
 							context.WithValue(
-								context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
-								dto.UserObjKey, args.user,
+								context.WithValue(
+									context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+									dto.UserObjKey, args.user,
+								),
+								dto.RequestIDKey, uuid.New(),
 							),
 						)
 					r.AddCookie(cookie)
@@ -274,8 +287,11 @@ func TestCSATAnswerHandler_Unit_Create(t *testing.T) {
 						NewRequest("POST", "/csat/answer/", body).
 						WithContext(
 							context.WithValue(
-								context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
-								dto.UserObjKey, args.user,
+								context.WithValue(
+									context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+									dto.UserObjKey, args.user,
+								),
+								dto.RequestIDKey, uuid.New(),
 							),
 						)
 					r.AddCookie(cookie)

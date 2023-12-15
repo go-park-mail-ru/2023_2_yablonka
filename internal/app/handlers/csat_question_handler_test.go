@@ -13,6 +13,7 @@ import (
 	"testing"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 )
@@ -53,7 +54,10 @@ func TestCSATQuestionHandler_Unit_GetStats(t *testing.T) {
 					r := httptest.
 						NewRequest("GET", "/csat/question/stats", nil).
 						WithContext(
-							context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+							context.WithValue(
+								context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+								dto.RequestIDKey, uuid.New(),
+							),
 						)
 
 					qs.
@@ -87,7 +91,10 @@ func TestCSATQuestionHandler_Unit_GetStats(t *testing.T) {
 					r := httptest.
 						NewRequest("GET", "/csat/question/stats", nil).
 						WithContext(
-							context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+							context.WithValue(
+								context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+								dto.RequestIDKey, uuid.New(),
+							),
 						)
 
 					qs.
@@ -150,7 +157,10 @@ func TestCSATQuestionHandler_Unit_GetQuestions(t *testing.T) {
 					r := httptest.
 						NewRequest("GET", "/csat/question/all", nil).
 						WithContext(
-							context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+							context.WithValue(
+								context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+								dto.RequestIDKey, uuid.New(),
+							),
 						)
 
 					qs.
@@ -182,7 +192,10 @@ func TestCSATQuestionHandler_Unit_GetQuestions(t *testing.T) {
 					r := httptest.
 						NewRequest("GET", "/csat/question/all", nil).
 						WithContext(
-							context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+							context.WithValue(
+								context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+								dto.RequestIDKey, uuid.New(),
+							),
 						)
 
 					qs.
@@ -259,7 +272,10 @@ func TestCSATQuestionHandler_Unit_Create(t *testing.T) {
 					r := httptest.
 						NewRequest("POST", "/csat/question/create/", body).
 						WithContext(
-							context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+							context.WithValue(
+								context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+								dto.RequestIDKey, uuid.New(),
+							),
 						)
 
 					qs.
@@ -282,7 +298,10 @@ func TestCSATQuestionHandler_Unit_Create(t *testing.T) {
 					r := httptest.
 						NewRequest("POST", "/csat/question/create/", body).
 						WithContext(
-							context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+							context.WithValue(
+								context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+								dto.RequestIDKey, uuid.New(),
+							),
 						)
 
 					return r
@@ -301,7 +320,10 @@ func TestCSATQuestionHandler_Unit_Create(t *testing.T) {
 					r := httptest.
 						NewRequest("POST", "/csat/question/create/", body).
 						WithContext(
-							context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+							context.WithValue(
+								context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+								dto.RequestIDKey, uuid.New(),
+							),
 						)
 
 					qs.
@@ -373,7 +395,10 @@ func TestCSATQuestionHandler_Unit_Update(t *testing.T) {
 					r := httptest.
 						NewRequest("POST", "/csat/question/edit/", body).
 						WithContext(
-							context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+							context.WithValue(
+								context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+								dto.RequestIDKey, uuid.New(),
+							),
 						)
 
 					qs.
@@ -396,7 +421,10 @@ func TestCSATQuestionHandler_Unit_Update(t *testing.T) {
 					r := httptest.
 						NewRequest("POST", "/csat/question/edit/", body).
 						WithContext(
-							context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+							context.WithValue(
+								context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+								dto.RequestIDKey, uuid.New(),
+							),
 						)
 
 					return r
@@ -415,7 +443,10 @@ func TestCSATQuestionHandler_Unit_Update(t *testing.T) {
 					r := httptest.
 						NewRequest("POST", "/csat/question/edit/", body).
 						WithContext(
-							context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+							context.WithValue(
+								context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+								dto.RequestIDKey, uuid.New(),
+							),
 						)
 
 					qs.

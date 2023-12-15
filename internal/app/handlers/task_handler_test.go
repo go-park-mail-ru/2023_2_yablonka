@@ -17,6 +17,7 @@ import (
 	"time"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 )
@@ -101,7 +102,10 @@ func TestTaskHandler_Unit_Create(t *testing.T) {
 					r := httptest.
 						NewRequest("POST", "/api/v2/task/create/", body).
 						WithContext(
-							context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+							context.WithValue(
+								context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+								dto.RequestIDKey, uuid.New(),
+							),
 						)
 					r.AddCookie(cookie)
 
@@ -125,7 +129,10 @@ func TestTaskHandler_Unit_Create(t *testing.T) {
 					r := httptest.
 						NewRequest("POST", "/api/v2/task/create/", body).
 						WithContext(
-							context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+							context.WithValue(
+								context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+								dto.RequestIDKey, uuid.New(),
+							),
 						)
 					r.AddCookie(cookie)
 
@@ -172,7 +179,10 @@ func TestTaskHandler_Unit_Create(t *testing.T) {
 					r := httptest.
 						NewRequest("POST", "/api/v2/task/create/", body).
 						WithContext(
-							context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+							context.WithValue(
+								context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+								dto.RequestIDKey, uuid.New(),
+							),
 						)
 					r.AddCookie(cookie)
 
@@ -268,7 +278,10 @@ func TestTaskHandler_Unit_Read(t *testing.T) {
 					r := httptest.
 						NewRequest("POST", "/api/v2/task/", body).
 						WithContext(
-							context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+							context.WithValue(
+								context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+								dto.RequestIDKey, uuid.New(),
+							),
 						)
 					r.AddCookie(cookie)
 
@@ -292,7 +305,10 @@ func TestTaskHandler_Unit_Read(t *testing.T) {
 					r := httptest.
 						NewRequest("POST", "/api/v2/task/", body).
 						WithContext(
-							context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+							context.WithValue(
+								context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+								dto.RequestIDKey, uuid.New(),
+							),
 						)
 					r.AddCookie(cookie)
 
@@ -329,7 +345,10 @@ func TestTaskHandler_Unit_Read(t *testing.T) {
 					r := httptest.
 						NewRequest("POST", "/api/v2/task/", body).
 						WithContext(
-							context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+							context.WithValue(
+								context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+								dto.RequestIDKey, uuid.New(),
+							),
 						)
 					r.AddCookie(cookie)
 
@@ -421,7 +440,10 @@ func TestTaskHandler_Unit_Update(t *testing.T) {
 					r := httptest.
 						NewRequest("POST", "/api/v2/task/edit/", body).
 						WithContext(
-							context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+							context.WithValue(
+								context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+								dto.RequestIDKey, uuid.New(),
+							),
 						)
 					r.AddCookie(cookie)
 
@@ -445,7 +467,10 @@ func TestTaskHandler_Unit_Update(t *testing.T) {
 					r := httptest.
 						NewRequest("POST", "/api/v2/task/edit/", body).
 						WithContext(
-							context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+							context.WithValue(
+								context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+								dto.RequestIDKey, uuid.New(),
+							),
 						)
 					r.AddCookie(cookie)
 
@@ -485,7 +510,10 @@ func TestTaskHandler_Unit_Update(t *testing.T) {
 					r := httptest.
 						NewRequest("POST", "/api/v2/task/edit/", body).
 						WithContext(
-							context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+							context.WithValue(
+								context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+								dto.RequestIDKey, uuid.New(),
+							),
 						)
 					r.AddCookie(cookie)
 
@@ -566,7 +594,10 @@ func TestTaskHandler_Unit_Delete(t *testing.T) {
 					r := httptest.
 						NewRequest("DELETE", "/api/v2/task/delete/", body).
 						WithContext(
-							context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+							context.WithValue(
+								context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+								dto.RequestIDKey, uuid.New(),
+							),
 						)
 					r.AddCookie(cookie)
 
@@ -590,7 +621,10 @@ func TestTaskHandler_Unit_Delete(t *testing.T) {
 					r := httptest.
 						NewRequest("DELETE", "/api/v2/task/delete/", body).
 						WithContext(
-							context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+							context.WithValue(
+								context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+								dto.RequestIDKey, uuid.New(),
+							),
 						)
 					r.AddCookie(cookie)
 
@@ -627,7 +661,10 @@ func TestTaskHandler_Unit_Delete(t *testing.T) {
 					r := httptest.
 						NewRequest("DELETE", "/api/v2/task/delete/", body).
 						WithContext(
-							context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+							context.WithValue(
+								context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+								dto.RequestIDKey, uuid.New(),
+							),
 						)
 					r.AddCookie(cookie)
 
@@ -714,7 +751,10 @@ func TestTaskHandler_Unit_AddUser(t *testing.T) {
 					r := httptest.
 						NewRequest("POST", "/api/v2/task/user/add/", body).
 						WithContext(
-							context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+							context.WithValue(
+								context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+								dto.RequestIDKey, uuid.New(),
+							),
 						)
 					r.AddCookie(cookie)
 
@@ -738,7 +778,10 @@ func TestTaskHandler_Unit_AddUser(t *testing.T) {
 					r := httptest.
 						NewRequest("POST", "/api/v2/task/user/add/", body).
 						WithContext(
-							context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+							context.WithValue(
+								context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+								dto.RequestIDKey, uuid.New(),
+							),
 						)
 					r.AddCookie(cookie)
 
@@ -781,7 +824,10 @@ func TestTaskHandler_Unit_AddUser(t *testing.T) {
 					r := httptest.
 						NewRequest("POST", "/api/v2/task/user/add/", body).
 						WithContext(
-							context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+							context.WithValue(
+								context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+								dto.RequestIDKey, uuid.New(),
+							),
 						)
 					r.AddCookie(cookie)
 
@@ -824,7 +870,10 @@ func TestTaskHandler_Unit_AddUser(t *testing.T) {
 					r := httptest.
 						NewRequest("POST", "/api/v2/task/user/add/", body).
 						WithContext(
-							context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+							context.WithValue(
+								context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+								dto.RequestIDKey, uuid.New(),
+							),
 						)
 					r.AddCookie(cookie)
 
@@ -911,7 +960,10 @@ func TestTaskHandler_Unit_RemoveUser(t *testing.T) {
 					r := httptest.
 						NewRequest("POST", "/api/v2/task/user/remove/", body).
 						WithContext(
-							context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+							context.WithValue(
+								context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+								dto.RequestIDKey, uuid.New(),
+							),
 						)
 					r.AddCookie(cookie)
 
@@ -935,7 +987,10 @@ func TestTaskHandler_Unit_RemoveUser(t *testing.T) {
 					r := httptest.
 						NewRequest("POST", "/api/v2/task/user/remove/", body).
 						WithContext(
-							context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+							context.WithValue(
+								context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+								dto.RequestIDKey, uuid.New(),
+							),
 						)
 					r.AddCookie(cookie)
 
@@ -978,7 +1033,10 @@ func TestTaskHandler_Unit_RemoveUser(t *testing.T) {
 					r := httptest.
 						NewRequest("POST", "/api/v2/task/user/remove/", body).
 						WithContext(
-							context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+							context.WithValue(
+								context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+								dto.RequestIDKey, uuid.New(),
+							),
 						)
 					r.AddCookie(cookie)
 
@@ -1021,7 +1079,10 @@ func TestTaskHandler_Unit_RemoveUser(t *testing.T) {
 					r := httptest.
 						NewRequest("POST", "/api/v2/task/user/remove/", body).
 						WithContext(
-							context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+							context.WithValue(
+								context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+								dto.RequestIDKey, uuid.New(),
+							),
 						)
 					r.AddCookie(cookie)
 

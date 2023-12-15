@@ -17,6 +17,7 @@ import (
 	"time"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 )
@@ -109,8 +110,11 @@ func TestBoardHandler_Unit_GetFullBoard(t *testing.T) {
 						NewRequest("POST", "/api/v2/board/", body).
 						WithContext(
 							context.WithValue(
-								context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
-								dto.UserObjKey, args.user,
+								context.WithValue(
+									context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+									dto.UserObjKey, args.user,
+								),
+								dto.RequestIDKey, uuid.New(),
 							),
 						)
 					r.AddCookie(cookie)
@@ -143,7 +147,10 @@ func TestBoardHandler_Unit_GetFullBoard(t *testing.T) {
 					r := httptest.
 						NewRequest("POST", "/api/v2/board/", body).
 						WithContext(
-							context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+							context.WithValue(
+								context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+								dto.RequestIDKey, uuid.New(),
+							),
 						)
 					r.AddCookie(cookie)
 
@@ -175,8 +182,11 @@ func TestBoardHandler_Unit_GetFullBoard(t *testing.T) {
 						NewRequest("POST", "/api/v2/board/", body).
 						WithContext(
 							context.WithValue(
-								context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
-								dto.UserObjKey, args.user,
+								context.WithValue(
+									context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+									dto.UserObjKey, args.user,
+								),
+								dto.RequestIDKey, uuid.New(),
 							),
 						)
 					r.AddCookie(cookie)
@@ -236,8 +246,11 @@ func TestBoardHandler_Unit_GetFullBoard(t *testing.T) {
 						NewRequest("POST", "/api/v2/board/", body).
 						WithContext(
 							context.WithValue(
-								context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
-								dto.UserObjKey, args.user,
+								context.WithValue(
+									context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+									dto.UserObjKey, args.user,
+								),
+								dto.RequestIDKey, uuid.New(),
 							),
 						)
 					r.AddCookie(cookie)
@@ -297,8 +310,11 @@ func TestBoardHandler_Unit_GetFullBoard(t *testing.T) {
 						NewRequest("POST", "/api/v2/board/", body).
 						WithContext(
 							context.WithValue(
-								context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
-								dto.UserObjKey, args.user,
+								context.WithValue(
+									context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+									dto.UserObjKey, args.user,
+								),
+								dto.RequestIDKey, uuid.New(),
 							),
 						)
 					r.AddCookie(cookie)
@@ -413,8 +429,11 @@ func TestBoardHandler_Unit_Create(t *testing.T) {
 						NewRequest("POST", "/api/v2/board/create/", body).
 						WithContext(
 							context.WithValue(
-								context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
-								dto.UserObjKey, args.user,
+								context.WithValue(
+									context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+									dto.UserObjKey, args.user,
+								),
+								dto.RequestIDKey, uuid.New(),
 							),
 						)
 					r.AddCookie(cookie)
@@ -440,8 +459,11 @@ func TestBoardHandler_Unit_Create(t *testing.T) {
 						NewRequest("POST", "/api/v2/board/create/", body).
 						WithContext(
 							context.WithValue(
-								context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
-								dto.UserObjKey, args.user,
+								context.WithValue(
+									context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+									dto.UserObjKey, args.user,
+								),
+								dto.RequestIDKey, uuid.New(),
 							),
 						)
 					r.AddCookie(cookie)
@@ -473,7 +495,10 @@ func TestBoardHandler_Unit_Create(t *testing.T) {
 					r := httptest.
 						NewRequest("POST", "/api/v2/board/create/", body).
 						WithContext(
-							context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+							context.WithValue(
+								context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+								dto.RequestIDKey, uuid.New(),
+							),
 						)
 					r.AddCookie(cookie)
 
@@ -526,8 +551,11 @@ func TestBoardHandler_Unit_Create(t *testing.T) {
 						NewRequest("POST", "/api/v2/board/create/", body).
 						WithContext(
 							context.WithValue(
-								context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
-								dto.UserObjKey, args.user,
+								context.WithValue(
+									context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+									dto.UserObjKey, args.user,
+								),
+								dto.RequestIDKey, uuid.New(),
 							),
 						)
 					r.AddCookie(cookie)
@@ -628,8 +656,11 @@ func TestBoardHandler_Unit_UpdateData(t *testing.T) {
 						NewRequest("POST", "/api/v2/board/update/", body).
 						WithContext(
 							context.WithValue(
-								context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
-								dto.UserObjKey, args.user,
+								context.WithValue(
+									context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+									dto.UserObjKey, args.user,
+								),
+								dto.RequestIDKey, uuid.New(),
 							),
 						)
 					r.AddCookie(cookie)
@@ -655,8 +686,11 @@ func TestBoardHandler_Unit_UpdateData(t *testing.T) {
 						NewRequest("POST", "/api/v2/board/update/", body).
 						WithContext(
 							context.WithValue(
-								context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
-								dto.UserObjKey, args.user,
+								context.WithValue(
+									context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+									dto.UserObjKey, args.user,
+								),
+								dto.RequestIDKey, uuid.New(),
 							),
 						)
 					r.AddCookie(cookie)
@@ -688,7 +722,10 @@ func TestBoardHandler_Unit_UpdateData(t *testing.T) {
 					r := httptest.
 						NewRequest("POST", "/api/v2/board/update/", body).
 						WithContext(
-							context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+							context.WithValue(
+								context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+								dto.RequestIDKey, uuid.New(),
+							),
 						)
 					r.AddCookie(cookie)
 
@@ -734,8 +771,11 @@ func TestBoardHandler_Unit_UpdateData(t *testing.T) {
 						NewRequest("POST", "/api/v2/board/update/", body).
 						WithContext(
 							context.WithValue(
-								context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
-								dto.UserObjKey, args.user,
+								context.WithValue(
+									context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+									dto.UserObjKey, args.user,
+								),
+								dto.RequestIDKey, uuid.New(),
 							),
 						)
 					r.AddCookie(cookie)
@@ -830,8 +870,11 @@ func TestBoardHandler_Unit_UpdateThumbnail(t *testing.T) {
 						NewRequest("POST", "/api/v2/board/update/change_thumbnail/", body).
 						WithContext(
 							context.WithValue(
-								context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
-								dto.UserObjKey, args.user,
+								context.WithValue(
+									context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+									dto.UserObjKey, args.user,
+								),
+								dto.RequestIDKey, uuid.New(),
 							),
 						)
 					r.AddCookie(cookie)
@@ -857,8 +900,11 @@ func TestBoardHandler_Unit_UpdateThumbnail(t *testing.T) {
 						NewRequest("POST", "/api/v2/board/update/change_thumbnail/", body).
 						WithContext(
 							context.WithValue(
-								context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
-								dto.UserObjKey, args.user,
+								context.WithValue(
+									context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+									dto.UserObjKey, args.user,
+								),
+								dto.RequestIDKey, uuid.New(),
 							),
 						)
 					r.AddCookie(cookie)
@@ -890,7 +936,10 @@ func TestBoardHandler_Unit_UpdateThumbnail(t *testing.T) {
 					r := httptest.
 						NewRequest("POST", "/api/v2/board/update/change_thumbnail/", body).
 						WithContext(
-							context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+							context.WithValue(
+								context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+								dto.RequestIDKey, uuid.New(),
+							),
 						)
 					r.AddCookie(cookie)
 
@@ -936,8 +985,11 @@ func TestBoardHandler_Unit_UpdateThumbnail(t *testing.T) {
 						NewRequest("POST", "/api/v2/board/update/change_thumbnail/", body).
 						WithContext(
 							context.WithValue(
-								context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
-								dto.UserObjKey, args.user,
+								context.WithValue(
+									context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+									dto.UserObjKey, args.user,
+								),
+								dto.RequestIDKey, uuid.New(),
 							),
 						)
 					r.AddCookie(cookie)
@@ -1027,8 +1079,11 @@ func TestBoardHandler_Unit_Delete(t *testing.T) {
 						NewRequest("DELETE", "/api/v2/board/delete/", body).
 						WithContext(
 							context.WithValue(
-								context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
-								dto.UserObjKey, args.user,
+								context.WithValue(
+									context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+									dto.UserObjKey, args.user,
+								),
+								dto.RequestIDKey, uuid.New(),
 							),
 						)
 					r.AddCookie(cookie)
@@ -1054,8 +1109,11 @@ func TestBoardHandler_Unit_Delete(t *testing.T) {
 						NewRequest("DELETE", "/api/v2/board/delete/", body).
 						WithContext(
 							context.WithValue(
-								context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
-								dto.UserObjKey, args.user,
+								context.WithValue(
+									context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+									dto.UserObjKey, args.user,
+								),
+								dto.RequestIDKey, uuid.New(),
 							),
 						)
 					r.AddCookie(cookie)
@@ -1087,7 +1145,10 @@ func TestBoardHandler_Unit_Delete(t *testing.T) {
 					r := httptest.
 						NewRequest("DELETE", "/api/v2/board/delete/", body).
 						WithContext(
-							context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+							context.WithValue(
+								context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+								dto.RequestIDKey, uuid.New(),
+							),
 						)
 					r.AddCookie(cookie)
 
@@ -1130,8 +1191,11 @@ func TestBoardHandler_Unit_Delete(t *testing.T) {
 						NewRequest("DELETE", "/api/v2/board/delete/", body).
 						WithContext(
 							context.WithValue(
-								context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
-								dto.UserObjKey, args.user,
+								context.WithValue(
+									context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+									dto.UserObjKey, args.user,
+								),
+								dto.RequestIDKey, uuid.New(),
 							),
 						)
 					r.AddCookie(cookie)
@@ -1228,8 +1292,11 @@ func TestBoardHandler_Unit_AddUser(t *testing.T) {
 						NewRequest("POST", "/api/v2/board/user/add/", body).
 						WithContext(
 							context.WithValue(
-								context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
-								dto.UserObjKey, args.user,
+								context.WithValue(
+									context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+									dto.UserObjKey, args.user,
+								),
+								dto.RequestIDKey, uuid.New(),
 							),
 						)
 					r.AddCookie(cookie)
@@ -1255,8 +1322,11 @@ func TestBoardHandler_Unit_AddUser(t *testing.T) {
 						NewRequest("POST", "/api/v2/board/user/add/", body).
 						WithContext(
 							context.WithValue(
-								context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
-								dto.UserObjKey, args.user,
+								context.WithValue(
+									context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+									dto.UserObjKey, args.user,
+								),
+								dto.RequestIDKey, uuid.New(),
 							),
 						)
 					r.AddCookie(cookie)
@@ -1291,7 +1361,10 @@ func TestBoardHandler_Unit_AddUser(t *testing.T) {
 					r := httptest.
 						NewRequest("POST", "/api/v2/board/user/add/", body).
 						WithContext(
-							context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+							context.WithValue(
+								context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+								dto.RequestIDKey, uuid.New(),
+							),
 						)
 					r.AddCookie(cookie)
 
@@ -1341,8 +1414,11 @@ func TestBoardHandler_Unit_AddUser(t *testing.T) {
 						NewRequest("POST", "/api/v2/board/user/add/", body).
 						WithContext(
 							context.WithValue(
-								context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
-								dto.UserObjKey, args.user,
+								context.WithValue(
+									context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+									dto.UserObjKey, args.user,
+								),
+								dto.RequestIDKey, uuid.New(),
 							),
 						)
 					r.AddCookie(cookie)
@@ -1393,8 +1469,11 @@ func TestBoardHandler_Unit_AddUser(t *testing.T) {
 						NewRequest("POST", "/api/v2/board/user/add/", body).
 						WithContext(
 							context.WithValue(
-								context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
-								dto.UserObjKey, args.user,
+								context.WithValue(
+									context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+									dto.UserObjKey, args.user,
+								),
+								dto.RequestIDKey, uuid.New(),
 							),
 						)
 					r.AddCookie(cookie)
@@ -1445,8 +1524,11 @@ func TestBoardHandler_Unit_AddUser(t *testing.T) {
 						NewRequest("POST", "/api/v2/board/user/add/", body).
 						WithContext(
 							context.WithValue(
-								context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
-								dto.UserObjKey, args.user,
+								context.WithValue(
+									context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+									dto.UserObjKey, args.user,
+								),
+								dto.RequestIDKey, uuid.New(),
 							),
 						)
 					r.AddCookie(cookie)
@@ -1542,8 +1624,11 @@ func TestBoardHandler_Unit_RemoveUser(t *testing.T) {
 						NewRequest("POST", "/api/v2/board/user/remove/", body).
 						WithContext(
 							context.WithValue(
-								context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
-								dto.UserObjKey, args.user,
+								context.WithValue(
+									context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+									dto.UserObjKey, args.user,
+								),
+								dto.RequestIDKey, uuid.New(),
 							),
 						)
 					r.AddCookie(cookie)
@@ -1569,8 +1654,11 @@ func TestBoardHandler_Unit_RemoveUser(t *testing.T) {
 						NewRequest("POST", "/api/v2/board/user/remove/", body).
 						WithContext(
 							context.WithValue(
-								context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
-								dto.UserObjKey, args.user,
+								context.WithValue(
+									context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+									dto.UserObjKey, args.user,
+								),
+								dto.RequestIDKey, uuid.New(),
 							),
 						)
 					r.AddCookie(cookie)
@@ -1605,7 +1693,10 @@ func TestBoardHandler_Unit_RemoveUser(t *testing.T) {
 					r := httptest.
 						NewRequest("POST", "/api/v2/board/user/remove/", body).
 						WithContext(
-							context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+							context.WithValue(
+								context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+								dto.RequestIDKey, uuid.New(),
+							),
 						)
 					r.AddCookie(cookie)
 
@@ -1654,8 +1745,11 @@ func TestBoardHandler_Unit_RemoveUser(t *testing.T) {
 						NewRequest("POST", "/api/v2/board/user/remove/", body).
 						WithContext(
 							context.WithValue(
-								context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
-								dto.UserObjKey, args.user,
+								context.WithValue(
+									context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+									dto.UserObjKey, args.user,
+								),
+								dto.RequestIDKey, uuid.New(),
 							),
 						)
 					r.AddCookie(cookie)
@@ -1705,8 +1799,11 @@ func TestBoardHandler_Unit_RemoveUser(t *testing.T) {
 						NewRequest("POST", "/api/v2/board/user/remove/", body).
 						WithContext(
 							context.WithValue(
-								context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
-								dto.UserObjKey, args.user,
+								context.WithValue(
+									context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+									dto.UserObjKey, args.user,
+								),
+								dto.RequestIDKey, uuid.New(),
 							),
 						)
 					r.AddCookie(cookie)
@@ -1756,8 +1853,11 @@ func TestBoardHandler_Unit_RemoveUser(t *testing.T) {
 						NewRequest("POST", "/api/v2/board/user/remove/", body).
 						WithContext(
 							context.WithValue(
-								context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
-								dto.UserObjKey, args.user,
+								context.WithValue(
+									context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+									dto.UserObjKey, args.user,
+								),
+								dto.RequestIDKey, uuid.New(),
 							),
 						)
 					r.AddCookie(cookie)
