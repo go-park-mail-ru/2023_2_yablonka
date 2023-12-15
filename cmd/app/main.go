@@ -16,6 +16,8 @@ import (
 	"server/internal/storage/postgresql"
 
 	"github.com/asaskevich/govalidator"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/collectors"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -78,7 +80,16 @@ func main() {
 	handlers := handlers.NewHandlers(services)
 	logger.Info("Handlers configured")
 
-	mux, err := app.GetChiMux(*handlers, *config, &logger)
+	registry := prometheus.NewRegistry()
+	logger.Info("Prometheus registry created")
+
+	registry.MustRegister(
+		collectors.NewGoCollector(),
+		collectors.NewProcessCollector(collectors.ProcessCollectorOpts{}),
+	)
+	logger.Info("Prometheus registry configured")
+
+	mux, err := app.GetChiMux(*handlers, *config, &logger, registry)
 	if err != nil {
 		logger.Fatal(err.Error())
 	}
@@ -106,7 +117,12 @@ func main() {
 	}()
 
 	go func() {
-		http.Handle("/metrics", promhttp.Handler())
+		http.Handle("/metrics", promhttp.HandlerFor(
+			registry,
+			promhttp.HandlerOpts{
+				EnableOpenMetrics: true,
+			},
+		))
 		http.ListenAndServe(":8012", nil)
 	}()
 

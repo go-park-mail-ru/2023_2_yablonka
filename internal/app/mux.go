@@ -9,6 +9,7 @@ import (
 	logging "server/internal/logging"
 
 	chi "github.com/go-chi/chi/v5"
+	"github.com/prometheus/client_golang/prometheus"
 	httpSwagger "github.com/swaggo/http-swagger/v2"
 )
 
@@ -18,28 +19,33 @@ import (
 
 // GetChiMux
 // возвращает mux, реализованный с помощью модуля chi
-func GetChiMux(manager handlers.Handlers, config config.Config, logger logging.ILogger) (http.Handler, error) {
+func GetChiMux(manager handlers.Handlers, config config.Config, logger logging.ILogger, registry *prometheus.Registry) (http.Handler, error) {
 	mux := chi.NewRouter()
+
+	metricsMiddleware := middleware.NewPromMiddleware(logger, registry, nil)
 
 	mux.Use(middleware.SetContext(*config.Server, logger))
 	mux.Use(middleware.PanicRecovery)
 	mux.Use(middleware.GetCors(*config.CORS, logger))
 	mux.Use(middleware.JsonHeader)
 
-	// Testing in-place error handling
-	// mux.Use(middleware.ErrorHandler)
-
 	mux.Route("/api/v2", func(r chi.Router) {
 		r.Route("/auth", func(r chi.Router) {
-			r.Get("/verify", manager.AuthHandler.VerifyAuthEndpoint)
-			r.Post("/login/", manager.AuthHandler.LogIn)
+			r.Get("/verify", metricsMiddleware.WrapHandler(
+				"/auth/verify", http.HandlerFunc(manager.AuthHandler.VerifyAuthEndpoint)),
+			)
+			r.Post("/login/", metricsMiddleware.WrapHandler(
+				"/auth/login/", http.HandlerFunc(manager.AuthHandler.LogIn)),
+			)
 			r.Post("/signup/", manager.AuthHandler.SignUp)
 			r.Delete("/logout/", manager.AuthHandler.LogOut)
 		})
 		r.Route("/user", func(r chi.Router) {
 			r.Use(middleware.AuthMiddleware(manager.AuthHandler.GetAuthService(), manager.AuthHandler.GetUserService()))
 			r.Use(middleware.CSRFMiddleware(manager.AuthHandler.GetCSRFService()))
-			r.Get("/workspaces", manager.WorkspaceHandler.GetUserWorkspaces)
+			r.Get("/workspaces", metricsMiddleware.WrapHandler(
+				"/user/workspaces", http.HandlerFunc(manager.WorkspaceHandler.GetUserWorkspaces)),
+			)
 			r.Post("/edit/", manager.UserHandler.ChangeProfile)
 			r.Post("/edit/change_password/", manager.UserHandler.ChangePassword)
 			r.Post("/edit/change_avatar/", manager.UserHandler.ChangeAvatar)
