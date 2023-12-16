@@ -3,12 +3,13 @@ package microservice
 import (
 	"context"
 	"server/internal/apperrors"
+	logging "server/internal/logging"
 	"server/internal/pkg/dto"
 	"server/internal/storage"
 	microservice "server/microservices/csat/csat_question"
 
+	"github.com/google/uuid"
 	"google.golang.org/grpc"
-	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 type CSATQuestionService struct {
@@ -41,10 +42,21 @@ func NewCSATQuestionService(storage storage.ICSATQuestionStorage, connection *gr
 // возвращает тип CSAT вопроса по его id
 // или возвращает ошибки ...
 func (cs CSATQuestionService) CheckRating(ctx context.Context, info dto.NewCSATAnswerInfo) error {
-	serverResponse, _ := cs.client.CheckRating(ctx, &microservice.NewCSATAnswerInfo{
-		QuestionID: info.QuestionID,
-		Rating:     info.Rating,
-	})
+	funcName := "CSATQuestionService.CheckRating"
+	logger := ctx.Value(dto.LoggerKey).(logging.ILogger)
+	requestID := ctx.Value(dto.RequestIDKey).(uuid.UUID)
+
+	grpcRequest := &microservice.CheckRatingRequest{
+		RequestID: requestID.String(),
+		Value: &microservice.NewCSATAnswerInfo{
+			QuestionID: info.QuestionID,
+			Rating:     info.Rating,
+		},
+	}
+
+	logger.DebugFmt("Contacting GRPC server", requestID.String(), funcName, nodeName)
+	serverResponse, _ := cs.client.CheckRating(ctx, grpcRequest)
+	logger.DebugFmt("Response received", requestID.String(), funcName, nodeName)
 
 	return CSATQuestionServiceErrors[serverResponse.Code]
 }
@@ -53,7 +65,18 @@ func (cs CSATQuestionService) CheckRating(ctx context.Context, info dto.NewCSATA
 // возвращает все вопросы CSAT
 // или возвращает ошибки ...
 func (cs CSATQuestionService) GetAll(ctx context.Context) (*[]dto.CSATQuestionFull, error) {
-	serverResponse, _ := cs.client.GetAll(ctx, &emptypb.Empty{})
+	funcName := "CSATQuestionService.GetAll"
+	logger := ctx.Value(dto.LoggerKey).(logging.ILogger)
+	requestID := ctx.Value(dto.RequestIDKey).(uuid.UUID)
+
+	grpcRequest := &microservice.GetAllRequest{
+		RequestID: requestID.String(),
+	}
+
+	logger.DebugFmt("Contacting GRPC server", requestID.String(), funcName, nodeName)
+	serverResponse, _ := cs.client.GetAll(ctx, grpcRequest)
+	logger.DebugFmt("Response received", requestID.String(), funcName, nodeName)
+
 	if serverResponse.Code != microservice.ErrorCode_OK {
 		return nil, CSATQuestionServiceErrors[serverResponse.Code]
 	}
@@ -74,10 +97,22 @@ func (cs CSATQuestionService) GetAll(ctx context.Context) (*[]dto.CSATQuestionFu
 // создает новый вопрос CSAT
 // или возвращает ошибки ...
 func (cs CSATQuestionService) Create(ctx context.Context, info dto.NewCSATQuestionInfo) (*dto.CSATQuestionFull, error) {
-	serverResponse, _ := cs.client.Create(ctx, &microservice.NewCSATQuestionInfo{
-		Content: info.Content,
-		Type:    info.Type,
-	})
+	funcName := "CSATQuestionService.Create"
+	logger := ctx.Value(dto.LoggerKey).(logging.ILogger)
+	requestID := ctx.Value(dto.RequestIDKey).(uuid.UUID)
+
+	grpcRequest := &microservice.CreateRequest{
+		RequestID: requestID.String(),
+		Value: &microservice.NewCSATQuestionInfo{
+			Content: info.Content,
+			Type:    info.Type,
+		},
+	}
+
+	logger.DebugFmt("Contacting GRPC server", requestID.String(), funcName, nodeName)
+	serverResponse, _ := cs.client.Create(ctx, grpcRequest)
+	logger.DebugFmt("Response received", requestID.String(), funcName, nodeName)
+
 	if serverResponse.Code != microservice.ErrorCode_OK {
 		return nil, CSATQuestionServiceErrors[serverResponse.Code]
 	}
@@ -97,7 +132,18 @@ func (cs CSATQuestionService) Create(ctx context.Context, info dto.NewCSATQuesti
 // возвращает статистику по вопросам
 // или возвращает ошибки ...
 func (cs CSATQuestionService) GetStats(ctx context.Context) (*[]dto.QuestionWithStats, error) {
-	serverResponse, _ := cs.client.GetStats(ctx, &emptypb.Empty{})
+	funcName := "CSATQuestionService.GetStats"
+	logger := ctx.Value(dto.LoggerKey).(logging.ILogger)
+	requestID := ctx.Value(dto.RequestIDKey).(uuid.UUID)
+
+	grpcRequest := &microservice.GetStatsRequest{
+		RequestID: requestID.String(),
+	}
+
+	logger.DebugFmt("Contacting GRPC server", requestID.String(), funcName, nodeName)
+	serverResponse, _ := cs.client.GetStats(ctx, grpcRequest)
+	logger.DebugFmt("Response received", requestID.String(), funcName, nodeName)
+
 	if serverResponse.Code != microservice.ErrorCode_OK {
 		return nil, CSATQuestionServiceErrors[serverResponse.Code]
 	}
@@ -127,11 +173,23 @@ func (cs CSATQuestionService) GetStats(ctx context.Context) (*[]dto.QuestionWith
 // обновляет вопрос CSAT
 // или возвращает ошибки ...
 func (cs CSATQuestionService) Update(ctx context.Context, info dto.UpdatedCSATQuestionInfo) error {
-	serverResponse, _ := cs.client.Update(ctx, &microservice.UpdatedCSATQuestionInfo{
-		ID:      info.ID,
-		Content: info.Content,
-		Type:    info.Type,
-	})
+	funcName := "CSATQuestionService.Update"
+	logger := ctx.Value(dto.LoggerKey).(logging.ILogger)
+	requestID := ctx.Value(dto.RequestIDKey).(uuid.UUID)
+
+	grpcRequest := &microservice.UpdateRequest{
+		RequestID: requestID.String(),
+		Value: &microservice.UpdatedCSATQuestionInfo{
+			ID:      info.ID,
+			Content: info.Content,
+			Type:    info.Type,
+		},
+	}
+
+	logger.DebugFmt("Contacting GRPC server", requestID.String(), funcName, nodeName)
+	serverResponse, _ := cs.client.Update(ctx, grpcRequest)
+	logger.DebugFmt("Response received", requestID.String(), funcName, nodeName)
+
 	return CSATQuestionServiceErrors[serverResponse.Code]
 }
 
@@ -139,8 +197,20 @@ func (cs CSATQuestionService) Update(ctx context.Context, info dto.UpdatedCSATQu
 // удаляет вопрос CSAT по id
 // или возвращает ошибки ...
 func (cs CSATQuestionService) Delete(ctx context.Context, id dto.CSATQuestionID) error {
-	serverResponse, _ := cs.client.Delete(ctx, &microservice.CSATQuestionID{
-		Value: id.Value,
-	})
+	funcName := "CSATQuestionService.Delete"
+	logger := ctx.Value(dto.LoggerKey).(logging.ILogger)
+	requestID := ctx.Value(dto.RequestIDKey).(uuid.UUID)
+
+	grpcRequest := &microservice.DeleteRequest{
+		RequestID: requestID.String(),
+		Value: &microservice.CSATQuestionID{
+			Value: id.Value,
+		},
+	}
+
+	logger.DebugFmt("Contacting GRPC server", requestID.String(), funcName, nodeName)
+	serverResponse, _ := cs.client.Delete(ctx, grpcRequest)
+	logger.DebugFmt("Response received", requestID.String(), funcName, nodeName)
+
 	return CSATQuestionServiceErrors[serverResponse.Code]
 }

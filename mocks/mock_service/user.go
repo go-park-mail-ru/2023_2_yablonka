@@ -55,6 +55,21 @@ func (mr *MockIUserServiceMockRecorder) CheckPassword(arg0, arg1 any) *gomock.Ca
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckPassword", reflect.TypeOf((*MockIUserService)(nil).CheckPassword), arg0, arg1)
 }
 
+// DeleteAvatar mocks base method.
+func (m *MockIUserService) DeleteAvatar(arg0 context.Context, arg1 dto.AvatarRemovalInfo) (*dto.UrlObj, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteAvatar", arg0, arg1)
+	ret0, _ := ret[0].(*dto.UrlObj)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// DeleteAvatar indicates an expected call of DeleteAvatar.
+func (mr *MockIUserServiceMockRecorder) DeleteAvatar(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteAvatar", reflect.TypeOf((*MockIUserService)(nil).DeleteAvatar), arg0, arg1)
+}
+
 // DeleteUser mocks base method.
 func (m *MockIUserService) DeleteUser(arg0 context.Context, arg1 dto.UserID) error {
 	m.ctrl.T.Helper()

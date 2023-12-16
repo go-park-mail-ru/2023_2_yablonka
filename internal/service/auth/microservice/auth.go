@@ -11,6 +11,7 @@ import (
 
 	logger "server/internal/logging"
 
+	"github.com/google/uuid"
 	"google.golang.org/grpc"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -52,10 +53,16 @@ func NewAuthService(config config.SessionConfig, authStorage storage.IAuthStorag
 func (a *AuthService) AuthUser(ctx context.Context, id dto.UserID) (dto.SessionToken, error) {
 	funcName := "AuthService.AuthUser"
 	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
+	requestID := ctx.Value(dto.RequestIDKey).(uuid.UUID)
 
-	logger.Debug("Contacting GRPC server", funcName, nodeName)
-	serverResponse, _ := a.client.AuthUser(ctx, &microservice.UserID{Value: id.Value})
-	logger.Debug("Response received", funcName, nodeName)
+	grpcRequest := &microservice.AuthUserRequest{
+		RequestID: requestID.String(),
+		Value:     &microservice.UserID{Value: id.Value},
+	}
+
+	logger.DebugFmt("Contacting GRPC server", requestID.String(), funcName, nodeName)
+	serverResponse, _ := a.client.AuthUser(ctx, grpcRequest)
+	logger.DebugFmt("Response received", requestID.String(), funcName, nodeName)
 
 	if serverResponse.Code != microservice.ErrorCode_OK {
 		return dto.SessionToken{}, AuthServiceErrors[serverResponse.Code]
@@ -73,13 +80,19 @@ func (a *AuthService) AuthUser(ctx context.Context, id dto.UserID) (dto.SessionT
 func (a *AuthService) VerifyAuth(ctx context.Context, token dto.SessionToken) (dto.UserID, error) {
 	funcName := "AuthService.VerifyAuth"
 	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
+	requestID := ctx.Value(dto.RequestIDKey).(uuid.UUID)
 
-	logger.Debug("Contacting GRPC server", funcName, nodeName)
-	serverResponse, _ := a.client.VerifyAuth(ctx, &microservice.SessionToken{
-		ID:             token.ID,
-		ExpirationDate: timestamppb.New(token.ExpirationDate),
-	})
-	logger.Debug("Response received", funcName, nodeName)
+	grpcRequest := &microservice.VerifyAuthRequest{
+		RequestID: requestID.String(),
+		Value: &microservice.SessionToken{
+			ID:             token.ID,
+			ExpirationDate: timestamppb.New(token.ExpirationDate),
+		},
+	}
+
+	logger.DebugFmt("Contacting GRPC server", requestID.String(), funcName, nodeName)
+	serverResponse, _ := a.client.VerifyAuth(ctx, grpcRequest)
+	logger.DebugFmt("Response received", requestID.String(), funcName, nodeName)
 
 	if serverResponse.Code != microservice.ErrorCode_OK {
 		return dto.UserID{}, AuthServiceErrors[serverResponse.Code]
@@ -94,13 +107,19 @@ func (a *AuthService) VerifyAuth(ctx context.Context, token dto.SessionToken) (d
 func (a *AuthService) LogOut(ctx context.Context, token dto.SessionToken) error {
 	funcName := "AuthService.LogOut"
 	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
+	requestID := ctx.Value(dto.RequestIDKey).(uuid.UUID)
 
-	logger.Debug("Contacting GRPC server", funcName, nodeName)
-	serverResponse, _ := a.client.LogOut(ctx, &microservice.SessionToken{
-		ID:             token.ID,
-		ExpirationDate: timestamppb.New(token.ExpirationDate),
-	})
-	logger.Debug("Response received", funcName, nodeName)
+	grpcRequest := &microservice.LogOutRequest{
+		RequestID: requestID.String(),
+		Value: &microservice.SessionToken{
+			ID:             token.ID,
+			ExpirationDate: timestamppb.New(token.ExpirationDate),
+		},
+	}
+
+	logger.DebugFmt("Contacting GRPC server", requestID.String(), funcName, nodeName)
+	serverResponse, _ := a.client.LogOut(ctx, grpcRequest)
+	logger.DebugFmt("Response received", requestID.String(), funcName, nodeName)
 
 	return AuthServiceErrors[serverResponse.Code]
 }
@@ -110,10 +129,11 @@ func (a *AuthService) LogOut(ctx context.Context, token dto.SessionToken) error 
 func (a *AuthService) GetLifetime(ctx context.Context) time.Duration {
 	funcName := "AuthService.GetLifetime"
 	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
+	requestID := ctx.Value(dto.RequestIDKey).(uuid.UUID)
 
-	logger.Debug("Contacting GRPC server", funcName, nodeName)
+	logger.DebugFmt("Contacting GRPC server", requestID.String(), funcName, nodeName)
 	serverResponse, _ := a.client.GetLifetime(ctx, &emptypb.Empty{})
-	logger.Debug("Response received", funcName, nodeName)
+	logger.DebugFmt("Response received", requestID.String(), funcName, nodeName)
 
 	if serverResponse.Code != microservice.ErrorCode_OK {
 		return 0

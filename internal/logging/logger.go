@@ -10,7 +10,9 @@ import (
 )
 
 type ILogger interface {
-	Debug(message string, function string, routeNode string)
+	DebugFmt(message string, request string, function string, routeNode string)
+	DebugRequestlessFmt(message string, function string, routeNode string)
+	Debug(message string)
 	Info(message string)
 	Error(message string)
 	Fatal(message string)
@@ -47,7 +49,24 @@ func NewLogrusLogger(lc *config.LoggingConfig) (LogrusLogger, error) {
 	}, nil
 }
 
-func (l *LogrusLogger) Debug(message string, function string, routeNode string) {
+func (l *LogrusLogger) DebugFmt(message string, request string, function string, routeNode string) {
+	tabsNum := 0
+	switch routeNode {
+	case "service":
+		tabsNum = 1
+	case "storage":
+		tabsNum = 2
+	}
+	l.logger.
+		WithFields(logrus.Fields{
+			"request_id": request,
+			"route_node": routeNode,
+			"function":   function,
+		}).
+		Debug(strings.Repeat("\t", tabsNum) + message)
+}
+
+func (l *LogrusLogger) DebugRequestlessFmt(message string, function string, routeNode string) {
 	tabsNum := 0
 	switch routeNode {
 	case "service":
@@ -61,6 +80,10 @@ func (l *LogrusLogger) Debug(message string, function string, routeNode string) 
 			"function":   function,
 		}).
 		Debug(strings.Repeat("\t", tabsNum) + message)
+}
+
+func (l *LogrusLogger) Debug(message string) {
+	l.logger.Debug(message)
 }
 
 func (l *LogrusLogger) Info(message string) {

@@ -31,7 +31,7 @@ type IBoardStorage interface {
 	UpdateData(context.Context, dto.UpdatedBoardInfo) error
 	// Update
 	// обновляет картинку доски
-	UpdateThumbnailUrl(context.Context, dto.ImageUrlInfo) error
+	UpdateThumbnailUrl(context.Context, dto.BoardImageUrlInfo) error
 	// Create
 	// создает доску
 	Create(context.Context, dto.NewBoardInfo) (*entities.Board, error)
