@@ -44,6 +44,7 @@ services:
       - ./config/.env
     ports:
       - 8083:8083
+      - 8013:8013
     tty: true
     depends_on:
       db:
