@@ -6,9 +6,6 @@ inputs:
     description: "The location at which to build the .env file"
     required: false
     default: ""
-  jwt_secret:
-    description: "The JWT secret used for encoding JWT"
-    required: true
   session_days:
     description: "The day component of session duration"
     required: true
@@ -50,7 +47,6 @@ runs:
     - name: "Build .env file"
       shell: bash
       run: |
-        echo "JWT_SECRET=\"${{ inputs.jwt_secret }}\"" > ${{ inputs.location }}.env 
         echo "SESSION_DURATION_DAYS=${{ inputs.session_days }}" >> ${{ inputs.location }}.env 
         echo "SESSION_DURATION_HOURS=${{ inputs.session_hours }}" >> ${{ inputs.location }}.env
         echo "SESSION_DURATION_MINUTES=${{ inputs.session_minutes }}" >> ${{ inputs.location }}.env
