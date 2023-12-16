@@ -122,7 +122,9 @@ func main() {
 				EnableOpenMetrics: true,
 			},
 		))
-		http.ListenAndServe(":8013", nil)
+		if err := http.ListenAndServe(":8013", nil); err != http.ErrServerClosed {
+			logger.Fatal("Failed to start microservice metrics server: " + err.Error())
+		}
 	}()
 
 	err = server.Serve(lstn)

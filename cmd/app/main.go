@@ -124,7 +124,7 @@ func main() {
 			},
 		))
 		if err := http.ListenAndServe(":8012", nil); err != http.ErrServerClosed {
-			logger.Fatal("Failed to start metrics server: " + err.Error())
+			logger.Fatal("Failed to start backend metrics server: " + err.Error())
 		}
 	}()
 
