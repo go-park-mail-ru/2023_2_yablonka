@@ -122,15 +122,6 @@ func (uh UserHandler) ChangeProfile(w http.ResponseWriter, r *http.Request) {
 	logger.Info("---------------------------------- Changing user's profile ----------------------------------")
 
 	var newProfileInfo dto.UserProfileInfo
-	user, ok := rCtx.Value(dto.UserObjKey).(*entities.User)
-	if !ok {
-		logger.Error(errorMessage + "No user object found")
-		logger.Info(failBorder)
-		apperrors.ReturnError(apperrors.GenericUnauthorizedResponse, w, r)
-		return
-	}
-	logger.DebugFmt("User object acquired from context", requestID.String(), funcName, nodeName)
-
 	err := json.NewDecoder(r.Body).Decode(&newProfileInfo)
 	if err != nil {
 		logger.Error(errorMessage + err.Error())
@@ -139,6 +130,15 @@ func (uh UserHandler) ChangeProfile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	logger.DebugFmt("JSON decoded", requestID.String(), funcName, nodeName)
+
+	user, ok := rCtx.Value(dto.UserObjKey).(*entities.User)
+	if !ok {
+		logger.Error(errorMessage + "No user object found")
+		logger.Info(failBorder)
+		apperrors.ReturnError(apperrors.GenericUnauthorizedResponse, w, r)
+		return
+	}
+	logger.DebugFmt("User object acquired from context", requestID.String(), funcName, nodeName)
 
 	_, err = govalidator.ValidateStruct(newProfileInfo)
 	if err != nil {

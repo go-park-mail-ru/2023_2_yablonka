@@ -480,3 +480,178 @@ func TestUserHandler_Unit_ChangeAvatar(t *testing.T) {
 		})
 	}
 }
+
+func TestUserHandler_Unit_ChangeProfile(t *testing.T) {
+	t.Parallel()
+
+	type args struct {
+		user         *entities.User
+		session      dto.SessionToken
+		info         dto.UserProfileInfo
+		expectations func(bs *mock_service.MockIUserService, args args) *http.Request
+	}
+	tests := []struct {
+		name         string
+		args         args
+		wantErr      bool
+		expectedCode int
+	}{
+		{
+			name: "Successful change",
+			args: args{
+				user: &entities.User{
+					ID:           uint64(1),
+					Email:        "mock@mail.com",
+					PasswordHash: "Mock hash",
+				},
+				info: dto.UserProfileInfo{
+					UserID:      uint64(1),
+					Name:        "Mock new name",
+					Surname:     "Mock new surname",
+					Description: "Mock new description",
+				},
+				session: dto.SessionToken{
+					ID: "Mock session",
+				},
+				expectations: func(us *mock_service.MockIUserService, args args) *http.Request {
+					cookie := &http.Cookie{
+						Name:     "tabula_user",
+						Value:    args.session.ID,
+						HttpOnly: true,
+						SameSite: http.SameSiteLaxMode,
+						Expires:  args.session.ExpirationDate,
+						Path:     "/api/v2/",
+					}
+
+					us.
+						EXPECT().
+						UpdateProfile(gomock.Any(), args.info).
+						Return(nil)
+
+					body := bytes.NewReader([]byte(fmt.Sprintf(`{"name":"%s", "surname":"%s", "description":"%s"}`,
+						args.info.Name, args.info.Surname, args.info.Description)))
+
+					r := httptest.
+						NewRequest("POST", "/api/v2/user/edit/", body).
+						WithContext(
+							context.WithValue(
+								context.WithValue(
+									context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+									dto.UserObjKey, args.user,
+								),
+								dto.RequestIDKey, uuid.New(),
+							),
+						)
+					r.AddCookie(cookie)
+
+					return r
+				},
+			},
+			wantErr:      false,
+			expectedCode: http.StatusOK,
+		},
+		{
+			name: "Bad request (invalid JSON)",
+			args: args{
+				session: dto.SessionToken{
+					ID: "Mock session",
+				},
+				expectations: func(us *mock_service.MockIUserService, args args) *http.Request {
+					cookie := &http.Cookie{
+						Name:     "tabula_user",
+						Value:    args.session.ID,
+						HttpOnly: true,
+						SameSite: http.SameSiteLaxMode,
+						Expires:  args.session.ExpirationDate,
+						Path:     "/api/v2/",
+					}
+
+					body := bytes.NewReader([]byte(""))
+
+					r := httptest.
+						NewRequest("POST", "/api/v2/user/edit/", body).
+						WithContext(
+							context.WithValue(
+								context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+								dto.RequestIDKey, uuid.New(),
+							),
+						)
+					r.AddCookie(cookie)
+
+					return r
+				},
+			},
+			wantErr:      true,
+			expectedCode: http.StatusBadRequest,
+		},
+		{
+			name: "Bad request (unauthorized -- no user object in context)",
+			args: args{
+				info: dto.UserProfileInfo{
+					UserID:      uint64(1),
+					Name:        "Mock new name",
+					Surname:     "Mock new surname",
+					Description: "Mock new description",
+				},
+				session: dto.SessionToken{
+					ID: "Mock session",
+				},
+				expectations: func(us *mock_service.MockIUserService, args args) *http.Request {
+					cookie := &http.Cookie{
+						Name:     "tabula_user",
+						Value:    args.session.ID,
+						HttpOnly: true,
+						SameSite: http.SameSiteLaxMode,
+						Expires:  args.session.ExpirationDate,
+						Path:     "/api/v2/",
+					}
+
+					body := bytes.NewReader([]byte(fmt.Sprintf(`{"name":"%s", "surname":"%s", "description":"%s"}`,
+						args.info.Name, args.info.Surname, args.info.Description)))
+
+					r := httptest.
+						NewRequest("POST", "/api/v2/user/edit/", body).
+						WithContext(
+							context.WithValue(
+								context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+								dto.RequestIDKey, uuid.New(),
+							),
+						)
+					r.AddCookie(cookie)
+
+					return r
+				},
+			},
+			wantErr:      true,
+			expectedCode: http.StatusUnauthorized,
+		},
+	}
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			ctrl := gomock.NewController(t)
+
+			mockUserService := mock_service.NewMockIUserService(ctrl)
+			mockWorkspaceService := mock_service.NewMockIWorkspaceService(ctrl)
+
+			testRequest := tt.args.expectations(mockUserService, tt.args)
+
+			mux, err := createUserMux(mockUserService, mockWorkspaceService)
+			require.Equal(t, nil, err)
+
+			testRequest.Header.Add("Access-Control-Request-Headers", "content-type")
+			testRequest.Header.Add("Origin", "localhost:8081")
+			w := httptest.NewRecorder()
+
+			mux.ServeHTTP(w, testRequest)
+
+			status := w.Result().StatusCode
+
+			require.EqualValuesf(t, tt.expectedCode, status,
+				"Expected code %d (%s), received code %d (%s)",
+				tt.expectedCode, http.StatusText(tt.expectedCode),
+				w.Code, http.StatusText(w.Code))
+		})
+	}
+}
