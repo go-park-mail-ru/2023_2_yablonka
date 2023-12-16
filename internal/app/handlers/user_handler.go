@@ -284,6 +284,8 @@ func (uh UserHandler) DeleteAvatar(w http.ResponseWriter, r *http.Request) {
 	}
 	logger.DebugFmt("User object acquired from context", requestID.String(), funcName, nodeName)
 
+	logger.DebugFmt(*user.AvatarURL, requestID.String(), funcName, nodeName)
+
 	avatarRemovalInfo := dto.AvatarRemovalInfo{
 		UserID:    user.ID,
 		AvatarUrl: *user.AvatarURL,

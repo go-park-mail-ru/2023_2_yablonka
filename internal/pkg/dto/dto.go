@@ -471,6 +471,19 @@ type ListIDs struct {
 	Values []uint64 `json:"ids"`
 }
 
+// TaskMoveInfo
+// DTO для переноса задания из одного списка в другой
+type TaskMoveInfo struct {
+	TaskID  uint64           `json:"task_id"`
+	OldList TaskMoveListInfo `json:"old_list"`
+	NewList TaskMoveListInfo `json:"new_list"`
+}
+
+type TaskMoveListInfo struct {
+	ListID  uint64   `json:"id"`
+	TaskIDs []uint64 `json:"task_ids"`
+}
+
 // CommentIDs
 // DTO для id комментариев
 type CommentIDs struct {

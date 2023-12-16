@@ -385,3 +385,63 @@ func (th TaskHandler) RemoveUser(w http.ResponseWriter, r *http.Request) {
 
 	logger.Info("---------------------------------- Removing user from task SUCCESS ----------------------------------")
 }
+
+// @Summary Перенести задание в другой список
+// @Description Меняет порядок у заданий в старом и новом списках и меняет связь задания со списком
+// @Tags tasks
+//
+// @Accept  json
+// @Produce  json
+//
+// @Param taskMoveInfo body dto.TaskMoveInfo true "id заданий из обоих списков и id нового списка"
+//
+// @Success 204  {string}  string "no content"
+// @Failure 400  {object}  apperrors.ErrorResponse
+// @Failure 401  {object}  apperrors.ErrorResponse
+// @Failure 500  {object}  apperrors.ErrorResponse
+//
+// @Router /task/move/ [post]
+func (th TaskHandler) Move(w http.ResponseWriter, r *http.Request) {
+	rCtx := r.Context()
+	funcName := "TaskHandler.UpdateOrder"
+	errorMessage := "Updating task order failed with error: "
+	failBorder := "---------------------------------- TaskHandler.UpdateOrder FAIL ----------------------------------"
+
+	logger := rCtx.Value(dto.LoggerKey).(logger.ILogger)
+	requestID := rCtx.Value(dto.RequestIDKey).(uuid.UUID)
+
+	logger.Info("---------------------------------- TaskHandler.UpdateOrder ----------------------------------")
+
+	var taskMoveInfo dto.TaskMoveInfo
+	err := json.NewDecoder(r.Body).Decode(&taskMoveInfo)
+	if err != nil {
+		logger.Error(errorMessage + err.Error())
+		logger.Info(failBorder)
+		apperrors.ReturnError(apperrors.BadRequestResponse, w, r)
+		return
+	}
+	logger.DebugFmt("request struct decoded", requestID.String(), funcName, nodeName)
+
+	err = th.ts.Move(rCtx, taskMoveInfo)
+	if err != nil {
+		logger.Error(errorMessage + err.Error())
+		logger.Info(failBorder)
+		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
+		return
+	}
+	logger.DebugFmt("list order changed", requestID.String(), funcName, nodeName)
+
+	response := dto.JSONResponse{
+		Body: dto.JSONMap{},
+	}
+	err = WriteResponse(response, w, r)
+	if err != nil {
+		logger.Error(errorMessage + err.Error())
+		logger.Info(failBorder)
+		apperrors.ReturnError(apperrors.InternalServerErrorResponse, w, r)
+		return
+	}
+	logger.DebugFmt("response written", requestID.String(), funcName, nodeName)
+
+	logger.Info("---------------------------------- TaskHandler.UpdateOrder SUCCESS ----------------------------------")
+}

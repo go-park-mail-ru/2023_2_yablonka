@@ -34,6 +34,10 @@ type ITaskStorage interface {
 	// удаляет задачу
 	// или возвращает ошибки ...
 	Delete(context.Context, dto.TaskID) error
+	// Move
+	// переносит задание в другой список
+	// или возвращает ошибки ...
+	Move(context.Context, dto.TaskMoveInfo) error
 	// AddUser
 	// добавляет пользователя в карточку
 	// или возвращает ошибки ...

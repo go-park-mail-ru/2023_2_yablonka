@@ -341,3 +341,51 @@ func (s *PostgresTaskStorage) CheckAccess(ctx context.Context, info dto.CheckTas
 
 	return count > 0, nil
 }
+
+// Move
+// переносит задание в другой список
+// или возвращает ошибки ...
+func (s PostgresTaskStorage) Move(ctx context.Context, taskMoveInfo dto.TaskMoveInfo) error {
+	funcName := "PostgreSQLBoardStorage.GetById"
+	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
+	requestID := ctx.Value(dto.RequestIDKey).(uuid.UUID)
+
+	taskIDs := make(map[uint64]int)
+
+	for i, id := range taskMoveInfo.OldList.TaskIDs {
+		taskIDs[id] = i
+	}
+	for i, id := range taskMoveInfo.NewList.TaskIDs {
+		taskIDs[id] = i
+	}
+	keys := make([]uint64, 0, len(taskIDs))
+	for k := range taskIDs {
+		keys = append(keys, k)
+	}
+
+	caseBuilder := sq.Case()
+	for i, id := range keys {
+		caseBuilder = caseBuilder.When(sq.Eq{"id": id}, i)
+	}
+	caseBuilder.Else("list_position")
+
+	query, args, err := sq.
+		Update("public.task").
+		Set("list_position", caseBuilder).
+		Set("id_list", sq.Case().When(sq.Eq{"id": taskMoveInfo.TaskID}, taskMoveInfo.NewList.ListID).Else("id_list")).
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
+	if err != nil {
+		logger.DebugFmt(err.Error(), requestID.String(), funcName, nodeName)
+		return apperrors.ErrCouldNotBuildQuery
+	}
+	logger.DebugFmt("Built query\n\t"+query+"\nwith args\n\t", requestID.String(), funcName, nodeName)
+
+	_, err = s.db.Exec(query, args...)
+	if err != nil {
+		logger.DebugFmt(err.Error(), requestID.String(), funcName, nodeName)
+		return apperrors.ErrCouldNotChangeTaskOrder
+	}
+
+	return nil
+}
