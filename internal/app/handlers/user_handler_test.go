@@ -450,6 +450,60 @@ func TestUserHandler_Unit_ChangeAvatar(t *testing.T) {
 			wantErr:      true,
 			expectedCode: http.StatusUnauthorized,
 		},
+		{
+			name: "Bad request (failed to change avatar)",
+			args: args{
+				user: &entities.User{
+					ID:           uint64(1),
+					Email:        "mock@mail.com",
+					PasswordHash: "Mock hash",
+				},
+				info: dto.AvatarChangeInfo{
+					UserID:   uint64(1),
+					Avatar:   []byte{},
+					Filename: "mock_avatar.png",
+					Mimetype: "image/png",
+				},
+				session: dto.SessionToken{
+					ID: "Mock session",
+				},
+				expectations: func(us *mock_service.MockIUserService, args args) *http.Request {
+					cookie := &http.Cookie{
+						Name:     "tabula_user",
+						Value:    args.session.ID,
+						HttpOnly: true,
+						SameSite: http.SameSiteLaxMode,
+						Expires:  args.session.ExpirationDate,
+						Path:     "/api/v2/",
+					}
+
+					us.
+						EXPECT().
+						UpdateAvatar(gomock.Any(), args.info).
+						Return(&dto.UrlObj{}, apperrors.ErrUserNotUpdated)
+
+					body := bytes.NewReader([]byte(fmt.Sprintf(`{"avatar":%v, "filename":"%s", "mimetype":"%s"}`,
+						args.info.Avatar, args.info.Filename, args.info.Mimetype)))
+
+					r := httptest.
+						NewRequest("POST", "/api/v2/user/edit/change_avatar/", body).
+						WithContext(
+							context.WithValue(
+								context.WithValue(
+									context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+									dto.UserObjKey, args.user,
+								),
+								dto.RequestIDKey, uuid.New(),
+							),
+						)
+					r.AddCookie(cookie)
+
+					return r
+				},
+			},
+			wantErr:      true,
+			expectedCode: http.StatusInternalServerError,
+		},
 	}
 	for _, tt := range tests {
 		tt := tt
@@ -624,6 +678,60 @@ func TestUserHandler_Unit_ChangeProfile(t *testing.T) {
 			},
 			wantErr:      true,
 			expectedCode: http.StatusUnauthorized,
+		},
+		{
+			name: "Bad request (failed to change profile)",
+			args: args{
+				user: &entities.User{
+					ID:           uint64(1),
+					Email:        "mock@mail.com",
+					PasswordHash: "Mock hash",
+				},
+				info: dto.UserProfileInfo{
+					UserID:      uint64(1),
+					Name:        "Mock new name",
+					Surname:     "Mock new surname",
+					Description: "Mock new description",
+				},
+				session: dto.SessionToken{
+					ID: "Mock session",
+				},
+				expectations: func(us *mock_service.MockIUserService, args args) *http.Request {
+					cookie := &http.Cookie{
+						Name:     "tabula_user",
+						Value:    args.session.ID,
+						HttpOnly: true,
+						SameSite: http.SameSiteLaxMode,
+						Expires:  args.session.ExpirationDate,
+						Path:     "/api/v2/",
+					}
+
+					us.
+						EXPECT().
+						UpdateProfile(gomock.Any(), args.info).
+						Return(apperrors.ErrUserNotUpdated)
+
+					body := bytes.NewReader([]byte(fmt.Sprintf(`{"name":"%s", "surname":"%s", "description":"%s"}`,
+						args.info.Name, args.info.Surname, args.info.Description)))
+
+					r := httptest.
+						NewRequest("POST", "/api/v2/user/edit/", body).
+						WithContext(
+							context.WithValue(
+								context.WithValue(
+									context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+									dto.UserObjKey, args.user,
+								),
+								dto.RequestIDKey, uuid.New(),
+							),
+						)
+					r.AddCookie(cookie)
+
+					return r
+				},
+			},
+			wantErr:      true,
+			expectedCode: http.StatusInternalServerError,
 		},
 	}
 	for _, tt := range tests {

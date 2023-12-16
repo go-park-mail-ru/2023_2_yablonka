@@ -260,6 +260,7 @@ var ErrorMap = map[error]ErrorResponse{
 	ErrWrongPassword:            WrongLoginResponse,
 	ErrUserAlreadyExists:        StatusConflictResponse,
 	ErrUserNotCreated:           InternalServerErrorResponse,
+	ErrUserNotUpdated:           InternalServerErrorResponse,
 	ErrTokenNotGenerated:        InternalServerErrorResponse,
 	ErrCSRFNotFound:             GenericUnauthorizedResponse,
 	ErrCSRFNotCreated:           InternalServerErrorResponse,
