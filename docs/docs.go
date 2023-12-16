@@ -787,6 +787,58 @@ const docTemplate = `{
                 }
             }
         },
+        "/checklist/item/reorder/": {
+            "post": {
+                "description": "Обновить вещи в чеклисте по порядку в списке",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "lists"
+                ],
+                "summary": "Обновить порядок вещей в чеклисте",
+                "parameters": [
+                    {
+                        "description": "id списков",
+                        "name": "listID",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.ListIDs"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "no content",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/checklist/item/update/": {
             "post": {
                 "description": "Обновить элемент чеклиста",
@@ -1181,58 +1233,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/image/upload/": {
-            "post": {
-                "description": "Загрузить изображение",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "images"
-                ],
-                "summary": "Загрузить изображение",
-                "parameters": [
-                    {
-                        "description": "байты изоьражения",
-                        "name": "image",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/dto.Image"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "ссылка на изображение",
-                        "schema": {
-                            "$ref": "#/definitions/doc_structs.URLResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/apperrors.ErrorResponse"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/apperrors.ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/apperrors.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
         "/list/create/": {
             "post": {
                 "description": "Создать список",
@@ -1389,6 +1389,58 @@ const docTemplate = `{
                 }
             }
         },
+        "/list/reorder/": {
+            "post": {
+                "description": "Поставить списки по порядку в запросе",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "lists"
+                ],
+                "summary": "Обновить порядок списков",
+                "parameters": [
+                    {
+                        "description": "id списков",
+                        "name": "listID",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.ListIDs"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "no content",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/task/": {
             "post": {
                 "description": "Получить задание",
@@ -1514,6 +1566,58 @@ const docTemplate = `{
                         "required": true,
                         "schema": {
                             "$ref": "#/definitions/dto.TaskID"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "no content",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/task/move/": {
+            "post": {
+                "description": "Меняет порядок у заданий в старом и новом списках и меняет связь задания со списком",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "tasks"
+                ],
+                "summary": "Перенести задание в другой список",
+                "parameters": [
+                    {
+                        "description": "id заданий из обоих списков и id нового списка",
+                        "name": "taskMoveInfo",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.TaskMoveInfo"
                         }
                     }
                 ],
@@ -1751,7 +1855,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "auth"
+                    "user"
                 ],
                 "summary": "Поменять аватарку",
                 "parameters": [
@@ -1767,7 +1871,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "Объект пользователя",
+                        "description": "Ссылка на новую аватарку",
                         "schema": {
                             "$ref": "#/definitions/doc_structs.AvatarUploadResponse"
                         }
@@ -1810,6 +1914,35 @@ const docTemplate = `{
                         "description": "no content",
                         "schema": {
                             "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/user/edit/delete_avatar/": {
+            "delete": {
+                "description": "Удалить аватарку",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "Удалить аватарку",
+                "responses": {
+                    "200": {
+                        "description": "Ссылка на новую аватарку",
+                        "schema": {
+                            "$ref": "#/definitions/doc_structs.AvatarUploadResponse"
                         }
                     },
                     "500": {
@@ -2130,14 +2263,6 @@ const docTemplate = `{
                 }
             }
         },
-        "doc_structs.URLResponse": {
-            "type": "object",
-            "properties": {
-                "url": {
-                    "$ref": "#/definitions/dto.UrlObj"
-                }
-            }
-        },
         "doc_structs.UserResponse": {
             "type": "object",
             "properties": {
@@ -2154,6 +2279,9 @@ const docTemplate = `{
                 },
                 "user_email": {
                     "type": "string"
+                },
+                "workspace_id": {
+                    "type": "integer"
                 }
             }
         },
@@ -2204,6 +2332,12 @@ const docTemplate = `{
                     "items": {
                         "type": "integer"
                     }
+                },
+                "filename": {
+                    "type": "string"
+                },
+                "mimetype": {
+                    "type": "string"
                 }
             }
         },
@@ -2349,22 +2483,22 @@ const docTemplate = `{
                 }
             }
         },
-        "dto.Image": {
-            "type": "object",
-            "properties": {
-                "data": {
-                    "type": "array",
-                    "items": {
-                        "type": "integer"
-                    }
-                }
-            }
-        },
         "dto.ListID": {
             "type": "object",
             "properties": {
                 "id": {
                     "type": "integer"
+                }
+            }
+        },
+        "dto.ListIDs": {
+            "type": "object",
+            "properties": {
+                "ids": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
                 }
             }
         },
@@ -2665,6 +2799,34 @@ const docTemplate = `{
             "properties": {
                 "id": {
                     "type": "integer"
+                }
+            }
+        },
+        "dto.TaskMoveInfo": {
+            "type": "object",
+            "properties": {
+                "new_list": {
+                    "$ref": "#/definitions/dto.TaskMoveListInfo"
+                },
+                "old_list": {
+                    "$ref": "#/definitions/dto.TaskMoveListInfo"
+                },
+                "task_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.TaskMoveListInfo": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "task_ids": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
                 }
             }
         },

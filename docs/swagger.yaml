@@ -69,11 +69,6 @@ definitions:
       thumbnail_url:
         $ref: '#/definitions/dto.UrlObj'
     type: object
-  doc_structs.URLResponse:
-    properties:
-      url:
-        $ref: '#/definitions/dto.UrlObj'
-    type: object
   doc_structs.UserResponse:
     properties:
       user:
@@ -85,6 +80,8 @@ definitions:
         type: integer
       user_email:
         type: string
+      workspace_id:
+        type: integer
     type: object
   dto.AddTaskUserInfo:
     properties:
@@ -117,6 +114,10 @@ definitions:
         items:
           type: integer
         type: array
+      filename:
+        type: string
+      mimetype:
+        type: string
     type: object
   dto.BoardID:
     properties:
@@ -210,17 +211,17 @@ definitions:
           $ref: '#/definitions/dto.UserPublicInfo'
         type: array
     type: object
-  dto.Image:
-    properties:
-      data:
-        items:
-          type: integer
-        type: array
-    type: object
   dto.ListID:
     properties:
       id:
         type: integer
+    type: object
+  dto.ListIDs:
+    properties:
+      ids:
+        items:
+          type: integer
+        type: array
     type: object
   dto.NewBoardRequest:
     properties:
@@ -415,6 +416,24 @@ definitions:
     properties:
       id:
         type: integer
+    type: object
+  dto.TaskMoveInfo:
+    properties:
+      new_list:
+        $ref: '#/definitions/dto.TaskMoveListInfo'
+      old_list:
+        $ref: '#/definitions/dto.TaskMoveListInfo'
+      task_id:
+        type: integer
+    type: object
+  dto.TaskMoveListInfo:
+    properties:
+      id:
+        type: integer
+      task_ids:
+        items:
+          type: integer
+        type: array
     type: object
   dto.UpdatedBoardInfo:
     properties:
@@ -1153,6 +1172,40 @@ paths:
       summary: Удалить элемент чеклиста
       tags:
       - checklistItems
+  /checklist/item/reorder/:
+    post:
+      consumes:
+      - application/json
+      description: Обновить вещи в чеклисте по порядку в списке
+      parameters:
+      - description: id списков
+        in: body
+        name: listID
+        required: true
+        schema:
+          $ref: '#/definitions/dto.ListIDs'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: no content
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+      summary: Обновить порядок вещей в чеклисте
+      tags:
+      - lists
   /checklist/item/update/:
     post:
       consumes:
@@ -1411,40 +1464,6 @@ paths:
       summary: Статистика ответов CSAT
       tags:
       - csat
-  /image/upload/:
-    post:
-      consumes:
-      - application/json
-      description: Загрузить изображение
-      parameters:
-      - description: байты изоьражения
-        in: body
-        name: image
-        required: true
-        schema:
-          $ref: '#/definitions/dto.Image'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: ссылка на изображение
-          schema:
-            $ref: '#/definitions/doc_structs.URLResponse'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/apperrors.ErrorResponse'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/apperrors.ErrorResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/apperrors.ErrorResponse'
-      summary: Загрузить изображение
-      tags:
-      - images
   /list/create/:
     post:
       consumes:
@@ -1547,6 +1566,40 @@ paths:
       summary: Обновить список
       tags:
       - lists
+  /list/reorder/:
+    post:
+      consumes:
+      - application/json
+      description: Поставить списки по порядку в запросе
+      parameters:
+      - description: id списков
+        in: body
+        name: listID
+        required: true
+        schema:
+          $ref: '#/definitions/dto.ListIDs'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: no content
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+      summary: Обновить порядок списков
+      tags:
+      - lists
   /task/:
     post:
       consumes:
@@ -1647,6 +1700,41 @@ paths:
           schema:
             $ref: '#/definitions/apperrors.ErrorResponse'
       summary: Удалить задание
+      tags:
+      - tasks
+  /task/move/:
+    post:
+      consumes:
+      - application/json
+      description: Меняет порядок у заданий в старом и новом списках и меняет связь
+        задания со списком
+      parameters:
+      - description: id заданий из обоих списков и id нового списка
+        in: body
+        name: taskMoveInfo
+        required: true
+        schema:
+          $ref: '#/definitions/dto.TaskMoveInfo'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: no content
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+      summary: Перенести задание в другой список
       tags:
       - tasks
   /task/update/:
@@ -1793,7 +1881,7 @@ paths:
       - application/json
       responses:
         "200":
-          description: Объект пользователя
+          description: Ссылка на новую аватарку
           schema:
             $ref: '#/definitions/doc_structs.AvatarUploadResponse'
         "500":
@@ -1802,7 +1890,7 @@ paths:
             $ref: '#/definitions/apperrors.ErrorResponse'
       summary: Поменять аватарку
       tags:
-      - auth
+      - user
   /user/edit/change_password/:
     post:
       consumes:
@@ -1827,6 +1915,25 @@ paths:
           schema:
             $ref: '#/definitions/apperrors.ErrorResponse'
       summary: Поменять пароль
+      tags:
+      - user
+  /user/edit/delete_avatar/:
+    delete:
+      consumes:
+      - application/json
+      description: Удалить аватарку
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Ссылка на новую аватарку
+          schema:
+            $ref: '#/definitions/doc_structs.AvatarUploadResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+      summary: Удалить аватарку
       tags:
       - user
   /user/workspaces:
