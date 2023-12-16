@@ -7,8 +7,6 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
-	"os"
-	"server/internal/app"
 	"server/internal/app/handlers"
 	"server/internal/apperrors"
 	"server/internal/config"
@@ -19,12 +17,11 @@ import (
 	"testing"
 	"time"
 
+	"github.com/go-chi/chi/v5"
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 )
-
-const configPath string = "../../../config/config.yml"
-const envPath string = ""
 
 func hashFromAuthInfo(info dto.AuthInfo) string {
 	hasher := sha256.New()
@@ -44,50 +41,21 @@ func getLogger() logger.ILogger {
 	return &logger
 }
 
-func createConfig(envPath string) (*config.Config, error) {
-	cfgFile, err := os.Create(envPath + ".env")
-	if err != nil {
-		return nil, err
-	}
-	defer cfgFile.Close()
-
-	_, err = fmt.Fprint(cfgFile,
-		"SESSION_DURATION_DAYS=14"+"\n"+
-			"SESSION_DURATION_HOURS=0"+"\n"+
-			"SESSION_DURATION_MINUTES=0"+"\n"+
-			"SESSION_DURATION_SECONDS=0"+"\n"+
-			"SESSION_ID_LENGTH=32"+"\n"+
-			"POSTGRES_USER='testuser'"+"\n"+
-			"POSTGRES_PASSWORD='testpw'"+"\n"+
-			"POSTGRES_DB='testdb'",
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	config, err := config.LoadConfig(envPath, configPath)
-	if err != nil {
-		return nil, err
-	}
-
-	return config, nil
-}
-
 func createAuthMux(mockAuthService *mock_service.MockIAuthService,
 	mockUserService *mock_service.MockIUserService,
 	mockCSRFService *mock_service.MockICSRFService) (http.Handler, error) {
 
-	mockHandlerManager := handlers.Handlers{
-		AuthHandler: *handlers.NewAuthHandler(mockAuthService, mockUserService, mockCSRFService),
-		UserHandler: *handlers.NewUserHandler(mockUserService),
-	}
+	AuthHandler := *handlers.NewAuthHandler(mockAuthService, mockUserService, mockCSRFService)
 
-	cfg, err := createConfig(envPath)
-	if err != nil {
-		return nil, err
-	}
-
-	mux, _ := app.GetChiMux(mockHandlerManager, *cfg, getLogger())
+	mux := chi.NewRouter()
+	mux.Route("/api/v2", func(r chi.Router) {
+		r.Route("/auth", func(r chi.Router) {
+			r.Get("/verify", AuthHandler.VerifyAuthEndpoint)
+			r.Post("/login/", AuthHandler.LogIn)
+			r.Post("/signup/", AuthHandler.SignUp)
+			r.Delete("/logout/", AuthHandler.LogOut)
+		})
+	})
 	return mux, nil
 }
 
@@ -99,7 +67,7 @@ func TestUserHandler_Unit_LogIn(t *testing.T) {
 		authInfo     dto.AuthInfo
 		session      dto.SessionToken
 		csrf         dto.CSRFData
-		expectations func(as *mock_service.MockIAuthService, us *mock_service.MockIUserService, cs *mock_service.MockICSRFService, args args) string
+		expectations func(as *mock_service.MockIAuthService, us *mock_service.MockIUserService, cs *mock_service.MockICSRFService, args args) *http.Request
 	}
 	tests := []struct {
 		name         string
@@ -123,7 +91,7 @@ func TestUserHandler_Unit_LogIn(t *testing.T) {
 					Token:          "Mock CSRF token",
 					ExpirationDate: time.Now().Add(time.Duration(14 * 24 * time.Hour)).Round(time.Second).UTC(),
 				},
-				expectations: func(as *mock_service.MockIAuthService, us *mock_service.MockIUserService, cs *mock_service.MockICSRFService, args args) string {
+				expectations: func(as *mock_service.MockIAuthService, us *mock_service.MockIUserService, cs *mock_service.MockICSRFService, args args) *http.Request {
 					us.
 						EXPECT().
 						CheckPassword(gomock.Any(), args.authInfo).
@@ -149,7 +117,20 @@ func TestUserHandler_Unit_LogIn(t *testing.T) {
 						VerifyAuth(gomock.Any(), args.session).
 						Return(args.userID, nil)
 
-					return fmt.Sprintf(`{"email":"%s", "password":"%s"}`, args.authInfo.Email, args.authInfo.Password)
+					body := bytes.NewReader([]byte(
+						fmt.Sprintf(`{"email":"%s", "password":"%s"}`, args.authInfo.Email, args.authInfo.Password),
+					))
+
+					r := httptest.
+						NewRequest("POST", "/api/v2/auth/login/", body).
+						WithContext(
+							context.WithValue(
+								context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+								dto.RequestIDKey, uuid.New(),
+							),
+						)
+
+					return r
 				},
 			},
 			wantErr:      false,
@@ -159,8 +140,19 @@ func TestUserHandler_Unit_LogIn(t *testing.T) {
 			name: "Bad request (bad JSON)",
 			args: args{
 				authInfo: dto.AuthInfo{},
-				expectations: func(as *mock_service.MockIAuthService, us *mock_service.MockIUserService, cs *mock_service.MockICSRFService, args args) string {
-					return ""
+				expectations: func(as *mock_service.MockIAuthService, us *mock_service.MockIUserService, cs *mock_service.MockICSRFService, args args) *http.Request {
+					body := bytes.NewReader([]byte(""))
+
+					r := httptest.
+						NewRequest("POST", "/api/v2/auth/login/", body).
+						WithContext(
+							context.WithValue(
+								context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+								dto.RequestIDKey, uuid.New(),
+							),
+						)
+
+					return r
 				},
 			},
 			wantErr:      true,
@@ -173,8 +165,21 @@ func TestUserHandler_Unit_LogIn(t *testing.T) {
 					Email:    "notmail",
 					Password: "short",
 				},
-				expectations: func(as *mock_service.MockIAuthService, us *mock_service.MockIUserService, cs *mock_service.MockICSRFService, args args) string {
-					return fmt.Sprintf(`{"email":"%s", "password":"%s"}`, args.authInfo.Email, args.authInfo.Password)
+				expectations: func(as *mock_service.MockIAuthService, us *mock_service.MockIUserService, cs *mock_service.MockICSRFService, args args) *http.Request {
+					body := bytes.NewReader([]byte(
+						fmt.Sprintf(`{"email":"%s", "password":"%s"}`, args.authInfo.Email, args.authInfo.Password),
+					))
+
+					r := httptest.
+						NewRequest("POST", "/api/v2/auth/login/", body).
+						WithContext(
+							context.WithValue(
+								context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+								dto.RequestIDKey, uuid.New(),
+							),
+						)
+
+					return r
 				},
 			},
 			wantErr:      true,
@@ -187,14 +192,27 @@ func TestUserHandler_Unit_LogIn(t *testing.T) {
 					Email:    "mock@mail.com",
 					Password: "wrongpw123",
 				},
-				expectations: func(as *mock_service.MockIAuthService, us *mock_service.MockIUserService, cs *mock_service.MockICSRFService, args args) string {
+				expectations: func(as *mock_service.MockIAuthService, us *mock_service.MockIUserService, cs *mock_service.MockICSRFService, args args) *http.Request {
 					us.
 						EXPECT().
 						CheckPassword(gomock.Any(), args.authInfo).
 						Return(&entities.User{},
 							apperrors.ErrWrongPassword)
 
-					return fmt.Sprintf(`{"email":"%s", "password":"%s"}`, args.authInfo.Email, args.authInfo.Password)
+					body := bytes.NewReader([]byte(
+						fmt.Sprintf(`{"email":"%s", "password":"%s"}`, args.authInfo.Email, args.authInfo.Password),
+					))
+
+					r := httptest.
+						NewRequest("POST", "/api/v2/auth/login/", body).
+						WithContext(
+							context.WithValue(
+								context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+								dto.RequestIDKey, uuid.New(),
+							),
+						)
+
+					return r
 				},
 			},
 			wantErr:      true,
@@ -212,7 +230,7 @@ func TestUserHandler_Unit_LogIn(t *testing.T) {
 					ID:             "Mock session",
 					ExpirationDate: time.Now().Add(time.Duration(14 * 24 * time.Hour)),
 				},
-				expectations: func(as *mock_service.MockIAuthService, us *mock_service.MockIUserService, cs *mock_service.MockICSRFService, args args) string {
+				expectations: func(as *mock_service.MockIAuthService, us *mock_service.MockIUserService, cs *mock_service.MockICSRFService, args args) *http.Request {
 					us.
 						EXPECT().
 						CheckPassword(gomock.Any(), args.authInfo).
@@ -228,7 +246,20 @@ func TestUserHandler_Unit_LogIn(t *testing.T) {
 						AuthUser(gomock.Any(), args.userID).
 						Return(dto.SessionToken{}, apperrors.ErrSessionNotCreated)
 
-					return fmt.Sprintf(`{"email":"%s", "password":"%s"}`, args.authInfo.Email, args.authInfo.Password)
+					body := bytes.NewReader([]byte(
+						fmt.Sprintf(`{"email":"%s", "password":"%s"}`, args.authInfo.Email, args.authInfo.Password),
+					))
+
+					r := httptest.
+						NewRequest("POST", "/api/v2/auth/login/", body).
+						WithContext(
+							context.WithValue(
+								context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+								dto.RequestIDKey, uuid.New(),
+							),
+						)
+
+					return r
 				},
 			},
 			wantErr:      true,
@@ -246,7 +277,7 @@ func TestUserHandler_Unit_LogIn(t *testing.T) {
 					ID:             "Mock session",
 					ExpirationDate: time.Now().Add(time.Duration(14 * 24 * time.Hour)),
 				},
-				expectations: func(as *mock_service.MockIAuthService, us *mock_service.MockIUserService, cs *mock_service.MockICSRFService, args args) string {
+				expectations: func(as *mock_service.MockIAuthService, us *mock_service.MockIUserService, cs *mock_service.MockICSRFService, args args) *http.Request {
 					us.
 						EXPECT().
 						CheckPassword(gomock.Any(), args.authInfo).
@@ -267,7 +298,20 @@ func TestUserHandler_Unit_LogIn(t *testing.T) {
 						SetupCSRF(gomock.Any(), args.userID).
 						Return(dto.CSRFData{}, apperrors.ErrCSRFNotCreated)
 
-					return fmt.Sprintf(`{"email":"%s", "password":"%s"}`, args.authInfo.Email, args.authInfo.Password)
+					body := bytes.NewReader([]byte(
+						fmt.Sprintf(`{"email":"%s", "password":"%s"}`, args.authInfo.Email, args.authInfo.Password),
+					))
+
+					r := httptest.
+						NewRequest("POST", "/api/v2/auth/login/", body).
+						WithContext(
+							context.WithValue(
+								context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+								dto.RequestIDKey, uuid.New(),
+							),
+						)
+
+					return r
 				},
 			},
 			wantErr:      true,
@@ -285,19 +329,16 @@ func TestUserHandler_Unit_LogIn(t *testing.T) {
 			mockUserService := mock_service.NewMockIUserService(ctrl)
 			mockCSRFService := mock_service.NewMockICSRFService(ctrl)
 
-			requestString := tt.args.expectations(mockAuthService, mockUserService, mockCSRFService, tt.args)
+			testRequest := tt.args.expectations(mockAuthService, mockUserService, mockCSRFService, tt.args)
 
 			mux, err := createAuthMux(mockAuthService, mockUserService, mockCSRFService)
 			require.Equal(t, nil, err)
 
-			body := bytes.NewReader([]byte(requestString))
-
-			r := httptest.NewRequest("POST", "/api/v2/auth/login/", body)
-			r.Header.Add("Access-Control-Request-Headers", "content-type")
-			r.Header.Add("Origin", "localhost:8081")
+			testRequest.Header.Add("Access-Control-Request-Headers", "content-type")
+			testRequest.Header.Add("Origin", "localhost:8081")
 			w := httptest.NewRecorder()
 
-			mux.ServeHTTP(w, r)
+			mux.ServeHTTP(w, testRequest)
 
 			status := w.Result().StatusCode
 
@@ -336,7 +377,7 @@ func TestUserHandler_Unit_SignUp(t *testing.T) {
 		authInfo     dto.AuthInfo
 		session      dto.SessionToken
 		csrf         dto.CSRFData
-		expectations func(as *mock_service.MockIAuthService, us *mock_service.MockIUserService, cs *mock_service.MockICSRFService, args args) string
+		expectations func(as *mock_service.MockIAuthService, us *mock_service.MockIUserService, cs *mock_service.MockICSRFService, args args) *http.Request
 	}
 	tests := []struct {
 		name         string
@@ -360,7 +401,7 @@ func TestUserHandler_Unit_SignUp(t *testing.T) {
 					Token:          "Mock CSRF token",
 					ExpirationDate: time.Now().Add(time.Duration(14 * 24 * time.Hour)).Round(time.Second).UTC(),
 				},
-				expectations: func(as *mock_service.MockIAuthService, us *mock_service.MockIUserService, cs *mock_service.MockICSRFService, args args) string {
+				expectations: func(as *mock_service.MockIAuthService, us *mock_service.MockIUserService, cs *mock_service.MockICSRFService, args args) *http.Request {
 					us.
 						EXPECT().
 						RegisterUser(gomock.Any(), args.authInfo).
@@ -386,7 +427,20 @@ func TestUserHandler_Unit_SignUp(t *testing.T) {
 						VerifyAuth(gomock.Any(), args.session).
 						Return(args.userID, nil)
 
-					return fmt.Sprintf(`{"email":"%s", "password":"%s"}`, args.authInfo.Email, args.authInfo.Password)
+					body := bytes.NewReader([]byte(
+						fmt.Sprintf(`{"email":"%s", "password":"%s"}`, args.authInfo.Email, args.authInfo.Password),
+					))
+
+					r := httptest.
+						NewRequest("POST", "/api/v2/auth/signup/", body).
+						WithContext(
+							context.WithValue(
+								context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+								dto.RequestIDKey, uuid.New(),
+							),
+						)
+
+					return r
 				},
 			},
 			wantErr:      false,
@@ -396,8 +450,19 @@ func TestUserHandler_Unit_SignUp(t *testing.T) {
 			name: "Bad request (bad JSON)",
 			args: args{
 				authInfo: dto.AuthInfo{},
-				expectations: func(as *mock_service.MockIAuthService, us *mock_service.MockIUserService, cs *mock_service.MockICSRFService, args args) string {
-					return ""
+				expectations: func(as *mock_service.MockIAuthService, us *mock_service.MockIUserService, cs *mock_service.MockICSRFService, args args) *http.Request {
+					body := bytes.NewReader([]byte(""))
+
+					r := httptest.
+						NewRequest("POST", "/api/v2/auth/signup/", body).
+						WithContext(
+							context.WithValue(
+								context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+								dto.RequestIDKey, uuid.New(),
+							),
+						)
+
+					return r
 				},
 			},
 			wantErr:      true,
@@ -410,8 +475,21 @@ func TestUserHandler_Unit_SignUp(t *testing.T) {
 					Email:    "notmail",
 					Password: "short",
 				},
-				expectations: func(as *mock_service.MockIAuthService, us *mock_service.MockIUserService, cs *mock_service.MockICSRFService, args args) string {
-					return fmt.Sprintf(`{"email":"%s", "password":"%s"}`, args.authInfo.Email, args.authInfo.Password)
+				expectations: func(as *mock_service.MockIAuthService, us *mock_service.MockIUserService, cs *mock_service.MockICSRFService, args args) *http.Request {
+					body := bytes.NewReader([]byte(
+						fmt.Sprintf(`{"email":"%s", "password":"%s"}`, args.authInfo.Email, args.authInfo.Password),
+					))
+
+					r := httptest.
+						NewRequest("POST", "/api/v2/auth/signup/", body).
+						WithContext(
+							context.WithValue(
+								context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+								dto.RequestIDKey, uuid.New(),
+							),
+						)
+
+					return r
 				},
 			},
 			wantErr:      true,
@@ -424,14 +502,27 @@ func TestUserHandler_Unit_SignUp(t *testing.T) {
 					Email:    "exists@mail.com",
 					Password: "wrongpw123",
 				},
-				expectations: func(as *mock_service.MockIAuthService, us *mock_service.MockIUserService, cs *mock_service.MockICSRFService, args args) string {
+				expectations: func(as *mock_service.MockIAuthService, us *mock_service.MockIUserService, cs *mock_service.MockICSRFService, args args) *http.Request {
 					us.
 						EXPECT().
 						RegisterUser(gomock.Any(), args.authInfo).
 						Return(&entities.User{},
 							apperrors.ErrUserAlreadyExists)
 
-					return fmt.Sprintf(`{"email":"%s", "password":"%s"}`, args.authInfo.Email, args.authInfo.Password)
+					body := bytes.NewReader([]byte(
+						fmt.Sprintf(`{"email":"%s", "password":"%s"}`, args.authInfo.Email, args.authInfo.Password),
+					))
+
+					r := httptest.
+						NewRequest("POST", "/api/v2/auth/signup/", body).
+						WithContext(
+							context.WithValue(
+								context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+								dto.RequestIDKey, uuid.New(),
+							),
+						)
+
+					return r
 				},
 			},
 			wantErr:      true,
@@ -449,7 +540,7 @@ func TestUserHandler_Unit_SignUp(t *testing.T) {
 					ID:             "Mock session",
 					ExpirationDate: time.Now().Add(time.Duration(14 * 24 * time.Hour)),
 				},
-				expectations: func(as *mock_service.MockIAuthService, us *mock_service.MockIUserService, cs *mock_service.MockICSRFService, args args) string {
+				expectations: func(as *mock_service.MockIAuthService, us *mock_service.MockIUserService, cs *mock_service.MockICSRFService, args args) *http.Request {
 					us.
 						EXPECT().
 						RegisterUser(gomock.Any(), args.authInfo).
@@ -465,7 +556,20 @@ func TestUserHandler_Unit_SignUp(t *testing.T) {
 						AuthUser(gomock.Any(), args.userID).
 						Return(dto.SessionToken{}, apperrors.ErrSessionNotCreated)
 
-					return fmt.Sprintf(`{"email":"%s", "password":"%s"}`, args.authInfo.Email, args.authInfo.Password)
+					body := bytes.NewReader([]byte(
+						fmt.Sprintf(`{"email":"%s", "password":"%s"}`, args.authInfo.Email, args.authInfo.Password),
+					))
+
+					r := httptest.
+						NewRequest("POST", "/api/v2/auth/signup/", body).
+						WithContext(
+							context.WithValue(
+								context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+								dto.RequestIDKey, uuid.New(),
+							),
+						)
+
+					return r
 				},
 			},
 			wantErr:      true,
@@ -483,7 +587,7 @@ func TestUserHandler_Unit_SignUp(t *testing.T) {
 					ID:             "Mock session",
 					ExpirationDate: time.Now().Add(time.Duration(14 * 24 * time.Hour)),
 				},
-				expectations: func(as *mock_service.MockIAuthService, us *mock_service.MockIUserService, cs *mock_service.MockICSRFService, args args) string {
+				expectations: func(as *mock_service.MockIAuthService, us *mock_service.MockIUserService, cs *mock_service.MockICSRFService, args args) *http.Request {
 					us.
 						EXPECT().
 						RegisterUser(gomock.Any(), args.authInfo).
@@ -504,7 +608,20 @@ func TestUserHandler_Unit_SignUp(t *testing.T) {
 						SetupCSRF(gomock.Any(), args.userID).
 						Return(dto.CSRFData{}, apperrors.ErrCSRFNotCreated)
 
-					return fmt.Sprintf(`{"email":"%s", "password":"%s"}`, args.authInfo.Email, args.authInfo.Password)
+					body := bytes.NewReader([]byte(
+						fmt.Sprintf(`{"email":"%s", "password":"%s"}`, args.authInfo.Email, args.authInfo.Password),
+					))
+
+					r := httptest.
+						NewRequest("POST", "/api/v2/auth/signup/", body).
+						WithContext(
+							context.WithValue(
+								context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+								dto.RequestIDKey, uuid.New(),
+							),
+						)
+
+					return r
 				},
 			},
 			wantErr:      true,
@@ -523,19 +640,16 @@ func TestUserHandler_Unit_SignUp(t *testing.T) {
 			mockUserService := mock_service.NewMockIUserService(ctrl)
 			mockCSRFService := mock_service.NewMockICSRFService(ctrl)
 
-			requestString := tt.args.expectations(mockAuthService, mockUserService, mockCSRFService, tt.args)
+			testRequest := tt.args.expectations(mockAuthService, mockUserService, mockCSRFService, tt.args)
 
 			mux, err := createAuthMux(mockAuthService, mockUserService, mockCSRFService)
 			require.Equal(t, nil, err)
 
-			body := bytes.NewReader([]byte(requestString))
-
-			r := httptest.NewRequest("POST", "/api/v2/auth/signup/", body)
-			r.Header.Add("Access-Control-Request-Headers", "content-type")
-			r.Header.Add("Origin", "localhost:8081")
+			testRequest.Header.Add("Access-Control-Request-Headers", "content-type")
+			testRequest.Header.Add("Origin", "localhost:8081")
 			w := httptest.NewRecorder()
 
-			mux.ServeHTTP(w, r)
+			mux.ServeHTTP(w, testRequest)
 
 			status := w.Result().StatusCode
 
@@ -571,7 +685,7 @@ func TestUserHandler_Unit_LogOut(t *testing.T) {
 
 	type args struct {
 		session      dto.SessionToken
-		expectations func(as *mock_service.MockIAuthService, us *mock_service.MockIUserService, cs *mock_service.MockICSRFService, args args) *http.Cookie
+		expectations func(as *mock_service.MockIAuthService, us *mock_service.MockIUserService, cs *mock_service.MockICSRFService, args args) *http.Request
 	}
 	tests := []struct {
 		name         string
@@ -585,7 +699,7 @@ func TestUserHandler_Unit_LogOut(t *testing.T) {
 				session: dto.SessionToken{
 					ID: "Mock LogOut session",
 				},
-				expectations: func(as *mock_service.MockIAuthService, us *mock_service.MockIUserService, cs *mock_service.MockICSRFService, args args) *http.Cookie {
+				expectations: func(as *mock_service.MockIAuthService, us *mock_service.MockIUserService, cs *mock_service.MockICSRFService, args args) *http.Request {
 					cookie := &http.Cookie{
 						Name:     "tabula_user",
 						Value:    args.session.ID,
@@ -605,7 +719,19 @@ func TestUserHandler_Unit_LogOut(t *testing.T) {
 						LogOut(gomock.Any(), args.session).
 						Return(nil)
 
-					return cookie
+					body := bytes.NewReader([]byte(""))
+
+					r := httptest.
+						NewRequest("DELETE", "/api/v2/auth/logout/", body).
+						WithContext(
+							context.WithValue(
+								context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+								dto.RequestIDKey, uuid.New(),
+							),
+						)
+					r.AddCookie(cookie)
+
+					return r
 				},
 			},
 			wantErr:      false,
@@ -614,8 +740,22 @@ func TestUserHandler_Unit_LogOut(t *testing.T) {
 		{
 			name: "Bad request (No cookie)",
 			args: args{
-				expectations: func(as *mock_service.MockIAuthService, us *mock_service.MockIUserService, cs *mock_service.MockICSRFService, args args) *http.Cookie {
-					return &http.Cookie{}
+				expectations: func(as *mock_service.MockIAuthService, us *mock_service.MockIUserService, cs *mock_service.MockICSRFService, args args) *http.Request {
+					cookie := &http.Cookie{}
+
+					body := bytes.NewReader([]byte(""))
+
+					r := httptest.
+						NewRequest("DELETE", "/api/v2/auth/logout/", body).
+						WithContext(
+							context.WithValue(
+								context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+								dto.RequestIDKey, uuid.New(),
+							),
+						)
+					r.AddCookie(cookie)
+
+					return r
 				},
 			},
 			wantErr:      true,
@@ -627,7 +767,7 @@ func TestUserHandler_Unit_LogOut(t *testing.T) {
 				session: dto.SessionToken{
 					ID: "Mock session",
 				},
-				expectations: func(as *mock_service.MockIAuthService, us *mock_service.MockIUserService, cs *mock_service.MockICSRFService, args args) *http.Cookie {
+				expectations: func(as *mock_service.MockIAuthService, us *mock_service.MockIUserService, cs *mock_service.MockICSRFService, args args) *http.Request {
 					cookie := &http.Cookie{
 						Name:     "tabula_user",
 						Value:    args.session.ID,
@@ -642,7 +782,19 @@ func TestUserHandler_Unit_LogOut(t *testing.T) {
 						VerifyAuth(gomock.Any(), args.session).
 						Return(dto.UserID{}, apperrors.ErrSessionNotFound)
 
-					return cookie
+					body := bytes.NewReader([]byte(""))
+
+					r := httptest.
+						NewRequest("DELETE", "/api/v2/auth/logout/", body).
+						WithContext(
+							context.WithValue(
+								context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+								dto.RequestIDKey, uuid.New(),
+							),
+						)
+					r.AddCookie(cookie)
+
+					return r
 				},
 			},
 			wantErr:      true,
@@ -654,7 +806,7 @@ func TestUserHandler_Unit_LogOut(t *testing.T) {
 				session: dto.SessionToken{
 					ID: "Mock LogOut session",
 				},
-				expectations: func(as *mock_service.MockIAuthService, us *mock_service.MockIUserService, cs *mock_service.MockICSRFService, args args) *http.Cookie {
+				expectations: func(as *mock_service.MockIAuthService, us *mock_service.MockIUserService, cs *mock_service.MockICSRFService, args args) *http.Request {
 					cookie := &http.Cookie{
 						Name:     "tabula_user",
 						Value:    args.session.ID,
@@ -669,7 +821,19 @@ func TestUserHandler_Unit_LogOut(t *testing.T) {
 						VerifyAuth(gomock.Any(), args.session).
 						Return(dto.UserID{}, apperrors.ErrSessionExpired)
 
-					return cookie
+					body := bytes.NewReader([]byte(""))
+
+					r := httptest.
+						NewRequest("DELETE", "/api/v2/auth/logout/", body).
+						WithContext(
+							context.WithValue(
+								context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+								dto.RequestIDKey, uuid.New(),
+							),
+						)
+					r.AddCookie(cookie)
+
+					return r
 				},
 			},
 			wantErr:      true,
@@ -681,7 +845,7 @@ func TestUserHandler_Unit_LogOut(t *testing.T) {
 				session: dto.SessionToken{
 					ID: "Mock LogOut session",
 				},
-				expectations: func(as *mock_service.MockIAuthService, us *mock_service.MockIUserService, cs *mock_service.MockICSRFService, args args) *http.Cookie {
+				expectations: func(as *mock_service.MockIAuthService, us *mock_service.MockIUserService, cs *mock_service.MockICSRFService, args args) *http.Request {
 					cookie := &http.Cookie{
 						Name:     "tabula_user",
 						Value:    args.session.ID,
@@ -701,7 +865,19 @@ func TestUserHandler_Unit_LogOut(t *testing.T) {
 						LogOut(gomock.Any(), args.session).
 						Return(apperrors.ErrSessionNotFound)
 
-					return cookie
+					body := bytes.NewReader([]byte(""))
+
+					r := httptest.
+						NewRequest("DELETE", "/api/v2/auth/logout/", body).
+						WithContext(
+							context.WithValue(
+								context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+								dto.RequestIDKey, uuid.New(),
+							),
+						)
+					r.AddCookie(cookie)
+
+					return r
 				},
 			},
 			wantErr:      true,
@@ -720,21 +896,16 @@ func TestUserHandler_Unit_LogOut(t *testing.T) {
 			mockUserService := mock_service.NewMockIUserService(ctrl)
 			mockCSRFService := mock_service.NewMockICSRFService(ctrl)
 
-			cookie := tt.args.expectations(mockAuthService, mockUserService, mockCSRFService, tt.args)
+			testRequest := tt.args.expectations(mockAuthService, mockUserService, mockCSRFService, tt.args)
 
-			body := bytes.NewReader([]byte(""))
-
-			r := httptest.NewRequest("DELETE", "/api/v2/auth/logout/", body)
-			r.Header.Add("Access-Control-Request-Headers", "content-type")
-			r.Header.Add("Origin", "localhost:8081")
+			testRequest.Header.Add("Access-Control-Request-Headers", "content-type")
+			testRequest.Header.Add("Origin", "localhost:8081")
 			w := httptest.NewRecorder()
-
-			r.AddCookie(cookie)
 
 			mux, err := createAuthMux(mockAuthService, mockUserService, mockCSRFService)
 			require.Equal(t, nil, err)
 
-			mux.ServeHTTP(w, r)
+			mux.ServeHTTP(w, testRequest)
 
 			status := w.Result().StatusCode
 
@@ -760,7 +931,7 @@ func TestAuthHandler_Unit_VerifyAuthEndpoint(t *testing.T) {
 		userID       dto.UserID
 		session      dto.SessionToken
 		csrf         dto.CSRFData
-		expectations func(as *mock_service.MockIAuthService, us *mock_service.MockIUserService, cs *mock_service.MockICSRFService, args args) *http.Cookie
+		expectations func(as *mock_service.MockIAuthService, us *mock_service.MockIUserService, cs *mock_service.MockICSRFService, args args) *http.Request
 	}
 	tests := []struct {
 		name         string
@@ -780,7 +951,7 @@ func TestAuthHandler_Unit_VerifyAuthEndpoint(t *testing.T) {
 				csrf: dto.CSRFData{
 					Token: "Mock CSRF token",
 				},
-				expectations: func(as *mock_service.MockIAuthService, us *mock_service.MockIUserService, cs *mock_service.MockICSRFService, args args) *http.Cookie {
+				expectations: func(as *mock_service.MockIAuthService, us *mock_service.MockIUserService, cs *mock_service.MockICSRFService, args args) *http.Request {
 					cookie := &http.Cookie{
 						Name:     "tabula_user",
 						Value:    args.session.ID,
@@ -809,7 +980,19 @@ func TestAuthHandler_Unit_VerifyAuthEndpoint(t *testing.T) {
 						SetupCSRF(gomock.Any(), args.userID).
 						Return(args.csrf, nil)
 
-					return cookie
+					body := bytes.NewReader([]byte(""))
+
+					r := httptest.
+						NewRequest("GET", "/api/v2/auth/verify", body).
+						WithContext(
+							context.WithValue(
+								context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+								dto.RequestIDKey, uuid.New(),
+							),
+						)
+					r.AddCookie(cookie)
+
+					return r
 				},
 			},
 			wantErr:      false,
@@ -818,8 +1001,22 @@ func TestAuthHandler_Unit_VerifyAuthEndpoint(t *testing.T) {
 		{
 			name: "Bad request (No cookie)",
 			args: args{
-				expectations: func(as *mock_service.MockIAuthService, us *mock_service.MockIUserService, cs *mock_service.MockICSRFService, args args) *http.Cookie {
-					return &http.Cookie{}
+				expectations: func(as *mock_service.MockIAuthService, us *mock_service.MockIUserService, cs *mock_service.MockICSRFService, args args) *http.Request {
+					cookie := &http.Cookie{}
+
+					body := bytes.NewReader([]byte(""))
+
+					r := httptest.
+						NewRequest("GET", "/api/v2/auth/verify", body).
+						WithContext(
+							context.WithValue(
+								context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+								dto.RequestIDKey, uuid.New(),
+							),
+						)
+					r.AddCookie(cookie)
+
+					return r
 				},
 			},
 			wantErr:      true,
@@ -831,7 +1028,7 @@ func TestAuthHandler_Unit_VerifyAuthEndpoint(t *testing.T) {
 				session: dto.SessionToken{
 					ID: "Mock session",
 				},
-				expectations: func(as *mock_service.MockIAuthService, us *mock_service.MockIUserService, cs *mock_service.MockICSRFService, args args) *http.Cookie {
+				expectations: func(as *mock_service.MockIAuthService, us *mock_service.MockIUserService, cs *mock_service.MockICSRFService, args args) *http.Request {
 					cookie := &http.Cookie{
 						Name:     "tabula_user",
 						Value:    args.session.ID,
@@ -846,7 +1043,19 @@ func TestAuthHandler_Unit_VerifyAuthEndpoint(t *testing.T) {
 						VerifyAuth(gomock.Any(), args.session).
 						Return(dto.UserID{}, apperrors.ErrSessionNotFound)
 
-					return cookie
+					body := bytes.NewReader([]byte(""))
+
+					r := httptest.
+						NewRequest("GET", "/api/v2/auth/verify", body).
+						WithContext(
+							context.WithValue(
+								context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+								dto.RequestIDKey, uuid.New(),
+							),
+						)
+					r.AddCookie(cookie)
+
+					return r
 				},
 			},
 			wantErr:      true,
@@ -858,7 +1067,7 @@ func TestAuthHandler_Unit_VerifyAuthEndpoint(t *testing.T) {
 				session: dto.SessionToken{
 					ID: "Mock LogOut session",
 				},
-				expectations: func(as *mock_service.MockIAuthService, us *mock_service.MockIUserService, cs *mock_service.MockICSRFService, args args) *http.Cookie {
+				expectations: func(as *mock_service.MockIAuthService, us *mock_service.MockIUserService, cs *mock_service.MockICSRFService, args args) *http.Request {
 					cookie := &http.Cookie{
 						Name:     "tabula_user",
 						Value:    args.session.ID,
@@ -873,7 +1082,19 @@ func TestAuthHandler_Unit_VerifyAuthEndpoint(t *testing.T) {
 						VerifyAuth(gomock.Any(), args.session).
 						Return(dto.UserID{}, apperrors.ErrSessionExpired)
 
-					return cookie
+					body := bytes.NewReader([]byte(""))
+
+					r := httptest.
+						NewRequest("GET", "/api/v2/auth/verify", body).
+						WithContext(
+							context.WithValue(
+								context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+								dto.RequestIDKey, uuid.New(),
+							),
+						)
+					r.AddCookie(cookie)
+
+					return r
 				},
 			},
 			wantErr:      true,
@@ -888,7 +1109,7 @@ func TestAuthHandler_Unit_VerifyAuthEndpoint(t *testing.T) {
 				session: dto.SessionToken{
 					ID: "Mock session",
 				},
-				expectations: func(as *mock_service.MockIAuthService, us *mock_service.MockIUserService, cs *mock_service.MockICSRFService, args args) *http.Cookie {
+				expectations: func(as *mock_service.MockIAuthService, us *mock_service.MockIUserService, cs *mock_service.MockICSRFService, args args) *http.Request {
 					cookie := &http.Cookie{
 						Name:     "tabula_user",
 						Value:    args.session.ID,
@@ -908,7 +1129,19 @@ func TestAuthHandler_Unit_VerifyAuthEndpoint(t *testing.T) {
 						GetWithID(gomock.Any(), args.userID).
 						Return(&entities.User{}, apperrors.ErrUserNotFound)
 
-					return cookie
+					body := bytes.NewReader([]byte(""))
+
+					r := httptest.
+						NewRequest("GET", "/api/v2/auth/verify", body).
+						WithContext(
+							context.WithValue(
+								context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+								dto.RequestIDKey, uuid.New(),
+							),
+						)
+					r.AddCookie(cookie)
+
+					return r
 				},
 			},
 			wantErr:      true,
@@ -923,7 +1156,7 @@ func TestAuthHandler_Unit_VerifyAuthEndpoint(t *testing.T) {
 				session: dto.SessionToken{
 					ID: "Mock session",
 				},
-				expectations: func(as *mock_service.MockIAuthService, us *mock_service.MockIUserService, cs *mock_service.MockICSRFService, args args) *http.Cookie {
+				expectations: func(as *mock_service.MockIAuthService, us *mock_service.MockIUserService, cs *mock_service.MockICSRFService, args args) *http.Request {
 					cookie := &http.Cookie{
 						Name:     "tabula_user",
 						Value:    args.session.ID,
@@ -952,7 +1185,19 @@ func TestAuthHandler_Unit_VerifyAuthEndpoint(t *testing.T) {
 						SetupCSRF(gomock.Any(), args.userID).
 						Return(dto.CSRFData{}, apperrors.ErrCSRFNotCreated)
 
-					return cookie
+					body := bytes.NewReader([]byte(""))
+
+					r := httptest.
+						NewRequest("GET", "/api/v2/auth/verify", body).
+						WithContext(
+							context.WithValue(
+								context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+								dto.RequestIDKey, uuid.New(),
+							),
+						)
+					r.AddCookie(cookie)
+
+					return r
 				},
 			},
 			wantErr:      true,
@@ -971,21 +1216,16 @@ func TestAuthHandler_Unit_VerifyAuthEndpoint(t *testing.T) {
 			mockUserService := mock_service.NewMockIUserService(ctrl)
 			mockCSRFService := mock_service.NewMockICSRFService(ctrl)
 
-			cookie := tt.args.expectations(mockAuthService, mockUserService, mockCSRFService, tt.args)
+			testRequest := tt.args.expectations(mockAuthService, mockUserService, mockCSRFService, tt.args)
+
+			testRequest.Header.Add("Access-Control-Request-Headers", "content-type")
+			testRequest.Header.Add("Origin", "localhost:8081")
+			w := httptest.NewRecorder()
 
 			mux, err := createAuthMux(mockAuthService, mockUserService, mockCSRFService)
 			require.Equal(t, nil, err)
 
-			body := bytes.NewReader([]byte(""))
-
-			r := httptest.NewRequest("GET", "/api/v2/auth/verify", body)
-			r.Header.Add("Access-Control-Request-Headers", "content-type")
-			r.Header.Add("Origin", "localhost:8081")
-			w := httptest.NewRecorder()
-
-			r.AddCookie(cookie)
-
-			mux.ServeHTTP(w, r)
+			mux.ServeHTTP(w, testRequest)
 
 			status := w.Result().StatusCode
 

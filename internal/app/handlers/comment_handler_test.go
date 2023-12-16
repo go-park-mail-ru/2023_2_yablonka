@@ -17,6 +17,7 @@ import (
 	"time"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 )
@@ -76,7 +77,10 @@ func TestCommentHandler_Create(t *testing.T) {
 					r := httptest.
 						NewRequest("POST", "/api/v2/comment/create/", body).
 						WithContext(
-							context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+							context.WithValue(
+								context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+								dto.RequestIDKey, uuid.New(),
+							),
 						)
 
 					return r
@@ -99,7 +103,10 @@ func TestCommentHandler_Create(t *testing.T) {
 					r := httptest.
 						NewRequest("POST", "/api/v2/comment/create/", body).
 						WithContext(
-							context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+							context.WithValue(
+								context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+								dto.RequestIDKey, uuid.New(),
+							),
 						)
 
 					return r
@@ -128,7 +135,10 @@ func TestCommentHandler_Create(t *testing.T) {
 					r := httptest.
 						NewRequest("POST", "/api/v2/comment/create/", body).
 						WithContext(
-							context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+							context.WithValue(
+								context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+								dto.RequestIDKey, uuid.New(),
+							),
 						)
 
 					return r

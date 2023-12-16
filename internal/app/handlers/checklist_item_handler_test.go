@@ -15,6 +15,7 @@ import (
 	"testing"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 )
@@ -77,7 +78,10 @@ func TestChecklistItemHandler_Create(t *testing.T) {
 					r := httptest.
 						NewRequest("POST", "/api/v2/checklist/item/create/", body).
 						WithContext(
-							context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+							context.WithValue(
+								context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+								dto.RequestIDKey, uuid.New(),
+							),
 						)
 
 					return r
@@ -106,7 +110,10 @@ func TestChecklistItemHandler_Create(t *testing.T) {
 					r := httptest.
 						NewRequest("POST", "/api/v2/checklist/item/create/", body).
 						WithContext(
-							context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+							context.WithValue(
+								context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+								dto.RequestIDKey, uuid.New(),
+							),
 						)
 
 					return r
@@ -135,7 +142,10 @@ func TestChecklistItemHandler_Create(t *testing.T) {
 					r := httptest.
 						NewRequest("POST", "/api/v2/checklist/item/create/", body).
 						WithContext(
-							context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+							context.WithValue(
+								context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+								dto.RequestIDKey, uuid.New(),
+							),
 						)
 
 					return r
@@ -216,7 +226,10 @@ func TestChecklistItemHandler_Update(t *testing.T) {
 					r := httptest.
 						NewRequest("POST", "/api/v2/checklist/item/edit/", body).
 						WithContext(
-							context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+							context.WithValue(
+								context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+								dto.RequestIDKey, uuid.New(),
+							),
 						)
 
 					return r
@@ -234,7 +247,10 @@ func TestChecklistItemHandler_Update(t *testing.T) {
 					r := httptest.
 						NewRequest("POST", "/api/v2/checklist/item/edit/", body).
 						WithContext(
-							context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+							context.WithValue(
+								context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+								dto.RequestIDKey, uuid.New(),
+							),
 						)
 
 					return r
@@ -263,7 +279,10 @@ func TestChecklistItemHandler_Update(t *testing.T) {
 					r := httptest.
 						NewRequest("POST", "/api/v2/checklist/item/edit/", body).
 						WithContext(
-							context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+							context.WithValue(
+								context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+								dto.RequestIDKey, uuid.New(),
+							),
 						)
 
 					return r
@@ -333,7 +352,10 @@ func TestChecklistItemHandler_Delete(t *testing.T) {
 					r := httptest.
 						NewRequest("DELETE", "/api/v2/checklist/item/delete/", body).
 						WithContext(
-							context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+							context.WithValue(
+								context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+								dto.RequestIDKey, uuid.New(),
+							),
 						)
 
 					return r
@@ -351,7 +373,10 @@ func TestChecklistItemHandler_Delete(t *testing.T) {
 					r := httptest.
 						NewRequest("DELETE", "/api/v2/checklist/item/delete/", body).
 						WithContext(
-							context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+							context.WithValue(
+								context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+								dto.RequestIDKey, uuid.New(),
+							),
 						)
 
 					return r
@@ -378,7 +403,10 @@ func TestChecklistItemHandler_Delete(t *testing.T) {
 					r := httptest.
 						NewRequest("DELETE", "/api/v2/checklist/item/delete/", body).
 						WithContext(
-							context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+							context.WithValue(
+								context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+								dto.RequestIDKey, uuid.New(),
+							),
 						)
 
 					return r
