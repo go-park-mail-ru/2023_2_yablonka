@@ -13,8 +13,8 @@ const nodeName = "microservice"
 func RegisterServices(storages *storage.Storages, server *grpc.Server, logger *logging.LogrusLogger) {
 	funcName := "Auth.RegisterServices"
 	userServer := user.NewUserService(storages.User, logger)
-	logger.Debug("Auth GRPC server created", funcName, nodeName)
+	logger.DebugRequestlessFmt("Auth GRPC server created", funcName, nodeName)
 
 	user.RegisterUserServiceServer(server, userServer)
-	logger.Debug("Auth GRPC server registered", funcName, nodeName)
+	logger.DebugRequestlessFmt("Auth GRPC server registered", funcName, nodeName)
 }

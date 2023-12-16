@@ -8,6 +8,8 @@ import (
 	_ "server/internal/pkg/doc_structs"
 	"server/internal/pkg/dto"
 	"server/internal/service"
+
+	"github.com/google/uuid"
 )
 
 type ListHandler struct {
@@ -32,11 +34,11 @@ type ListHandler struct {
 func (lh ListHandler) Create(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
 	funcName := "ListHandler.Create"
-	nodeName := "handler"
 	errorMessage := "Creating list failed with error: "
 	failBorder := "---------------------------------- Creating list FAIL ----------------------------------"
 
 	logger := rCtx.Value(dto.LoggerKey).(logger.ILogger)
+	requestID := rCtx.Value(dto.RequestIDKey).(uuid.UUID)
 
 	logger.Info("---------------------------------- Creating list ----------------------------------")
 
@@ -48,7 +50,7 @@ func (lh ListHandler) Create(w http.ResponseWriter, r *http.Request) {
 		apperrors.ReturnError(apperrors.BadRequestResponse, w, r)
 		return
 	}
-	logger.Debug("request struct decoded", funcName, nodeName)
+	logger.DebugFmt("request struct decoded", requestID.String(), funcName, nodeName)
 
 	list, err := lh.ls.Create(rCtx, newListInfo)
 	if err != nil {
@@ -57,7 +59,7 @@ func (lh ListHandler) Create(w http.ResponseWriter, r *http.Request) {
 		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
 		return
 	}
-	logger.Debug("list created", funcName, nodeName)
+	logger.DebugFmt("list created", requestID.String(), funcName, nodeName)
 
 	response := dto.JSONResponse{
 		Body: dto.JSONMap{
@@ -71,7 +73,7 @@ func (lh ListHandler) Create(w http.ResponseWriter, r *http.Request) {
 		apperrors.ReturnError(apperrors.InternalServerErrorResponse, w, r)
 		return
 	}
-	logger.Debug("response written", funcName, nodeName)
+	logger.DebugFmt("response written", requestID.String(), funcName, nodeName)
 
 	logger.Info("---------------------------------- Creating list FAIL ----------------------------------")
 }
@@ -94,11 +96,11 @@ func (lh ListHandler) Create(w http.ResponseWriter, r *http.Request) {
 func (lh ListHandler) Update(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
 	funcName := "ListHandler.Update"
-	nodeName := "handler"
 	errorMessage := "Updating failed with error: "
 	failBorder := "---------------------------------- Updating list FAIL ----------------------------------"
 
 	logger := rCtx.Value(dto.LoggerKey).(logger.ILogger)
+	requestID := rCtx.Value(dto.RequestIDKey).(uuid.UUID)
 
 	logger.Info("---------------------------------- Updating list ----------------------------------")
 
@@ -110,7 +112,7 @@ func (lh ListHandler) Update(w http.ResponseWriter, r *http.Request) {
 		apperrors.ReturnError(apperrors.BadRequestResponse, w, r)
 		return
 	}
-	logger.Debug("request struct decoded", funcName, nodeName)
+	logger.DebugFmt("request struct decoded", requestID.String(), funcName, nodeName)
 
 	err = lh.ls.Update(rCtx, listInfo)
 	if err != nil {
@@ -119,7 +121,7 @@ func (lh ListHandler) Update(w http.ResponseWriter, r *http.Request) {
 		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
 		return
 	}
-	logger.Debug("list updated", funcName, nodeName)
+	logger.DebugFmt("list updated", requestID.String(), funcName, nodeName)
 
 	response := dto.JSONResponse{
 		Body: dto.JSONMap{},
@@ -131,7 +133,7 @@ func (lh ListHandler) Update(w http.ResponseWriter, r *http.Request) {
 		apperrors.ReturnError(apperrors.InternalServerErrorResponse, w, r)
 		return
 	}
-	logger.Debug("response written", funcName, nodeName)
+	logger.DebugFmt("response written", requestID.String(), funcName, nodeName)
 
 	logger.Info("---------------------------------- Updating list SUCCESS ----------------------------------")
 }
@@ -154,15 +156,15 @@ func (lh ListHandler) Update(w http.ResponseWriter, r *http.Request) {
 func (lh ListHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
 	funcName := "ListHandler.Delete"
-	nodeName := "handler"
 	errorMessage := "Deleting failed with error: "
 	failBorder := "---------------------------------- Deleting list FAIL ----------------------------------"
 
 	logger := rCtx.Value(dto.LoggerKey).(logger.ILogger)
+	requestID := rCtx.Value(dto.RequestIDKey).(uuid.UUID)
 
 	logger.Info("---------------------------------- Deleting list ----------------------------------")
 
-	var listID uint64
+	var listID dto.ListID
 	err := json.NewDecoder(r.Body).Decode(&listID)
 	if err != nil {
 		logger.Error(errorMessage + err.Error())
@@ -170,19 +172,16 @@ func (lh ListHandler) Delete(w http.ResponseWriter, r *http.Request) {
 		apperrors.ReturnError(apperrors.BadRequestResponse, w, r)
 		return
 	}
-	logger.Debug("request struct decoded", funcName, nodeName)
+	logger.DebugFmt("request struct decoded", requestID.String(), funcName, nodeName)
 
-	listIDObj := dto.ListID{
-		Value: listID,
-	}
-	err = lh.ls.Delete(rCtx, listIDObj)
+	err = lh.ls.Delete(rCtx, listID)
 	if err != nil {
 		logger.Error(errorMessage + err.Error())
 		logger.Info(failBorder)
 		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
 		return
 	}
-	logger.Debug("list deleted", funcName, nodeName)
+	logger.DebugFmt("list deleted", requestID.String(), funcName, nodeName)
 
 	response := dto.JSONResponse{
 		Body: dto.JSONMap{},
@@ -194,7 +193,67 @@ func (lh ListHandler) Delete(w http.ResponseWriter, r *http.Request) {
 		apperrors.ReturnError(apperrors.InternalServerErrorResponse, w, r)
 		return
 	}
-	logger.Debug("response written", funcName, nodeName)
+	logger.DebugFmt("response written", requestID.String(), funcName, nodeName)
 
 	logger.Info("---------------------------------- Deleting list SUCCESS ----------------------------------")
+}
+
+// @Summary Обновить порядок списков
+// @Description Поставить списки по порядку в запросе
+// @Tags lists
+//
+// @Accept  json
+// @Produce  json
+//
+// @Param listID body dto.ListIDs true "id списков"
+//
+// @Success 204  {string}  string "no content"
+// @Failure 400  {object}  apperrors.ErrorResponse
+// @Failure 401  {object}  apperrors.ErrorResponse
+// @Failure 500  {object}  apperrors.ErrorResponse
+//
+// @Router /list/reorder/ [post]
+func (lh ListHandler) UpdateOrder(w http.ResponseWriter, r *http.Request) {
+	rCtx := r.Context()
+	funcName := "ListHandler.UpdateOrder"
+	errorMessage := "Updating order failed with error: "
+	failBorder := "---------------------------------- ListHandler.UpdateOrder FAIL ----------------------------------"
+
+	logger := rCtx.Value(dto.LoggerKey).(logger.ILogger)
+	requestID := rCtx.Value(dto.RequestIDKey).(uuid.UUID)
+
+	logger.Info("---------------------------------- ListHandler.UpdateOrder ----------------------------------")
+
+	var listIDs dto.ListIDs
+	err := json.NewDecoder(r.Body).Decode(&listIDs)
+	if err != nil {
+		logger.Error(errorMessage + err.Error())
+		logger.Info(failBorder)
+		apperrors.ReturnError(apperrors.BadRequestResponse, w, r)
+		return
+	}
+	logger.DebugFmt("request struct decoded", requestID.String(), funcName, nodeName)
+
+	err = lh.ls.UpdateOrder(rCtx, listIDs)
+	if err != nil {
+		logger.Error(errorMessage + err.Error())
+		logger.Info(failBorder)
+		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
+		return
+	}
+	logger.DebugFmt("list order changed", requestID.String(), funcName, nodeName)
+
+	response := dto.JSONResponse{
+		Body: dto.JSONMap{},
+	}
+	err = WriteResponse(response, w, r)
+	if err != nil {
+		logger.Error(errorMessage + err.Error())
+		logger.Info(failBorder)
+		apperrors.ReturnError(apperrors.InternalServerErrorResponse, w, r)
+		return
+	}
+	logger.DebugFmt("response written", requestID.String(), funcName, nodeName)
+
+	logger.Info("---------------------------------- ListHandler.UpdateOrder SUCCESS ----------------------------------")
 }

@@ -7,7 +7,6 @@ import (
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
-	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )
 
 // This is a compile-time assertion to ensure that this generated file
@@ -19,12 +18,12 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type CSATQuestionServiceClient interface {
-	CheckRating(ctx context.Context, in *NewCSATAnswerInfo, opts ...grpc.CallOption) (*CheckRatingResponse, error)
-	GetAll(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*GetAllResponse, error)
-	GetStats(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*GetStatsResponse, error)
-	Create(ctx context.Context, in *NewCSATQuestionInfo, opts ...grpc.CallOption) (*CreateResponse, error)
-	Update(ctx context.Context, in *UpdatedCSATQuestionInfo, opts ...grpc.CallOption) (*UpdateResponse, error)
-	Delete(ctx context.Context, in *CSATQuestionID, opts ...grpc.CallOption) (*DeleteResponse, error)
+	CheckRating(ctx context.Context, in *CheckRatingRequest, opts ...grpc.CallOption) (*CheckRatingResponse, error)
+	GetAll(ctx context.Context, in *GetAllRequest, opts ...grpc.CallOption) (*GetAllResponse, error)
+	GetStats(ctx context.Context, in *GetStatsRequest, opts ...grpc.CallOption) (*GetStatsResponse, error)
+	Create(ctx context.Context, in *CreateRequest, opts ...grpc.CallOption) (*CreateResponse, error)
+	Update(ctx context.Context, in *UpdateRequest, opts ...grpc.CallOption) (*UpdateResponse, error)
+	Delete(ctx context.Context, in *DeleteRequest, opts ...grpc.CallOption) (*DeleteResponse, error)
 }
 
 type cSATQuestionServiceClient struct {
@@ -35,7 +34,7 @@ func NewCSATQuestionServiceClient(cc grpc.ClientConnInterface) CSATQuestionServi
 	return &cSATQuestionServiceClient{cc}
 }
 
-func (c *cSATQuestionServiceClient) CheckRating(ctx context.Context, in *NewCSATAnswerInfo, opts ...grpc.CallOption) (*CheckRatingResponse, error) {
+func (c *cSATQuestionServiceClient) CheckRating(ctx context.Context, in *CheckRatingRequest, opts ...grpc.CallOption) (*CheckRatingResponse, error) {
 	out := new(CheckRatingResponse)
 	err := c.cc.Invoke(ctx, "/CSATQuestionService/CheckRating", in, out, opts...)
 	if err != nil {
@@ -44,7 +43,7 @@ func (c *cSATQuestionServiceClient) CheckRating(ctx context.Context, in *NewCSAT
 	return out, nil
 }
 
-func (c *cSATQuestionServiceClient) GetAll(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*GetAllResponse, error) {
+func (c *cSATQuestionServiceClient) GetAll(ctx context.Context, in *GetAllRequest, opts ...grpc.CallOption) (*GetAllResponse, error) {
 	out := new(GetAllResponse)
 	err := c.cc.Invoke(ctx, "/CSATQuestionService/GetAll", in, out, opts...)
 	if err != nil {
@@ -53,7 +52,7 @@ func (c *cSATQuestionServiceClient) GetAll(ctx context.Context, in *emptypb.Empt
 	return out, nil
 }
 
-func (c *cSATQuestionServiceClient) GetStats(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*GetStatsResponse, error) {
+func (c *cSATQuestionServiceClient) GetStats(ctx context.Context, in *GetStatsRequest, opts ...grpc.CallOption) (*GetStatsResponse, error) {
 	out := new(GetStatsResponse)
 	err := c.cc.Invoke(ctx, "/CSATQuestionService/GetStats", in, out, opts...)
 	if err != nil {
@@ -62,7 +61,7 @@ func (c *cSATQuestionServiceClient) GetStats(ctx context.Context, in *emptypb.Em
 	return out, nil
 }
 
-func (c *cSATQuestionServiceClient) Create(ctx context.Context, in *NewCSATQuestionInfo, opts ...grpc.CallOption) (*CreateResponse, error) {
+func (c *cSATQuestionServiceClient) Create(ctx context.Context, in *CreateRequest, opts ...grpc.CallOption) (*CreateResponse, error) {
 	out := new(CreateResponse)
 	err := c.cc.Invoke(ctx, "/CSATQuestionService/Create", in, out, opts...)
 	if err != nil {
@@ -71,7 +70,7 @@ func (c *cSATQuestionServiceClient) Create(ctx context.Context, in *NewCSATQuest
 	return out, nil
 }
 
-func (c *cSATQuestionServiceClient) Update(ctx context.Context, in *UpdatedCSATQuestionInfo, opts ...grpc.CallOption) (*UpdateResponse, error) {
+func (c *cSATQuestionServiceClient) Update(ctx context.Context, in *UpdateRequest, opts ...grpc.CallOption) (*UpdateResponse, error) {
 	out := new(UpdateResponse)
 	err := c.cc.Invoke(ctx, "/CSATQuestionService/Update", in, out, opts...)
 	if err != nil {
@@ -80,7 +79,7 @@ func (c *cSATQuestionServiceClient) Update(ctx context.Context, in *UpdatedCSATQ
 	return out, nil
 }
 
-func (c *cSATQuestionServiceClient) Delete(ctx context.Context, in *CSATQuestionID, opts ...grpc.CallOption) (*DeleteResponse, error) {
+func (c *cSATQuestionServiceClient) Delete(ctx context.Context, in *DeleteRequest, opts ...grpc.CallOption) (*DeleteResponse, error) {
 	out := new(DeleteResponse)
 	err := c.cc.Invoke(ctx, "/CSATQuestionService/Delete", in, out, opts...)
 	if err != nil {
@@ -93,12 +92,12 @@ func (c *cSATQuestionServiceClient) Delete(ctx context.Context, in *CSATQuestion
 // All implementations must embed UnimplementedCSATQuestionServiceServer
 // for forward compatibility
 type CSATQuestionServiceServer interface {
-	CheckRating(context.Context, *NewCSATAnswerInfo) (*CheckRatingResponse, error)
-	GetAll(context.Context, *emptypb.Empty) (*GetAllResponse, error)
-	GetStats(context.Context, *emptypb.Empty) (*GetStatsResponse, error)
-	Create(context.Context, *NewCSATQuestionInfo) (*CreateResponse, error)
-	Update(context.Context, *UpdatedCSATQuestionInfo) (*UpdateResponse, error)
-	Delete(context.Context, *CSATQuestionID) (*DeleteResponse, error)
+	CheckRating(context.Context, *CheckRatingRequest) (*CheckRatingResponse, error)
+	GetAll(context.Context, *GetAllRequest) (*GetAllResponse, error)
+	GetStats(context.Context, *GetStatsRequest) (*GetStatsResponse, error)
+	Create(context.Context, *CreateRequest) (*CreateResponse, error)
+	Update(context.Context, *UpdateRequest) (*UpdateResponse, error)
+	Delete(context.Context, *DeleteRequest) (*DeleteResponse, error)
 	mustEmbedUnimplementedCSATQuestionServiceServer()
 }
 
@@ -106,22 +105,22 @@ type CSATQuestionServiceServer interface {
 type UnimplementedCSATQuestionServiceServer struct {
 }
 
-func (UnimplementedCSATQuestionServiceServer) CheckRating(context.Context, *NewCSATAnswerInfo) (*CheckRatingResponse, error) {
+func (UnimplementedCSATQuestionServiceServer) CheckRating(context.Context, *CheckRatingRequest) (*CheckRatingResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CheckRating not implemented")
 }
-func (UnimplementedCSATQuestionServiceServer) GetAll(context.Context, *emptypb.Empty) (*GetAllResponse, error) {
+func (UnimplementedCSATQuestionServiceServer) GetAll(context.Context, *GetAllRequest) (*GetAllResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetAll not implemented")
 }
-func (UnimplementedCSATQuestionServiceServer) GetStats(context.Context, *emptypb.Empty) (*GetStatsResponse, error) {
+func (UnimplementedCSATQuestionServiceServer) GetStats(context.Context, *GetStatsRequest) (*GetStatsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetStats not implemented")
 }
-func (UnimplementedCSATQuestionServiceServer) Create(context.Context, *NewCSATQuestionInfo) (*CreateResponse, error) {
+func (UnimplementedCSATQuestionServiceServer) Create(context.Context, *CreateRequest) (*CreateResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Create not implemented")
 }
-func (UnimplementedCSATQuestionServiceServer) Update(context.Context, *UpdatedCSATQuestionInfo) (*UpdateResponse, error) {
+func (UnimplementedCSATQuestionServiceServer) Update(context.Context, *UpdateRequest) (*UpdateResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Update not implemented")
 }
-func (UnimplementedCSATQuestionServiceServer) Delete(context.Context, *CSATQuestionID) (*DeleteResponse, error) {
+func (UnimplementedCSATQuestionServiceServer) Delete(context.Context, *DeleteRequest) (*DeleteResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Delete not implemented")
 }
 func (UnimplementedCSATQuestionServiceServer) mustEmbedUnimplementedCSATQuestionServiceServer() {}
@@ -138,7 +137,7 @@ func RegisterCSATQuestionServiceServer(s grpc.ServiceRegistrar, srv CSATQuestion
 }
 
 func _CSATQuestionService_CheckRating_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(NewCSATAnswerInfo)
+	in := new(CheckRatingRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -150,13 +149,13 @@ func _CSATQuestionService_CheckRating_Handler(srv interface{}, ctx context.Conte
 		FullMethod: "/CSATQuestionService/CheckRating",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CSATQuestionServiceServer).CheckRating(ctx, req.(*NewCSATAnswerInfo))
+		return srv.(CSATQuestionServiceServer).CheckRating(ctx, req.(*CheckRatingRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _CSATQuestionService_GetAll_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(emptypb.Empty)
+	in := new(GetAllRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -168,13 +167,13 @@ func _CSATQuestionService_GetAll_Handler(srv interface{}, ctx context.Context, d
 		FullMethod: "/CSATQuestionService/GetAll",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CSATQuestionServiceServer).GetAll(ctx, req.(*emptypb.Empty))
+		return srv.(CSATQuestionServiceServer).GetAll(ctx, req.(*GetAllRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _CSATQuestionService_GetStats_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(emptypb.Empty)
+	in := new(GetStatsRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -186,13 +185,13 @@ func _CSATQuestionService_GetStats_Handler(srv interface{}, ctx context.Context,
 		FullMethod: "/CSATQuestionService/GetStats",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CSATQuestionServiceServer).GetStats(ctx, req.(*emptypb.Empty))
+		return srv.(CSATQuestionServiceServer).GetStats(ctx, req.(*GetStatsRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _CSATQuestionService_Create_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(NewCSATQuestionInfo)
+	in := new(CreateRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -204,13 +203,13 @@ func _CSATQuestionService_Create_Handler(srv interface{}, ctx context.Context, d
 		FullMethod: "/CSATQuestionService/Create",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CSATQuestionServiceServer).Create(ctx, req.(*NewCSATQuestionInfo))
+		return srv.(CSATQuestionServiceServer).Create(ctx, req.(*CreateRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _CSATQuestionService_Update_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(UpdatedCSATQuestionInfo)
+	in := new(UpdateRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -222,13 +221,13 @@ func _CSATQuestionService_Update_Handler(srv interface{}, ctx context.Context, d
 		FullMethod: "/CSATQuestionService/Update",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CSATQuestionServiceServer).Update(ctx, req.(*UpdatedCSATQuestionInfo))
+		return srv.(CSATQuestionServiceServer).Update(ctx, req.(*UpdateRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _CSATQuestionService_Delete_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(CSATQuestionID)
+	in := new(DeleteRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -240,7 +239,7 @@ func _CSATQuestionService_Delete_Handler(srv interface{}, ctx context.Context, d
 		FullMethod: "/CSATQuestionService/Delete",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CSATQuestionServiceServer).Delete(ctx, req.(*CSATQuestionID))
+		return srv.(CSATQuestionServiceServer).Delete(ctx, req.(*DeleteRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }

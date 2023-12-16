@@ -8,6 +8,8 @@ import (
 	_ "server/internal/pkg/doc_structs"
 	"server/internal/pkg/dto"
 	"server/internal/service"
+
+	"github.com/google/uuid"
 )
 
 type TaskHandler struct {
@@ -37,6 +39,7 @@ func (th TaskHandler) Create(w http.ResponseWriter, r *http.Request) {
 	failBorder := "---------------------------------- Creating a new task FAIL ----------------------------------"
 
 	logger := rCtx.Value(dto.LoggerKey).(logger.ILogger)
+	requestID := rCtx.Value(dto.RequestIDKey).(uuid.UUID)
 
 	logger.Info("---------------------------------- Creating a new task ----------------------------------")
 
@@ -48,7 +51,7 @@ func (th TaskHandler) Create(w http.ResponseWriter, r *http.Request) {
 		apperrors.ReturnError(apperrors.BadRequestResponse, w, r)
 		return
 	}
-	logger.Debug("JSON Decoded", funcName, nodeName)
+	logger.DebugFmt("JSON Decoded", requestID.String(), funcName, nodeName)
 
 	task, err := th.ts.Create(rCtx, newTaskInfo)
 	if err != nil {
@@ -57,7 +60,7 @@ func (th TaskHandler) Create(w http.ResponseWriter, r *http.Request) {
 		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
 		return
 	}
-	logger.Debug("Task created", funcName, nodeName)
+	logger.DebugFmt("Task created", requestID.String(), funcName, nodeName)
 
 	response := dto.JSONResponse{
 		Body: dto.JSONMap{
@@ -71,7 +74,7 @@ func (th TaskHandler) Create(w http.ResponseWriter, r *http.Request) {
 		apperrors.ReturnError(apperrors.InternalServerErrorResponse, w, r)
 		return
 	}
-	logger.Debug("response written", funcName, nodeName)
+	logger.DebugFmt("response written", requestID.String(), funcName, nodeName)
 
 	logger.Info("---------------------------------- Creating a new task SUCCESS ----------------------------------")
 }
@@ -99,6 +102,7 @@ func (th TaskHandler) Read(w http.ResponseWriter, r *http.Request) {
 	failBorder := "---------------------------------- Getting task FAIL ----------------------------------"
 
 	logger := rCtx.Value(dto.LoggerKey).(logger.ILogger)
+	requestID := rCtx.Value(dto.RequestIDKey).(uuid.UUID)
 
 	logger.Info("---------------------------------- Getting task ----------------------------------")
 
@@ -110,7 +114,7 @@ func (th TaskHandler) Read(w http.ResponseWriter, r *http.Request) {
 		apperrors.ReturnError(apperrors.BadRequestResponse, w, r)
 		return
 	}
-	logger.Debug("JSON Decoded", funcName, nodeName)
+	logger.DebugFmt("JSON Decoded", requestID.String(), funcName, nodeName)
 
 	task, err := th.ts.Read(rCtx, taskID)
 	if err != nil {
@@ -119,7 +123,7 @@ func (th TaskHandler) Read(w http.ResponseWriter, r *http.Request) {
 		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
 		return
 	}
-	logger.Debug("task read", funcName, nodeName)
+	logger.DebugFmt("task read", requestID.String(), funcName, nodeName)
 
 	response := dto.JSONResponse{
 		Body: dto.JSONMap{
@@ -133,7 +137,7 @@ func (th TaskHandler) Read(w http.ResponseWriter, r *http.Request) {
 		apperrors.ReturnError(apperrors.InternalServerErrorResponse, w, r)
 		return
 	}
-	logger.Debug("response written", funcName, nodeName)
+	logger.DebugFmt("response written", requestID.String(), funcName, nodeName)
 
 	logger.Info("---------------------------------- Getting task SUCCESS ----------------------------------")
 }
@@ -161,6 +165,7 @@ func (th TaskHandler) Update(w http.ResponseWriter, r *http.Request) {
 	failBorder := "---------------------------------- Updating task FAIL ----------------------------------"
 
 	logger := rCtx.Value(dto.LoggerKey).(logger.ILogger)
+	requestID := rCtx.Value(dto.RequestIDKey).(uuid.UUID)
 
 	logger.Info("---------------------------------- Updating task ----------------------------------")
 
@@ -172,7 +177,7 @@ func (th TaskHandler) Update(w http.ResponseWriter, r *http.Request) {
 		apperrors.ReturnError(apperrors.BadRequestResponse, w, r)
 		return
 	}
-	logger.Debug("JSON Decoded", funcName, nodeName)
+	logger.DebugFmt("JSON Decoded", requestID.String(), funcName, nodeName)
 
 	err = th.ts.Update(rCtx, taskInfo)
 	if err != nil {
@@ -181,7 +186,7 @@ func (th TaskHandler) Update(w http.ResponseWriter, r *http.Request) {
 		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
 		return
 	}
-	logger.Debug("task updated", funcName, nodeName)
+	logger.DebugFmt("task updated", requestID.String(), funcName, nodeName)
 
 	response := dto.JSONResponse{
 		Body: dto.JSONMap{},
@@ -193,7 +198,7 @@ func (th TaskHandler) Update(w http.ResponseWriter, r *http.Request) {
 		apperrors.ReturnError(apperrors.InternalServerErrorResponse, w, r)
 		return
 	}
-	logger.Debug("response written", funcName, nodeName)
+	logger.DebugFmt("response written", requestID.String(), funcName, nodeName)
 
 	logger.Info("---------------------------------- Updating task SUCCESS ----------------------------------")
 }
@@ -221,6 +226,7 @@ func (th TaskHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	failBorder := "---------------------------------- Deleting task FAIL ----------------------------------"
 
 	logger := rCtx.Value(dto.LoggerKey).(logger.ILogger)
+	requestID := rCtx.Value(dto.RequestIDKey).(uuid.UUID)
 
 	logger.Info("---------------------------------- Deleting task ----------------------------------")
 
@@ -232,7 +238,7 @@ func (th TaskHandler) Delete(w http.ResponseWriter, r *http.Request) {
 		apperrors.ReturnError(apperrors.BadRequestResponse, w, r)
 		return
 	}
-	logger.Debug("JSON Decoded", funcName, nodeName)
+	logger.DebugFmt("JSON Decoded", requestID.String(), funcName, nodeName)
 
 	err = th.ts.Delete(rCtx, taskID)
 	if err != nil {
@@ -241,7 +247,7 @@ func (th TaskHandler) Delete(w http.ResponseWriter, r *http.Request) {
 		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
 		return
 	}
-	logger.Debug("task deleted", funcName, nodeName)
+	logger.DebugFmt("task deleted", requestID.String(), funcName, nodeName)
 
 	response := dto.JSONResponse{
 		Body: dto.JSONMap{},
@@ -253,7 +259,7 @@ func (th TaskHandler) Delete(w http.ResponseWriter, r *http.Request) {
 		apperrors.ReturnError(apperrors.InternalServerErrorResponse, w, r)
 		return
 	}
-	logger.Debug("response written", funcName, nodeName)
+	logger.DebugFmt("response written", requestID.String(), funcName, nodeName)
 
 	logger.Info("---------------------------------- Deleting task SUCCESS ----------------------------------")
 }
@@ -281,6 +287,7 @@ func (th TaskHandler) AddUser(w http.ResponseWriter, r *http.Request) {
 	failBorder := "---------------------------------- Adding user to task FAIL ----------------------------------"
 
 	logger := rCtx.Value(dto.LoggerKey).(logger.ILogger)
+	requestID := rCtx.Value(dto.RequestIDKey).(uuid.UUID)
 
 	logger.Info("---------------------------------- Adding user to task ----------------------------------")
 
@@ -292,7 +299,7 @@ func (th TaskHandler) AddUser(w http.ResponseWriter, r *http.Request) {
 		apperrors.ReturnError(apperrors.BadRequestResponse, w, r)
 		return
 	}
-	logger.Debug("JSON Decoded", funcName, nodeName)
+	logger.DebugFmt("JSON Decoded", requestID.String(), funcName, nodeName)
 
 	err = th.ts.AddUser(rCtx, info)
 	if err != nil {
@@ -301,7 +308,7 @@ func (th TaskHandler) AddUser(w http.ResponseWriter, r *http.Request) {
 		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
 		return
 	}
-	logger.Debug("User added", funcName, nodeName)
+	logger.DebugFmt("User added", requestID.String(), funcName, nodeName)
 
 	response := dto.JSONResponse{
 		Body: dto.JSONMap{},
@@ -313,7 +320,7 @@ func (th TaskHandler) AddUser(w http.ResponseWriter, r *http.Request) {
 		apperrors.ReturnError(apperrors.InternalServerErrorResponse, w, r)
 		return
 	}
-	logger.Debug("Response written", funcName, nodeName)
+	logger.DebugFmt("Response written", requestID.String(), funcName, nodeName)
 
 	logger.Info("---------------------------------- Adding user to task SUCCESS ----------------------------------")
 }
@@ -341,6 +348,7 @@ func (th TaskHandler) RemoveUser(w http.ResponseWriter, r *http.Request) {
 	failBorder := "---------------------------------- Removing user from task FAIL ----------------------------------"
 
 	logger := rCtx.Value(dto.LoggerKey).(logger.ILogger)
+	requestID := rCtx.Value(dto.RequestIDKey).(uuid.UUID)
 
 	logger.Info("---------------------------------- Removing user from task ----------------------------------")
 
@@ -352,7 +360,7 @@ func (th TaskHandler) RemoveUser(w http.ResponseWriter, r *http.Request) {
 		apperrors.ReturnError(apperrors.BadRequestResponse, w, r)
 		return
 	}
-	logger.Debug("JSON Decoded", funcName, nodeName)
+	logger.DebugFmt("JSON Decoded", requestID.String(), funcName, nodeName)
 
 	err = th.ts.RemoveUser(rCtx, info)
 	if err != nil {
@@ -361,7 +369,7 @@ func (th TaskHandler) RemoveUser(w http.ResponseWriter, r *http.Request) {
 		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
 		return
 	}
-	logger.Debug("User removed", funcName, nodeName)
+	logger.DebugFmt("User removed", requestID.String(), funcName, nodeName)
 
 	response := dto.JSONResponse{
 		Body: dto.JSONMap{},
@@ -373,7 +381,7 @@ func (th TaskHandler) RemoveUser(w http.ResponseWriter, r *http.Request) {
 		apperrors.ReturnError(apperrors.InternalServerErrorResponse, w, r)
 		return
 	}
-	logger.Debug("Response written", funcName, nodeName)
+	logger.DebugFmt("Response written", requestID.String(), funcName, nodeName)
 
 	logger.Info("---------------------------------- Removing user from task SUCCESS ----------------------------------")
 }

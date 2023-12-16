@@ -15,10 +15,15 @@ message NewCSATAnswer {
 	uint64 Rating = 3;
 }
 
+message CreateRequest {
+	string RequestID = 1;
+	NewCSATAnswer Value = 2;
+}
+
 message CreateResponse {
 	ErrorCode Code = 1;
 }
 
 service CSATAnswerService {
-	rpc Create (NewCSATAnswer) returns (CreateResponse) {}
+	rpc Create (CreateRequest) returns (CreateResponse) {}
 }
