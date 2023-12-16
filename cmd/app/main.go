@@ -123,7 +123,9 @@ func main() {
 				EnableOpenMetrics: true,
 			},
 		))
-		http.ListenAndServe(":8012", nil)
+		if err := http.ListenAndServe(":8012", nil); err != http.ErrServerClosed {
+			logger.Fatal("Failed to start metrics server: " + err.Error())
+		}
 	}()
 
 	if err := server.ListenAndServe(); err != http.ErrServerClosed {
