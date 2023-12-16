@@ -113,6 +113,8 @@ func main() {
 	logger.Info("Registering user services")
 	user.RegisterServices(storages, server, &logger)
 
+	srvMetrics.InitializeMetrics(server)
+
 	go func() {
 		http.Handle("/metrics", promhttp.HandlerFor(
 			reg,
