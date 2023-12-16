@@ -5,7 +5,7 @@ CREATE TABLE IF NOT EXISTS public."user"
     password_hash text NOT NULL,
     name text,
     surname text,
-    avatar_url text NOT NULL DEFAULT 'avatar.jpg',
+    avatar_url text NOT NULL DEFAULT 'img/user_avatars/avatar.jpg',
     description text,
     CONSTRAINT user_pkey PRIMARY KEY (id),
     CONSTRAINT user_email_key UNIQUE (email),

@@ -14,10 +14,6 @@ type IWorkspaceService interface {
 	// находит пользователя по почте
 	// или возвращает ошибки ...
 	GetUserWorkspaces(context.Context, dto.UserID) (*dto.AllWorkspaces, error)
-	// GetByID
-	// находит рабочее пространство по его id
-	// или возвращает ошибки ...
-	GetWorkspace(context.Context, dto.WorkspaceID) (*entities.Workspace, error)
 	// Create
 	// создает новоt рабочее пространство по данным
 	// или возвращает ошибки ...
@@ -26,10 +22,6 @@ type IWorkspaceService interface {
 	// обновляет рабочее пространство
 	// или возвращает ошибки ...
 	UpdateData(context.Context, dto.UpdatedWorkspaceInfo) error
-	// UpdateUsers
-	// обновляет список пользователей рабочего пространства
-	// или возвращает ошибки ...
-	UpdateUsers(context.Context, dto.ChangeWorkspaceGuestsInfo) error
 	// Delete
 	// удаляет рабочее пространство по id
 	// или возвращает ошибки ...

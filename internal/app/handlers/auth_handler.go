@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/asaskevich/govalidator"
+	"github.com/google/uuid"
 )
 
 type AuthHandler struct {
@@ -48,11 +49,11 @@ func (ah AuthHandler) GetCSRFService() service.ICSRFService {
 func (ah AuthHandler) LogIn(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
 	funcName := "LogIn"
-	nodeName := "handler"
 	errorMessage := "Logging user in failed with error: "
 	failBorder := "---------------------------------- User Login FAIL ----------------------------------"
 
 	logger := rCtx.Value(dto.LoggerKey).(logger.ILogger)
+	requestID := rCtx.Value(dto.RequestIDKey).(uuid.UUID)
 
 	logger.Info("---------------------------------- User Login ----------------------------------")
 
@@ -64,7 +65,7 @@ func (ah AuthHandler) LogIn(w http.ResponseWriter, r *http.Request) {
 		apperrors.ReturnError(apperrors.BadRequestResponse, w, r)
 		return
 	}
-	logger.Debug("JSON decoded", funcName, nodeName)
+	logger.DebugFmt("JSON decoded", requestID.String(), funcName, nodeName)
 
 	_, err = govalidator.ValidateStruct(authInfo)
 	if err != nil {
@@ -73,7 +74,7 @@ func (ah AuthHandler) LogIn(w http.ResponseWriter, r *http.Request) {
 		apperrors.ReturnError(apperrors.BadRequestResponse, w, r)
 		return
 	}
-	logger.Debug("Login info validated", funcName, nodeName)
+	logger.DebugFmt("Login info validated", requestID.String(), funcName, nodeName)
 
 	user, err := ah.us.CheckPassword(rCtx, authInfo)
 	if err != nil {
@@ -82,7 +83,7 @@ func (ah AuthHandler) LogIn(w http.ResponseWriter, r *http.Request) {
 		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
 		return
 	}
-	logger.Debug("Password checked", funcName, nodeName)
+	logger.DebugFmt("Password checked", requestID.String(), funcName, nodeName)
 
 	userID := dto.UserID{
 		Value: user.ID,
@@ -94,7 +95,17 @@ func (ah AuthHandler) LogIn(w http.ResponseWriter, r *http.Request) {
 		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
 		return
 	}
-	logger.Debug("Session created", funcName, nodeName)
+	logger.DebugFmt("Session created", requestID.String(), funcName, nodeName)
+
+	csrfToken, err := ah.cs.SetupCSRF(rCtx, userID)
+	if err != nil {
+		logger.Error(errorMessage + err.Error())
+		logger.Info(failBorder)
+		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
+		return
+	}
+	w.Header().Set("X-Csrf-Token", csrfToken.Token)
+	logger.DebugFmt("CSRF token response header set", requestID.String(), funcName, nodeName)
 
 	authCookie := &http.Cookie{
 		Name:     "tabula_user",
@@ -105,17 +116,7 @@ func (ah AuthHandler) LogIn(w http.ResponseWriter, r *http.Request) {
 		Path:     "/api/v2/",
 	}
 	http.SetCookie(w, authCookie)
-	logger.Debug("Cookie set", funcName, nodeName)
-
-	csrfToken, err := ah.cs.SetupCSRF(rCtx, userID)
-	if err != nil {
-		logger.Error(errorMessage + err.Error())
-		logger.Info(failBorder)
-		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
-		return
-	}
-	w.Header().Set("X-Csrf-Token", csrfToken.Token)
-	logger.Debug("CSRF token response header set", funcName, nodeName)
+	logger.DebugFmt("Cookie set", requestID.String(), funcName, nodeName)
 
 	publicUserInfo := dto.UserPublicInfo{
 		ID:          user.ID,
@@ -138,9 +139,9 @@ func (ah AuthHandler) LogIn(w http.ResponseWriter, r *http.Request) {
 		apperrors.ReturnError(apperrors.InternalServerErrorResponse, w, r)
 		return
 	}
-	logger.Debug("response written", funcName, nodeName)
+	logger.DebugFmt("response written", requestID.String(), funcName, nodeName)
 
-	logger.Debug("Response written", funcName, nodeName)
+	logger.DebugFmt("Response written", requestID.String(), funcName, nodeName)
 	logger.Info("---------------------------------- User Login SUCCESS ----------------------------------")
 }
 
@@ -168,6 +169,7 @@ func (ah AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 	failBorder := "---------------------------------- User SignUp FAIL ----------------------------------"
 
 	logger := rCtx.Value(dto.LoggerKey).(logger.ILogger)
+	requestID := rCtx.Value(dto.RequestIDKey).(uuid.UUID)
 
 	logger.Info("---------------------------------- User Login ----------------------------------")
 
@@ -179,7 +181,7 @@ func (ah AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 		apperrors.ReturnError(apperrors.BadRequestResponse, w, r)
 		return
 	}
-	logger.Debug("JSON decoded", funcName, nodeName)
+	logger.DebugFmt("JSON decoded", requestID.String(), funcName, nodeName)
 
 	_, err = govalidator.ValidateStruct(signup)
 	if err != nil {
@@ -188,7 +190,7 @@ func (ah AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 		apperrors.ReturnError(apperrors.BadRequestResponse, w, r)
 		return
 	}
-	logger.Debug("request struct validated", funcName, nodeName)
+	logger.DebugFmt("request struct validated", requestID.String(), funcName, nodeName)
 
 	user, err := ah.us.RegisterUser(rCtx, signup)
 	if err != nil {
@@ -197,7 +199,7 @@ func (ah AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
 		return
 	}
-	logger.Debug("User registered", funcName, nodeName)
+	logger.DebugFmt("User registered", requestID.String(), funcName, nodeName)
 
 	userID := dto.UserID{
 		Value: user.ID,
@@ -209,7 +211,17 @@ func (ah AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
 		return
 	}
-	logger.Debug("User authorized", funcName, nodeName)
+	logger.DebugFmt("User authorized", requestID.String(), funcName, nodeName)
+
+	csrfToken, err := ah.cs.SetupCSRF(rCtx, userID)
+	if err != nil {
+		logger.Error(errorMessage + err.Error())
+		logger.Info(failBorder)
+		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
+		return
+	}
+	w.Header().Set("X-Csrf-Token", csrfToken.Token)
+	logger.DebugFmt("JSON decoded", requestID.String(), funcName, nodeName)
 
 	cookie := &http.Cookie{
 		Name:     "tabula_user",
@@ -220,17 +232,7 @@ func (ah AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 		Path:     "/api/v2/",
 	}
 	http.SetCookie(w, cookie)
-	logger.Debug("Cookie set", funcName, nodeName)
-
-	csrfToken, err := ah.cs.SetupCSRF(rCtx, userID)
-	if err != nil {
-		logger.Error(errorMessage + err.Error())
-		logger.Info(failBorder)
-		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
-		return
-	}
-	w.Header().Set("X-Csrf-Token", csrfToken.Token)
-	logger.Debug("JSON decoded", funcName, nodeName)
+	logger.DebugFmt("Cookie set", requestID.String(), funcName, nodeName)
 
 	publicUserInfo := dto.UserPublicInfo{
 		ID:          user.ID,
@@ -252,7 +254,7 @@ func (ah AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 		apperrors.ReturnError(apperrors.InternalServerErrorResponse, w, r)
 		return
 	}
-	logger.Debug("response written", funcName, nodeName)
+	logger.DebugFmt("response written", requestID.String(), funcName, nodeName)
 
 	logger.Info("---------------------------------- User SignUp SUCCESS ----------------------------------")
 }
@@ -278,6 +280,7 @@ func (ah AuthHandler) LogOut(w http.ResponseWriter, r *http.Request) {
 	failBorder := "---------------------------------- User LogOut FAIL ----------------------------------"
 
 	logger := rCtx.Value(dto.LoggerKey).(logger.ILogger)
+	requestID := rCtx.Value(dto.RequestIDKey).(uuid.UUID)
 
 	logger.Info("---------------------------------- User Logout ----------------------------------")
 
@@ -288,7 +291,7 @@ func (ah AuthHandler) LogOut(w http.ResponseWriter, r *http.Request) {
 		apperrors.ReturnError(apperrors.GenericUnauthorizedResponse, w, r)
 		return
 	}
-	logger.Debug("Cookie found", funcName, nodeName)
+	logger.DebugFmt("Cookie found", requestID.String(), funcName, nodeName)
 
 	token := dto.SessionToken{
 		ID: cookie.Value,
@@ -301,7 +304,7 @@ func (ah AuthHandler) LogOut(w http.ResponseWriter, r *http.Request) {
 		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
 		return
 	}
-	logger.Debug("Session verified", funcName, nodeName)
+	logger.DebugFmt("Session verified", requestID.String(), funcName, nodeName)
 
 	err = ah.as.LogOut(rCtx, token)
 	if err != nil {
@@ -310,7 +313,7 @@ func (ah AuthHandler) LogOut(w http.ResponseWriter, r *http.Request) {
 		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
 		return
 	}
-	logger.Debug("Session deleted", funcName, nodeName)
+	logger.DebugFmt("Session deleted", requestID.String(), funcName, nodeName)
 
 	cookie = &http.Cookie{
 		Name:     "tabula_user",
@@ -321,7 +324,7 @@ func (ah AuthHandler) LogOut(w http.ResponseWriter, r *http.Request) {
 		Path:     "/api/v2/",
 	}
 	http.SetCookie(w, cookie)
-	logger.Debug("Empty cookie set", funcName, nodeName)
+	logger.DebugFmt("Empty cookie set", requestID.String(), funcName, nodeName)
 
 	response := dto.JSONResponse{
 		Body: dto.JSONMap{},
@@ -333,9 +336,9 @@ func (ah AuthHandler) LogOut(w http.ResponseWriter, r *http.Request) {
 		apperrors.ReturnError(apperrors.InternalServerErrorResponse, w, r)
 		return
 	}
-	logger.Debug("response written", funcName, nodeName)
+	logger.DebugFmt("response written", requestID.String(), funcName, nodeName)
 
-	logger.Debug("Response written", funcName, nodeName)
+	logger.DebugFmt("Response written", requestID.String(), funcName, nodeName)
 	logger.Info("---------------------------------- User Logout SUCCESS ----------------------------------")
 }
 
@@ -360,11 +363,12 @@ func (ah AuthHandler) VerifyAuthEndpoint(w http.ResponseWriter, r *http.Request)
 
 	rCtx := r.Context()
 	logger := rCtx.Value(dto.LoggerKey).(logger.ILogger)
+	requestID := rCtx.Value(dto.RequestIDKey).(uuid.UUID)
 
 	logger.Info("---------------------------------- Verifying user authorization ----------------------------------")
 
 	w.Header().Set("X-Csrf-Token", "")
-	logger.Debug("Default X-Csrf-Token set", funcName, nodeName)
+	logger.DebugFmt("Default X-Csrf-Token set", requestID.String(), funcName, nodeName)
 
 	cookie, err := r.Cookie("tabula_user")
 	if err != nil {
@@ -373,7 +377,7 @@ func (ah AuthHandler) VerifyAuthEndpoint(w http.ResponseWriter, r *http.Request)
 		apperrors.ReturnError(apperrors.GenericUnauthorizedResponse, w, r)
 		return
 	}
-	logger.Debug("Cookie found", funcName, nodeName)
+	logger.DebugFmt("Cookie found", requestID.String(), funcName, nodeName)
 
 	token := dto.SessionToken{
 		ID: cookie.Value,
@@ -385,7 +389,7 @@ func (ah AuthHandler) VerifyAuthEndpoint(w http.ResponseWriter, r *http.Request)
 		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
 		return
 	}
-	logger.Debug("Session verified", funcName, nodeName)
+	logger.DebugFmt("Session verified", requestID.String(), funcName, nodeName)
 
 	user, err := ah.us.GetWithID(rCtx, userID)
 	if err != nil {
@@ -394,7 +398,7 @@ func (ah AuthHandler) VerifyAuthEndpoint(w http.ResponseWriter, r *http.Request)
 		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
 		return
 	}
-	logger.Debug("Got user object", funcName, nodeName)
+	logger.DebugFmt("Got user object", requestID.String(), funcName, nodeName)
 
 	csrfToken, err := ah.cs.SetupCSRF(rCtx, userID)
 	if err != nil {
@@ -404,7 +408,7 @@ func (ah AuthHandler) VerifyAuthEndpoint(w http.ResponseWriter, r *http.Request)
 		return
 	}
 	w.Header().Set("X-Csrf-Token", csrfToken.Token)
-	logger.Debug("CSRF set up", funcName, nodeName)
+	logger.DebugFmt("CSRF set up", requestID.String(), funcName, nodeName)
 
 	publicUserInfo := dto.UserPublicInfo{
 		ID:          user.ID,
@@ -426,7 +430,7 @@ func (ah AuthHandler) VerifyAuthEndpoint(w http.ResponseWriter, r *http.Request)
 		apperrors.ReturnError(apperrors.InternalServerErrorResponse, w, r)
 		return
 	}
-	logger.Debug("response written", funcName, nodeName)
+	logger.DebugFmt("response written", requestID.String(), funcName, nodeName)
 
 	logger.Info("---------------------------------- User SignUp SUCCESS ----------------------------------")
 }

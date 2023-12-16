@@ -18,7 +18,7 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type CSATAnswerServiceClient interface {
-	Create(ctx context.Context, in *NewCSATAnswer, opts ...grpc.CallOption) (*CreateResponse, error)
+	Create(ctx context.Context, in *CreateRequest, opts ...grpc.CallOption) (*CreateResponse, error)
 }
 
 type cSATAnswerServiceClient struct {
@@ -29,7 +29,7 @@ func NewCSATAnswerServiceClient(cc grpc.ClientConnInterface) CSATAnswerServiceCl
 	return &cSATAnswerServiceClient{cc}
 }
 
-func (c *cSATAnswerServiceClient) Create(ctx context.Context, in *NewCSATAnswer, opts ...grpc.CallOption) (*CreateResponse, error) {
+func (c *cSATAnswerServiceClient) Create(ctx context.Context, in *CreateRequest, opts ...grpc.CallOption) (*CreateResponse, error) {
 	out := new(CreateResponse)
 	err := c.cc.Invoke(ctx, "/csat_microservice.CSATAnswerService/Create", in, out, opts...)
 	if err != nil {
@@ -42,7 +42,7 @@ func (c *cSATAnswerServiceClient) Create(ctx context.Context, in *NewCSATAnswer,
 // All implementations must embed UnimplementedCSATAnswerServiceServer
 // for forward compatibility
 type CSATAnswerServiceServer interface {
-	Create(context.Context, *NewCSATAnswer) (*CreateResponse, error)
+	Create(context.Context, *CreateRequest) (*CreateResponse, error)
 	mustEmbedUnimplementedCSATAnswerServiceServer()
 }
 
@@ -50,7 +50,7 @@ type CSATAnswerServiceServer interface {
 type UnimplementedCSATAnswerServiceServer struct {
 }
 
-func (UnimplementedCSATAnswerServiceServer) Create(context.Context, *NewCSATAnswer) (*CreateResponse, error) {
+func (UnimplementedCSATAnswerServiceServer) Create(context.Context, *CreateRequest) (*CreateResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Create not implemented")
 }
 func (UnimplementedCSATAnswerServiceServer) mustEmbedUnimplementedCSATAnswerServiceServer() {}
@@ -67,7 +67,7 @@ func RegisterCSATAnswerServiceServer(s grpc.ServiceRegistrar, srv CSATAnswerServ
 }
 
 func _CSATAnswerService_Create_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(NewCSATAnswer)
+	in := new(CreateRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -79,7 +79,7 @@ func _CSATAnswerService_Create_Handler(srv interface{}, ctx context.Context, dec
 		FullMethod: "/csat_microservice.CSATAnswerService/Create",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CSATAnswerServiceServer).Create(ctx, req.(*NewCSATAnswer))
+		return srv.(CSATAnswerServiceServer).Create(ctx, req.(*CreateRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }

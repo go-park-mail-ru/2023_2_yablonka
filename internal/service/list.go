@@ -22,4 +22,8 @@ type IListService interface {
 	// удаляет список по id
 	// или возвращает ошибки ...
 	Delete(context.Context, dto.ListID) error
+	// UpdateOrder
+	// изменяет порядок списков по id
+	// или возвращает ошибки ...
+	UpdateOrder(context.Context, dto.ListIDs) error
 }

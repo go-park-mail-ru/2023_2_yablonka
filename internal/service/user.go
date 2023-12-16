@@ -35,6 +35,10 @@ type IUserService interface {
 	// или возвращает ошибки ...
 	UpdateAvatar(context.Context, dto.AvatarChangeInfo) (*dto.UrlObj, error)
 	// Delete
+	// удаляет аватарку пользователя
+	// или возвращает ошибки ...
+	DeleteAvatar(context.Context, dto.AvatarRemovalInfo) (*dto.UrlObj, error)
+	// Delete
 	// удаляет данного пользователя по id
 	// или возвращает ошибки ...
 	DeleteUser(context.Context, dto.UserID) error
