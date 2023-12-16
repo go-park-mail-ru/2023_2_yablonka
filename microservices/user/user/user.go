@@ -289,6 +289,13 @@ func (us UserService) DeleteAvatar(ctx context.Context, request *DeleteAvatarReq
 		dto.RequestIDKey, requestID,
 	)
 
+	if info.Filename == "img/user_avatars/avatar.jpg" {
+		us.logger.DebugFmt("Failed to remove file after unsuccessful update with error: no avatar is set for user", request.RequestID, funcName, nodeName)
+		response.Code = UserServiceErrorCodes[apperrors.ErrFailedToDeleteFile]
+		response.Response = &UrlObj{}
+		return response, nil
+	}
+
 	err := os.Remove(info.Filename)
 	if err != nil {
 		us.logger.DebugFmt("Failed to remove file after unsuccessful update with error: "+err.Error(), request.RequestID, funcName, nodeName)
