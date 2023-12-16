@@ -55,6 +55,7 @@ func main() {
 	logger.Info("Storages configured")
 
 	srvMetrics := grpcprom.NewServerMetrics(
+		grpcprom.WithServerCounterOptions(),
 		grpcprom.WithServerHandlingTimeHistogram(
 			grpcprom.WithHistogramBuckets([]float64{0.001, 0.01, 0.1, 0.3, 0.6, 1, 3, 6, 9, 20, 30, 60, 90, 120}),
 		),
