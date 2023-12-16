@@ -9,6 +9,8 @@ import (
 	"server/internal/pkg/dto"
 	"server/internal/pkg/entities"
 	"server/internal/service"
+
+	"github.com/google/uuid"
 )
 
 type WorkspaceHandler struct {
@@ -36,6 +38,7 @@ func (wh WorkspaceHandler) GetUserWorkspaces(w http.ResponseWriter, r *http.Requ
 	failBorder := "---------------------------------- Getting user workspaces FAIL ----------------------------------"
 
 	logger := rCtx.Value(dto.LoggerKey).(logger.ILogger)
+	requestID := rCtx.Value(dto.RequestIDKey).(uuid.UUID)
 
 	logger.Info("---------------------------------- Getting user workspaces ----------------------------------")
 
@@ -46,7 +49,7 @@ func (wh WorkspaceHandler) GetUserWorkspaces(w http.ResponseWriter, r *http.Requ
 		apperrors.ReturnError(apperrors.GenericUnauthorizedResponse, w, r)
 		return
 	}
-	logger.Debug("User found", funcName, nodeName)
+	logger.DebugFmt("User found", requestID.String(), funcName, nodeName)
 
 	userId := dto.UserID{
 		Value: user.ID,
@@ -58,7 +61,7 @@ func (wh WorkspaceHandler) GetUserWorkspaces(w http.ResponseWriter, r *http.Requ
 		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
 		return
 	}
-	logger.Debug("User workspaces received", funcName, nodeName)
+	logger.DebugFmt("User workspaces received", requestID.String(), funcName, nodeName)
 
 	response := dto.JSONResponse{
 		Body: dto.JSONMap{
@@ -72,7 +75,7 @@ func (wh WorkspaceHandler) GetUserWorkspaces(w http.ResponseWriter, r *http.Requ
 		apperrors.ReturnError(apperrors.InternalServerErrorResponse, w, r)
 		return
 	}
-	logger.Debug("response written", funcName, nodeName)
+	logger.DebugFmt("response written", requestID.String(), funcName, nodeName)
 
 	logger.Info("---------------------------------- Getting user workspaces SUCCESS ----------------------------------")
 }
@@ -100,6 +103,7 @@ func (wh WorkspaceHandler) Create(w http.ResponseWriter, r *http.Request) {
 	failBorder := "---------------------------------- Creating workspace FAIL ----------------------------------"
 
 	logger := rCtx.Value(dto.LoggerKey).(logger.ILogger)
+	requestID := rCtx.Value(dto.RequestIDKey).(uuid.UUID)
 
 	logger.Info("---------------------------------- Creating workspace ----------------------------------")
 
@@ -111,7 +115,7 @@ func (wh WorkspaceHandler) Create(w http.ResponseWriter, r *http.Request) {
 		apperrors.ReturnError(apperrors.BadRequestResponse, w, r)
 		return
 	}
-	logger.Debug("JSON parsed", funcName, nodeName)
+	logger.DebugFmt("JSON parsed", requestID.String(), funcName, nodeName)
 
 	workspace, err := wh.ws.Create(rCtx, newWorkspaceInfo)
 	if err != nil {
@@ -120,7 +124,7 @@ func (wh WorkspaceHandler) Create(w http.ResponseWriter, r *http.Request) {
 		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
 		return
 	}
-	logger.Debug("Workspace created", funcName, nodeName)
+	logger.DebugFmt("Workspace created", requestID.String(), funcName, nodeName)
 
 	response := dto.JSONResponse{
 		Body: dto.JSONMap{
@@ -134,7 +138,7 @@ func (wh WorkspaceHandler) Create(w http.ResponseWriter, r *http.Request) {
 		apperrors.ReturnError(apperrors.InternalServerErrorResponse, w, r)
 		return
 	}
-	logger.Debug("response written", funcName, nodeName)
+	logger.DebugFmt("response written", requestID.String(), funcName, nodeName)
 
 	logger.Info("---------------------------------- Creating workspace SUCCESS ----------------------------------")
 }
@@ -162,6 +166,7 @@ func (wh WorkspaceHandler) UpdateData(w http.ResponseWriter, r *http.Request) {
 	failBorder := "---------------------------------- Updating workspace data FAIL ----------------------------------"
 
 	logger := rCtx.Value(dto.LoggerKey).(logger.ILogger)
+	requestID := rCtx.Value(dto.RequestIDKey).(uuid.UUID)
 
 	logger.Info("---------------------------------- Updating workspace data ----------------------------------")
 
@@ -173,7 +178,7 @@ func (wh WorkspaceHandler) UpdateData(w http.ResponseWriter, r *http.Request) {
 		apperrors.ReturnError(apperrors.BadRequestResponse, w, r)
 		return
 	}
-	logger.Debug("JSON parsed", funcName, nodeName)
+	logger.DebugFmt("JSON parsed", requestID.String(), funcName, nodeName)
 
 	err = wh.ws.UpdateData(rCtx, workspaceInfo)
 	if err != nil {
@@ -182,7 +187,7 @@ func (wh WorkspaceHandler) UpdateData(w http.ResponseWriter, r *http.Request) {
 		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
 		return
 	}
-	logger.Debug("workspace data updated", funcName, nodeName)
+	logger.DebugFmt("workspace data updated", requestID.String(), funcName, nodeName)
 
 	response := dto.JSONResponse{
 		Body: dto.JSONMap{},
@@ -194,7 +199,7 @@ func (wh WorkspaceHandler) UpdateData(w http.ResponseWriter, r *http.Request) {
 		apperrors.ReturnError(apperrors.InternalServerErrorResponse, w, r)
 		return
 	}
-	logger.Debug("response written", funcName, nodeName)
+	logger.DebugFmt("response written", requestID.String(), funcName, nodeName)
 
 	logger.Info("---------------------------------- Updating workspace data SUCCESS ----------------------------------")
 }
@@ -222,6 +227,7 @@ func (wh WorkspaceHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	failBorder := "---------------------------------- Deleting workspace FAIL ----------------------------------"
 
 	logger := rCtx.Value(dto.LoggerKey).(logger.ILogger)
+	requestID := rCtx.Value(dto.RequestIDKey).(uuid.UUID)
 
 	logger.Info("---------------------------------- Deleting workspace ----------------------------------")
 
@@ -233,7 +239,7 @@ func (wh WorkspaceHandler) Delete(w http.ResponseWriter, r *http.Request) {
 		apperrors.ReturnError(apperrors.BadRequestResponse, w, r)
 		return
 	}
-	logger.Debug("JSON parsed", funcName, nodeName)
+	logger.DebugFmt("JSON parsed", requestID.String(), funcName, nodeName)
 
 	err = wh.ws.Delete(rCtx, workspaceID)
 	if err != nil {
@@ -242,7 +248,7 @@ func (wh WorkspaceHandler) Delete(w http.ResponseWriter, r *http.Request) {
 		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
 		return
 	}
-	logger.Debug("Workspace deleted", funcName, nodeName)
+	logger.DebugFmt("Workspace deleted", requestID.String(), funcName, nodeName)
 
 	response := dto.JSONResponse{
 		Body: dto.JSONMap{},
@@ -254,7 +260,7 @@ func (wh WorkspaceHandler) Delete(w http.ResponseWriter, r *http.Request) {
 		apperrors.ReturnError(apperrors.InternalServerErrorResponse, w, r)
 		return
 	}
-	logger.Debug("response written", funcName, nodeName)
+	logger.DebugFmt("response written", requestID.String(), funcName, nodeName)
 
 	logger.Info("---------------------------------- Deleting workspace SUCCESS ----------------------------------")
 }

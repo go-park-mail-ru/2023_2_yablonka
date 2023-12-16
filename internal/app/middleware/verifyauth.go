@@ -8,6 +8,8 @@ import (
 	logger "server/internal/logging"
 	"server/internal/pkg/dto"
 	"server/internal/service"
+
+	"github.com/google/uuid"
 )
 
 func AuthMiddleware(as service.IAuthService, us service.IUserService) func(http.Handler) http.Handler {
@@ -16,17 +18,18 @@ func AuthMiddleware(as service.IAuthService, us service.IUserService) func(http.
 			rCtx := r.Context()
 			funcName := "AuthMiddleware"
 			logger := rCtx.Value(dto.LoggerKey).(logger.ILogger)
+			requestID := rCtx.Value(dto.RequestIDKey).(uuid.UUID)
 
 			logger.Info("*************** VERIFYING AUTH ***************")
 
 			cookie, err := r.Cookie("tabula_user")
 			if err != nil {
 				logger.Error("*************** VERIFICATION FAIL ***************")
-				logger.Debug("Verifying user failed with error "+err.Error(), funcName, "middleware")
+				logger.DebugFmt("Verifying user failed with error "+err.Error(), requestID.String(), funcName, nodeName)
 				apperrors.ReturnError(apperrors.GenericUnauthorizedResponse, w, r)
 				return
 			}
-			logger.Debug("Cookie found", funcName, "middleware")
+			logger.DebugFmt("Cookie found", requestID.String(), funcName, nodeName)
 
 			token := dto.SessionToken{
 				ID: cookie.Value,
@@ -35,23 +38,23 @@ func AuthMiddleware(as service.IAuthService, us service.IUserService) func(http.
 			userID, err := as.VerifyAuth(rCtx, token)
 			if err != nil {
 				logger.Error("*************** VERIFICATION FAIL ***************")
-				logger.Debug("Verifying user failed with error "+err.Error(), funcName, "middleware")
+				logger.DebugFmt("Verifying user failed with error "+err.Error(), requestID.String(), funcName, nodeName)
 				w.Header().Set("X-Csrf-Token", "")
 				apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
 				return
 			}
-			logger.Debug("Session verified", funcName, "middleware")
+			logger.DebugFmt("Session verified", requestID.String(), funcName, nodeName)
 
 			userObj, err := us.GetWithID(rCtx, userID)
 			if errors.Is(err, apperrors.ErrUserNotFound) {
 				logger.Error("*************** VERIFICATION FAIL ***************")
-				logger.Debug("Verifying user failed with error "+err.Error(), funcName, "middleware")
+				logger.DebugFmt("Verifying user failed with error "+err.Error(), requestID.String(), funcName, nodeName)
 				w.Header().Set("X-Csrf-Token", "")
 				apperrors.ReturnError(apperrors.GenericUnauthorizedResponse, w, r)
 				return
 			} else if err != nil {
 				logger.Error("*************** VERIFICATION FAIL ***************")
-				logger.Debug("Verifying user failed with error "+err.Error(), funcName, "middleware")
+				logger.DebugFmt("Verifying user failed with error "+err.Error(), requestID.String(), funcName, nodeName)
 				w.Header().Set("X-Csrf-Token", "")
 				apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
 				return

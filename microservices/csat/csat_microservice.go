@@ -13,13 +13,13 @@ const nodeName = "microservice"
 
 func RegisterServices(storages *storage.Storages, server *grpc.Server, logger *logging.LogrusLogger) {
 	funcName := "CSAT.RegisterService"
-	answerServer := answer.NewCSATAnswerService(storages.CSATAnswer)
-	logger.Debug("CSAT answer GRPC service created", funcName, nodeName)
-	questionServer := question.NewCSATQuestionService(storages.CSATQuestion)
-	logger.Debug("CSAT question GRPC service created", funcName, nodeName)
+	answerServer := answer.NewCSATAnswerService(storages.CSATAnswer, logger)
+	logger.DebugRequestlessFmt("CSAT answer GRPC service created", funcName, nodeName)
+	questionServer := question.NewCSATQuestionService(storages.CSATQuestion, logger)
+	logger.DebugRequestlessFmt("CSAT question GRPC service created", funcName, nodeName)
 
 	answer.RegisterCSATAnswerServiceServer(server, answerServer)
-	logger.Debug("CSAT answer GRPC service registered", funcName, nodeName)
+	logger.DebugRequestlessFmt("CSAT answer GRPC service registered", funcName, nodeName)
 	question.RegisterCSATQuestionServiceServer(server, questionServer)
-	logger.Debug("CSAT question GRPC service registered", funcName, nodeName)
+	logger.DebugRequestlessFmt("CSAT question GRPC service registered", funcName, nodeName)
 }

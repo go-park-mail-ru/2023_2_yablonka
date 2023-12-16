@@ -11,6 +11,7 @@ import (
 	"server/internal/pkg/entities"
 
 	sq "github.com/Masterminds/squirrel"
+	"github.com/google/uuid"
 	"github.com/lib/pq"
 )
 
@@ -73,6 +74,7 @@ func (s PostgresListStorage) Create(ctx context.Context, info dto.NewListInfo) (
 func (s PostgresListStorage) GetTasksWithID(ctx context.Context, ids dto.ListIDs) (*[]dto.SingleTaskInfo, error) {
 	funcName := "PostgreSQLBoardStorage.GetTasksWithID"
 	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
+	requestID := ctx.Value(dto.RequestIDKey).(uuid.UUID)
 
 	taskSql, args, err := sq.Select(allTaskAggFields...).
 		From("public.task").
@@ -84,14 +86,14 @@ func (s PostgresListStorage) GetTasksWithID(ctx context.Context, ids dto.ListIDs
 	if err != nil {
 		return nil, apperrors.ErrCouldNotBuildQuery
 	}
-	logger.Debug("Built query\n\t"+taskSql+"\nwith args\n\t"+fmt.Sprintf("%+v", args), funcName, nodeName)
+	logger.DebugFmt("Built query\n\t"+taskSql+"\nwith args\n\t"+fmt.Sprintf("%+v", args), requestID.String(), funcName, nodeName)
 
 	taskRows, err := s.db.Query(taskSql, args...)
 	if err != nil {
-		return nil, apperrors.ErrCouldNotGetBoard
+		return nil, apperrors.ErrCouldNotGetTask
 	}
 	defer taskRows.Close()
-	logger.Debug("Got task info rows", funcName, nodeName)
+	logger.DebugFmt("Got task info rows", requestID.String(), funcName, nodeName)
 
 	tasks := []dto.SingleTaskInfo{}
 	for taskRows.Next() {
@@ -109,11 +111,11 @@ func (s PostgresListStorage) GetTasksWithID(ctx context.Context, ids dto.ListIDs
 			(*pq.StringArray)(&task.UserIDs),
 		)
 		if err != nil {
-			return nil, apperrors.ErrCouldNotGetBoard
+			return nil, apperrors.ErrCouldNotGetTask
 		}
 		tasks = append(tasks, task)
 	}
-	logger.Debug("Collected task info rows", funcName, nodeName)
+	logger.DebugFmt("Collected task info rows", requestID.String(), funcName, nodeName)
 
 	return &tasks, nil
 }
@@ -165,6 +167,39 @@ func (s PostgresListStorage) Delete(ctx context.Context, id dto.ListID) error {
 	if err != nil {
 		return apperrors.ErrListNotDeleted
 	}
+
+	return nil
+}
+
+// UpdateOrder
+// меняет порядок списков в БД по данным
+// или возвращает ошибки ...
+func (s PostgresListStorage) UpdateOrder(ctx context.Context, ids dto.ListIDs) error {
+	caseBuilder := sq.Case()
+
+	for i, id := range ids.Values {
+		caseBuilder = caseBuilder.When(sq.Eq{"id": id}, i)
+	}
+
+	sql, args, err := sq.
+		Update("public.list").
+		Set("list_position", caseBuilder).
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
+	if err != nil {
+		log.Println(err)
+		log.Println("Storage -- Failed to build query")
+		return apperrors.ErrCouldNotBuildQuery
+	}
+	log.Println("Built list query\n\t", sql, "\nwith args\n\t", args)
+
+	_, err = s.db.Exec(sql, args...)
+	if err != nil {
+		log.Println("Storage -- Failed to create list")
+		return apperrors.ErrListNotCreated
+	}
+
+	log.Println("Storage -- List created")
 
 	return nil
 }

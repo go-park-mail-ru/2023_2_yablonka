@@ -31,13 +31,28 @@ message UserID {
     uint64 Value = 1;
 }
 
+message SetupCSRFRequest {
+    string RequestID = 1;
+    UserID Value = 2;
+}
+
 message SetupCSRFResponse {
     ErrorCode Code = 1;
     CSRFData Response = 2;
 }
 
+message VerifyCSRFRequest {
+    string RequestID = 1;
+    CSRFToken Value = 2;
+}
+
 message VerifyCSRFResponse {
     ErrorCode Code = 1;
+}
+
+message DeleteCSRFRequest {
+    string RequestID = 1;
+    CSRFToken Value = 2;
 }
 
 message DeleteCSRFResponse {
@@ -50,8 +65,8 @@ message GetLifetimeResponse {
 }
 
 service CSRFService {
-	rpc SetupCSRF (UserID) returns (SetupCSRFResponse) {}
-	rpc VerifyCSRF (CSRFToken) returns (VerifyCSRFResponse) {}
-	rpc DeleteCSRF (CSRFToken) returns (DeleteCSRFResponse) {}
+	rpc SetupCSRF (SetupCSRFRequest) returns (SetupCSRFResponse) {}
+	rpc VerifyCSRF (VerifyCSRFRequest) returns (VerifyCSRFResponse) {}
+	rpc DeleteCSRF (DeleteCSRFRequest) returns (DeleteCSRFResponse) {}
 	rpc GetLifetime (google.protobuf.Empty) returns (GetLifetimeResponse) {}
 }

@@ -38,3 +38,10 @@ func (cls ChecklistItemService) Update(ctx context.Context, info dto.UpdatedChec
 func (cls ChecklistItemService) Delete(ctx context.Context, id dto.ChecklistItemID) error {
 	return cls.storage.Delete(ctx, id)
 }
+
+// UpdateOrder
+// изменяет порядок вещей в чеклисте по id
+// или возвращает ошибки ...
+func (cls ChecklistItemService) UpdateOrder(ctx context.Context, ids dto.ChecklistItemIDs) error {
+	return cls.storage.UpdateOrder(ctx, ids)
+}
