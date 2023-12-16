@@ -84,21 +84,6 @@ func (mr *MockIWorkspaceServiceMockRecorder) GetUserWorkspaces(arg0, arg1 any) *
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserWorkspaces", reflect.TypeOf((*MockIWorkspaceService)(nil).GetUserWorkspaces), arg0, arg1)
 }
 
-// GetWorkspace mocks base method.
-func (m *MockIWorkspaceService) GetWorkspace(arg0 context.Context, arg1 dto.WorkspaceID) (*entities.Workspace, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetWorkspace", arg0, arg1)
-	ret0, _ := ret[0].(*entities.Workspace)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetWorkspace indicates an expected call of GetWorkspace.
-func (mr *MockIWorkspaceServiceMockRecorder) GetWorkspace(arg0, arg1 any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetWorkspace", reflect.TypeOf((*MockIWorkspaceService)(nil).GetWorkspace), arg0, arg1)
-}
-
 // UpdateData mocks base method.
 func (m *MockIWorkspaceService) UpdateData(arg0 context.Context, arg1 dto.UpdatedWorkspaceInfo) error {
 	m.ctrl.T.Helper()
@@ -111,18 +96,4 @@ func (m *MockIWorkspaceService) UpdateData(arg0 context.Context, arg1 dto.Update
 func (mr *MockIWorkspaceServiceMockRecorder) UpdateData(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateData", reflect.TypeOf((*MockIWorkspaceService)(nil).UpdateData), arg0, arg1)
-}
-
-// UpdateUsers mocks base method.
-func (m *MockIWorkspaceService) UpdateUsers(arg0 context.Context, arg1 dto.ChangeWorkspaceGuestsInfo) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateUsers", arg0, arg1)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// UpdateUsers indicates an expected call of UpdateUsers.
-func (mr *MockIWorkspaceServiceMockRecorder) UpdateUsers(arg0, arg1 any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateUsers", reflect.TypeOf((*MockIWorkspaceService)(nil).UpdateUsers), arg0, arg1)
 }

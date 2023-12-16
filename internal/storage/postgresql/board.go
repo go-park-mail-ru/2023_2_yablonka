@@ -13,10 +13,9 @@ import (
 	"time"
 
 	sq "github.com/Masterminds/squirrel"
+	"github.com/google/uuid"
 	"github.com/lib/pq"
 )
-
-const nodeName string = "storage"
 
 // PostgreSQLBoardStorage
 // Хранилище досок в PostgreSQL
@@ -55,6 +54,7 @@ func NewBoardStorage(db *sql.DB) *PostgreSQLBoardStorage {
 func (s *PostgreSQLBoardStorage) GetById(ctx context.Context, id dto.BoardID) (*dto.SingleBoardInfo, error) {
 	funcName := "PostgreSQLBoardStorage.GetById"
 	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
+	requestID := ctx.Value(dto.RequestIDKey).(uuid.UUID)
 
 	boardSql, args, err := sq.Select(allBoardFields...).
 		From("public.board").
@@ -66,7 +66,7 @@ func (s *PostgreSQLBoardStorage) GetById(ctx context.Context, id dto.BoardID) (*
 	if err != nil {
 		return nil, apperrors.ErrCouldNotBuildQuery
 	}
-	logger.Debug("Built query\n\t"+boardSql+"\nwith args\n\t"+fmt.Sprintf("%+v", args), funcName, nodeName)
+	logger.DebugFmt("Built query\n\t"+boardSql+"\nwith args\n\t"+fmt.Sprintf("%+v", args), requestID.String(), funcName, nodeName)
 
 	row := s.db.QueryRow(boardSql, args...)
 
@@ -82,7 +82,7 @@ func (s *PostgreSQLBoardStorage) GetById(ctx context.Context, id dto.BoardID) (*
 	if err != nil {
 		return nil, apperrors.ErrCouldNotGetBoard
 	}
-	logger.Debug(fmt.Sprintf("%+v", board), funcName, nodeName)
+	logger.DebugFmt(fmt.Sprintf("%+v", board), requestID.String(), funcName, nodeName)
 
 	return &board, nil
 }
@@ -93,6 +93,7 @@ func (s *PostgreSQLBoardStorage) GetById(ctx context.Context, id dto.BoardID) (*
 func (s *PostgreSQLBoardStorage) GetUsers(ctx context.Context, id dto.BoardID) (*[]dto.UserPublicInfo, error) {
 	funcName := "PostgreSQLBoardStorage.GetUsers"
 	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
+	requestID := ctx.Value(dto.RequestIDKey).(uuid.UUID)
 
 	sql, args, err := sq.Select(allPublicUserFields...).
 		From("public.user").
@@ -104,14 +105,14 @@ func (s *PostgreSQLBoardStorage) GetUsers(ctx context.Context, id dto.BoardID) (
 	if err != nil {
 		return nil, apperrors.ErrCouldNotBuildQuery
 	}
-	logger.Debug("Built query\n\t"+sql+"\nwith args\n\t"+fmt.Sprintf("%+v", args), funcName, nodeName)
+	logger.DebugFmt("Built query\n\t"+sql+"\nwith args\n\t"+fmt.Sprintf("%+v", args), requestID.String(), funcName, nodeName)
 
 	rows, err := s.db.Query(sql, args...)
 	if err != nil {
 		return nil, apperrors.ErrCouldNotGetBoardUsers
 	}
 	defer rows.Close()
-	logger.Debug("Got board users", funcName, nodeName)
+	logger.DebugFmt("Got board users", requestID.String(), funcName, nodeName)
 
 	users := []dto.UserPublicInfo{}
 	for rows.Next() {
@@ -130,7 +131,7 @@ func (s *PostgreSQLBoardStorage) GetUsers(ctx context.Context, id dto.BoardID) (
 		}
 		users = append(users, user)
 	}
-	logger.Debug("Parsed results", funcName, nodeName)
+	logger.DebugFmt("Parsed results", requestID.String(), funcName, nodeName)
 
 	return &users, nil
 }
@@ -141,6 +142,7 @@ func (s *PostgreSQLBoardStorage) GetUsers(ctx context.Context, id dto.BoardID) (
 func (s *PostgreSQLBoardStorage) GetLists(ctx context.Context, id dto.BoardID) (*[]dto.SingleListInfo, error) {
 	funcName := "PostgreSQLBoardStorage.GetLists"
 	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
+	requestID := ctx.Value(dto.RequestIDKey).(uuid.UUID)
 
 	listSql, args, err := sq.Select(allListTaskAggFields...).
 		From("public.list").
@@ -153,15 +155,15 @@ func (s *PostgreSQLBoardStorage) GetLists(ctx context.Context, id dto.BoardID) (
 	if err != nil {
 		return nil, apperrors.ErrCouldNotBuildQuery
 	}
-	logger.Debug("Built query\n\t"+listSql+"\nwith args\n\t"+fmt.Sprintf("%+v", args), funcName, nodeName)
+	logger.DebugFmt("Built query\n\t"+listSql+"\nwith args\n\t"+fmt.Sprintf("%+v", args), requestID.String(), funcName, nodeName)
 
 	rows, err := s.db.Query(listSql, args...)
 	if err != nil {
-		logger.Debug(err.Error(), funcName, nodeName)
+		logger.DebugFmt(err.Error(), requestID.String(), funcName, nodeName)
 		return nil, apperrors.ErrCouldNotGetList
 	}
 	defer rows.Close()
-	logger.Debug("Got list rows", funcName, nodeName)
+	logger.DebugFmt("Got list rows", requestID.String(), funcName, nodeName)
 
 	lists := []dto.SingleListInfo{}
 	for rows.Next() {
@@ -175,12 +177,12 @@ func (s *PostgreSQLBoardStorage) GetLists(ctx context.Context, id dto.BoardID) (
 			(*pq.StringArray)(&list.TaskIDs),
 		)
 		if err != nil {
-			logger.Debug(err.Error(), funcName, nodeName)
+			logger.DebugFmt(err.Error(), requestID.String(), funcName, nodeName)
 			return nil, apperrors.ErrCouldNotGetBoard
 		}
 		lists = append(lists, list)
 	}
-	logger.Debug("Collected list info rows", funcName, nodeName)
+	logger.DebugFmt("Collected list info rows", requestID.String(), funcName, nodeName)
 
 	return &lists, nil
 }
@@ -191,8 +193,9 @@ func (s *PostgreSQLBoardStorage) GetLists(ctx context.Context, id dto.BoardID) (
 func (s *PostgreSQLBoardStorage) CheckAccess(ctx context.Context, info dto.CheckBoardAccessInfo) (bool, error) {
 	funcName := "PostgreSQLBoardStorage.CheckAccess"
 	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
+	requestID := ctx.Value(dto.RequestIDKey).(uuid.UUID)
 
-	listSql, args, err := sq.Select("count(*)").
+	userSql, args, err := sq.Select("count(*)").
 		From("public.board_user").
 		Where(sq.Eq{
 			"id_board": info.BoardID,
@@ -203,30 +206,29 @@ func (s *PostgreSQLBoardStorage) CheckAccess(ctx context.Context, info dto.Check
 	if err != nil {
 		return false, apperrors.ErrCouldNotBuildQuery
 	}
-	logger.Debug("Built query\n\t"+listSql+"\nwith args\n\t"+fmt.Sprintf("%+v", args), funcName, nodeName)
+	logger.DebugFmt("Built query\n\t"+userSql+"\nwith args\n\t"+fmt.Sprintf("%+v", args), requestID.String(), funcName, nodeName)
 
-	row := s.db.QueryRow(listSql, args...)
-	logger.Debug("Got user row", funcName, nodeName)
+	row := s.db.QueryRow(userSql, args...)
+	logger.DebugFmt("Got user row", requestID.String(), funcName, nodeName)
 
 	var count uint64
 	if row.Scan(&count) != nil {
 		return false, apperrors.ErrCouldNotGetUser
 	}
-	logger.Debug("checked database", funcName, nodeName)
+	logger.DebugFmt("checked database", requestID.String(), funcName, nodeName)
 
 	return count > 0, nil
 }
 
 func (s *PostgreSQLBoardStorage) Create(ctx context.Context, info dto.NewBoardInfo) (*entities.Board, error) {
+	funcName := "PostgreSQLBoardStorage.GetById"
+	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
+	requestID := ctx.Value(dto.RequestIDKey).(uuid.UUID)
+
 	user, ok := ctx.Value(dto.UserObjKey).(*entities.User)
-	if !ok {
-		log.Println("Storage -- Failed to get user")
-		return nil, apperrors.ErrCouldNotBuildQuery
-	}
-	baseURL, ok := ctx.Value(dto.BaseURLKey).(string)
-	if !ok {
-		log.Println("Storage -- Failed to get base url")
-		return nil, apperrors.ErrCouldNotBuildQuery
+	if !ok || user == nil {
+		logger.DebugFmt("No user object in context", requestID.String(), funcName, nodeName)
+		return nil, apperrors.ErrNoBoardAccess
 	}
 
 	newBoard := &entities.Board{
@@ -254,34 +256,35 @@ func (s *PostgreSQLBoardStorage) Create(ctx context.Context, info dto.NewBoardIn
 		Suffix("RETURNING id, date_created").
 		ToSql()
 	if err != nil {
-		log.Println("Storage -- Failed to build query1")
+		logger.DebugFmt("Failed to build query with error "+err.Error(), requestID.String(), funcName, nodeName)
 		return nil, apperrors.ErrCouldNotBuildQuery
 	}
-	log.Println("Built board query\n\t", query1, "\nwith args\n\t", args)
+	logger.DebugFmt("Built query\n\t"+query1+"\nwith args\n\t"+fmt.Sprintf("%+v", args), requestID.String(), funcName, nodeName)
 
 	tx, err := s.db.BeginTx(ctx, &sql.TxOptions{})
 	if err != nil {
+		logger.DebugFmt("Failed to start transaction with error "+err.Error(), requestID.String(), funcName, nodeName)
 		return nil, apperrors.ErrCouldNotStartTransaction
 	}
-	log.Println("Storage -- Transaction started")
+	logger.DebugFmt("Transaction started", requestID.String(), funcName, nodeName)
 
 	var boardID int
 	row := tx.QueryRow(query1, args...)
 	if err := row.Scan(&boardID, &newBoard.DateCreated); err != nil {
-		log.Println("Storage -- Board insert failed with error", err.Error())
+		logger.DebugFmt("Board insert failed with error "+err.Error(), requestID.String(), funcName, nodeName)
 		err = tx.Rollback()
 		for err != nil {
 			err = tx.Rollback()
 		}
 		return nil, apperrors.ErrBoardNotCreated
 	}
-	log.Println("Storage -- Board created")
+	logger.DebugFmt("Board created", requestID.String(), funcName, nodeName)
 
 	var url string
 	if info.ThumbnailURL != nil {
 		url = *info.ThumbnailURL
 	} else {
-		url = baseURL + "img/board_thumbnails/" + strconv.Itoa(boardID) + ".png"
+		url = "img/board_thumbnails/" + strconv.Itoa(boardID) + ".png"
 	}
 
 	newBoard.ThumbnailURL = &url
@@ -290,26 +293,33 @@ func (s *PostgreSQLBoardStorage) Create(ctx context.Context, info dto.NewBoardIn
 	query2, args, err := sq.
 		Update("public.board").
 		Set("thumbnail_url", url).
-		Where(sq.Eq{"id_workspace": info.WorkspaceID}).
+		Where(sq.And{
+			sq.Eq{"id_workspace": info.WorkspaceID},
+			sq.Eq{"id": boardID},
+		}).
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
 
 	if err != nil {
-		log.Println("Storage -- Failed to build thumbnail update query")
+		logger.DebugFmt("Failed to build query with error "+err.Error(), requestID.String(), funcName, nodeName)
+		err = tx.Rollback()
+		for err != nil {
+			err = tx.Rollback()
+		}
 		return nil, apperrors.ErrCouldNotBuildQuery
 	}
-	log.Println("Built board query\n\t", query2, "\nwith args\n\t", args)
+	logger.DebugFmt("Built query\n\t"+query2+"\nwith args\n\t"+fmt.Sprintf("%+v", args), requestID.String(), funcName, nodeName)
 
 	_, err = tx.Exec(query2, args...)
 	if err != nil {
-		log.Println("Storage -- Board thumbnail insert failed with error", err.Error())
+		logger.DebugFmt("Board update failed with error "+err.Error(), requestID.String(), funcName, nodeName)
 		err = tx.Rollback()
 		for err != nil {
 			err = tx.Rollback()
 		}
 		return nil, apperrors.ErrBoardNotCreated
 	}
-	log.Println("Storage -- Board thumbnail set")
+	logger.DebugFmt("Board thumbnail URL set", requestID.String(), funcName, nodeName)
 
 	query3, args, err := sq.
 		Insert("public.board_user").
@@ -318,9 +328,14 @@ func (s *PostgreSQLBoardStorage) Create(ctx context.Context, info dto.NewBoardIn
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
 	if err != nil {
+		logger.DebugFmt("Failed to build query with error "+err.Error(), requestID.String(), funcName, nodeName)
+		err = tx.Rollback()
+		for err != nil {
+			err = tx.Rollback()
+		}
 		return nil, apperrors.ErrCouldNotBuildQuery
 	}
-	log.Println("Built board user query\n\t", query3, "\nwith args\n\t", args)
+	logger.DebugFmt("Built query\n\t"+query3+"\nwith args\n\t"+fmt.Sprintf("%+v", args), requestID.String(), funcName, nodeName)
 
 	_, err = tx.Exec(query3, args...)
 	if err != nil {
@@ -370,7 +385,7 @@ func (s *PostgreSQLBoardStorage) UpdateData(ctx context.Context, info dto.Update
 	return nil
 }
 
-func (s *PostgreSQLBoardStorage) UpdateThumbnailUrl(ctx context.Context, info dto.ImageUrlInfo) error {
+func (s *PostgreSQLBoardStorage) UpdateThumbnailUrl(ctx context.Context, info dto.BoardImageUrlInfo) error {
 	sql, args, err := sq.
 		Update("public.board").
 		Set("thumbnail_url", info.Url).
@@ -416,6 +431,7 @@ func (s *PostgreSQLBoardStorage) Delete(ctx context.Context, id dto.BoardID) err
 func (s *PostgreSQLBoardStorage) AddUser(ctx context.Context, info dto.AddBoardUserInfo) error {
 	funcName := "PostgreSQLBoardStorage.AddUser"
 	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
+	requestID := ctx.Value(dto.RequestIDKey).(uuid.UUID)
 
 	tx, err := s.db.BeginTx(ctx, &sql.TxOptions{})
 	if err != nil {
@@ -431,18 +447,18 @@ func (s *PostgreSQLBoardStorage) AddUser(ctx context.Context, info dto.AddBoardU
 	if err != nil {
 		return apperrors.ErrCouldNotBuildQuery
 	}
-	logger.Debug("Built query\n\t"+query1+"\nwith args\n\t"+fmt.Sprintf("%+v", args), funcName, nodeName)
+	logger.DebugFmt("Built query\n\t"+query1+"\nwith args\n\t"+fmt.Sprintf("%+v", args), requestID.String(), funcName, nodeName)
 
 	_, err = s.db.Exec(query1, args...)
 	if err != nil {
-		logger.Debug("Insert into board_user failed with error "+err.Error(), funcName, nodeName)
+		logger.DebugFmt("Insert into board_user failed with error "+err.Error(), requestID.String(), funcName, nodeName)
 		err = tx.Rollback()
 		for err != nil {
 			err = tx.Rollback()
 		}
 		return apperrors.ErrCouldNotAddBoardUser
 	}
-	logger.Debug("query executed", funcName, nodeName)
+	logger.DebugFmt("query executed", requestID.String(), funcName, nodeName)
 
 	query2, args, err := sq.
 		Insert("public.user_workspace").
@@ -451,35 +467,35 @@ func (s *PostgreSQLBoardStorage) AddUser(ctx context.Context, info dto.AddBoardU
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
 	if err != nil {
+		err = tx.Rollback()
+		for err != nil {
+			err = tx.Rollback()
+		}
 		return apperrors.ErrCouldNotBuildQuery
 	}
-	logger.Debug("Built query\n\t"+query2+"\nwith args\n\t"+fmt.Sprintf("%+v", args), funcName, nodeName)
+	logger.DebugFmt("Built query\n\t"+query2+"\nwith args\n\t"+fmt.Sprintf("%+v", args), requestID.String(), funcName, nodeName)
 
 	_, err = tx.Exec(query2, args...)
 	if err != nil {
-		logger.Debug("Insert into user_workspace failed with error "+err.Error(), funcName, nodeName)
-		err = tx.Rollback()
-		for err != nil {
-			err = tx.Rollback()
-		}
+		logger.DebugFmt("Insert into user_workspace failed with error "+err.Error(), requestID.String(), funcName, nodeName)
 		err = tx.Rollback()
 		for err != nil {
 			err = tx.Rollback()
 		}
 		return apperrors.ErrCouldNotAddBoardUser
 	}
-	logger.Debug("query executed", funcName, nodeName)
+	logger.DebugFmt("query executed", requestID.String(), funcName, nodeName)
 
 	err = tx.Commit()
 	if err != nil {
-		logger.Debug("Failed to commit changes with error "+err.Error(), funcName, nodeName)
+		logger.DebugFmt("Failed to commit changes with error "+err.Error(), requestID.String(), funcName, nodeName)
 		err = tx.Rollback()
 		for err != nil {
 			err = tx.Rollback()
 		}
 		return apperrors.ErrCouldNotAddBoardUser
 	}
-	logger.Debug("Changes committed", funcName, nodeName)
+	logger.DebugFmt("Changes committed", requestID.String(), funcName, nodeName)
 
 	return nil
 }
@@ -489,6 +505,7 @@ func (s *PostgreSQLBoardStorage) AddUser(ctx context.Context, info dto.AddBoardU
 func (s *PostgreSQLBoardStorage) RemoveUser(ctx context.Context, info dto.RemoveBoardUserInfo) error {
 	funcName := "PostgreSQLBoardStorage.RemoveUser"
 	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
+	requestID := ctx.Value(dto.RequestIDKey).(uuid.UUID)
 
 	query, args, err := sq.
 		Delete("public.board_user").
@@ -501,14 +518,16 @@ func (s *PostgreSQLBoardStorage) RemoveUser(ctx context.Context, info dto.Remove
 	if err != nil {
 		return apperrors.ErrCouldNotBuildQuery
 	}
-	logger.Debug("Built query\n\t"+query+"\nwith args\n\t"+fmt.Sprintf("%+v", args), funcName, nodeName)
+	logger.DebugFmt("Built query\n\t"+query+"\nwith args\n\t"+fmt.Sprintf("%+v", args), requestID.String(), funcName, nodeName)
 
 	_, err = s.db.Exec(query, args...)
 	if err != nil {
-		logger.Debug("Delete failed with error "+err.Error(), funcName, nodeName)
+		logger.DebugFmt("Delete failed with error "+err.Error(), requestID.String(), funcName, nodeName)
 		return apperrors.ErrCouldNotRemoveTaskUser
 	}
-	logger.Debug("query executed", funcName, nodeName)
+	logger.DebugFmt("query executed", requestID.String(), funcName, nodeName)
+
+	// TODO: Remove user from workspace if that was the last board
 
 	return nil
 }

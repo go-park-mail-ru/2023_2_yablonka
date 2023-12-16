@@ -11,6 +11,7 @@ import (
 	"server/internal/pkg/entities"
 
 	sq "github.com/Masterminds/squirrel"
+	"github.com/google/uuid"
 )
 
 // LocalUserStorage
@@ -29,6 +30,14 @@ func NewUserStorage(db *sql.DB) *PostgresUserStorage {
 // находит пользователя в БД по почте
 // или возвращает ошибки ...
 func (s *PostgresUserStorage) GetWithLogin(ctx context.Context, login dto.UserLogin) (*entities.User, error) {
+	funcName := "PostgresUserStorage.Create"
+	errorMessage := "Creating user failed with error: "
+	failBorder := ">>>>>>>>>>>>>>>>>>> PostgresUserStorage.Create FAIL <<<<<<<<<<<<<<<<<<<<<<<"
+	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
+	requestID := ctx.Value(dto.RequestIDKey).(uuid.UUID)
+
+	logger.Debug(">>>>>>>>>>>>>>>> PostgresUserStorage.Create <<<<<<<<<<<<<<<<<<<")
+
 	log.Println("Looking for user with login", login.Value)
 
 	sql, args, err := sq.
@@ -39,13 +48,12 @@ func (s *PostgresUserStorage) GetWithLogin(ctx context.Context, login dto.UserLo
 		ToSql()
 
 	if err != nil {
+		logger.DebugFmt(errorMessage+err.Error(), requestID.String(), funcName, nodeName)
+		logger.Debug(failBorder)
 		return nil, apperrors.ErrCouldNotBuildQuery
 	}
 
-	log.Println("Built query:", sql, "\nwith args:", args)
-
 	row := s.db.QueryRow(sql, args...)
-
 	user := entities.User{}
 	err = row.Scan(
 		&user.ID,
@@ -56,11 +64,9 @@ func (s *PostgresUserStorage) GetWithLogin(ctx context.Context, login dto.UserLo
 		&user.AvatarURL,
 		&user.Description,
 	)
-	log.Println(user)
-	log.Println(err)
-
 	if err != nil {
-		fmt.Println("Error", err.Error())
+		logger.DebugFmt(errorMessage+err.Error(), requestID.String(), funcName, nodeName)
+		logger.Debug(failBorder)
 		return nil, apperrors.ErrUserNotFound
 	}
 
@@ -71,23 +77,37 @@ func (s *PostgresUserStorage) GetWithLogin(ctx context.Context, login dto.UserLo
 // находит пользователя в БД по его id
 // или возвращает ошибки ...
 func (s *PostgresUserStorage) GetWithID(ctx context.Context, id dto.UserID) (*entities.User, error) {
+	funcName := "PostgresUserStorage.GetWithID"
+	errorMessage := "Getting user failed with error: "
+	failBorder := ">>>>>>>>>>>>>>>>>>> PostgresUserStorage.GetWithID FAIL <<<<<<<<<<<<<<<<<<<<<<<"
+	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
+	requestID := ctx.Value(dto.RequestIDKey).(uuid.UUID)
+
+	logger.Debug(">>>>>>>>>>>>>>>> PostgresUserStorage.GetWithID <<<<<<<<<<<<<<<<<<<")
+
 	sql, args, err := sq.
 		Select(allUserFields...).
 		From("public.user").
 		Where(sq.Eq{"id": id.Value}).
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
-
 	if err != nil {
+		logger.DebugFmt(errorMessage+err.Error(), requestID.String(), funcName, nodeName)
+		logger.Debug(failBorder)
 		return nil, apperrors.ErrCouldNotBuildQuery
 	}
+	logger.DebugFmt("Built query\n\t"+sql+"\nwith args\n\t"+fmt.Sprintf("%+v", args), requestID.String(), funcName, nodeName)
 
 	row := s.db.QueryRow(sql, args...)
-
 	user := entities.User{}
 	if row.Scan(&user.ID, &user.Email, &user.PasswordHash, &user.Name, &user.Surname, &user.AvatarURL, &user.Description) != nil {
+		logger.DebugFmt(errorMessage+apperrors.ErrUserNotFound.Error(), requestID.String(), funcName, nodeName)
+		logger.Debug(failBorder)
 		return nil, apperrors.ErrUserNotFound
 	}
+	logger.DebugFmt("Got user", requestID.String(), funcName, nodeName)
+
+	logger.Debug(">>>>>>>>>>>>>>>> PostgresUserStorage.GetWithID SUCCESS <<<<<<<<<<<<<<<<<<<")
 
 	return &user, nil
 }
@@ -96,8 +116,13 @@ func (s *PostgresUserStorage) GetWithID(ctx context.Context, id dto.UserID) (*en
 // находит данные логина пользователя в БД по id
 // или возвращает ошибки ...
 func (s *PostgresUserStorage) GetLoginInfoWithID(ctx context.Context, id dto.UserID) (*dto.LoginInfo, error) {
-	funcName := "PostgreSQLBoardStorage.GetTasksWithID"
+	funcName := "PostgresUserStorage.GetLoginInfoWithID"
+	errorMessage := "Creating user failed with error: "
+	failBorder := ">>>>>>>>>>>>>>>>>>> PostgresUserStorage.GetLoginInfoWithID FAIL <<<<<<<<<<<<<<<<<<<<<<<"
 	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
+	requestID := ctx.Value(dto.RequestIDKey).(uuid.UUID)
+
+	logger.Debug(">>>>>>>>>>>>>>>> PostgresUserStorage.GetLoginInfoWithID <<<<<<<<<<<<<<<<<<<")
 
 	sql, args, err := sq.
 		Select("email", "password_hash").
@@ -107,18 +132,23 @@ func (s *PostgresUserStorage) GetLoginInfoWithID(ctx context.Context, id dto.Use
 		ToSql()
 
 	if err != nil {
+		logger.DebugFmt(errorMessage+err.Error(), requestID.String(), funcName, nodeName)
+		logger.Debug(failBorder)
 		return nil, apperrors.ErrCouldNotBuildQuery
 	}
-	logger.Debug("Built query\n\t"+sql+"\nwith args\n\t"+fmt.Sprintf("%+v", args), funcName, nodeName)
+	logger.DebugFmt("Built query\n\t"+sql+"\nwith args\n\t"+fmt.Sprintf("%+v", args), requestID.String(), funcName, nodeName)
 
 	row := s.db.QueryRow(sql, args...)
-
 	loginInfo := dto.LoginInfo{}
 	err = row.Scan(&loginInfo.Email, &loginInfo.PasswordHash)
 	if err != nil {
+		logger.DebugFmt(errorMessage+err.Error(), requestID.String(), funcName, nodeName)
+		logger.Debug(failBorder)
 		return nil, apperrors.ErrUserNotFound
 	}
-	logger.Debug("Parsed result", funcName, nodeName)
+	logger.DebugFmt("Got user", requestID.String(), funcName, nodeName)
+
+	logger.Debug(">>>>>>>>>>>>>>>> PostgresUserStorage.GetLoginInfoWithID SUCCESS <<<<<<<<<<<<<<<<<<<")
 
 	return &loginInfo, nil
 }
@@ -127,31 +157,45 @@ func (s *PostgresUserStorage) GetLoginInfoWithID(ctx context.Context, id dto.Use
 // создает нового пользователя в БД по данным
 // или возвращает ошибки ...
 func (s *PostgresUserStorage) Create(ctx context.Context, info dto.SignupInfo) (*entities.User, error) {
-	defaultAvatar := "avatar.jpg"
+	funcName := "PostgresUserStorage.Create"
+	errorMessage := "Creating user failed with error: "
+	failBorder := ">>>>>>>>>>>>>>>>>>> PostgresUserStorage.Create FAIL <<<<<<<<<<<<<<<<<<<<<<<"
+	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
+	requestID := ctx.Value(dto.RequestIDKey).(uuid.UUID)
 
-	sql, args, err := sq.
+	logger.Debug(">>>>>>>>>>>>>>>> PostgresUserStorage.Create <<<<<<<<<<<<<<<<<<<")
+
+	defaultAvatar := "img/user_avatars/avatar.jpg"
+
+	query, args, err := sq.
 		Insert("public.user").
 		Columns("email", "password_hash", "avatar_url").
 		Values(info.Email, info.PasswordHash, defaultAvatar).
 		Suffix("RETURNING id").
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
-
 	if err != nil {
+		logger.DebugFmt(errorMessage+err.Error(), requestID.String(), funcName, nodeName)
+		logger.Debug(failBorder)
 		return nil, apperrors.ErrCouldNotBuildQuery
 	}
+	logger.DebugFmt("Built query\n\t"+query+"\nwith args\n\t"+fmt.Sprintf("%+v", args), requestID.String(), funcName, nodeName)
 
 	user := entities.User{
 		Email:        info.Email,
 		PasswordHash: info.PasswordHash,
 		AvatarURL:    &defaultAvatar,
 	}
-
-	query := s.db.QueryRow(sql, args...)
-	err = query.Scan(&user.ID)
+	row := s.db.QueryRow(query, args...)
+	err = row.Scan(&user.ID)
 	if err != nil {
+		logger.DebugFmt(errorMessage+err.Error(), requestID.String(), funcName, nodeName)
+		logger.Debug(failBorder)
 		return nil, apperrors.ErrUserNotCreated
 	}
+	logger.DebugFmt("Got user", requestID.String(), funcName, nodeName)
+
+	logger.Debug(">>>>>>>>>>>>>>>> PostgresWorkspaceStorage.Create SUCCESS <<<<<<<<<<<<<<<<<<<")
 
 	return &user, nil
 }
@@ -160,7 +204,15 @@ func (s *PostgresUserStorage) Create(ctx context.Context, info dto.SignupInfo) (
 // обновляет пароль пользователя в БД
 // или возвращает ошибки ...
 func (s *PostgresUserStorage) UpdatePassword(ctx context.Context, info dto.PasswordHashesInfo) error {
-	sql, args, err := sq.
+	funcName := "PostgresUserStorage.UpdatePassword"
+	errorMessage := "Updating user failed with error: "
+	failBorder := ">>>>>>>>>>>>>>>>>>> PostgresUserStorage.UpdatePassword FAIL <<<<<<<<<<<<<<<<<<<<<<<"
+	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
+	requestID := ctx.Value(dto.RequestIDKey).(uuid.UUID)
+
+	logger.Debug(">>>>>>>>>>>>>>>> PostgresUserStorage.UpdatePassword <<<<<<<<<<<<<<<<<<<")
+
+	query, args, err := sq.
 		Update("public.user").
 		Set("password_hash", info.NewPasswordHash).
 		Where(sq.Eq{"id": info.UserID}).
@@ -168,14 +220,21 @@ func (s *PostgresUserStorage) UpdatePassword(ctx context.Context, info dto.Passw
 		ToSql()
 
 	if err != nil {
+		logger.DebugFmt(errorMessage+err.Error(), requestID.String(), funcName, nodeName)
+		logger.Debug(failBorder)
 		return apperrors.ErrCouldNotBuildQuery
 	}
+	logger.DebugFmt("Built query\n\t"+query+"\nwith args\n\t"+fmt.Sprintf("%+v", args), requestID.String(), funcName, nodeName)
 
-	_, err = s.db.Exec(sql, args...)
-
+	_, err = s.db.Exec(query, args...)
 	if err != nil {
+		logger.DebugFmt(errorMessage+err.Error(), requestID.String(), funcName, nodeName)
+		logger.Debug(failBorder)
 		return apperrors.ErrUserNotUpdated
 	}
+	logger.DebugFmt("Password updated", requestID.String(), funcName, nodeName)
+
+	logger.Debug(">>>>>>>>>>>>>>>> PostgresUserStorage.UpdatePassword SUCCESS <<<<<<<<<<<<<<<<<<<")
 
 	return nil
 }
@@ -184,7 +243,15 @@ func (s *PostgresUserStorage) UpdatePassword(ctx context.Context, info dto.Passw
 // обновляет профиль пользователя в БД
 // или возвращает ошибки ...
 func (s *PostgresUserStorage) UpdateProfile(ctx context.Context, info dto.UserProfileInfo) error {
-	sql, args, err := sq.
+	funcName := "PostgresUserStorage.UpdateProfile"
+	errorMessage := "Updating user failed with error: "
+	failBorder := ">>>>>>>>>>>>>>>>>>> PostgresUserStorage.UpdateProfile FAIL <<<<<<<<<<<<<<<<<<<<<<<"
+	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
+	requestID := ctx.Value(dto.RequestIDKey).(uuid.UUID)
+
+	logger.Debug(">>>>>>>>>>>>>>>> PostgresUserStorage.UpdateProfile <<<<<<<<<<<<<<<<<<<")
+
+	query, args, err := sq.
 		Update("public.user").
 		Set("name", info.Name).
 		Set("surname", info.Surname).
@@ -192,19 +259,22 @@ func (s *PostgresUserStorage) UpdateProfile(ctx context.Context, info dto.UserPr
 		Where(sq.Eq{"id": info.UserID}).
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
-
 	if err != nil {
+		logger.DebugFmt(errorMessage+err.Error(), requestID.String(), funcName, nodeName)
+		logger.Debug(failBorder)
 		return apperrors.ErrCouldNotBuildQuery
 	}
+	logger.DebugFmt("Built query\n\t"+query+"\nwith args\n\t"+fmt.Sprintf("%+v", args), requestID.String(), funcName, nodeName)
 
-	log.Println("Built query:", sql, "\nwith args:", args)
-
-	_, err = s.db.Exec(sql, args...)
-
+	_, err = s.db.Exec(query, args...)
 	if err != nil {
-		log.Println("Storage -- Failed to execute query with error", err.Error())
+		logger.DebugFmt(errorMessage+err.Error(), requestID.String(), funcName, nodeName)
+		logger.Debug(failBorder)
 		return apperrors.ErrUserNotUpdated
 	}
+	logger.DebugFmt("Profile updated", requestID.String(), funcName, nodeName)
+
+	logger.Debug(">>>>>>>>>>>>>>>> PostgresUserStorage.UpdateProfile SUCCESS <<<<<<<<<<<<<<<<<<<")
 
 	return nil
 }
@@ -212,23 +282,37 @@ func (s *PostgresUserStorage) UpdateProfile(ctx context.Context, info dto.UserPr
 // UpdateAvatarUrl
 // обновляет аватарку пользователя в БД
 // или возвращает ошибки ...
-func (s *PostgresUserStorage) UpdateAvatarUrl(ctx context.Context, info dto.ImageUrlInfo) error {
-	sql, args, err := sq.
+func (s *PostgresUserStorage) UpdateAvatarUrl(ctx context.Context, info dto.UserImageUrlInfo) error {
+	funcName := "PostgresUserStorage.UpdateAvatarUrl"
+	errorMessage := "Updating user failed with error: "
+	failBorder := ">>>>>>>>>>>>>>>>>>> PostgresUserStorage.UpdateAvatarUrl FAIL <<<<<<<<<<<<<<<<<<<<<<<"
+	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
+	requestID := ctx.Value(dto.RequestIDKey).(uuid.UUID)
+
+	logger.Debug(">>>>>>>>>>>>>>>> PostgresUserStorage.UpdateAvatarUrl <<<<<<<<<<<<<<<<<<<")
+
+	query, args, err := sq.
 		Update("public.user").
 		Set("avatar_url", info.Url).
 		Where(sq.Eq{"id": info.ID}).
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
-
 	if err != nil {
+		logger.DebugFmt(errorMessage+err.Error(), requestID.String(), funcName, nodeName)
+		logger.Debug(failBorder)
 		return apperrors.ErrCouldNotBuildQuery
 	}
+	logger.DebugFmt("Built query\n\t"+query+"\nwith args\n\t"+fmt.Sprintf("%+v", args), requestID.String(), funcName, nodeName)
 
-	_, err = s.db.Exec(sql, args...)
-
+	_, err = s.db.Exec(query, args...)
 	if err != nil {
+		logger.DebugFmt(errorMessage+err.Error(), requestID.String(), funcName, nodeName)
+		logger.Debug(failBorder)
 		return apperrors.ErrUserNotUpdated
 	}
+	logger.DebugFmt("Avatar updated", requestID.String(), funcName, nodeName)
+
+	logger.Debug(">>>>>>>>>>>>>>>> PostgresUserStorage.UpdateAvatarUrl SUCCESS <<<<<<<<<<<<<<<<<<<")
 
 	return nil
 }
@@ -237,21 +321,35 @@ func (s *PostgresUserStorage) UpdateAvatarUrl(ctx context.Context, info dto.Imag
 // удаляет данного пользователя в БД по id
 // или возвращает ошибки ...
 func (s *PostgresUserStorage) Delete(ctx context.Context, id dto.UserID) error {
-	sql, args, err := sq.
+	funcName := "PostgresUserStorage.Delete"
+	errorMessage := "Deleting user failed with error: "
+	failBorder := ">>>>>>>>>>>>>>>>>>> PostgresUserStorage.Delete FAIL <<<<<<<<<<<<<<<<<<<<<<<"
+	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
+	requestID := ctx.Value(dto.RequestIDKey).(uuid.UUID)
+
+	logger.Debug(">>>>>>>>>>>>>>>> PostgresUserStorage.Delete <<<<<<<<<<<<<<<<<<<")
+
+	query, args, err := sq.
 		Delete("public.user").
 		Where(sq.Eq{"id": id.Value}).
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
-
 	if err != nil {
+		logger.DebugFmt(errorMessage+err.Error(), requestID.String(), funcName, nodeName)
+		logger.Debug(failBorder)
 		return apperrors.ErrCouldNotBuildQuery
 	}
+	logger.DebugFmt("Built query\n\t"+query+"\nwith args\n\t"+fmt.Sprintf("%+v", args), requestID.String(), funcName, nodeName)
 
-	_, err = s.db.Exec(sql, args...)
-
+	_, err = s.db.Exec(query, args...)
 	if err != nil {
+		logger.DebugFmt(errorMessage+err.Error(), requestID.String(), funcName, nodeName)
+		logger.Debug(failBorder)
 		return apperrors.ErrUserNotDeleted
 	}
+	logger.DebugFmt("User deleted", requestID.String(), funcName, nodeName)
+
+	logger.Debug(">>>>>>>>>>>>>>>> PostgresUserStorage.Delete SUCCESS <<<<<<<<<<<<<<<<<<<")
 
 	return nil
 }

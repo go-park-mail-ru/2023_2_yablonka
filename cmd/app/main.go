@@ -16,6 +16,9 @@ import (
 	"server/internal/storage/postgresql"
 
 	"github.com/asaskevich/govalidator"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/collectors"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
@@ -58,6 +61,9 @@ func main() {
 	defer dbConnection.Close()
 	logger.Info("Database connection established")
 
+	storages := storage.NewPostgresStorages(dbConnection)
+	logger.Info("Storages configured")
+
 	grcpConn, err := grpc.Dial(
 		fmt.Sprintf("%v:%v", config.Server.MicroserviceHost, config.Server.MicroservicePort),
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
@@ -68,17 +74,22 @@ func main() {
 	logger.Info("Connected to GRPC server as client")
 	defer grcpConn.Close()
 
-	storages := storage.NewPostgresStorages(dbConnection)
-	logger.Info("Storages configured")
-
-	// services := service.NewEmbeddedServices(storages, *config.Session)
 	services := service.NewMicroServices(storages, *config.Session, grcpConn)
 	logger.Info("Services configured")
 
 	handlers := handlers.NewHandlers(services)
 	logger.Info("Handlers configured")
 
-	mux, err := app.GetChiMux(*handlers, *config, &logger)
+	registry := prometheus.NewRegistry()
+	logger.Info("Prometheus registry created")
+
+	registry.MustRegister(
+		collectors.NewGoCollector(),
+		collectors.NewProcessCollector(collectors.ProcessCollectorOpts{}),
+	)
+	logger.Info("Prometheus registry configured")
+
+	mux, err := app.GetChiMux(*handlers, *config, &logger, registry)
 	if err != nil {
 		logger.Fatal(err.Error())
 	}
@@ -103,6 +114,18 @@ func main() {
 			logger.Info("HTTP server Shutdown: " + err.Error())
 		}
 		close(idleConnsClosed)
+	}()
+
+	go func() {
+		http.Handle("/metrics", promhttp.HandlerFor(
+			registry,
+			promhttp.HandlerOpts{
+				EnableOpenMetrics: true,
+			},
+		))
+		if err := http.ListenAndServe(":8012", nil); err != http.ErrServerClosed {
+			logger.Fatal("Failed to start metrics server: " + err.Error())
+		}
 	}()
 
 	if err := server.ListenAndServe(); err != http.ErrServerClosed {

@@ -11,6 +11,7 @@ import (
 
 	logger "server/internal/logging"
 
+	"github.com/google/uuid"
 	"google.golang.org/grpc"
 )
 
@@ -56,13 +57,20 @@ func (cs *CSRFService) GetLifetime(ctx context.Context) time.Duration {
 func (cs *CSRFService) SetupCSRF(ctx context.Context, id dto.UserID) (dto.CSRFData, error) {
 	funcName := "CSRFService.SetupCSRF"
 	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
+	requestID := ctx.Value(dto.RequestIDKey).(uuid.UUID)
 
-	logger.Debug("Contacting GRPC server", funcName, nodeName)
-	serverResponse, _ := cs.client.SetupCSRF(ctx, &microservice.UserID{Value: id.Value})
+	grpcRequest := &microservice.SetupCSRFRequest{
+		RequestID: requestID.String(),
+		Value:     &microservice.UserID{Value: id.Value},
+	}
+
+	logger.DebugFmt("Contacting GRPC server", requestID.String(), funcName, nodeName)
+	serverResponse, _ := cs.client.SetupCSRF(ctx, grpcRequest)
+	logger.DebugFmt("Response received", requestID.String(), funcName, nodeName)
+
 	if serverResponse.Code != microservice.ErrorCode_OK {
 		return dto.CSRFData{}, CSRFServiceErrors[serverResponse.Code]
 	}
-	logger.Debug("Info received", funcName, nodeName)
 
 	csrf := serverResponse.Response
 
@@ -78,12 +86,16 @@ func (cs *CSRFService) SetupCSRF(ctx context.Context, id dto.UserID) (dto.CSRFDa
 func (cs *CSRFService) VerifyCSRF(ctx context.Context, token dto.CSRFToken) error {
 	funcName := "CSRFService.VerifyCSRF"
 	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
+	requestID := ctx.Value(dto.RequestIDKey).(uuid.UUID)
 
-	logger.Debug("Contacting GRPC server", funcName, nodeName)
-	serverResponse, _ := cs.client.VerifyCSRF(ctx, &microservice.CSRFToken{
-		Value: token.Value,
-	})
-	logger.Debug("Info received", funcName, nodeName)
+	grpcRequest := &microservice.VerifyCSRFRequest{
+		RequestID: requestID.String(),
+		Value:     &microservice.CSRFToken{Value: token.Value},
+	}
+
+	logger.DebugFmt("Contacting GRPC server", requestID.String(), funcName, nodeName)
+	serverResponse, _ := cs.client.VerifyCSRF(ctx, grpcRequest)
+	logger.DebugFmt("Response received", requestID.String(), funcName, nodeName)
 
 	return CSRFServiceErrors[serverResponse.Code]
 }
@@ -94,12 +106,16 @@ func (cs *CSRFService) VerifyCSRF(ctx context.Context, token dto.CSRFToken) erro
 func (cs *CSRFService) DeleteCSRF(ctx context.Context, token dto.CSRFToken) error {
 	funcName := "CSRFService.DeleteCSRF"
 	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
+	requestID := ctx.Value(dto.RequestIDKey).(uuid.UUID)
 
-	logger.Debug("Contacting GRPC server", funcName, nodeName)
-	serverResponse, _ := cs.client.DeleteCSRF(ctx, &microservice.CSRFToken{
-		Value: token.Value,
-	})
-	logger.Debug("Info received", funcName, nodeName)
+	grpcRequest := &microservice.DeleteCSRFRequest{
+		RequestID: requestID.String(),
+		Value:     &microservice.CSRFToken{Value: token.Value},
+	}
+
+	logger.DebugFmt("Contacting GRPC server", requestID.String(), funcName, nodeName)
+	serverResponse, _ := cs.client.DeleteCSRF(ctx, grpcRequest)
+	logger.DebugFmt("Response received", requestID.String(), funcName, nodeName)
 
 	return CSRFServiceErrors[serverResponse.Code]
 }

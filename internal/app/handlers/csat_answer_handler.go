@@ -10,6 +10,8 @@ import (
 	"server/internal/service"
 
 	logger "server/internal/logging"
+
+	"github.com/google/uuid"
 )
 
 type CSATAnswerHandler struct {
@@ -40,6 +42,7 @@ func (ah CSATAnswerHandler) Create(w http.ResponseWriter, r *http.Request) {
 	failBorder := "---------------------------------- Create CSAT answer FAIL ----------------------------------"
 
 	logger := rCtx.Value(dto.LoggerKey).(logger.ILogger)
+	requestID := rCtx.Value(dto.RequestIDKey).(uuid.UUID)
 
 	logger.Info("---------------------------------- Create CSAT answer ----------------------------------")
 
@@ -48,10 +51,19 @@ func (ah CSATAnswerHandler) Create(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		logger.Error(errorMessage + err.Error())
 		logger.Info(failBorder)
-		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
+		apperrors.ReturnError(apperrors.BadRequestResponse, w, r)
 		return
 	}
-	logger.Debug("JSON Decoded", funcName, nodeName)
+	logger.DebugFmt("JSON Decoded", requestID.String(), funcName, nodeName)
+
+	user, ok := rCtx.Value(dto.UserObjKey).(*entities.User)
+	if !ok {
+		logger.Error(errorMessage + "User not found")
+		logger.Info(failBorder)
+		apperrors.ReturnError(apperrors.GenericUnauthorizedResponse, w, r)
+		return
+	}
+	logger.DebugFmt("User object acquired from context", requestID.String(), funcName, nodeName)
 
 	err = ah.qs.CheckRating(rCtx, CSATAnswerInfo)
 	if err != nil {
@@ -60,16 +72,7 @@ func (ah CSATAnswerHandler) Create(w http.ResponseWriter, r *http.Request) {
 		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
 		return
 	}
-	logger.Debug("Rating checked", funcName, nodeName)
-
-	user, ok := rCtx.Value(dto.UserObjKey).(*entities.User)
-	if !ok {
-		logger.Error(errorMessage + err.Error())
-		logger.Info(failBorder)
-		apperrors.ReturnError(apperrors.GenericUnauthorizedResponse, w, r)
-		return
-	}
-	logger.Debug("User object acquired from context", funcName, nodeName)
+	logger.DebugFmt("Rating checked", requestID.String(), funcName, nodeName)
 
 	CSATAnswer := dto.NewCSATAnswer{
 		UserID:     user.ID,
@@ -83,7 +86,7 @@ func (ah CSATAnswerHandler) Create(w http.ResponseWriter, r *http.Request) {
 		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
 		return
 	}
-	logger.Debug("Answer created", funcName, nodeName)
+	logger.DebugFmt("Answer created", requestID.String(), funcName, nodeName)
 
 	response := dto.JSONResponse{
 		Body: dto.JSONMap{},
@@ -95,7 +98,7 @@ func (ah CSATAnswerHandler) Create(w http.ResponseWriter, r *http.Request) {
 		apperrors.ReturnError(apperrors.InternalServerErrorResponse, w, r)
 		return
 	}
-	logger.Debug("response written", funcName, nodeName)
+	logger.DebugFmt("response written", requestID.String(), funcName, nodeName)
 
 	logger.Info("---------------------------------- Create CSAT answer SUCCESS ----------------------------------")
 }

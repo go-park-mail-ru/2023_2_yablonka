@@ -19,9 +19,9 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type AuthServiceClient interface {
-	AuthUser(ctx context.Context, in *UserID, opts ...grpc.CallOption) (*AuthUserResponse, error)
-	VerifyAuth(ctx context.Context, in *SessionToken, opts ...grpc.CallOption) (*VerifyAuthResponse, error)
-	LogOut(ctx context.Context, in *SessionToken, opts ...grpc.CallOption) (*LogOutResponse, error)
+	AuthUser(ctx context.Context, in *AuthUserRequest, opts ...grpc.CallOption) (*AuthUserResponse, error)
+	VerifyAuth(ctx context.Context, in *VerifyAuthRequest, opts ...grpc.CallOption) (*VerifyAuthResponse, error)
+	LogOut(ctx context.Context, in *LogOutRequest, opts ...grpc.CallOption) (*LogOutResponse, error)
 	GetLifetime(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*GetLifetimeResponse, error)
 }
 
@@ -33,7 +33,7 @@ func NewAuthServiceClient(cc grpc.ClientConnInterface) AuthServiceClient {
 	return &authServiceClient{cc}
 }
 
-func (c *authServiceClient) AuthUser(ctx context.Context, in *UserID, opts ...grpc.CallOption) (*AuthUserResponse, error) {
+func (c *authServiceClient) AuthUser(ctx context.Context, in *AuthUserRequest, opts ...grpc.CallOption) (*AuthUserResponse, error) {
 	out := new(AuthUserResponse)
 	err := c.cc.Invoke(ctx, "/auth.AuthService/AuthUser", in, out, opts...)
 	if err != nil {
@@ -42,7 +42,7 @@ func (c *authServiceClient) AuthUser(ctx context.Context, in *UserID, opts ...gr
 	return out, nil
 }
 
-func (c *authServiceClient) VerifyAuth(ctx context.Context, in *SessionToken, opts ...grpc.CallOption) (*VerifyAuthResponse, error) {
+func (c *authServiceClient) VerifyAuth(ctx context.Context, in *VerifyAuthRequest, opts ...grpc.CallOption) (*VerifyAuthResponse, error) {
 	out := new(VerifyAuthResponse)
 	err := c.cc.Invoke(ctx, "/auth.AuthService/VerifyAuth", in, out, opts...)
 	if err != nil {
@@ -51,7 +51,7 @@ func (c *authServiceClient) VerifyAuth(ctx context.Context, in *SessionToken, op
 	return out, nil
 }
 
-func (c *authServiceClient) LogOut(ctx context.Context, in *SessionToken, opts ...grpc.CallOption) (*LogOutResponse, error) {
+func (c *authServiceClient) LogOut(ctx context.Context, in *LogOutRequest, opts ...grpc.CallOption) (*LogOutResponse, error) {
 	out := new(LogOutResponse)
 	err := c.cc.Invoke(ctx, "/auth.AuthService/LogOut", in, out, opts...)
 	if err != nil {
@@ -73,9 +73,9 @@ func (c *authServiceClient) GetLifetime(ctx context.Context, in *emptypb.Empty, 
 // All implementations must embed UnimplementedAuthServiceServer
 // for forward compatibility
 type AuthServiceServer interface {
-	AuthUser(context.Context, *UserID) (*AuthUserResponse, error)
-	VerifyAuth(context.Context, *SessionToken) (*VerifyAuthResponse, error)
-	LogOut(context.Context, *SessionToken) (*LogOutResponse, error)
+	AuthUser(context.Context, *AuthUserRequest) (*AuthUserResponse, error)
+	VerifyAuth(context.Context, *VerifyAuthRequest) (*VerifyAuthResponse, error)
+	LogOut(context.Context, *LogOutRequest) (*LogOutResponse, error)
 	GetLifetime(context.Context, *emptypb.Empty) (*GetLifetimeResponse, error)
 	mustEmbedUnimplementedAuthServiceServer()
 }
@@ -84,13 +84,13 @@ type AuthServiceServer interface {
 type UnimplementedAuthServiceServer struct {
 }
 
-func (UnimplementedAuthServiceServer) AuthUser(context.Context, *UserID) (*AuthUserResponse, error) {
+func (UnimplementedAuthServiceServer) AuthUser(context.Context, *AuthUserRequest) (*AuthUserResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AuthUser not implemented")
 }
-func (UnimplementedAuthServiceServer) VerifyAuth(context.Context, *SessionToken) (*VerifyAuthResponse, error) {
+func (UnimplementedAuthServiceServer) VerifyAuth(context.Context, *VerifyAuthRequest) (*VerifyAuthResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method VerifyAuth not implemented")
 }
-func (UnimplementedAuthServiceServer) LogOut(context.Context, *SessionToken) (*LogOutResponse, error) {
+func (UnimplementedAuthServiceServer) LogOut(context.Context, *LogOutRequest) (*LogOutResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method LogOut not implemented")
 }
 func (UnimplementedAuthServiceServer) GetLifetime(context.Context, *emptypb.Empty) (*GetLifetimeResponse, error) {
@@ -110,7 +110,7 @@ func RegisterAuthServiceServer(s grpc.ServiceRegistrar, srv AuthServiceServer) {
 }
 
 func _AuthService_AuthUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(UserID)
+	in := new(AuthUserRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -122,13 +122,13 @@ func _AuthService_AuthUser_Handler(srv interface{}, ctx context.Context, dec fun
 		FullMethod: "/auth.AuthService/AuthUser",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AuthServiceServer).AuthUser(ctx, req.(*UserID))
+		return srv.(AuthServiceServer).AuthUser(ctx, req.(*AuthUserRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _AuthService_VerifyAuth_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(SessionToken)
+	in := new(VerifyAuthRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -140,13 +140,13 @@ func _AuthService_VerifyAuth_Handler(srv interface{}, ctx context.Context, dec f
 		FullMethod: "/auth.AuthService/VerifyAuth",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AuthServiceServer).VerifyAuth(ctx, req.(*SessionToken))
+		return srv.(AuthServiceServer).VerifyAuth(ctx, req.(*VerifyAuthRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _AuthService_LogOut_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(SessionToken)
+	in := new(LogOutRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -158,7 +158,7 @@ func _AuthService_LogOut_Handler(srv interface{}, ctx context.Context, dec func(
 		FullMethod: "/auth.AuthService/LogOut",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AuthServiceServer).LogOut(ctx, req.(*SessionToken))
+		return srv.(AuthServiceServer).LogOut(ctx, req.(*LogOutRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }

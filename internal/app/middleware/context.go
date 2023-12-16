@@ -6,8 +6,11 @@ import (
 	"server/internal/config"
 	logger "server/internal/logging"
 	"server/internal/pkg/dto"
-	"strconv"
+
+	"github.com/google/uuid"
 )
+
+const nodeName = "middleware"
 
 func SetContext(sc config.ServerConfig, logger logger.ILogger) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
@@ -17,14 +20,15 @@ func SetContext(sc config.ServerConfig, logger logger.ILogger) func(http.Handler
 			funcName := "SetLogger"
 
 			logger.Info(r.URL.Path)
+			requestID := uuid.New()
 
 			rCtx := context.WithValue(r.Context(), dto.LoggerKey, logger)
-			logger.Debug("Added logger to context", funcName, "middleware")
+			logger.DebugFmt("Added logger to context", requestID.String(), funcName, nodeName)
 
-			rCtx = context.WithValue(rCtx, dto.BaseURLKey,
-				"http://"+sc.Host+":"+strconv.FormatUint(uint64(sc.BackendPort), 10)+"/",
+			rCtx = context.WithValue(rCtx, dto.RequestIDKey,
+				uuid.New(),
 			)
-			logger.Debug("Added base URL to context", funcName, "middleware")
+			logger.DebugFmt("Added request ID to context", requestID.String(), funcName, nodeName)
 
 			logger.Info("*************** CONTEXT SET UP ***************")
 

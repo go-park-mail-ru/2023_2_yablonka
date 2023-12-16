@@ -26,14 +26,29 @@ enum ErrorCode {
     SESSION_NOT_FOUND = 5;
 }
 
+message AuthUserRequest {
+    string RequestID = 1;
+    UserID Value = 2;
+}
+
 message AuthUserResponse {
     ErrorCode Code = 1;
     SessionToken Response = 2;
 }
 
+message VerifyAuthRequest {
+    string RequestID = 1;
+    SessionToken Value = 2;
+}
+
 message VerifyAuthResponse {
     ErrorCode Code = 1;
     UserID Response = 2;
+}
+
+message LogOutRequest {
+    string RequestID = 1;
+    SessionToken Value = 2;
 }
 
 message LogOutResponse {
@@ -46,9 +61,9 @@ message GetLifetimeResponse {
 }
 
 service AuthService {
-    rpc AuthUser (UserID) returns (AuthUserResponse) {}
-    rpc VerifyAuth (SessionToken) returns (VerifyAuthResponse) {}
-    rpc LogOut (SessionToken) returns (LogOutResponse) {}
+    rpc AuthUser (AuthUserRequest) returns (AuthUserResponse) {}
+    rpc VerifyAuth (VerifyAuthRequest) returns (VerifyAuthResponse) {}
+    rpc LogOut (LogOutRequest) returns (LogOutResponse) {}
     rpc GetLifetime (google.protobuf.Empty) returns (GetLifetimeResponse) {}
 }
 
