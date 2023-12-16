@@ -273,6 +273,59 @@ func TestUserHandler_Unit_ChangePassword(t *testing.T) {
 			wantErr:      true,
 			expectedCode: http.StatusUnauthorized,
 		},
+		{
+			name: "Bad request (failed to update password)",
+			args: args{
+				user: &entities.User{
+					ID:           uint64(1),
+					Email:        "mock@mail.com",
+					PasswordHash: "Mock hash",
+				},
+				passwords: dto.PasswordChangeInfo{
+					UserID:      uint64(1),
+					OldPassword: "Mock old password",
+					NewPassword: "Mock new password",
+				},
+				session: dto.SessionToken{
+					ID: "Mock session",
+				},
+				expectations: func(us *mock_service.MockIUserService, args args) *http.Request {
+					cookie := &http.Cookie{
+						Name:     "tabula_user",
+						Value:    args.session.ID,
+						HttpOnly: true,
+						SameSite: http.SameSiteLaxMode,
+						Expires:  args.session.ExpirationDate,
+						Path:     "/api/v2/",
+					}
+
+					us.
+						EXPECT().
+						UpdatePassword(gomock.Any(), args.passwords).
+						Return(apperrors.ErrUserNotUpdated)
+
+					body := bytes.NewReader([]byte(fmt.Sprintf(`{"old_password":"%s", "new_password":"%s"}`,
+						args.passwords.OldPassword, args.passwords.NewPassword)))
+
+					r := httptest.
+						NewRequest("POST", "/api/v2/user/edit/change_password/", body).
+						WithContext(
+							context.WithValue(
+								context.WithValue(
+									context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+									dto.UserObjKey, args.user,
+								),
+								dto.RequestIDKey, uuid.New(),
+							),
+						)
+					r.AddCookie(cookie)
+
+					return r
+				},
+			},
+			wantErr:      true,
+			expectedCode: http.StatusInternalServerError,
+		},
 	}
 	for _, tt := range tests {
 		tt := tt
