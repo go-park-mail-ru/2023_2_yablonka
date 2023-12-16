@@ -13,6 +13,7 @@ import (
 	"time"
 
 	sq "github.com/Masterminds/squirrel"
+	"github.com/google/uuid"
 
 	"github.com/DATA-DOG/go-sqlmock"
 )
@@ -115,7 +116,10 @@ func TestPostgresAuthStorage_CreateSession(t *testing.T) {
 			}
 			defer db.Close()
 
-			ctx := context.WithValue(context.Background(), dto.LoggerKey, getLogger())
+			ctx := context.WithValue(
+				context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+				dto.RequestIDKey, uuid.New(),
+			)
 
 			tt.args.query(mock, tt.args)
 
@@ -209,7 +213,10 @@ func TestPostgresAuthStorage_DeleteSession(t *testing.T) {
 			}
 			defer db.Close()
 
-			ctx := context.WithValue(context.Background(), dto.LoggerKey, getLogger())
+			ctx := context.WithValue(
+				context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+				dto.RequestIDKey, uuid.New(),
+			)
 
 			tt.args.query(mock, tt.args)
 
@@ -325,7 +332,10 @@ func TestPostgresAuthStorage_GetSession(t *testing.T) {
 
 			s := NewAuthStorage(db)
 
-			ctx := context.WithValue(context.Background(), dto.LoggerKey, getLogger())
+			ctx := context.WithValue(
+				context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+				dto.RequestIDKey, uuid.New(),
+			)
 			_, err = s.GetSession(ctx, tt.args.token)
 
 			log.Println(err)

@@ -11,6 +11,7 @@ import (
 
 	"github.com/DATA-DOG/go-sqlmock"
 	sq "github.com/Masterminds/squirrel"
+	"github.com/google/uuid"
 )
 
 func TestPostgresCSRFStorage_Create(t *testing.T) {
@@ -90,7 +91,10 @@ func TestPostgresCSRFStorage_Create(t *testing.T) {
 			}
 			defer db.Close()
 
-			ctx := context.WithValue(context.Background(), dto.LoggerKey, getLogger())
+			ctx := context.WithValue(
+				context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+				dto.RequestIDKey, uuid.New(),
+			)
 
 			tt.args.query(mock, tt.args)
 
@@ -174,7 +178,10 @@ func TestPostgresCSRFStorage_Delete(t *testing.T) {
 			}
 			defer db.Close()
 
-			ctx := context.WithValue(context.Background(), dto.LoggerKey, getLogger())
+			ctx := context.WithValue(
+				context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+				dto.RequestIDKey, uuid.New(),
+			)
 
 			tt.args.query(mock, tt.args)
 
@@ -261,7 +268,10 @@ func TestPostgresCSRFStorage_Get(t *testing.T) {
 			}
 			defer db.Close()
 
-			ctx := context.WithValue(context.Background(), dto.LoggerKey, getLogger())
+			ctx := context.WithValue(
+				context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+				dto.RequestIDKey, uuid.New(),
+			)
 
 			tt.args.query(mock, tt.args)
 

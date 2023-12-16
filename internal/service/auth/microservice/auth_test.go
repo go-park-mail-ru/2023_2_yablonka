@@ -76,7 +76,10 @@ func TestAuthService_AuthUser(t *testing.T) {
 			}
 			defer grcpConn.Close()
 
-			ctx := context.WithValue(context.Background(), dto.LoggerKey, getLogger())
+			ctx := context.WithValue(
+				context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+				dto.RequestIDKey, uuid.New(),
+			)
 
 			cfg, _ := config.NewSessionConfig()
 

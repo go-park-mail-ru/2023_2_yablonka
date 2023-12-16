@@ -10,6 +10,7 @@ import (
 
 	"github.com/DATA-DOG/go-sqlmock"
 	sq "github.com/Masterminds/squirrel"
+	"github.com/google/uuid"
 	"github.com/lib/pq"
 )
 
@@ -93,7 +94,10 @@ func TestPostgresTaskStorage_Create(t *testing.T) {
 			}
 			defer db.Close()
 
-			ctx := context.WithValue(context.Background(), dto.LoggerKey, getLogger())
+			ctx := context.WithValue(
+				context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+				dto.RequestIDKey, uuid.New(),
+			)
 
 			tt.args.query(mock, tt.args)
 
@@ -188,7 +192,10 @@ func TestPostgresTaskStorage_CheckAccess(t *testing.T) {
 			}
 			defer db.Close()
 
-			ctx := context.WithValue(context.Background(), dto.LoggerKey, getLogger())
+			ctx := context.WithValue(
+				context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+				dto.RequestIDKey, uuid.New(),
+			)
 
 			tt.args.query(mock, tt.args)
 
@@ -282,7 +289,10 @@ func TestPostgresTaskStorage_RemoveUser(t *testing.T) {
 			}
 			defer db.Close()
 
-			ctx := context.WithValue(context.Background(), dto.LoggerKey, getLogger())
+			ctx := context.WithValue(
+				context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+				dto.RequestIDKey, uuid.New(),
+			)
 
 			tt.args.query(mock, tt.args)
 
@@ -372,7 +382,10 @@ func TestPostgresTaskStorage_AddUser(t *testing.T) {
 			}
 			defer db.Close()
 
-			ctx := context.WithValue(context.Background(), dto.LoggerKey, getLogger())
+			ctx := context.WithValue(
+				context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+				dto.RequestIDKey, uuid.New(),
+			)
 
 			tt.args.query(mock, tt.args)
 
@@ -456,7 +469,10 @@ func TestPostgresTaskStorage_Delete(t *testing.T) {
 			}
 			defer db.Close()
 
-			ctx := context.WithValue(context.Background(), dto.LoggerKey, getLogger())
+			ctx := context.WithValue(
+				context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+				dto.RequestIDKey, uuid.New(),
+			)
 
 			tt.args.query(mock, tt.args)
 
@@ -551,7 +567,10 @@ func TestPostgresTaskStorage_Read(t *testing.T) {
 			}
 			defer db.Close()
 
-			ctx := context.WithValue(context.Background(), dto.LoggerKey, getLogger())
+			ctx := context.WithValue(
+				context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+				dto.RequestIDKey, uuid.New(),
+			)
 
 			tt.args.query(mock, tt.args)
 
@@ -651,7 +670,10 @@ func TestPostgresTaskStorage_ReadMany(t *testing.T) {
 			}
 			defer db.Close()
 
-			ctx := context.WithValue(context.Background(), dto.LoggerKey, getLogger())
+			ctx := context.WithValue(
+				context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+				dto.RequestIDKey, uuid.New(),
+			)
 
 			tt.args.query(mock, tt.args)
 
@@ -755,7 +777,10 @@ func TestPostgresTaskStorage_Update(t *testing.T) {
 			}
 			defer db.Close()
 
-			ctx := context.WithValue(context.Background(), dto.LoggerKey, getLogger())
+			ctx := context.WithValue(
+				context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+				dto.RequestIDKey, uuid.New(),
+			)
 
 			tt.args.query(mock, tt.args)
 

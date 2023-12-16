@@ -12,6 +12,7 @@ import (
 
 	"github.com/DATA-DOG/go-sqlmock"
 	sq "github.com/Masterminds/squirrel"
+	"github.com/google/uuid"
 	"github.com/lib/pq"
 )
 
@@ -119,7 +120,10 @@ func TestBoardStorage_GetUsers(t *testing.T) {
 
 			tt.args.query(mock, tt.args)
 
-			ctx := context.WithValue(context.Background(), dto.LoggerKey, getLogger())
+			ctx := context.WithValue(
+				context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+				dto.RequestIDKey, uuid.New(),
+			)
 
 			s := NewBoardStorage(db)
 
@@ -218,7 +222,10 @@ func TestBoardStorage_GetById(t *testing.T) {
 
 			tt.args.query(mock, tt.args)
 
-			ctx := context.WithValue(context.Background(), dto.LoggerKey, getLogger())
+			ctx := context.WithValue(
+				context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+				dto.RequestIDKey, uuid.New(),
+			)
 
 			s := NewBoardStorage(db)
 
@@ -352,7 +359,10 @@ func TestBoardStorage_CheckAccess(t *testing.T) {
 
 			tt.args.query(mock, tt.args)
 
-			ctx := context.WithValue(context.Background(), dto.LoggerKey, getLogger())
+			ctx := context.WithValue(
+				context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+				dto.RequestIDKey, uuid.New(),
+			)
 
 			s := NewBoardStorage(db)
 
@@ -482,7 +492,10 @@ func TestBoardStorage_GetLists(t *testing.T) {
 
 			tt.args.query(mock, tt.args)
 
-			ctx := context.WithValue(context.Background(), dto.LoggerKey, getLogger())
+			ctx := context.WithValue(
+				context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+				dto.RequestIDKey, uuid.New(),
+			)
 
 			s := NewBoardStorage(db)
 
@@ -579,7 +592,10 @@ func TestBoardStorage_UpdateData(t *testing.T) {
 
 			tt.args.query(mock, tt.args)
 
-			ctx := context.WithValue(context.Background(), dto.LoggerKey, getLogger())
+			ctx := context.WithValue(
+				context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+				dto.RequestIDKey, uuid.New(),
+			)
 
 			s := NewBoardStorage(db)
 
@@ -676,7 +692,10 @@ func TestBoardStorage_UpdateThumbnailUrl(t *testing.T) {
 
 			tt.args.query(mock, tt.args)
 
-			ctx := context.WithValue(context.Background(), dto.LoggerKey, getLogger())
+			ctx := context.WithValue(
+				context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+				dto.RequestIDKey, uuid.New(),
+			)
 
 			s := NewBoardStorage(db)
 
@@ -1107,9 +1126,12 @@ func TestBoardStorage_Create(t *testing.T) {
 
 			tt.args.query(mock, tt.args)
 
-			ctx := context.WithValue(context.Background(), dto.UserObjKey, tt.args.user)
-			ctx = context.WithValue(ctx, dto.LoggerKey, getLogger())
-
+			ctx := context.WithValue(
+				context.WithValue(
+					context.WithValue(context.Background(), dto.UserObjKey, tt.args.user),
+					dto.RequestIDKey, uuid.New(),
+				), dto.LoggerKey, getLogger(),
+			)
 			s := NewBoardStorage(db)
 
 			_, err = s.Create(ctx, tt.args.info)
@@ -1202,7 +1224,10 @@ func TestBoardStorage_Delete(t *testing.T) {
 
 			tt.args.query(mock, tt.args)
 
-			ctx := context.WithValue(context.Background(), dto.LoggerKey, getLogger())
+			ctx := context.WithValue(
+				context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+				dto.RequestIDKey, uuid.New(),
+			)
 
 			s := NewBoardStorage(db)
 
@@ -1392,7 +1417,10 @@ func TestBoardStorage_AddUser(t *testing.T) {
 
 			tt.args.query(mock, tt.args)
 
-			ctx := context.WithValue(context.Background(), dto.LoggerKey, getLogger())
+			ctx := context.WithValue(
+				context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+				dto.RequestIDKey, uuid.New(),
+			)
 
 			s := NewBoardStorage(db)
 
@@ -1495,7 +1523,10 @@ func TestBoardStorage_RemoveUser(t *testing.T) {
 
 			tt.args.query(mock, tt.args)
 
-			ctx := context.WithValue(context.Background(), dto.LoggerKey, getLogger())
+			ctx := context.WithValue(
+				context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+				dto.RequestIDKey, uuid.New(),
+			)
 
 			s := NewBoardStorage(db)
 

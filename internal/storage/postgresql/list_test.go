@@ -10,6 +10,7 @@ import (
 
 	"github.com/DATA-DOG/go-sqlmock"
 	sq "github.com/Masterminds/squirrel"
+	"github.com/google/uuid"
 	"github.com/lib/pq"
 )
 
@@ -95,7 +96,10 @@ func TestPostgresListStorage_Create(t *testing.T) {
 			}
 			defer db.Close()
 
-			ctx := context.WithValue(context.Background(), dto.LoggerKey, getLogger())
+			ctx := context.WithValue(
+				context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+				dto.RequestIDKey, uuid.New(),
+			)
 
 			tt.args.query(mock, tt.args)
 
@@ -179,7 +183,10 @@ func TestPostgresListStorage_Delete(t *testing.T) {
 			}
 			defer db.Close()
 
-			ctx := context.WithValue(context.Background(), dto.LoggerKey, getLogger())
+			ctx := context.WithValue(
+				context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+				dto.RequestIDKey, uuid.New(),
+			)
 
 			tt.args.query(mock, tt.args)
 
@@ -277,7 +284,10 @@ func TestPostgresListStorage_Update(t *testing.T) {
 			}
 			defer db.Close()
 
-			ctx := context.WithValue(context.Background(), dto.LoggerKey, getLogger())
+			ctx := context.WithValue(
+				context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+				dto.RequestIDKey, uuid.New(),
+			)
 
 			tt.args.query(mock, tt.args)
 
@@ -368,7 +378,10 @@ func TestPostgresListStorage_GetTasksWithID(t *testing.T) {
 			}
 			defer db.Close()
 
-			ctx := context.WithValue(context.Background(), dto.LoggerKey, getLogger())
+			ctx := context.WithValue(
+				context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+				dto.RequestIDKey, uuid.New(),
+			)
 
 			tt.args.query(mock, tt.args)
 

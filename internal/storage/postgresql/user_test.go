@@ -9,6 +9,7 @@ import (
 
 	"github.com/DATA-DOG/go-sqlmock"
 	sq "github.com/Masterminds/squirrel"
+	"github.com/google/uuid"
 )
 
 func TestPostgresUserStorage_Create(t *testing.T) {
@@ -90,7 +91,10 @@ func TestPostgresUserStorage_Create(t *testing.T) {
 			}
 			defer db.Close()
 
-			ctx := context.WithValue(context.Background(), dto.LoggerKey, getLogger())
+			ctx := context.WithValue(
+				context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+				dto.RequestIDKey, uuid.New(),
+			)
 
 			tt.args.query(mock, tt.args)
 
@@ -176,7 +180,10 @@ func TestPostgresUserStorage_Delete(t *testing.T) {
 			}
 			defer db.Close()
 
-			ctx := context.WithValue(context.Background(), dto.LoggerKey, getLogger())
+			ctx := context.WithValue(
+				context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+				dto.RequestIDKey, uuid.New(),
+			)
 
 			tt.args.query(mock, tt.args)
 
@@ -268,7 +275,10 @@ func TestPostgresUserStorage_UpdatePassword(t *testing.T) {
 			}
 			defer db.Close()
 
-			ctx := context.WithValue(context.Background(), dto.LoggerKey, getLogger())
+			ctx := context.WithValue(
+				context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+				dto.RequestIDKey, uuid.New(),
+			)
 
 			tt.args.query(mock, tt.args)
 
@@ -360,7 +370,10 @@ func TestPostgresUserStorage_UpdateAvatarUrl(t *testing.T) {
 			}
 			defer db.Close()
 
-			ctx := context.WithValue(context.Background(), dto.LoggerKey, getLogger())
+			ctx := context.WithValue(
+				context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+				dto.RequestIDKey, uuid.New(),
+			)
 
 			tt.args.query(mock, tt.args)
 
@@ -464,7 +477,10 @@ func TestPostgresUserStorage_UpdateProfile(t *testing.T) {
 			}
 			defer db.Close()
 
-			ctx := context.WithValue(context.Background(), dto.LoggerKey, getLogger())
+			ctx := context.WithValue(
+				context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+				dto.RequestIDKey, uuid.New(),
+			)
 
 			tt.args.query(mock, tt.args)
 
@@ -552,7 +568,10 @@ func TestPostgresUserStorage_GetLoginInfoWithID(t *testing.T) {
 			}
 			defer db.Close()
 
-			ctx := context.WithValue(context.Background(), dto.LoggerKey, getLogger())
+			ctx := context.WithValue(
+				context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+				dto.RequestIDKey, uuid.New(),
+			)
 
 			tt.args.query(mock, tt.args)
 
@@ -640,7 +659,10 @@ func TestPostgresUserStorage_GetWithID(t *testing.T) {
 			}
 			defer db.Close()
 
-			ctx := context.WithValue(context.Background(), dto.LoggerKey, getLogger())
+			ctx := context.WithValue(
+				context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+				dto.RequestIDKey, uuid.New(),
+			)
 
 			tt.args.query(mock, tt.args)
 
@@ -728,7 +750,10 @@ func TestPostgresUserStorage_GetWithLogin(t *testing.T) {
 			}
 			defer db.Close()
 
-			ctx := context.WithValue(context.Background(), dto.LoggerKey, getLogger())
+			ctx := context.WithValue(
+				context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+				dto.RequestIDKey, uuid.New(),
+			)
 
 			tt.args.query(mock, tt.args)
 
