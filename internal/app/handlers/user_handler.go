@@ -284,6 +284,12 @@ func (uh UserHandler) DeleteAvatar(w http.ResponseWriter, r *http.Request) {
 	}
 	logger.DebugFmt("User object acquired from context", requestID.String(), funcName, nodeName)
 
+	if *user.AvatarURL == "img/user_avatars/avatar.jpg" {
+		logger.Error(errorMessage + "user has no avatar")
+		logger.Info(failBorder)
+		apperrors.ReturnError(apperrors.GenericUnauthorizedResponse, w, r)
+	}
+
 	avatarRemovalInfo := dto.AvatarRemovalInfo{
 		UserID:    user.ID,
 		AvatarUrl: *user.AvatarURL,
