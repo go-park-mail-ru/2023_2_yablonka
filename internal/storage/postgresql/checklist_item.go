@@ -171,7 +171,7 @@ func (s PostgresChecklistItemStorage) UpdateOrder(ctx context.Context, ids dto.C
 
 	caseBuilder := sq.Case()
 	for i, id := range ids.Values {
-		caseBuilder = caseBuilder.When(sq.Eq{"id": id}, i)
+		caseBuilder = caseBuilder.When(sq.Eq{"id": fmt.Sprintf("%v", id)}, fmt.Sprintf("%v", i))
 	}
 	caseBuilder.Else("list_position")
 
