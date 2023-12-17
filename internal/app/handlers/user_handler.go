@@ -287,7 +287,7 @@ func (uh UserHandler) DeleteAvatar(w http.ResponseWriter, r *http.Request) {
 	if *user.AvatarURL == "img/user_avatars/avatar.jpg" || *user.AvatarURL == "avatar.jpg" {
 		logger.Error(errorMessage + "user has no avatar")
 		logger.Info(failBorder)
-		apperrors.ReturnError(apperrors.GenericUnauthorizedResponse, w, r)
+		apperrors.ReturnError(apperrors.GoneResponse, w, r)
 	}
 
 	avatarRemovalInfo := dto.AvatarRemovalInfo{
