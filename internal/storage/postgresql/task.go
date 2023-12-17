@@ -394,6 +394,7 @@ func (s PostgresTaskStorage) Move(ctx context.Context, taskMoveInfo dto.TaskMove
 	_, err = s.db.Exec(query, args...)
 	if err != nil {
 		logger.DebugFmt(err.Error(), requestID.String(), funcName, nodeName)
+		return apperrors.ErrCouldNotChangeTaskOrder
 	}
 	logger.DebugFmt("Commited changes", requestID.String(), funcName, nodeName)
 
