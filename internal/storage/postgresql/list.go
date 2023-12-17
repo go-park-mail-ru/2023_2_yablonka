@@ -182,9 +182,9 @@ func (s PostgresListStorage) UpdateOrder(ctx context.Context, ids dto.ListIDs) e
 
 	caseBuilder := sq.Case()
 	for i, id := range ids.Values {
-		caseBuilder = caseBuilder.When(sq.Eq{"id": id}, i)
+		caseBuilder = caseBuilder.When(sq.Eq{"id": fmt.Sprintf("%v", id)}, fmt.Sprintf("%v", i))
 	}
-	caseBuilder.Else(0)
+	caseBuilder.Else("list_position")
 
 	sql, args, err := sq.
 		Update("public.list").

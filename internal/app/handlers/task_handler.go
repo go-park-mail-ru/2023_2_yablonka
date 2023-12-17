@@ -429,7 +429,7 @@ func (th TaskHandler) Move(w http.ResponseWriter, r *http.Request) {
 		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
 		return
 	}
-	logger.DebugFmt("list order changed", requestID.String(), funcName, nodeName)
+	logger.DebugFmt("task order changed", requestID.String(), funcName, nodeName)
 
 	response := dto.JSONResponse{
 		Body: dto.JSONMap{},
