@@ -32,7 +32,7 @@ var (
 	ErrGRPCServerError = errors.New("GRPC server error")
 )
 
-// Ошибки, связанные с авторизацией
+// Ошибки, связанные с пользователями
 var (
 	// ErrUserNotFound ошибка: нет пользователя с такими данными
 	ErrUserNotFound = errors.New("no user that matches the provided credentials")
@@ -48,6 +48,8 @@ var (
 	ErrUserNotDeleted = errors.New("user couldn't be deleted")
 	// ErrCouldNotGetUser ошибка: не удалось получить задание в БД
 	ErrCouldNotGetUser = errors.New("couldn't get User")
+	// ErrAvatarGone ошибка: удаление пустого аватара
+	ErrAvatarGone = errors.New("deleting an empty avatar")
 )
 
 // Ошибки, связанные с CSAT
@@ -256,6 +258,13 @@ var StatusConflictResponse = ErrorResponse{
 	Message: "Пользователь с таким адресом почты уже существует",
 }
 
+// GoneResponse
+// заглушка для ответа 410 без разглашения имплементации
+var GoneResponse = ErrorResponse{
+	Code:    http.StatusGone,
+	Message: "Ресурс уже был удалён",
+}
+
 // ErrorMap
 // карта для связи ошибок приложения и ответа бэкэнд-сервера
 var ErrorMap = map[error]ErrorResponse{
@@ -323,6 +332,7 @@ var ErrorMap = map[error]ErrorResponse{
 	ErrCouldNotGetQuestions:     InternalServerErrorResponse,
 	ErrCouldNotCreateQuestion:   InternalServerErrorResponse,
 	ErrQuestionNotUpdated:       InternalServerErrorResponse,
+	ErrAvatarGone:               GoneResponse,
 }
 
 func ErrorJSON(err ErrorResponse) []byte {
