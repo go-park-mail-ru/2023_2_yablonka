@@ -147,6 +147,8 @@ var (
 var (
 	// ErrListNotDeleted ошибка: не удалось получить список из БД
 	ErrCouldNotGetList = errors.New("could not get list")
+	// ErrListNotDeleted ошибка: не удалось изменить порядок в списке
+	ErrCouldNotChangeListOrder = errors.New("could not change list order")
 	// ErrListNotCreated ошибка: не удалось создать список в БД
 	ErrListNotCreated = errors.New("list couldn't be created")
 	// ErrListNotUpdated ошибка: не удалось получить список в БД
@@ -181,6 +183,8 @@ var (
 
 // Ошибки, связанные с TaskService
 var (
+	// ErrListNotDeleted ошибка: не удалось изменить порядок в списке
+	ErrCouldNotChangeTaskOrder = errors.New("could not change task order")
 	// ErrTaskNotCreated ошибка: не удалось создать задание в БД
 	ErrTaskNotCreated = errors.New("task couldn't be created")
 	// ErrTaskNotUpdated ошибка: не удалось получить задание в БД
@@ -321,6 +325,8 @@ var ErrorMap = map[error]ErrorResponse{
 	ErrFailedToSaveFile:         InternalServerErrorResponse,
 	ErrFailedToDeleteFile:       InternalServerErrorResponse,
 	ErrAnswerRatingTooBig:       BadRequestResponse,
+	ErrCouldNotChangeTaskOrder:  BadRequestResponse,
+	ErrCouldNotChangeListOrder:  BadRequestResponse,
 	ErrCouldNotStoreAnswer:      InternalServerErrorResponse,
 	ErrCouldNotRollback:         InternalServerErrorResponse,
 	ErrCouldNotGetQuestions:     InternalServerErrorResponse,

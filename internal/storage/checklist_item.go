@@ -16,7 +16,7 @@ type IChecklistItemStorage interface {
 	// ReadMany
 	// возвращает элементы чеклиста
 	// или возвращает ошибки ...
-	ReadMany(context.Context, dto.ChecklistItemIDs) (*[]dto.ChecklistItemInfo, error)
+	ReadMany(context.Context, dto.ChecklistItemStringIDs) (*[]dto.ChecklistItemInfo, error)
 	// Update
 	// обновляет элемент чеклиста в БД
 	// или возвращает ошибки ...

@@ -131,6 +131,9 @@ func GetChiMux(manager handlers.Handlers, config config.Config, logger logging.I
 			r.Post("/edit/", metricsMiddleware.WrapHandler(
 				"/task/edit/", http.HandlerFunc(manager.TaskHandler.Update)),
 			)
+			r.Post("/move/", metricsMiddleware.WrapHandler(
+				"/task/move/", http.HandlerFunc(manager.TaskHandler.Move)),
+			)
 			r.Route("/user", func(r chi.Router) {
 				r.Post("/add/", metricsMiddleware.WrapHandler(
 					"/task/user/add/", http.HandlerFunc(manager.TaskHandler.AddUser)),
@@ -161,6 +164,9 @@ func GetChiMux(manager handlers.Handlers, config config.Config, logger logging.I
 				)
 				r.Post("/edit/", metricsMiddleware.WrapHandler(
 					"/checklist/item/edit/", http.HandlerFunc(manager.ChecklistItemHandler.Update)),
+				)
+				r.Post("/reorder/", metricsMiddleware.WrapHandler(
+					"/checklist/item/reorder/", http.HandlerFunc(manager.ChecklistItemHandler.UpdateOrder)),
 				)
 				r.Delete("/delete/", metricsMiddleware.WrapHandler(
 					"/checklist/item/delete/", http.HandlerFunc(manager.ChecklistItemHandler.Delete)),

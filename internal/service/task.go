@@ -22,6 +22,10 @@ type ITaskService interface {
 	// обновляет задание
 	// или возвращает ошибки ...
 	Update(context.Context, dto.UpdatedTaskInfo) error
+	// Move
+	// переносит задание в другой список
+	// или возвращает ошибки ...
+	Move(context.Context, dto.TaskMoveInfo) error
 	// Delete
 	// удаляет задание
 	// или возвращает ошибки ...
