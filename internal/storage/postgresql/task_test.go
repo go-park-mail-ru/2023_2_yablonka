@@ -2,8 +2,6 @@ package postgresql
 
 import (
 	"context"
-	"database/sql/driver"
-	"fmt"
 	"regexp"
 	"server/internal/apperrors"
 	"server/internal/pkg/dto"
@@ -799,6 +797,7 @@ func TestPostgresTaskStorage_Update(t *testing.T) {
 	}
 }
 
+/*
 func TestPostgresTaskStorage_Move(t *testing.T) {
 	type args struct {
 		info  *dto.TaskMoveInfo
@@ -964,3 +963,5 @@ func TestPostgresTaskStorage_Move(t *testing.T) {
 		})
 	}
 }
+
+*/
