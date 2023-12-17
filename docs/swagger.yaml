@@ -162,7 +162,7 @@ definitions:
     properties:
       ids:
         items:
-          type: string
+          type: integer
         type: array
     type: object
   dto.ChecklistItemInfo:

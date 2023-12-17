@@ -2408,7 +2408,7 @@ const docTemplate = `{
                 "ids": {
                     "type": "array",
                     "items": {
-                        "type": "string"
+                        "type": "integer"
                     }
                 }
             }

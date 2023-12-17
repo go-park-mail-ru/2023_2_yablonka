@@ -69,7 +69,7 @@ func (mr *MockIChecklistItemStorageMockRecorder) Delete(arg0, arg1 any) *gomock.
 }
 
 // ReadMany mocks base method.
-func (m *MockIChecklistItemStorage) ReadMany(arg0 context.Context, arg1 dto.ChecklistItemIDs) (*[]dto.ChecklistItemInfo, error) {
+func (m *MockIChecklistItemStorage) ReadMany(arg0 context.Context, arg1 dto.ChecklistItemStringIDs) (*[]dto.ChecklistItemInfo, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ReadMany", arg0, arg1)
 	ret0, _ := ret[0].(*[]dto.ChecklistItemInfo)

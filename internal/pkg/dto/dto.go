@@ -594,8 +594,14 @@ type ChecklistItemID struct {
 
 // ChecklistItemID
 // DTO для ID элементов чеклиста
-type ChecklistItemIDs struct {
+type ChecklistItemStringIDs struct {
 	Values []string `json:"ids"`
+}
+
+// ChecklistItemID
+// DTO для ID элементов чеклиста
+type ChecklistItemIDs struct {
+	Values []uint64 `json:"ids"`
 }
 
 // NewChecklistItemInfo

@@ -116,7 +116,7 @@ func (bs BoardService) GetFullBoard(ctx context.Context, info dto.IndividualBoar
 	}
 	logger.DebugFmt("Got checklists", requestID.String(), funcName, nodeName)
 
-	checklistItemIDs := dto.ChecklistItemIDs{}
+	checklistItemIDs := dto.ChecklistItemStringIDs{}
 	for _, checklist := range *checklists {
 		checklistItemIDs.Values = append(checklistItemIDs.Values, checklist.Items...)
 	}

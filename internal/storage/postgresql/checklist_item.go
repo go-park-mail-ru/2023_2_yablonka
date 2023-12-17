@@ -64,7 +64,7 @@ func (s PostgresChecklistItemStorage) Create(ctx context.Context, info dto.NewCh
 // ReadMany
 // дает много элементов чеклистов
 // или возвращает ошибки ...
-func (s PostgresChecklistItemStorage) ReadMany(ctx context.Context, ids dto.ChecklistItemIDs) (*[]dto.ChecklistItemInfo, error) {
+func (s PostgresChecklistItemStorage) ReadMany(ctx context.Context, ids dto.ChecklistItemStringIDs) (*[]dto.ChecklistItemInfo, error) {
 	funcName := "PostgresChecklistItemStorage.ReadMany"
 	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
 	requestID := ctx.Value(dto.RequestIDKey).(uuid.UUID)
