@@ -14,7 +14,7 @@ import (
 const nodeName = "service"
 
 type TaskService struct {
-	taskStorage storage.ITaskStorage
+	storage     storage.ITaskStorage
 	userStorage storage.IUserStorage
 }
 
@@ -22,7 +22,7 @@ type TaskService struct {
 // возвращает BoardService с инициализированным хранилищем
 func NewTaskService(ts storage.ITaskStorage, us storage.IUserStorage) *TaskService {
 	return &TaskService{
-		taskStorage: ts,
+		storage:     ts,
 		userStorage: us,
 	}
 }
@@ -31,28 +31,28 @@ func NewTaskService(ts storage.ITaskStorage, us storage.IUserStorage) *TaskServi
 // возвращает задание
 // или возвращает ошибки ...
 func (ts TaskService) Read(ctx context.Context, id dto.TaskID) (*dto.SingleTaskInfo, error) {
-	return ts.taskStorage.Read(ctx, id)
+	return ts.storage.Read(ctx, id)
 }
 
 // Create
 // создает новое задание
 // или возвращает ошибки ...
 func (ts TaskService) Create(ctx context.Context, info dto.NewTaskInfo) (*entities.Task, error) {
-	return ts.taskStorage.Create(ctx, info)
+	return ts.storage.Create(ctx, info)
 }
 
 // Update
 // обновляет задание
 // или возвращает ошибки ...
 func (ts TaskService) Update(ctx context.Context, info dto.UpdatedTaskInfo) error {
-	return ts.taskStorage.Update(ctx, info)
+	return ts.storage.Update(ctx, info)
 }
 
 // Delete
 // удаляет задание
 // или возвращает ошибки ...
 func (ts TaskService) Delete(ctx context.Context, id dto.TaskID) error {
-	return ts.taskStorage.Delete(ctx, id)
+	return ts.storage.Delete(ctx, id)
 }
 
 // AddUser
@@ -63,7 +63,7 @@ func (ts TaskService) AddUser(ctx context.Context, info dto.AddTaskUserInfo) err
 	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
 	requestID := ctx.Value(dto.RequestIDKey).(uuid.UUID)
 
-	userAccess, err := ts.taskStorage.CheckAccess(ctx, (dto.CheckTaskAccessInfo)(info))
+	userAccess, err := ts.storage.CheckAccess(ctx, (dto.CheckTaskAccessInfo)(info))
 	if err != nil {
 		return apperrors.ErrCouldNotGetUser
 	}
@@ -74,7 +74,7 @@ func (ts TaskService) AddUser(ctx context.Context, info dto.AddTaskUserInfo) err
 	}
 	logger.DebugFmt("user not in task", requestID.String(), funcName, nodeName)
 
-	return ts.taskStorage.AddUser(ctx, info)
+	return ts.storage.AddUser(ctx, info)
 }
 
 // RemoveUser
@@ -85,7 +85,7 @@ func (ts TaskService) RemoveUser(ctx context.Context, info dto.RemoveTaskUserInf
 	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
 	requestID := ctx.Value(dto.RequestIDKey).(uuid.UUID)
 
-	userAccess, err := ts.taskStorage.CheckAccess(ctx, (dto.CheckTaskAccessInfo)(info))
+	userAccess, err := ts.storage.CheckAccess(ctx, (dto.CheckTaskAccessInfo)(info))
 	if err != nil {
 		return apperrors.ErrCouldNotGetUser
 	}
@@ -96,5 +96,12 @@ func (ts TaskService) RemoveUser(ctx context.Context, info dto.RemoveTaskUserInf
 	}
 	logger.DebugFmt("user not in task", requestID.String(), funcName, nodeName)
 
-	return ts.taskStorage.RemoveUser(ctx, info)
+	return ts.storage.RemoveUser(ctx, info)
+}
+
+// Move
+// переносит задание в другой список
+// или возвращает ошибки ...
+func (ts TaskService) Move(ctx context.Context, taskMoveInfo dto.TaskMoveInfo) error {
+	return ts.storage.Move(ctx, taskMoveInfo)
 }

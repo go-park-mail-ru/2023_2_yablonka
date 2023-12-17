@@ -50,7 +50,7 @@ func TestTaskService_AddUser(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ts := TaskService{
-				taskStorage: tt.fields.taskStorage,
+				storage:     tt.fields.taskStorage,
 				userStorage: tt.fields.userStorage,
 			}
 			if err := ts.AddUser(tt.args.ctx, tt.args.info); (err != nil) != tt.wantErr {
@@ -81,7 +81,7 @@ func TestTaskService_Create(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ts := TaskService{
-				taskStorage: tt.fields.taskStorage,
+				storage:     tt.fields.taskStorage,
 				userStorage: tt.fields.userStorage,
 			}
 			got, err := ts.Create(tt.args.ctx, tt.args.info)
@@ -116,7 +116,7 @@ func TestTaskService_Delete(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ts := TaskService{
-				taskStorage: tt.fields.taskStorage,
+				storage:     tt.fields.taskStorage,
 				userStorage: tt.fields.userStorage,
 			}
 			if err := ts.Delete(tt.args.ctx, tt.args.id); (err != nil) != tt.wantErr {
@@ -147,7 +147,7 @@ func TestTaskService_Read(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ts := TaskService{
-				taskStorage: tt.fields.taskStorage,
+				storage:     tt.fields.taskStorage,
 				userStorage: tt.fields.userStorage,
 			}
 			got, err := ts.Read(tt.args.ctx, tt.args.id)
@@ -182,7 +182,7 @@ func TestTaskService_RemoveUser(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ts := TaskService{
-				taskStorage: tt.fields.taskStorage,
+				storage:     tt.fields.taskStorage,
 				userStorage: tt.fields.userStorage,
 			}
 			if err := ts.RemoveUser(tt.args.ctx, tt.args.info); (err != nil) != tt.wantErr {
@@ -212,7 +212,7 @@ func TestTaskService_Update(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ts := TaskService{
-				taskStorage: tt.fields.taskStorage,
+				storage:     tt.fields.taskStorage,
 				userStorage: tt.fields.userStorage,
 			}
 			if err := ts.Update(tt.args.ctx, tt.args.info); (err != nil) != tt.wantErr {

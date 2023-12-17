@@ -312,7 +312,7 @@ func (s *PostgreSQLBoardStorage) Create(ctx context.Context, info dto.NewBoardIn
 
 	_, err = tx.Exec(query2, args...)
 	if err != nil {
-		logger.DebugFmt("Board update failed with error "+err.Error(), requestID.String(), funcName, nodeName)
+		logger.DebugFmt("Failed to execute query with error "+err.Error(), requestID.String(), funcName, nodeName)
 		err = tx.Rollback()
 		for err != nil {
 			err = tx.Rollback()
@@ -339,7 +339,7 @@ func (s *PostgreSQLBoardStorage) Create(ctx context.Context, info dto.NewBoardIn
 
 	_, err = tx.Exec(query3, args...)
 	if err != nil {
-		log.Println("Storage -- Board user insert failed with error", err.Error())
+		logger.DebugFmt("Failed to execute query with error "+err.Error(), requestID.String(), funcName, nodeName)
 		err = tx.Rollback()
 		for err != nil {
 			err = tx.Rollback()

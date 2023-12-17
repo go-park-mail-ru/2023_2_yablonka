@@ -64,7 +64,7 @@ func (s PostgresChecklistItemStorage) Create(ctx context.Context, info dto.NewCh
 // ReadMany
 // дает много элементов чеклистов
 // или возвращает ошибки ...
-func (s PostgresChecklistItemStorage) ReadMany(ctx context.Context, ids dto.ChecklistItemIDs) (*[]dto.ChecklistItemInfo, error) {
+func (s PostgresChecklistItemStorage) ReadMany(ctx context.Context, ids dto.ChecklistItemStringIDs) (*[]dto.ChecklistItemInfo, error) {
 	funcName := "PostgresChecklistItemStorage.ReadMany"
 	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
 	requestID := ctx.Value(dto.RequestIDKey).(uuid.UUID)
@@ -164,18 +164,22 @@ func (s PostgresChecklistItemStorage) Delete(ctx context.Context, id dto.Checkli
 // меняет порядок списков в БД по данным
 // или возвращает ошибки ...
 func (s PostgresChecklistItemStorage) UpdateOrder(ctx context.Context, ids dto.ChecklistItemIDs) error {
-	caseBuilder := sq.Case()
-
-	for i, id := range ids.Values {
-		caseBuilder = caseBuilder.When(sq.Eq{"id": id}, i)
+	if len(ids.Values) == 0 {
+		log.Println("Storage -- Empty list")
+		return apperrors.ErrCouldNotChangeListOrder
 	}
+
+	caseBuilder := sq.Case()
+	for i, id := range ids.Values {
+		caseBuilder = caseBuilder.When(sq.Eq{"id": fmt.Sprintf("%v", id)}, fmt.Sprintf("%v", i))
+	}
+	caseBuilder.Else("list_position")
 
 	sql, args, err := sq.
 		Update("public.checklist_item").
 		Set("list_position", caseBuilder).
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
-
 	if err != nil {
 		log.Println("Storage -- Failed to build query")
 		return apperrors.ErrCouldNotBuildQuery
@@ -187,7 +191,6 @@ func (s PostgresChecklistItemStorage) UpdateOrder(ctx context.Context, ids dto.C
 		log.Println("Storage -- Failed to create list")
 		return apperrors.ErrListNotCreated
 	}
-
 	log.Println("Storage -- Checklist order updated")
 
 	return nil

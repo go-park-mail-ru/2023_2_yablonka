@@ -96,7 +96,7 @@ func TestPostgresChecklistItemStorage_ReadMany(t *testing.T) {
 	}
 	type args struct {
 		ctx context.Context
-		ids dto.ChecklistItemIDs
+		ids dto.ChecklistItemStringIDs
 	}
 	tests := []struct {
 		name    string

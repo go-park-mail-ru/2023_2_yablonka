@@ -203,12 +203,12 @@ func (clh ChecklistItemHandler) Delete(w http.ResponseWriter, r *http.Request) {
 
 // @Summary Обновить порядок вещей в чеклисте
 // @Description Обновить вещи в чеклисте по порядку в списке
-// @Tags lists
+// @Tags checklist_items
 //
 // @Accept  json
 // @Produce  json
 //
-// @Param listID body dto.ListIDs true "id списков"
+// @Param checklistIDs body dto.ChecklistItemIDs true "id вещей в чеклисте"
 //
 // @Success 204  {string}  string "no content"
 // @Failure 400  {object}  apperrors.ErrorResponse

@@ -341,3 +341,62 @@ func (s *PostgresTaskStorage) CheckAccess(ctx context.Context, info dto.CheckTas
 
 	return count > 0, nil
 }
+
+// Move
+// переносит задание в другой список
+// или возвращает ошибки ...
+func (s PostgresTaskStorage) Move(ctx context.Context, taskMoveInfo dto.TaskMoveInfo) error {
+	funcName := "PostgreSQLBoardStorage.GetById"
+	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
+	requestID := ctx.Value(dto.RequestIDKey).(uuid.UUID)
+
+	taskIDs := make(map[uint64]int)
+	for i, id := range taskMoveInfo.OldList.TaskIDs {
+		taskIDs[id] = i
+	}
+	for i, id := range taskMoveInfo.NewList.TaskIDs {
+		taskIDs[id] = i
+	}
+	keys := make([]uint64, 0, len(taskIDs))
+	for k := range taskIDs {
+		keys = append(keys, k)
+	}
+
+	log.Println(keys)
+
+	caseBuilder := sq.Case()
+	for _, id := range keys {
+		caseBuilder = caseBuilder.
+			When(sq.Eq{"id": fmt.Sprintf("%v", id)}, fmt.Sprintf("%v", taskIDs[id])).
+			Else("list_position")
+	}
+
+	updateBuilder := sq.
+		Update("public.task").
+		Set("list_position", caseBuilder)
+
+	if taskMoveInfo.NewList.ListID != taskMoveInfo.OldList.ListID {
+		updateBuilder = updateBuilder.
+			Set("id_list", sq.Case().
+				When(sq.Eq{"id": fmt.Sprintf("%v", taskMoveInfo.TaskID)}, fmt.Sprintf("%v", taskMoveInfo.NewList.ListID)).
+				Else("id_list"))
+	}
+
+	query, args, err := updateBuilder.
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
+	if err != nil {
+		logger.DebugFmt(err.Error(), requestID.String(), funcName, nodeName)
+		return apperrors.ErrCouldNotBuildQuery
+	}
+	logger.DebugFmt("Built query\n\t"+query+"\nwith args\n\t", requestID.String(), funcName, nodeName)
+
+	_, err = s.db.Exec(query, args...)
+	if err != nil {
+		logger.DebugFmt(err.Error(), requestID.String(), funcName, nodeName)
+		return apperrors.ErrCouldNotChangeTaskOrder
+	}
+	logger.DebugFmt("Commited changes", requestID.String(), funcName, nodeName)
+
+	return nil
+}
