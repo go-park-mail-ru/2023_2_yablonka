@@ -371,69 +371,26 @@ func (s PostgresTaskStorage) Move(ctx context.Context, taskMoveInfo dto.TaskMove
 			Else("list_position")
 	}
 
-	query1, args, err := sq.
+	updateBuilder := sq.
 		Update("public.task").
-		Set("list_position", caseBuilder).
+		Set("list_position", caseBuilder)
+
+	if taskMoveInfo.NewList.ListID != taskMoveInfo.OldList.ListID {
+		updateBuilder = updateBuilder.Set("id_list", sq.Case().When(sq.Eq{"id": fmt.Sprintf("%v", taskMoveInfo.TaskID)}, taskMoveInfo.NewList.ListID).Else("id_list"))
+	}
+
+	query, args, err := updateBuilder.
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
 	if err != nil {
-		logger.DebugFmt("Storage error: "+err.Error(), requestID.String(), funcName, nodeName)
+		logger.DebugFmt(err.Error(), requestID.String(), funcName, nodeName)
 		return apperrors.ErrCouldNotBuildQuery
 	}
-	logger.DebugFmt("Built query\n\t"+query1+"\nwith args\n\t"+fmt.Sprintf("%+v", args), requestID.String(), funcName, nodeName)
+	logger.DebugFmt("Built query\n\t"+query+"\nwith args\n\t", requestID.String(), funcName, nodeName)
 
-	tx, err := s.db.BeginTx(ctx, &sql.TxOptions{})
-	if err != nil {
-		logger.DebugFmt("Failed to start transaction with error "+err.Error(), requestID.String(), funcName, nodeName)
-		return apperrors.ErrCouldNotStartTransaction
-	}
-	logger.DebugFmt("Transaction started", requestID.String(), funcName, nodeName)
-
-	_, err = tx.Exec(query1, args...)
+	_, err = s.db.Exec(query, args...)
 	if err != nil {
 		logger.DebugFmt(err.Error(), requestID.String(), funcName, nodeName)
-		return apperrors.ErrCouldNotChangeTaskOrder
-	}
-	logger.DebugFmt("Changed list positions in tasks", requestID.String(), funcName, nodeName)
-
-	query2, args, err := sq.
-		Update("public.task").
-		Set("id_list", taskMoveInfo.NewList.ListID).
-		Where(sq.Eq{"id": fmt.Sprintf("%v", taskMoveInfo.TaskID)}).
-		PlaceholderFormat(sq.Dollar).
-		ToSql()
-	if err != nil {
-		logger.DebugFmt("Storage error: "+err.Error(), requestID.String(), funcName, nodeName)
-		err = tx.Rollback()
-		if err != nil {
-			logger.DebugFmt(err.Error(), requestID.String(), funcName, nodeName)
-			return apperrors.ErrCouldNotRollback
-		}
-		return apperrors.ErrCouldNotBuildQuery
-	}
-	logger.DebugFmt("Built query\n\t"+query2+"\nwith args\n\t"+fmt.Sprintf("%+v", args), requestID.String(), funcName, nodeName)
-
-	_, err = tx.Exec(query2, args...)
-	if err != nil {
-		logger.DebugFmt(err.Error(), requestID.String(), funcName, nodeName)
-		err = tx.Rollback()
-		if err != nil {
-			logger.DebugFmt(err.Error(), requestID.String(), funcName, nodeName)
-			return apperrors.ErrCouldNotRollback
-		}
-		return apperrors.ErrCouldNotChangeTaskOrder
-	}
-	logger.DebugFmt("Changed list association in task", requestID.String(), funcName, nodeName)
-
-	err = tx.Commit()
-	if err != nil {
-		logger.DebugFmt(err.Error(), requestID.String(), funcName, nodeName)
-		err = tx.Rollback()
-		if err != nil {
-			logger.DebugFmt(err.Error(), requestID.String(), funcName, nodeName)
-			return apperrors.ErrCouldNotRollback
-		}
-		return apperrors.ErrCouldNotChangeTaskOrder
 	}
 	logger.DebugFmt("Commited changes", requestID.String(), funcName, nodeName)
 

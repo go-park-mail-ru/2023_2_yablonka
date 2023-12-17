@@ -165,6 +165,9 @@ func GetChiMux(manager handlers.Handlers, config config.Config, logger logging.I
 				r.Post("/edit/", metricsMiddleware.WrapHandler(
 					"/checklist/item/edit/", http.HandlerFunc(manager.ChecklistItemHandler.Update)),
 				)
+				r.Post("/reorder/", metricsMiddleware.WrapHandler(
+					"/checklist/item/reorder/", http.HandlerFunc(manager.ChecklistItemHandler.UpdateOrder)),
+				)
 				r.Delete("/delete/", metricsMiddleware.WrapHandler(
 					"/checklist/item/delete/", http.HandlerFunc(manager.ChecklistItemHandler.Delete)),
 				)
