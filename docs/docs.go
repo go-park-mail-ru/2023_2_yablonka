@@ -797,17 +797,17 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "lists"
+                    "checklist_items"
                 ],
                 "summary": "Обновить порядок вещей в чеклисте",
                 "parameters": [
                     {
-                        "description": "id списков",
-                        "name": "listID",
+                        "description": "id вещей в чеклисте",
+                        "name": "checklistIDs",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dto.ListIDs"
+                            "$ref": "#/definitions/dto.ChecklistItemIDs"
                         }
                     }
                 ],
@@ -2399,6 +2399,17 @@ const docTemplate = `{
             "properties": {
                 "id": {
                     "type": "integer"
+                }
+            }
+        },
+        "dto.ChecklistItemIDs": {
+            "type": "object",
+            "properties": {
+                "ids": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 }
             }
         },

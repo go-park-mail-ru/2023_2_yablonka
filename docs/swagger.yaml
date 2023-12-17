@@ -158,6 +158,13 @@ definitions:
       id:
         type: integer
     type: object
+  dto.ChecklistItemIDs:
+    properties:
+      ids:
+        items:
+          type: string
+        type: array
+    type: object
   dto.ChecklistItemInfo:
     properties:
       checklist_id:
@@ -1178,12 +1185,12 @@ paths:
       - application/json
       description: Обновить вещи в чеклисте по порядку в списке
       parameters:
-      - description: id списков
+      - description: id вещей в чеклисте
         in: body
-        name: listID
+        name: checklistIDs
         required: true
         schema:
-          $ref: '#/definitions/dto.ListIDs'
+          $ref: '#/definitions/dto.ChecklistItemIDs'
       produces:
       - application/json
       responses:
@@ -1205,7 +1212,7 @@ paths:
             $ref: '#/definitions/apperrors.ErrorResponse'
       summary: Обновить порядок вещей в чеклисте
       tags:
-      - lists
+      - checklist_items
   /checklist/item/update/:
     post:
       consumes:
