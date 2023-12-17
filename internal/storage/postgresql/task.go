@@ -376,7 +376,10 @@ func (s PostgresTaskStorage) Move(ctx context.Context, taskMoveInfo dto.TaskMove
 		Set("list_position", caseBuilder)
 
 	if taskMoveInfo.NewList.ListID != taskMoveInfo.OldList.ListID {
-		updateBuilder = updateBuilder.Set("id_list", sq.Case().When(sq.Eq{"id": fmt.Sprintf("%v", taskMoveInfo.TaskID)}, taskMoveInfo.NewList.ListID).Else("id_list"))
+		updateBuilder = updateBuilder.
+			Set("id_list", sq.Case().
+				When(sq.Eq{"id": fmt.Sprintf("%v", taskMoveInfo.TaskID)}, fmt.Sprintf("%v", taskMoveInfo.NewList.ListID)).
+				Else("id_list"))
 	}
 
 	query, args, err := updateBuilder.
