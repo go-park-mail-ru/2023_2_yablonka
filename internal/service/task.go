@@ -49,5 +49,5 @@ type ITaskService interface {
 	// Remove
 	// добавляет файл в задание
 	// или возвращает ошибки ...
-	// Remove(context.Context, dto.RemoveFileInfo) error
+	Remove(context.Context, dto.RemoveFileInfo) error
 }

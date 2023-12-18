@@ -54,4 +54,8 @@ type ITaskStorage interface {
 	// добавляет файл в задание
 	// или возвращает ошибки ...
 	AttachFile(context.Context, dto.AttachedFileInfo) error
+	// RemoveFile
+	// добавляет файл в задание
+	// или возвращает ошибки ...
+	RemoveFile(context.Context, dto.RemoveFileInfo) error
 }

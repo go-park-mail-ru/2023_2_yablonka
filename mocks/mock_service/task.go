@@ -142,6 +142,20 @@ func (mr *MockITaskServiceMockRecorder) Read(arg0, arg1 any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Read", reflect.TypeOf((*MockITaskService)(nil).Read), arg0, arg1)
 }
 
+// Remove mocks base method.
+func (m *MockITaskService) Remove(arg0 context.Context, arg1 dto.RemoveFileInfo) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Remove", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Remove indicates an expected call of Remove.
+func (mr *MockITaskServiceMockRecorder) Remove(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Remove", reflect.TypeOf((*MockITaskService)(nil).Remove), arg0, arg1)
+}
+
 // RemoveUser mocks base method.
 func (m *MockITaskService) RemoveUser(arg0 context.Context, arg1 dto.RemoveTaskUserInfo) error {
 	m.ctrl.T.Helper()

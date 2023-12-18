@@ -175,6 +175,39 @@ func (ts TaskService) Attach(ctx context.Context, info dto.NewFileInfo) (*dto.At
 	return fileInfo, nil
 }
 
+// Remove
+// удаляет файл из задания
+// или возвращает ошибки ...
+func (ts TaskService) Remove(ctx context.Context, info dto.RemoveFileInfo) error {
+	funcName := "TaskService.RemoveUser"
+	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
+	requestID := ctx.Value(dto.RequestIDKey).(uuid.UUID)
+
+	err := ts.storage.RemoveFile(ctx, info)
+	if err != nil {
+		logger.DebugFmt("Failed to remove file from database with error: "+err.Error(), requestID.String(), funcName, nodeName)
+		return apperrors.ErrTaskNotUpdated
+	}
+
+	err = os.Remove(info.FilePath)
+	if err != nil {
+		logger.DebugFmt("Failed to delete file with error: "+err.Error(), requestID.String(), funcName, nodeName)
+		logger.DebugFmt("Attaching file back to the task", requestID.String(), funcName, nodeName)
+		err = ts.storage.AttachFile(ctx, dto.AttachedFileInfo{
+			TaskID:       info.TaskID,
+			OriginalName: info.OriginalName,
+			FilePath:     info.FilePath,
+			DateCreated:  time.Now(),
+		})
+		if err != nil {
+			return apperrors.ErrFailedToDeleteFile
+		}
+		return apperrors.ErrFailedToDeleteFile
+	}
+
+	return nil
+}
+
 func hashFromFileInfo(strs ...string) string {
 	hasher := sha256.New()
 	hasher.Write([]byte(strings.Join(strs, "")))
