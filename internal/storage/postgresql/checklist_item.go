@@ -188,8 +188,9 @@ func (s PostgresChecklistItemStorage) UpdateOrder(ctx context.Context, ids dto.C
 
 	_, err = s.db.Exec(sql, args...)
 	if err != nil {
-		log.Println("Storage -- Failed to create list")
-		return apperrors.ErrListNotCreated
+		log.Println("Storage -- Failed to update checklist")
+		log.Println("Error", err.Error())
+		return apperrors.ErrChecklistNotUpdated
 	}
 	log.Println("Storage -- Checklist order updated")
 

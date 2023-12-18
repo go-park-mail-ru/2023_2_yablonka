@@ -509,7 +509,7 @@ func (th TaskHandler) GetFileList(w http.ResponseWriter, r *http.Request) {
 	logger.Info("---------------------------------- Getting file list SUCCESS ----------------------------------")
 }
 
-// @Summary Прикрепить задание к файлу
+// @Summary Прикрепить файл к заданию
 // @Description Сохраняет полученный файл, возвращает оригинальное название и путь к файлу
 // @Tags tasks
 //
@@ -581,3 +581,76 @@ func (th TaskHandler) Attach(w http.ResponseWriter, r *http.Request) {
 
 	logger.Info("---------------------------------- Attaching file SUCCESS ----------------------------------")
 }
+
+// @Summary Удалить файл из задания
+// @Description Удаляет указанный файл и открепляет его от задания
+// @Tags tasks
+//
+// @Accept  json
+// @Produce  json
+//
+// @Param removeFileInfo body dto.RemoveFileInfo true "информация о файле"
+//
+// @Success 204  {string}  string "no content"
+// @Failure 400  {object}  apperrors.ErrorResponse
+// @Failure 401  {object}  apperrors.ErrorResponse
+// @Failure 500  {object}  apperrors.ErrorResponse
+//
+// @Router /task/file/remove/ [post]
+// func (th TaskHandler) Remove(w http.ResponseWriter, r *http.Request) {
+// 	rCtx := r.Context()
+// 	funcName := "TaskHandler.Remove"
+// 	errorMessage := "Removing file failed with error: "
+// 	failBorder := "---------------------------------- TaskHandler.Remove FAIL ----------------------------------"
+
+// 	logger := rCtx.Value(dto.LoggerKey).(logger.ILogger)
+// 	requestID := rCtx.Value(dto.RequestIDKey).(uuid.UUID)
+
+// 	logger.Info("---------------------------------- TaskHandler.Remove ----------------------------------")
+
+// 	var fileInfo dto.RemoveFileInfo
+// 	err := json.NewDecoder(r.Body).Decode(&fileInfo)
+// 	if err != nil {
+// 		logger.Error(errorMessage + err.Error())
+// 		logger.Info(failBorder)
+// 		apperrors.ReturnError(apperrors.BadRequestResponse, w, r)
+// 		return
+// 	}
+// 	logger.DebugFmt("request struct decoded", requestID.String(), funcName, nodeName)
+
+// 	user, ok := rCtx.Value(dto.UserObjKey).(*entities.User)
+// 	if !ok {
+// 		logger.Error(errorMessage + "User not found")
+// 		logger.Info(failBorder)
+// 		apperrors.ReturnError(apperrors.GenericUnauthorizedResponse, w, r)
+// 		return
+// 	}
+// 	logger.DebugFmt("User found", requestID.String(), funcName, nodeName)
+
+// 	fileInfo.UserID = user.ID
+
+// 	fileData, err := th.ts.Remove(rCtx, fileInfo)
+// 	if err != nil {
+// 		logger.Error(errorMessage + err.Error())
+// 		logger.Info(failBorder)
+// 		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
+// 		return
+// 	}
+// 	logger.DebugFmt("file removed", requestID.String(), funcName, nodeName)
+
+// 	response := dto.JSONResponse{
+// 		Body: dto.JSONMap{
+// 			"file": fileData,
+// 		},
+// 	}
+// 	err = WriteResponse(response, w, r)
+// 	if err != nil {
+// 		logger.Error(errorMessage + err.Error())
+// 		logger.Info(failBorder)
+// 		apperrors.ReturnError(apperrors.InternalServerErrorResponse, w, r)
+// 		return
+// 	}
+// 	logger.DebugFmt("response written", requestID.String(), funcName, nodeName)
+
+// 	logger.Info("---------------------------------- Removing file SUCCESS ----------------------------------")
+// }

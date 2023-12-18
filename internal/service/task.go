@@ -46,4 +46,8 @@ type ITaskService interface {
 	// добавляет файл в задание
 	// или возвращает ошибки ...
 	Attach(context.Context, dto.NewFileInfo) (*dto.AttachedFileInfo, error)
+	// Remove
+	// добавляет файл в задание
+	// или возвращает ошибки ...
+	// Remove(context.Context, dto.RemoveFileInfo) error
 }

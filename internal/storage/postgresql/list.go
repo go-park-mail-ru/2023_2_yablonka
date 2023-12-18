@@ -202,6 +202,7 @@ func (s PostgresListStorage) UpdateOrder(ctx context.Context, ids dto.ListIDs) e
 	_, err = s.db.Exec(sql, args...)
 	if err != nil {
 		log.Println("Storage -- Failed to create list")
+		log.Println("Error", err.Error())
 		return apperrors.ErrCouldNotChangeListOrder
 	}
 
