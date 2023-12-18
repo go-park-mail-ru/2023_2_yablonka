@@ -77,6 +77,7 @@ jobs:
         with:
           github_token: ${{ github.token }}
           branch: ${{ github.head_ref }}
+          force: true
 
   swagger:
     name: Generate Swagger
@@ -114,7 +115,7 @@ jobs:
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          git commit -am "chore: Updated Swagger docs."
+          git commit -a -m "chore: Updated Swagger docs."
 
       - name: Push changes
         if: steps.verify-changed-files.outputs.files_changed == 'true'
@@ -122,3 +123,4 @@ jobs:
         with:
           github_token: ${{ github.token }}
           branch: ${{ github.head_ref }}
+          force: true

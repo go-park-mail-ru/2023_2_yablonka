@@ -150,7 +150,7 @@ func GetChiMux(manager handlers.Handlers, config config.Config, logger logging.I
 					"/task/file/", http.HandlerFunc(manager.TaskHandler.GetFileList)),
 				)
 				r.Delete("/remove/", metricsMiddleware.WrapHandler(
-					"/task/user/remove/", http.HandlerFunc(manager.TaskHandler.RemoveFile)),
+					"/task/file/remove/", http.HandlerFunc(manager.TaskHandler.RemoveFile)),
 				)
 			})
 			r.Delete("/delete/", metricsMiddleware.WrapHandler(
