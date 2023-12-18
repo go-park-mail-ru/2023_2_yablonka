@@ -2,75 +2,201 @@ package postgresql
 
 import (
 	"context"
-	"database/sql"
-	"reflect"
+	"regexp"
+	"server/internal/apperrors"
 	"server/internal/pkg/dto"
-	"server/internal/pkg/entities"
 	"testing"
+
+	"github.com/DATA-DOG/go-sqlmock"
+	sq "github.com/Masterminds/squirrel"
+	"github.com/google/uuid"
 )
 
 func TestPostgresCSATQuestionStorage_Create(t *testing.T) {
-	type fields struct {
-		db *sql.DB
-	}
+	t.Parallel()
 	type args struct {
-		ctx  context.Context
-		info dto.NewCSATQuestion
+		info  dto.NewCSATQuestion
+		query func(mock sqlmock.Sqlmock, args args)
 	}
 	tests := []struct {
 		name    string
-		fields  fields
 		args    args
-		want    *dto.CSATQuestionFull
 		wantErr bool
+		err     error
 	}{
-		// TODO: Add test cases.
+		{
+			name: "Happy path",
+			args: args{
+				info: dto.NewCSATQuestion{
+					Content: "fgfgfgdfg",
+					TypeID:  1,
+				},
+				query: func(mock sqlmock.Sqlmock, args args) {
+					query, _, _ := sq.
+						Insert("public.question").
+						Columns("content", "id_type").
+						Values(args.info.Content, args.info.TypeID).
+						Suffix("RETURNING id").
+						PlaceholderFormat(sq.Dollar).
+						ToSql()
+					mock.ExpectQuery(regexp.QuoteMeta(query)).
+						WithArgs(
+							args.info.Content,
+							args.info.TypeID,
+						).
+						WillReturnRows(sqlmock.NewRows([]string{"id"}).
+							AddRow(1),
+						)
+				},
+			},
+			wantErr: false,
+			err:     nil,
+		},
+		{
+			name: "Query fail",
+			args: args{
+				info: dto.NewCSATQuestion{
+					Content: "fgfgfgdfg",
+					TypeID:  1,
+				},
+				query: func(mock sqlmock.Sqlmock, args args) {
+					query, _, _ := sq.
+						Insert("public.question").
+						Columns("content", "id_type").
+						Values(args.info.Content, args.info.TypeID).
+						Suffix("RETURNING id").
+						PlaceholderFormat(sq.Dollar).
+						ToSql()
+					mock.ExpectQuery(regexp.QuoteMeta(query)).
+						WithArgs(
+							args.info.Content,
+							args.info.TypeID,
+						).
+						WillReturnError(apperrors.ErrCouldNotCreateQuestion)
+				},
+			},
+			wantErr: true,
+			err:     apperrors.ErrCouldNotCreateQuestion,
+		},
 	}
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-			s := PostgresCSATQuestionStorage{
-				db: tt.fields.db,
+			t.Parallel()
+			db, mock, err := sqlmock.New()
+			if err != nil {
+				t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 			}
-			got, err := s.Create(tt.args.ctx, tt.args.info)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("Create() error = %v, wantErr %v", err, tt.wantErr)
-				return
+			defer db.Close()
+
+			ctx := context.WithValue(
+				context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+				dto.RequestIDKey, uuid.New(),
+			)
+
+			tt.args.query(mock, tt.args)
+
+			s := NewCSATQuestionStorage(db)
+
+			if _, err := s.Create(ctx, tt.args.info); (err != nil) != tt.wantErr {
+				t.Errorf("PostgresCSATQuestionStorage.Create() error = %v, wantErr %v", err != nil, tt.wantErr)
 			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("Create() got = %v, want %v", got, tt.want)
+
+			if err := mock.ExpectationsWereMet(); err != nil {
+				t.Errorf("there were unfulfilled expectations: %s", err)
 			}
 		})
 	}
 }
 
 func TestPostgresCSATQuestionStorage_Delete(t *testing.T) {
-	type fields struct {
-		db *sql.DB
-	}
+	t.Parallel()
 	type args struct {
-		ctx context.Context
-		id  dto.CSATQuestionID
+		info  dto.CSATQuestionID
+		query func(mock sqlmock.Sqlmock, args args)
 	}
 	tests := []struct {
 		name    string
-		fields  fields
 		args    args
 		wantErr bool
+		err     error
 	}{
-		// TODO: Add test cases.
+		{
+			name: "Happy path",
+			args: args{
+				info: dto.CSATQuestionID{
+					Value: 1,
+				},
+				query: func(mock sqlmock.Sqlmock, args args) {
+					query, _, _ := sq.
+						Delete("public.question").
+						Where(sq.Eq{"id": args.info.Value}).
+						PlaceholderFormat(sq.Dollar).
+						ToSql()
+					mock.ExpectExec(regexp.QuoteMeta(query)).
+						WithArgs(
+							args.info.Value,
+						).
+						WillReturnResult(sqlmock.NewResult(1, 1))
+				},
+			},
+			wantErr: false,
+			err:     nil,
+		},
+		{
+			name: "Query fail",
+			args: args{
+				info: dto.CSATQuestionID{
+					Value: 1,
+				},
+				query: func(mock sqlmock.Sqlmock, args args) {
+					query, _, _ := sq.
+						Delete("public.question").
+						Where(sq.Eq{"id": args.info.Value}).
+						PlaceholderFormat(sq.Dollar).
+						ToSql()
+					mock.ExpectExec(regexp.QuoteMeta(query)).
+						WithArgs(
+							args.info.Value,
+						).
+						WillReturnError(apperrors.ErrQuestionNotDeleted)
+				},
+			},
+			wantErr: true,
+			err:     apperrors.ErrQuestionNotDeleted,
+		},
 	}
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-			s := PostgresCSATQuestionStorage{
-				db: tt.fields.db,
+			t.Parallel()
+			db, mock, err := sqlmock.New()
+			if err != nil {
+				t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 			}
-			if err := s.Delete(tt.args.ctx, tt.args.id); (err != nil) != tt.wantErr {
-				t.Errorf("Delete() error = %v, wantErr %v", err, tt.wantErr)
+			defer db.Close()
+
+			ctx := context.WithValue(
+				context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+				dto.RequestIDKey, uuid.New(),
+			)
+
+			tt.args.query(mock, tt.args)
+
+			s := NewCSATQuestionStorage(db)
+
+			if err := s.Delete(ctx, tt.args.info); (err != nil) != tt.wantErr {
+				t.Errorf("PostgresCSATQuestionStorage.Delete() error = %v, wantErr %v", err != nil, tt.wantErr)
+			}
+
+			if err := mock.ExpectationsWereMet(); err != nil {
+				t.Errorf("there were unfulfilled expectations: %s", err)
 			}
 		})
 	}
 }
 
+/*
 func TestPostgresCSATQuestionStorage_GetAll(t *testing.T) {
 	type fields struct {
 		db *sql.DB
@@ -232,3 +358,4 @@ func TestPostgresCSATQuestionStorage_Update(t *testing.T) {
 		})
 	}
 }
+*/
