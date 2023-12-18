@@ -69,7 +69,7 @@ var (
 	}
 
 	allPublicFileInfoFields = []string{
-		"public.name", "public.filepath", "public.date_created",
+		"public.file.name", "public.file.filepath", "public.file.date_created",
 	}
 
 	// taskUserFields = []string{

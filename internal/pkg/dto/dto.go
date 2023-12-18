@@ -750,7 +750,7 @@ type AttachedFileInfo struct {
 	TaskID       uint64    `json:"task_id" valid:"-"`
 	OriginalName string    `json:"original_name" valid:"-"`
 	FilePath     string    `json:"file_path" valid:"-"`
-	DateCreated  time.Time `json:"data_created" valid:"-"`
+	DateCreated  time.Time `json:"date_created" valid:"-"`
 }
 
 type JSONMap map[string]interface{}
