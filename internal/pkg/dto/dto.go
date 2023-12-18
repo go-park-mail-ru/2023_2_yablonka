@@ -741,7 +741,7 @@ type UpdatedUserInfo struct {
 type NewFileInfo struct {
 	UserID   uint64 `json:"-" valid:"-"`
 	TaskID   uint64 `json:"task_id" valid:"-"`
-	File     []byte `json:"avatar" valid:"-"`
+	File     []byte `json:"file" valid:"-"`
 	Filename string `json:"filename" valid:"-"`
 	Mimetype string `json:"mimetype" valid:"-"`
 }
