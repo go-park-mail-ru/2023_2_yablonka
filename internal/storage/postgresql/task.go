@@ -401,8 +401,56 @@ func (s PostgresTaskStorage) Move(ctx context.Context, taskMoveInfo dto.TaskMove
 	return nil
 }
 
+// GetFileList
+// добавляет файл в задание
+// или возвращает ошибки ...
+func (s PostgresTaskStorage) GetFileList(ctx context.Context, id dto.TaskID) (*[]dto.AttachedFileInfo, error) {
+	funcName := "PostgreSQLBoardStorage.Attach"
+	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
+	requestID := ctx.Value(dto.RequestIDKey).(uuid.UUID)
+
+	sql, args, err := sq.
+		Select(allPublicFileInfoFields...).
+		From("public.file").
+		Join("public.task_file ON public.task_file.id_file = public.file.id").
+		Where(sq.Eq{"public.task_file.id_task": id.Value}).
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
+
+	if err != nil {
+		return nil, apperrors.ErrCouldNotBuildQuery
+	}
+	logger.DebugFmt("Built query\n\t"+sql+"\nwith args\n\t"+fmt.Sprintf("%+v", args), requestID.String(), funcName, nodeName)
+
+	rows, err := s.db.Query(sql, args...)
+	if err != nil {
+		return nil, apperrors.ErrCouldNotGetTaskFiles
+	}
+	defer rows.Close()
+	logger.DebugFmt("Got task files", requestID.String(), funcName, nodeName)
+
+	files := []dto.AttachedFileInfo{}
+	for rows.Next() {
+		var file dto.AttachedFileInfo
+		file.TaskID = id.Value
+
+		err = rows.Scan(
+			&file.OriginalName,
+			&file.FilePath,
+			&file.DateCreated,
+		)
+		if err != nil {
+			return nil, apperrors.ErrCouldNotGetTaskFiles
+		}
+		files = append(files, file)
+	}
+	logger.DebugFmt("Parsed results", requestID.String(), funcName, nodeName)
+
+	return &files, nil
+}
+
 func (s PostgresTaskStorage) AttachFile(ctx context.Context, info dto.AttachedFileInfo) error {
-	funcName := "PostgreSQLBoardStorage.GetById"
+	funcName := "PostgreSQLBoardStorage.Attach"
 	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
 	requestID := ctx.Value(dto.RequestIDKey).(uuid.UUID)
 
@@ -415,7 +463,7 @@ func (s PostgresTaskStorage) AttachFile(ctx context.Context, info dto.AttachedFi
 
 	fileQuery, args, err := sq.
 		Insert("public.file").
-		Columns("name", "filepath", "date_created").
+		Columns(allFileInfoFields...).
 		Values(info.OriginalName, info.FilePath, info.DateCreated).
 		PlaceholderFormat(sq.Dollar).
 		Suffix("RETURNING id").

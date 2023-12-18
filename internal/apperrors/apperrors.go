@@ -193,6 +193,8 @@ var (
 	ErrTaskNotDeleted = errors.New("task couldn't be deleted")
 	// ErrCouldNotGetTask ошибка: не удалось получить задание в БД
 	ErrCouldNotGetTask = errors.New("couldn't get task")
+	// ErrCouldNotGetTaskFiles ошибка: не удалось получить задание в БД
+	ErrCouldNotGetTaskFiles = errors.New("couldn't get task files")
 	// ErrCouldNotAddTaskUser ошибка: не удалось добавить пользователя на карточку
 	ErrCouldNotAddTaskUser = errors.New("couldn't add user to task")
 	// ErrCouldNotRemoveTaskUser ошибка: не удалось удалить пользователя с карточки
@@ -305,6 +307,7 @@ var ErrorMap = map[error]ErrorResponse{
 	ErrTaskNotUpdated:           InternalServerErrorResponse,
 	ErrTaskNotDeleted:           InternalServerErrorResponse,
 	ErrCouldNotGetTask:          InternalServerErrorResponse,
+	ErrCouldNotGetTaskFiles:     InternalServerErrorResponse,
 	ErrListNotCreated:           InternalServerErrorResponse,
 	ErrListNotUpdated:           InternalServerErrorResponse,
 	ErrListNotDeleted:           InternalServerErrorResponse,

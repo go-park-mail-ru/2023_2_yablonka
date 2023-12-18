@@ -64,6 +64,14 @@ var (
 		"id", "id_user", "content", "date_created",
 	}
 
+	allFileInfoFields = []string{
+		"name", "filepath", "date_created",
+	}
+
+	allPublicFileInfoFields = []string{
+		"public.name", "public.filepath", "public.date_created",
+	}
+
 	// taskUserFields = []string{
 	// 	"id_task", "id_user",
 	// }

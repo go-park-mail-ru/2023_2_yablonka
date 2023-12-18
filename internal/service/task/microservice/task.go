@@ -113,6 +113,13 @@ func (ts TaskService) Move(ctx context.Context, taskMoveInfo dto.TaskMoveInfo) e
 	return ts.storage.Move(ctx, taskMoveInfo)
 }
 
+// GetFileList
+// добавляет файл в задание
+// или возвращает ошибки ...
+func (ts TaskService) GetFileList(ctx context.Context, id dto.TaskID) (*[]dto.AttachedFileInfo, error) {
+	return ts.storage.GetFileList(ctx, id)
+}
+
 // Attach
 // добавляет файл в задание
 // или возвращает ошибки ...

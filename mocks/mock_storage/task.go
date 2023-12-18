@@ -112,6 +112,21 @@ func (mr *MockITaskStorageMockRecorder) Delete(arg0, arg1 any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockITaskStorage)(nil).Delete), arg0, arg1)
 }
 
+// GetFileList mocks base method.
+func (m *MockITaskStorage) GetFileList(arg0 context.Context, arg1 dto.TaskID) (*[]dto.AttachedFileInfo, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetFileList", arg0, arg1)
+	ret0, _ := ret[0].(*[]dto.AttachedFileInfo)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetFileList indicates an expected call of GetFileList.
+func (mr *MockITaskStorageMockRecorder) GetFileList(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFileList", reflect.TypeOf((*MockITaskStorage)(nil).GetFileList), arg0, arg1)
+}
+
 // Move mocks base method.
 func (m *MockITaskStorage) Move(arg0 context.Context, arg1 dto.TaskMoveInfo) error {
 	m.ctrl.T.Helper()

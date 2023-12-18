@@ -447,6 +447,83 @@ func (th TaskHandler) Move(w http.ResponseWriter, r *http.Request) {
 	logger.Info("---------------------------------- TaskHandler.UpdateOrder SUCCESS ----------------------------------")
 }
 
+// @Summary Получить список прикреплённых к файлу заданий
+// @Description Получает актуальный список файлов, прикреплённых к полученному заданию
+// @Tags tasks
+//
+// @Accept  json
+// @Produce  json
+//
+// @Param taskID body dto.TaskID true "id задания"
+//
+// @Success 200  {object}  doc_structs.FileListResponse "список объектов файлов"
+// @Failure 400  {object}  apperrors.ErrorResponse
+// @Failure 401  {object}  apperrors.ErrorResponse
+// @Failure 500  {object}  apperrors.ErrorResponse
+//
+// @Router /task/file/ [post]
+func (th TaskHandler) GetFileList(w http.ResponseWriter, r *http.Request) {
+	rCtx := r.Context()
+	funcName := "TaskHandler.GetFileList"
+	errorMessage := "Getting file list failed with error: "
+	failBorder := "---------------------------------- TaskHandler.GetFileList FAIL ----------------------------------"
+
+	logger := rCtx.Value(dto.LoggerKey).(logger.ILogger)
+	requestID := rCtx.Value(dto.RequestIDKey).(uuid.UUID)
+
+	logger.Info("---------------------------------- TaskHandler.GetFileList ----------------------------------")
+
+	var taskID dto.TaskID
+	err := json.NewDecoder(r.Body).Decode(&taskID)
+	if err != nil {
+		logger.Error(errorMessage + err.Error())
+		logger.Info(failBorder)
+		apperrors.ReturnError(apperrors.BadRequestResponse, w, r)
+		return
+	}
+	logger.DebugFmt("request struct decoded", requestID.String(), funcName, nodeName)
+
+	fileList, err := th.ts.GetFileList(rCtx, taskID)
+	if err != nil {
+		logger.Error(errorMessage + err.Error())
+		logger.Info(failBorder)
+		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
+		return
+	}
+	logger.DebugFmt("got file list", requestID.String(), funcName, nodeName)
+
+	response := dto.JSONResponse{
+		Body: dto.JSONMap{
+			"files": fileList,
+		},
+	}
+	err = WriteResponse(response, w, r)
+	if err != nil {
+		logger.Error(errorMessage + err.Error())
+		logger.Info(failBorder)
+		apperrors.ReturnError(apperrors.InternalServerErrorResponse, w, r)
+		return
+	}
+	logger.DebugFmt("response written", requestID.String(), funcName, nodeName)
+
+	logger.Info("---------------------------------- Getting file list SUCCESS ----------------------------------")
+}
+
+// @Summary Прикрепить задание к файлу
+// @Description Сохраняет полученный файл, возвращает оригинальное название и путь к файлу
+// @Tags tasks
+//
+// @Accept  json
+// @Produce  json
+//
+// @Param newFileInfo body dto.NewFileInfo true "файл и информация о нём"
+//
+// @Success 200  {object}  doc_structs.FileResponse "объект с информацией о сохранённом файле"
+// @Failure 400  {object}  apperrors.ErrorResponse
+// @Failure 401  {object}  apperrors.ErrorResponse
+// @Failure 500  {object}  apperrors.ErrorResponse
+//
+// @Router /task/file/attach/ [post]
 func (th TaskHandler) Attach(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
 	funcName := "TaskHandler.Attach"

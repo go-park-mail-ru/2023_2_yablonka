@@ -55,18 +55,18 @@ func (mr *MockITaskServiceMockRecorder) AddUser(arg0, arg1 any) *gomock.Call {
 }
 
 // Attach mocks base method.
-func (m *MockITaskService) Attach(ctx context.Context, info dto.NewFileInfo) (*dto.AttachedFileInfo, error) {
+func (m *MockITaskService) Attach(arg0 context.Context, arg1 dto.NewFileInfo) (*dto.AttachedFileInfo, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Attach", ctx, info)
+	ret := m.ctrl.Call(m, "Attach", arg0, arg1)
 	ret0, _ := ret[0].(*dto.AttachedFileInfo)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Attach indicates an expected call of Attach.
-func (mr *MockITaskServiceMockRecorder) Attach(ctx, info any) *gomock.Call {
+func (mr *MockITaskServiceMockRecorder) Attach(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Attach", reflect.TypeOf((*MockITaskService)(nil).Attach), ctx, info)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Attach", reflect.TypeOf((*MockITaskService)(nil).Attach), arg0, arg1)
 }
 
 // Create mocks base method.
@@ -96,6 +96,21 @@ func (m *MockITaskService) Delete(arg0 context.Context, arg1 dto.TaskID) error {
 func (mr *MockITaskServiceMockRecorder) Delete(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockITaskService)(nil).Delete), arg0, arg1)
+}
+
+// GetFileList mocks base method.
+func (m *MockITaskService) GetFileList(arg0 context.Context, arg1 dto.TaskID) (*[]dto.AttachedFileInfo, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetFileList", arg0, arg1)
+	ret0, _ := ret[0].(*[]dto.AttachedFileInfo)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetFileList indicates an expected call of GetFileList.
+func (mr *MockITaskServiceMockRecorder) GetFileList(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFileList", reflect.TypeOf((*MockITaskService)(nil).GetFileList), arg0, arg1)
 }
 
 // Move mocks base method.
