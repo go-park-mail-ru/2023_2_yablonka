@@ -27,7 +27,6 @@ jobs:
       - name: Build .env file
         uses: ./.github/actions/build-dot-env
         with:
-          jwt_secret: ${{ secrets.JWT_SECRET }}
           session_days: ${{ vars.SESSION_DURATION_DAYS }}
           session_hours: ${{ vars.SESSION_DURATION_HOURS }}
           session_minutes: ${{ vars.SESSION_DURATION_MINUTES }}
@@ -91,6 +90,9 @@ jobs:
         uses: actions/setup-go@v4
         with:
           cache: false
+
+      - name: Install Swagger
+        run: go install github.com/swaggo/swag/cmd/swag@latest
 
       - name: Generate Swagger docs
         run: |
