@@ -133,6 +133,7 @@ func (ts TaskService) Attach(ctx context.Context, info dto.NewFileInfo) (*dto.At
 	extension := path.Ext(info.Filename)
 
 	if err := os.MkdirAll("attachments/task/"+strconv.FormatUint(info.TaskID, 10), 0755); err != nil {
+		logger.DebugFmt("Failed to create directory with error: "+err.Error(), requestID.String(), funcName, nodeName)
 		return &dto.AttachedFileInfo{}, apperrors.ErrFailedToCreateFile
 	}
 
