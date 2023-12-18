@@ -405,7 +405,7 @@ func (s PostgresTaskStorage) Move(ctx context.Context, taskMoveInfo dto.TaskMove
 // добавляет файл в задание
 // или возвращает ошибки ...
 func (s PostgresTaskStorage) GetFileList(ctx context.Context, id dto.TaskID) (*[]dto.AttachedFileInfo, error) {
-	funcName := "PostgreSQLBoardStorage.Attach"
+	funcName := "PostgreSQLBoardStorage.GetFileList"
 	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
 	requestID := ctx.Value(dto.RequestIDKey).(uuid.UUID)
 
@@ -424,6 +424,7 @@ func (s PostgresTaskStorage) GetFileList(ctx context.Context, id dto.TaskID) (*[
 
 	rows, err := s.db.Query(sql, args...)
 	if err != nil {
+		logger.DebugFmt("Failed to get task files with error "+err.Error(), requestID.String(), funcName, nodeName)
 		return nil, apperrors.ErrCouldNotGetTaskFiles
 	}
 	defer rows.Close()
