@@ -1661,7 +1661,7 @@ const docTemplate = `{
                 "tags": [
                     "tasks"
                 ],
-                "summary": "Прикрепить задание к файлу",
+                "summary": "Прикрепить файл к заданию",
                 "parameters": [
                     {
                         "description": "файл и информация о нём",
@@ -2439,7 +2439,7 @@ const docTemplate = `{
         "dto.AttachedFileInfo": {
             "type": "object",
             "properties": {
-                "data_created": {
+                "date_created": {
                     "type": "string"
                 },
                 "file_path": {
@@ -2743,7 +2743,7 @@ const docTemplate = `{
         "dto.NewFileInfo": {
             "type": "object",
             "properties": {
-                "avatar": {
+                "file": {
                     "type": "array",
                     "items": {
                         "type": "integer"

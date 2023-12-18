@@ -1655,7 +1655,7 @@
                 "tags": [
                     "tasks"
                 ],
-                "summary": "Прикрепить задание к файлу",
+                "summary": "Прикрепить файл к заданию",
                 "parameters": [
                     {
                         "description": "файл и информация о нём",
@@ -2433,7 +2433,7 @@
         "dto.AttachedFileInfo": {
             "type": "object",
             "properties": {
-                "data_created": {
+                "date_created": {
                     "type": "string"
                 },
                 "file_path": {
@@ -2737,7 +2737,7 @@
         "dto.NewFileInfo": {
             "type": "object",
             "properties": {
-                "avatar": {
+                "file": {
                     "type": "array",
                     "items": {
                         "type": "integer"

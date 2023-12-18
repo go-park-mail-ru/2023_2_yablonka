@@ -115,7 +115,7 @@ definitions:
     type: object
   dto.AttachedFileInfo:
     properties:
-      data_created:
+      date_created:
         type: string
       file_path:
         type: string
@@ -311,7 +311,7 @@ definitions:
     type: object
   dto.NewFileInfo:
     properties:
-      avatar:
+      file:
         items:
           type: integer
         type: array
@@ -1812,7 +1812,7 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/apperrors.ErrorResponse'
-      summary: Прикрепить задание к файлу
+      summary: Прикрепить файл к заданию
       tags:
       - tasks
   /task/move/:
