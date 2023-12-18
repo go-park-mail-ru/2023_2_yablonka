@@ -7,6 +7,7 @@ import (
 	logger "server/internal/logging"
 	_ "server/internal/pkg/doc_structs"
 	"server/internal/pkg/dto"
+	"server/internal/pkg/entities"
 	"server/internal/service"
 
 	"github.com/google/uuid"
@@ -444,4 +445,62 @@ func (th TaskHandler) Move(w http.ResponseWriter, r *http.Request) {
 	logger.DebugFmt("response written", requestID.String(), funcName, nodeName)
 
 	logger.Info("---------------------------------- TaskHandler.UpdateOrder SUCCESS ----------------------------------")
+}
+
+func (th TaskHandler) Attach(w http.ResponseWriter, r *http.Request) {
+	rCtx := r.Context()
+	funcName := "TaskHandler.Attach"
+	errorMessage := "Attaching file failed with error: "
+	failBorder := "---------------------------------- TaskHandler.Attach FAIL ----------------------------------"
+
+	logger := rCtx.Value(dto.LoggerKey).(logger.ILogger)
+	requestID := rCtx.Value(dto.RequestIDKey).(uuid.UUID)
+
+	logger.Info("---------------------------------- TaskHandler.Attach ----------------------------------")
+
+	var newFileInfo dto.NewFileInfo
+	err := json.NewDecoder(r.Body).Decode(&newFileInfo)
+	if err != nil {
+		logger.Error(errorMessage + err.Error())
+		logger.Info(failBorder)
+		apperrors.ReturnError(apperrors.BadRequestResponse, w, r)
+		return
+	}
+	logger.DebugFmt("request struct decoded", requestID.String(), funcName, nodeName)
+
+	user, ok := rCtx.Value(dto.UserObjKey).(*entities.User)
+	if !ok {
+		logger.Error(errorMessage + "User not found")
+		logger.Info(failBorder)
+		apperrors.ReturnError(apperrors.GenericUnauthorizedResponse, w, r)
+		return
+	}
+	logger.DebugFmt("User found", requestID.String(), funcName, nodeName)
+
+	newFileInfo.UserID = user.ID
+
+	fileData, err := th.ts.Attach(rCtx, newFileInfo)
+	if err != nil {
+		logger.Error(errorMessage + err.Error())
+		logger.Info(failBorder)
+		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
+		return
+	}
+	logger.DebugFmt("file attached", requestID.String(), funcName, nodeName)
+
+	response := dto.JSONResponse{
+		Body: dto.JSONMap{
+			"file": fileData,
+		},
+	}
+	err = WriteResponse(response, w, r)
+	if err != nil {
+		logger.Error(errorMessage + err.Error())
+		logger.Info(failBorder)
+		apperrors.ReturnError(apperrors.InternalServerErrorResponse, w, r)
+		return
+	}
+	logger.DebugFmt("response written", requestID.String(), funcName, nodeName)
+
+	logger.Info("---------------------------------- Attaching file SUCCESS ----------------------------------")
 }

@@ -46,4 +46,8 @@ type ITaskStorage interface {
 	// удаляет пользователя из карточки
 	// или возвращает ошибки ...
 	RemoveUser(context.Context, dto.RemoveTaskUserInfo) error
+	// AttachFile
+	// добавляет файл в задание
+	// или возвращает ошибки ...
+	AttachFile(context.Context, dto.AttachedFileInfo) error
 }
