@@ -183,9 +183,8 @@ func (s PostgresListStorage) UpdateOrder(ctx context.Context, ids dto.ListIDs) e
 
 	caseBuilder := sq.Case()
 	for i, id := range ids.Values {
-		caseBuilder = caseBuilder.When(sq.Eq{"id": fmt.Sprintf("%v", id)}, fmt.Sprintf("%v", i))
+		caseBuilder = caseBuilder.When(sq.Eq{"id": fmt.Sprintf("%v", id)}, fmt.Sprintf("%v", i)).Else("list_position")
 	}
-	caseBuilder.Else("list_position")
 
 	sql, args, err := sq.
 		Update("public.list").
@@ -202,6 +201,7 @@ func (s PostgresListStorage) UpdateOrder(ctx context.Context, ids dto.ListIDs) e
 	_, err = s.db.Exec(sql, args...)
 	if err != nil {
 		log.Println("Storage -- Failed to create list")
+		log.Println("Error", err.Error())
 		return apperrors.ErrCouldNotChangeListOrder
 	}
 
