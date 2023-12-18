@@ -171,9 +171,8 @@ func (s PostgresChecklistItemStorage) UpdateOrder(ctx context.Context, ids dto.C
 
 	caseBuilder := sq.Case()
 	for i, id := range ids.Values {
-		caseBuilder = caseBuilder.When(sq.Eq{"id": fmt.Sprintf("%v", id)}, fmt.Sprintf("%v", i))
+		caseBuilder = caseBuilder.When(sq.Eq{"id": fmt.Sprintf("%v", id)}, fmt.Sprintf("%v", i)).Else("list_position")
 	}
-	caseBuilder.Else("list_position")
 
 	sql, args, err := sq.
 		Update("public.checklist_item").
@@ -188,8 +187,9 @@ func (s PostgresChecklistItemStorage) UpdateOrder(ctx context.Context, ids dto.C
 
 	_, err = s.db.Exec(sql, args...)
 	if err != nil {
-		log.Println("Storage -- Failed to create list")
-		return apperrors.ErrListNotCreated
+		log.Println("Storage -- Failed to update checklist")
+		log.Println("Error", err.Error())
+		return apperrors.ErrChecklistNotUpdated
 	}
 	log.Println("Storage -- Checklist order updated")
 

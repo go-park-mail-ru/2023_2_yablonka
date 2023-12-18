@@ -142,6 +142,17 @@ func GetChiMux(manager handlers.Handlers, config config.Config, logger logging.I
 					"/task/user/remove/", http.HandlerFunc(manager.TaskHandler.RemoveUser)),
 				)
 			})
+			r.Route("/file", func(r chi.Router) {
+				r.Post("/attach/", metricsMiddleware.WrapHandler(
+					"/task/file/attach/", http.HandlerFunc(manager.TaskHandler.Attach)),
+				)
+				r.Post("/", metricsMiddleware.WrapHandler(
+					"/task/file/", http.HandlerFunc(manager.TaskHandler.GetFileList)),
+				)
+				// r.Post("/remove/", metricsMiddleware.WrapHandler(
+				// 	"/task/user/remove/", http.HandlerFunc(manager.TaskHandler.RemoveUser)),
+				// )
+			})
 			r.Delete("/delete/", metricsMiddleware.WrapHandler(
 				"/task/delete/", http.HandlerFunc(manager.TaskHandler.Delete)),
 			)

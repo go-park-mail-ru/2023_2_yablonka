@@ -42,6 +42,18 @@ definitions:
       comment:
         $ref: '#/definitions/entities.Comment'
     type: object
+  doc_structs.FileListResponse:
+    properties:
+      files:
+        items:
+          $ref: '#/definitions/dto.AttachedFileInfo'
+        type: array
+    type: object
+  doc_structs.FileResponse:
+    properties:
+      file:
+        $ref: '#/definitions/dto.AttachedFileInfo'
+    type: object
   doc_structs.ListResponse:
     properties:
       list:
@@ -100,6 +112,17 @@ definitions:
         items:
           $ref: '#/definitions/dto.UserOwnedWorkspaceInfo'
         type: array
+    type: object
+  dto.AttachedFileInfo:
+    properties:
+      data_created:
+        type: string
+      file_path:
+        type: string
+      original_name:
+        type: string
+      task_id:
+        type: integer
     type: object
   dto.AuthInfo:
     properties:
@@ -284,6 +307,19 @@ definitions:
       text:
         type: string
       user_id:
+        type: integer
+    type: object
+  dto.NewFileInfo:
+    properties:
+      avatar:
+        items:
+          type: integer
+        type: array
+      filename:
+        type: string
+      mimetype:
+        type: string
+      task_id:
         type: integer
     type: object
   dto.NewListInfo:
@@ -1707,6 +1743,76 @@ paths:
           schema:
             $ref: '#/definitions/apperrors.ErrorResponse'
       summary: Удалить задание
+      tags:
+      - tasks
+  /task/file/:
+    post:
+      consumes:
+      - application/json
+      description: Получает актуальный список файлов, прикреплённых к полученному
+        заданию
+      parameters:
+      - description: id задания
+        in: body
+        name: taskID
+        required: true
+        schema:
+          $ref: '#/definitions/dto.TaskID'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: список объектов файлов
+          schema:
+            $ref: '#/definitions/doc_structs.FileListResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+      summary: Получить список прикреплённых к файлу заданий
+      tags:
+      - tasks
+  /task/file/attach/:
+    post:
+      consumes:
+      - application/json
+      description: Сохраняет полученный файл, возвращает оригинальное название и путь
+        к файлу
+      parameters:
+      - description: файл и информация о нём
+        in: body
+        name: newFileInfo
+        required: true
+        schema:
+          $ref: '#/definitions/dto.NewFileInfo'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: объект с информацией о сохранённом файле
+          schema:
+            $ref: '#/definitions/doc_structs.FileResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+      summary: Прикрепить задание к файлу
       tags:
       - tasks
   /task/move/:
