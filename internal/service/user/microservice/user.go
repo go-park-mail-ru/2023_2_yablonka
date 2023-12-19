@@ -2,6 +2,7 @@ package microservice
 
 import (
 	"context"
+	"fmt"
 	"server/internal/apperrors"
 	"server/internal/pkg/dto"
 	"server/internal/pkg/entities"
@@ -63,8 +64,13 @@ func (us UserService) RegisterUser(ctx context.Context, info dto.AuthInfo) (*ent
 	}
 
 	logger.DebugFmt("Contacting GRPC server", requestID.String(), funcName, nodeName)
-	serverResponse, _ := us.client.RegisterUser(ctx, grpcRequest)
+	serverResponse, err := us.client.RegisterUser(ctx, grpcRequest)
 	logger.DebugFmt("Response received", requestID.String(), funcName, nodeName)
+	logger.DebugFmt(fmt.Sprintf("Response: %v", serverResponse), requestID.String(), funcName, nodeName)
+	logger.DebugFmt("Response string: "+serverResponse.String(), requestID.String(), funcName, nodeName)
+	if err != nil {
+		logger.DebugFmt("Error: "+err.Error(), requestID.String(), funcName, nodeName)
+	}
 
 	if serverResponse.Code != microservice.ErrorCode_OK {
 		return &entities.User{}, UserServiceErrors[serverResponse.Code]

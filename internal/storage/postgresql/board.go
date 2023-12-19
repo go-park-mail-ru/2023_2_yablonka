@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"log"
 	"server/internal/apperrors"
 	logger "server/internal/logging"
 	"server/internal/pkg/dto"
@@ -221,7 +220,7 @@ func (s *PostgreSQLBoardStorage) CheckAccess(ctx context.Context, info dto.Check
 }
 
 func (s *PostgreSQLBoardStorage) Create(ctx context.Context, info dto.NewBoardInfo) (*entities.Board, error) {
-	funcName := "PostgreSQLBoardStorage.GetById"
+	funcName := "PostgreSQLBoardStorage.Create"
 	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
 	requestID := ctx.Value(dto.RequestIDKey).(uuid.UUID)
 
@@ -346,23 +345,27 @@ func (s *PostgreSQLBoardStorage) Create(ctx context.Context, info dto.NewBoardIn
 		}
 		return nil, apperrors.ErrBoardNotCreated
 	}
-	log.Println("Storage -- Creator connection set")
+	logger.DebugFmt("Board linked to creator", requestID.String(), funcName, nodeName)
 
 	err = tx.Commit()
 	if err != nil {
-		log.Println("Storage -- Failed to commit changes")
+		logger.DebugFmt("Failed to commit changes", requestID.String(), funcName, nodeName)
 		err = tx.Rollback()
 		for err != nil {
 			err = tx.Rollback()
 		}
 		return nil, apperrors.ErrBoardNotCreated
 	}
-	log.Println("Storage -- Committed changes")
+	logger.DebugFmt("Changes commited", requestID.String(), funcName, nodeName)
 
 	return newBoard, nil
 }
 
 func (s *PostgreSQLBoardStorage) UpdateData(ctx context.Context, info dto.UpdatedBoardInfo) error {
+	funcName := "PostgreSQLBoardStorage.Create"
+	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
+	requestID := ctx.Value(dto.RequestIDKey).(uuid.UUID)
+
 	sql, args, err := sq.
 		Update("public.board").
 		Set("name", info.Name).
@@ -371,10 +374,10 @@ func (s *PostgreSQLBoardStorage) UpdateData(ctx context.Context, info dto.Update
 		ToSql()
 
 	if err != nil {
-		log.Println("Storage -- Failed to build query")
+		logger.DebugFmt("Failed to build query with error "+err.Error(), requestID.String(), funcName, nodeName)
 		return apperrors.ErrCouldNotBuildQuery
 	}
-	log.Println("Built board query\n\t", sql, "\nwith args\n\t", args)
+	logger.DebugFmt("Built query\n\t"+sql+"\nwith args\n\t"+fmt.Sprintf("%+v", args), requestID.String(), funcName, nodeName)
 
 	_, err = s.db.Exec(sql, args...)
 

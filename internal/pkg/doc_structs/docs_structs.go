@@ -69,3 +69,11 @@ type ChecklistResponse struct {
 type ChecklistItemResponse struct {
 	Question dto.ChecklistItemInfo `json:"checklist_item"`
 }
+
+type FileResponse struct {
+	File dto.AttachedFileInfo `json:"file"`
+}
+
+type FileListResponse struct {
+	Files []dto.AttachedFileInfo `json:"files"`
+}
