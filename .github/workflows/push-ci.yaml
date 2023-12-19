@@ -184,7 +184,7 @@ jobs:
       - name: Deploy
         run: |
           ${{ secrets.AUTH_COMMAND }}
-          cd ${{ REPO_PATH }}
+          cd ${{ secrets.REPO_PATH }}
           git switch main && git pull
           docker-compose up --build --detach
       
