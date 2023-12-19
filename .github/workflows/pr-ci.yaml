@@ -125,30 +125,4 @@ jobs:
           branch: ${{ github.head_ref }}
           force: true
 
-  deploy:
-    name: Deploy to server
-    needs: swagger
-    runs-on: ubuntu-latest
-    steps:
-      - name: Add known host
-        run: |
-          mkdir -p ~/.ssh/ && touch ~/.ssh/known_hosts
-          ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
-
-      - name: Create SSH Key
-        run: |
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" | tr -d '\r' > key.pem
-          chmod 400 key.pem
-
-      - name: SSH and deploy
-        run: |
-          ssh -i key.pem ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'ENDSSH'
-          ${{ secrets.AUTH_COMMAND }}
-          cd ${{ secrets.REPO_PATH }}
-          git switch ${{ github.head_ref }} && git pull
-          docker-compose up --build --detach
-          running_containers="$(docker ps --filter 'status=running')"
-          all_containers="$(docker ps -a)"
-          if [ "$running_containers" != "$all_containers" ]; then diff <(echo "$running_containers") <(echo "$all_containers") && exit 1; else echo "Server deployed" && exit 0; fi
-          ENDSSH
           
