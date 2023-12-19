@@ -533,8 +533,8 @@ func (s PostgresTaskStorage) RemoveFile(ctx context.Context, info dto.RemoveFile
 		Select("id").
 		From("public.file").
 		Where(sq.And{
-			sq.Eq{"original_name": info.OriginalName},
-			sq.Eq{"file_path": info.FilePath},
+			sq.Eq{"name": info.OriginalName},
+			sq.Eq{"filepath": info.FilePath},
 		}).
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
