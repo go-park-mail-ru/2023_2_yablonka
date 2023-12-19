@@ -130,9 +130,6 @@ jobs:
     needs: swagger
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
       - name: Add known host
         run: |
           mkdir -p ~/.ssh/ && touch ~/.ssh/known_hosts
@@ -152,6 +149,6 @@ jobs:
           docker-compose up --build --detach
           running_containers="$(docker ps --filter 'status=running')"
           all_containers="$(docker ps -a)"
-          if [ "$running_containers != $all_containers" ]; then gh run cancel ${{ github.run_id }} && gh run watch ${{ github.run_id }}; fi
+          if [ "$running_containers" != "$all_containers" ]; then diff <(echo "$running_containers") <(echo "$all_containers") && exit 1; else echo "Server deployed" && exit 0; fi
           ENDSSH
           
