@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 
 	apperrors "server/internal/apperrors"
@@ -202,7 +201,7 @@ func (uh UserHandler) ChangeAvatar(w http.ResponseWriter, r *http.Request) {
 
 	var avatarChangeInfo dto.AvatarChangeInfo
 	// var testAvatarChangeInfo dto.AvatarChangeInfo
-	var rawMap map[string]interface{}
+	// var rawMap map[string]interface{}
 	user, ok := rCtx.Value(dto.UserObjKey).(*entities.User)
 	if !ok {
 		logger.Error(errorMessage + "No user object found")
@@ -212,18 +211,19 @@ func (uh UserHandler) ChangeAvatar(w http.ResponseWriter, r *http.Request) {
 	}
 	logger.DebugFmt("User object acquired from context", requestID.String(), funcName, nodeName)
 
-	err := json.NewDecoder(r.Body).Decode(&rawMap)
-	if err != nil {
-		logger.Error(errorMessage + err.Error())
-		logger.Info(failBorder)
-		apperrors.ReturnError(apperrors.BadRequestResponse, w, r)
-		return
-	}
-	logger.DebugFmt("Test JSON parsed", requestID.String(), funcName, nodeName)
+	// err := json.NewDecoder(r.Body).Decode(&avatarChangeInfo)
+	// if err != nil {
+	// 	logger.Error(errorMessage + err.Error())
+	// 	logger.Info(failBorder)
+	// 	apperrors.ReturnError(apperrors.BadRequestResponse, w, r)
+	// 	return
+	// }
+	// logger.DebugFmt("Test JSON parsed", requestID.String(), funcName, nodeName)
 
-	logger.Debug(fmt.Sprintf("%v", rawMap["avatar"]))
+	// logger.Debug(fmt.Sprintf("%v", rawMap["avatar"]))
 
-	err = easyjson.UnmarshalFromReader(r.Body, &avatarChangeInfo)
+	// err := easyjson.UnmarshalFromReader(r.Body, &avatarChangeInfo)
+	err := json.NewDecoder(r.Body).Decode(&avatarChangeInfo)
 	if err != nil {
 		logger.Error(errorMessage + err.Error())
 		logger.Info(failBorder)

@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"encoding/json"
 	"net/http"
 	"server/internal/apperrors"
 	_ "server/internal/pkg/doc_structs"
@@ -119,7 +120,8 @@ func (bh BoardHandler) Create(w http.ResponseWriter, r *http.Request) {
 	logger.Info("---------------------------------- Creating board ----------------------------------")
 
 	var newBoardRequest dto.NewBoardRequest
-	err := easyjson.UnmarshalFromReader(r.Body, &newBoardRequest)
+	// err := easyjson.UnmarshalFromReader(r.Body, &newBoardRequest)
+	err := json.NewDecoder(r.Body).Decode(&newBoardRequest)
 	if err != nil {
 		logger.Error(errorMessage + err.Error())
 		logger.Info(failBorder)
@@ -272,7 +274,8 @@ func (bh BoardHandler) UpdateThumbnail(w http.ResponseWriter, r *http.Request) {
 	logger.Info("---------------------------------- Updating board ----------------------------------")
 
 	var boardInfo dto.UpdatedBoardThumbnailInfo
-	err := easyjson.UnmarshalFromReader(r.Body, &boardInfo)
+	// err := easyjson.UnmarshalFromReader(r.Body, &boardInfo)
+	err := json.NewDecoder(r.Body).Decode(&boardInfo)
 	if err != nil {
 		logger.Error(errorMessage + err.Error())
 		logger.Info(failBorder)

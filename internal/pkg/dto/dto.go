@@ -163,12 +163,55 @@ type IndividualBoardRequest struct {
 
 // AvatarChangeInfo
 // структура для изменения аватарки
+//
+//easyjson:skip
 type AvatarChangeInfo struct {
 	UserID   uint64 `json:"-" valid:"-"`
 	Avatar   []byte `json:"avatar" valid:"-"`
 	Filename string `json:"filename" valid:"-"`
 	Mimetype string `json:"mimetype" valid:"-"`
 }
+
+// func (info *AvatarChangeInfo) UnmarshalEasyJSON(l *jlexer.Lexer) {
+// 	isTopLevel := l.IsStart()
+// 	if l.IsNull() {
+// 		if isTopLevel {
+// 			l.Consumed()
+// 		}
+// 		l.Skip()
+// 		return
+// 	}
+// 	l.Delim('{')
+// 	for !l.IsDelim('}') {
+// 		key := l.UnsafeFieldName(false)
+// 		l.WantColon()
+// 		if l.IsNull() {
+// 			l.Skip()
+// 			l.WantComma()
+// 			continue
+// 		}
+// 		switch key {
+// 		case "avatar":
+// 			if l.IsNull() {
+// 				l.Skip()
+// 				info.Avatar = nil
+// 			} else {
+// 				info.Avatar = []byte(l.Bytes())
+// 			}
+// 		case "filename":
+// 			info.Filename = string(l.String())
+// 		case "mimetype":
+// 			info.Mimetype = string(l.String())
+// 		default:
+// 			l.SkipRecursive()
+// 		}
+// 		l.WantComma()
+// 	}
+// 	l.Delim('}')
+// 	if isTopLevel {
+// 		l.Consumed()
+// 	}
+// }
 
 // ImageRequest
 // структура для изменения аватарки
@@ -315,6 +358,8 @@ type RemoveTaskUserInfo struct {
 
 // NewBoardInfo
 // DTO для новой доски
+//
+//easyjson:skip
 type NewBoardInfo struct {
 	Name         string  `json:"name" valid:"type(string)"`
 	WorkspaceID  uint64  `json:"workspace_id" valid:"type(int)"`
@@ -366,6 +411,7 @@ type FullBoardResult struct {
 	ChecklistItems []ChecklistItemInfo `json:"checklist_items"`
 }
 
+//easyjson:skip
 type Image struct {
 	Data []byte `json:"data"`
 }
@@ -376,6 +422,8 @@ type ImageUrl struct {
 
 // NewBoardRequest
 // DTO для запроса новой доски
+//
+//easyjson:skip
 type NewBoardRequest struct {
 	Name        string  `json:"name" valid:"type(string)"`
 	WorkspaceID uint64  `json:"workspace_id" valid:"type(uint64)"`
@@ -651,6 +699,8 @@ type UpdatedBoardInfo struct {
 
 // UpdatedBoardThumbnailInfo
 // DTO для обновленной картинки доски
+//
+//easyjson:skip
 type UpdatedBoardThumbnailInfo struct {
 	ID        uint64 `json:"id"`
 	Thumbnail []byte `json:"thumbnail"`
@@ -682,6 +732,8 @@ type ChangeWorkspaceGuestsInfo struct {
 
 // ChangeWorkspaceThumbnailInfo
 // DTO для изменения картинки рабочего пространства
+//
+//easyjson:skip
 type ChangeWorkspaceThumbnailInfo struct {
 	ID        uint64 `json:"id"`
 	Thumbnail []byte `json:"thumbnail"`
@@ -738,6 +790,7 @@ type UpdatedUserInfo struct {
 	AvatarURL    string  `json:"avatar_url"`
 }
 
+//easyjson:skip
 type NewFileInfo struct {
 	UserID   uint64 `json:"-" valid:"-"`
 	TaskID   uint64 `json:"task_id" valid:"-"`

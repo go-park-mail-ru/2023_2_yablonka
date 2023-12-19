@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"encoding/json"
 	"net/http"
 	"server/internal/apperrors"
 	logger "server/internal/logging"
@@ -536,7 +537,8 @@ func (th TaskHandler) AttachFile(w http.ResponseWriter, r *http.Request) {
 	logger.Info("---------------------------------- TaskHandler.Attach ----------------------------------")
 
 	var newFileInfo dto.NewFileInfo
-	err := easyjson.UnmarshalFromReader(r.Body, &newFileInfo)
+	// err := easyjson.UnmarshalFromReader(r.Body, &newFileInfo)
+	err := json.NewDecoder(r.Body).Decode(&newFileInfo)
 	if err != nil {
 		logger.Error(errorMessage + err.Error())
 		logger.Info(failBorder)
