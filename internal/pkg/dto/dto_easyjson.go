@@ -2395,7 +2395,7 @@ func easyjson56de76c1DecodeServerInternalPkgDto25(in *jlexer.Lexer, out *Updated
 				in.Skip()
 				out.Thumbnail = nil
 			} else {
-				out.Thumbnail = in.Bytes()
+				out.Thumbnail = []byte(in.String())
 			}
 		default:
 			in.SkipRecursive()
@@ -2419,7 +2419,7 @@ func easyjson56de76c1EncodeServerInternalPkgDto25(out *jwriter.Writer, in Update
 	{
 		const prefix string = ",\"thumbnail\":"
 		out.RawString(prefix)
-		out.Base64Bytes(in.Thumbnail)
+		out.String(string(in.Thumbnail))
 	}
 	out.RawByte('}')
 }
@@ -4642,7 +4642,7 @@ func easyjson56de76c1DecodeServerInternalPkgDto49(in *jlexer.Lexer, out *NewFile
 				in.Skip()
 				out.File = nil
 			} else {
-				out.File = in.Bytes()
+				out.File = []byte(in.String())
 			}
 		case "filename":
 			out.Filename = string(in.String())
@@ -4675,7 +4675,7 @@ func easyjson56de76c1EncodeServerInternalPkgDto49(out *jwriter.Writer, in NewFil
 	{
 		const prefix string = ",\"file\":"
 		out.RawString(prefix)
-		out.Base64Bytes(in.File)
+		out.String(string(in.File))
 	}
 	{
 		const prefix string = ",\"filename\":"
@@ -5301,7 +5301,7 @@ func easyjson56de76c1DecodeServerInternalPkgDto57(in *jlexer.Lexer, out *NewBoar
 					in.Skip()
 					*out.Thumbnail = nil
 				} else {
-					*out.Thumbnail = in.Bytes()
+					*out.Thumbnail = []byte(in.String())
 				}
 			}
 		default:
@@ -5331,7 +5331,7 @@ func easyjson56de76c1EncodeServerInternalPkgDto57(out *jwriter.Writer, in NewBoa
 	if in.Thumbnail != nil {
 		const prefix string = ",\"thumbnail\":"
 		out.RawString(prefix)
-		out.Base64Bytes(*in.Thumbnail)
+		out.String(string(*in.Thumbnail))
 	}
 	out.RawByte('}')
 }
@@ -5396,7 +5396,7 @@ func easyjson56de76c1DecodeServerInternalPkgDto58(in *jlexer.Lexer, out *NewBoar
 					in.Skip()
 					*out.Thumbnail = nil
 				} else {
-					*out.Thumbnail = in.Bytes()
+					*out.Thumbnail = []byte(in.String())
 				}
 			}
 		case "ThumbnailURL":
@@ -5464,7 +5464,7 @@ func easyjson56de76c1EncodeServerInternalPkgDto58(out *jwriter.Writer, in NewBoa
 	if in.Thumbnail != nil {
 		const prefix string = ",\"thumbnail\":"
 		out.RawString(prefix)
-		out.Base64Bytes(*in.Thumbnail)
+		out.String(string(*in.Thumbnail))
 	}
 	{
 		const prefix string = ",\"ThumbnailURL\":"
@@ -6113,7 +6113,7 @@ func easyjson56de76c1DecodeServerInternalPkgDto66(in *jlexer.Lexer, out *Image) 
 				in.Skip()
 				out.Data = nil
 			} else {
-				out.Data = in.Bytes()
+				out.Data = []byte(in.String())
 			}
 		default:
 			in.SkipRecursive()
@@ -6132,7 +6132,7 @@ func easyjson56de76c1EncodeServerInternalPkgDto66(out *jwriter.Writer, in Image)
 	{
 		const prefix string = ",\"data\":"
 		out.RawString(prefix[1:])
-		out.Base64Bytes(in.Data)
+		out.String(string(in.Data))
 	}
 	out.RawByte('}')
 }
@@ -7665,7 +7665,7 @@ func easyjson56de76c1DecodeServerInternalPkgDto81(in *jlexer.Lexer, out *ChangeW
 				in.Skip()
 				out.Thumbnail = nil
 			} else {
-				out.Thumbnail = in.Bytes()
+				out.Thumbnail = []byte(in.String())
 			}
 		default:
 			in.SkipRecursive()
@@ -7689,7 +7689,7 @@ func easyjson56de76c1EncodeServerInternalPkgDto81(out *jwriter.Writer, in Change
 	{
 		const prefix string = ",\"thumbnail\":"
 		out.RawString(prefix)
-		out.Base64Bytes(in.Thumbnail)
+		out.String(string(in.Thumbnail))
 	}
 	out.RawByte('}')
 }
@@ -8682,7 +8682,7 @@ func easyjson56de76c1DecodeServerInternalPkgDto94(in *jlexer.Lexer, out *AvatarC
 				in.Skip()
 				out.Avatar = nil
 			} else {
-				out.Avatar = in.Bytes()
+				out.Avatar = []byte(in.String())
 			}
 		case "filename":
 			out.Filename = string(in.String())
@@ -8710,7 +8710,7 @@ func easyjson56de76c1EncodeServerInternalPkgDto94(out *jwriter.Writer, in Avatar
 		} else {
 			out.RawString(prefix)
 		}
-		out.Base64Bytes(in.Avatar)
+		out.String(string(in.Avatar))
 	}
 	{
 		const prefix string = ",\"filename\":"
