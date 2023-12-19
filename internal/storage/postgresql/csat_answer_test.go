@@ -99,7 +99,7 @@ func TestPostgresCSATAnswerStorage_Create(t *testing.T) {
 			s := NewCSATAnswerStorage(db)
 
 			if err := s.Create(ctx, tt.args.info); (err != nil) != tt.wantErr {
-				t.Errorf("PostgresCSATQuestionStorage.Delete() error = %v, wantErr %v", err != nil, tt.wantErr)
+				t.Errorf("PostgresCSATAnswerStorage.Create() error = %v, wantErr %v", err != nil, tt.wantErr)
 			}
 
 			if err := mock.ExpectationsWereMet(); err != nil {

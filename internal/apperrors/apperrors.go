@@ -94,6 +94,8 @@ var (
 var (
 	// ErrCouldNotGetTaskComments ошибка: нельзя получить комментарии задания
 	ErrCouldNotGetTaskComments = errors.New("couldn't get the comments from task")
+	// ErrCouldNotGetComments ошибка: нельзя получить комментарии
+	ErrCouldNotGetComments = errors.New("couldn't get the comments")
 )
 
 // Ошибки, связанные с сервером
@@ -339,6 +341,7 @@ var ErrorMap = map[error]ErrorResponse{
 	ErrQuestionNotUpdated:       InternalServerErrorResponse,
 	ErrAvatarGone:               GoneResponse,
 	ErrCouldNotCreateAnswer:     InternalServerErrorResponse,
+	ErrCouldNotGetComments:      InternalServerErrorResponse,
 }
 
 func ErrorJSON(err ErrorResponse) []byte {
