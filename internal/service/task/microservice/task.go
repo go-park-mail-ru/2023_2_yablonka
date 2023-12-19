@@ -129,7 +129,8 @@ func (ts TaskService) Attach(ctx context.Context, info dto.NewFileInfo) (*dto.At
 	requestID := ctx.Value(dto.RequestIDKey).(uuid.UUID)
 
 	fileName := hashFromFileInfo(info.Filename, info.Mimetype,
-		strconv.FormatUint(info.UserID, 10), strconv.FormatUint(info.TaskID, 10))
+		strconv.FormatUint(info.UserID, 10), strconv.FormatUint(info.TaskID, 10),
+		requestID.String(), time.Now().String())
 	extension := path.Ext(info.Filename)
 
 	if err := os.MkdirAll("attachments/task/"+strconv.FormatUint(info.TaskID, 10), 0755); err != nil {
