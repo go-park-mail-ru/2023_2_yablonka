@@ -2,130 +2,299 @@ package postgresql
 
 import (
 	"context"
-	"database/sql"
-	"reflect"
+	"regexp"
+	"server/internal/apperrors"
 	"server/internal/pkg/dto"
-	"server/internal/pkg/entities"
 	"testing"
+	"time"
+
+	"github.com/DATA-DOG/go-sqlmock"
+	sq "github.com/Masterminds/squirrel"
+	"github.com/google/uuid"
 )
 
-func TestNewCommentStorage(t *testing.T) {
-	type args struct {
-		db *sql.DB
-	}
-	tests := []struct {
-		name string
-		args args
-		want *PostgresCommentStorage
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := NewCommentStorage(tt.args.db); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("NewCommentStorage() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
 func TestPostgresCommentStorage_Create(t *testing.T) {
-	type fields struct {
-		db *sql.DB
-	}
+	t.Parallel()
 	type args struct {
-		ctx  context.Context
-		info dto.NewCommentInfo
+		info  dto.NewCommentInfo
+		query func(mock sqlmock.Sqlmock, args args)
 	}
 	tests := []struct {
 		name    string
-		fields  fields
 		args    args
-		want    *entities.Comment
 		wantErr bool
+		err     error
 	}{
-		// TODO: Add test cases.
+		{
+			name: "Happy path",
+			args: args{
+				info: dto.NewCommentInfo{
+					UserID: 1,
+					TaskID: 1,
+					Text:   "dfdfdfdf",
+				},
+				query: func(mock sqlmock.Sqlmock, args args) {
+					query, _, _ := sq.
+						Insert("public.comment").
+						Columns(newCommentFields...).
+						Values(args.info.TaskID, args.info.UserID, args.info.Text).
+						PlaceholderFormat(sq.Dollar).
+						Suffix("RETURNING id, date_created").
+						ToSql()
+					mock.ExpectQuery(regexp.QuoteMeta(query)).
+						WithArgs(
+							args.info.TaskID,
+							args.info.UserID,
+							args.info.Text,
+						).
+						WillReturnRows(sqlmock.NewRows([]string{"id", "date_created"}).
+							AddRow(1, time.Now()),
+						)
+				},
+			},
+			wantErr: false,
+			err:     nil,
+		},
+		{
+			name: "Query fail",
+			args: args{
+				info: dto.NewCommentInfo{
+					UserID: 1,
+					TaskID: 1,
+					Text:   "dfdfdfdf",
+				},
+				query: func(mock sqlmock.Sqlmock, args args) {
+					query, _, _ := sq.
+						Insert("public.comment").
+						Columns(newCommentFields...).
+						Values(args.info.TaskID, args.info.UserID, args.info.Text).
+						PlaceholderFormat(sq.Dollar).
+						Suffix("RETURNING id, date_created").
+						ToSql()
+					mock.ExpectQuery(regexp.QuoteMeta(query)).
+						WithArgs(
+							args.info.TaskID,
+							args.info.UserID,
+							args.info.Text,
+						).
+						WillReturnError(apperrors.ErrCommentNotCreated)
+				},
+			},
+			wantErr: true,
+			err:     apperrors.ErrCommentNotCreated,
+		},
 	}
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-			s := PostgresCommentStorage{
-				db: tt.fields.db,
+			t.Parallel()
+			db, mock, err := sqlmock.New()
+			if err != nil {
+				t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 			}
-			got, err := s.Create(tt.args.ctx, tt.args.info)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("Create() error = %v, wantErr %v", err, tt.wantErr)
-				return
+			defer db.Close()
+
+			ctx := context.WithValue(
+				context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+				dto.RequestIDKey, uuid.New(),
+			)
+
+			tt.args.query(mock, tt.args)
+
+			s := NewCommentStorage(db)
+
+			if _, err := s.Create(ctx, tt.args.info); (err != nil) != tt.wantErr {
+				t.Errorf("PostgresCommentStorage.Create() error = %v, wantErr %v", err != nil, tt.wantErr)
 			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("Create() got = %v, want %v", got, tt.want)
+
+			if err := mock.ExpectationsWereMet(); err != nil {
+				t.Errorf("there were unfulfilled expectations: %s", err)
 			}
 		})
 	}
 }
 
 func TestPostgresCommentStorage_GetFromTask(t *testing.T) {
-	type fields struct {
-		db *sql.DB
-	}
+	t.Parallel()
 	type args struct {
-		ctx context.Context
-		id  dto.TaskID
+		info  dto.TaskID
+		query func(mock sqlmock.Sqlmock, args args)
 	}
 	tests := []struct {
 		name    string
-		fields  fields
 		args    args
-		want    *[]dto.CommentInfo
 		wantErr bool
+		err     error
 	}{
-		// TODO: Add test cases.
+		{
+			name: "Happy path",
+			args: args{
+				info: dto.TaskID{
+					Value: 1,
+				},
+				query: func(mock sqlmock.Sqlmock, args args) {
+					query, _, _ := sq.
+						Select(allCommentFields...).
+						From("public.comment").
+						Where(sq.Eq{"id_task": args.info.Value}).
+						PlaceholderFormat(sq.Dollar).
+						ToSql()
+					mock.ExpectQuery(regexp.QuoteMeta(query)).
+						WithArgs(
+							args.info.Value,
+						).
+						WillReturnRows(sqlmock.NewRows(allCommentFields).
+							AddRow(1, 1, "content", time.Now()),
+						)
+				},
+			},
+			wantErr: false,
+			err:     nil,
+		},
+		{
+			name: "Query fail",
+			args: args{
+				info: dto.TaskID{
+					Value: 1,
+				},
+				query: func(mock sqlmock.Sqlmock, args args) {
+					query, _, _ := sq.
+						Select(allCommentFields...).
+						From("public.comment").
+						Where(sq.Eq{"id_task": args.info.Value}).
+						PlaceholderFormat(sq.Dollar).
+						ToSql()
+					mock.ExpectQuery(regexp.QuoteMeta(query)).
+						WithArgs(
+							args.info.Value,
+						).
+						WillReturnError(apperrors.ErrCouldNotGetTaskComments)
+				},
+			},
+			wantErr: true,
+			err:     apperrors.ErrCouldNotGetTaskComments,
+		},
 	}
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-			s := &PostgresCommentStorage{
-				db: tt.fields.db,
+			t.Parallel()
+			db, mock, err := sqlmock.New()
+			if err != nil {
+				t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 			}
-			got, err := s.GetFromTask(tt.args.ctx, tt.args.id)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("GetFromTask() error = %v, wantErr %v", err, tt.wantErr)
-				return
+			defer db.Close()
+
+			ctx := context.WithValue(
+				context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+				dto.RequestIDKey, uuid.New(),
+			)
+
+			tt.args.query(mock, tt.args)
+
+			s := NewCommentStorage(db)
+
+			if _, err := s.GetFromTask(ctx, tt.args.info); (err != nil) != tt.wantErr {
+				t.Errorf("PostgresCommentStorage.GetFromTask() error = %v, wantErr %v", err != nil, tt.wantErr)
 			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("GetFromTask() got = %v, want %v", got, tt.want)
+
+			if err := mock.ExpectationsWereMet(); err != nil {
+				t.Errorf("there were unfulfilled expectations: %s", err)
 			}
 		})
 	}
 }
 
 func TestPostgresCommentStorage_ReadMany(t *testing.T) {
-	type fields struct {
-		db *sql.DB
-	}
+	t.Parallel()
 	type args struct {
-		ctx context.Context
-		ids dto.CommentIDs
+		info  dto.CommentIDs
+		query func(mock sqlmock.Sqlmock, args args)
 	}
 	tests := []struct {
 		name    string
-		fields  fields
 		args    args
-		want    *[]dto.CommentInfo
 		wantErr bool
+		err     error
 	}{
-		// TODO: Add test cases.
+		{
+			name: "Happy path",
+			args: args{
+				info: dto.CommentIDs{
+					Values: []string{"1", "2", "3"},
+				},
+				query: func(mock sqlmock.Sqlmock, args args) {
+					query, _, _ := sq.
+						Select(allCommentFields...).
+						From("public.comment").
+						Where(sq.Eq{"id": args.info.Values}).
+						PlaceholderFormat(sq.Dollar).
+						ToSql()
+					mock.ExpectQuery(regexp.QuoteMeta(query)).
+						WithArgs(
+							args.info.Values[0],
+							args.info.Values[1],
+							args.info.Values[2],
+						).
+						WillReturnRows(sqlmock.NewRows(allCommentFields).
+							AddRow(1, 1, "content", time.Now()),
+						)
+				},
+			},
+			wantErr: false,
+			err:     nil,
+		},
+		{
+			name: "Query fail",
+			args: args{
+				info: dto.CommentIDs{
+					Values: []string{"1", "2", "3"},
+				},
+				query: func(mock sqlmock.Sqlmock, args args) {
+					query, _, _ := sq.
+						Select(allCommentFields...).
+						From("public.comment").
+						Where(sq.Eq{"id": args.info.Values}).
+						PlaceholderFormat(sq.Dollar).
+						ToSql()
+					mock.ExpectQuery(regexp.QuoteMeta(query)).
+						WithArgs(
+							args.info.Values[0],
+							args.info.Values[1],
+							args.info.Values[2],
+						).
+						WillReturnError(apperrors.ErrCouldNotGetComments)
+				},
+			},
+			wantErr: true,
+			err:     apperrors.ErrCouldNotGetComments,
+		},
 	}
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-			s := &PostgresCommentStorage{
-				db: tt.fields.db,
+			t.Parallel()
+			db, mock, err := sqlmock.New()
+			if err != nil {
+				t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 			}
-			got, err := s.ReadMany(tt.args.ctx, tt.args.ids)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("ReadMany() error = %v, wantErr %v", err, tt.wantErr)
-				return
+			defer db.Close()
+
+			ctx := context.WithValue(
+				context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+				dto.RequestIDKey, uuid.New(),
+			)
+
+			tt.args.query(mock, tt.args)
+
+			s := NewCommentStorage(db)
+
+			if _, err := s.ReadMany(ctx, tt.args.info); (err != nil) != tt.wantErr {
+				t.Errorf("PostgresCommentStorage.ReadMany() error = %v, wantErr %v", err != nil, tt.wantErr)
 			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("ReadMany() got = %v, want %v", got, tt.want)
+
+			if err := mock.ExpectationsWereMet(); err != nil {
+				t.Errorf("there were unfulfilled expectations: %s", err)
 			}
 		})
 	}

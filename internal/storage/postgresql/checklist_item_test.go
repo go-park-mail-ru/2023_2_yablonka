@@ -2,151 +2,403 @@ package postgresql
 
 import (
 	"context"
-	"database/sql"
-	"reflect"
+	"regexp"
+	"server/internal/apperrors"
 	"server/internal/pkg/dto"
 	"testing"
+
+	"github.com/DATA-DOG/go-sqlmock"
+	sq "github.com/Masterminds/squirrel"
+	"github.com/google/uuid"
 )
 
-func TestNewChecklistItemStorage(t *testing.T) {
-	type args struct {
-		db *sql.DB
-	}
-	tests := []struct {
-		name string
-		args args
-		want *PostgresChecklistItemStorage
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := NewChecklistItemStorage(tt.args.db); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("NewChecklistItemStorage() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
 func TestPostgresChecklistItemStorage_Create(t *testing.T) {
-	type fields struct {
-		db *sql.DB
-	}
+	t.Parallel()
 	type args struct {
-		ctx  context.Context
-		info dto.NewChecklistItemInfo
+		info  dto.NewChecklistItemInfo
+		query func(mock sqlmock.Sqlmock, args args)
 	}
 	tests := []struct {
 		name    string
-		fields  fields
 		args    args
-		want    *dto.ChecklistItemInfo
 		wantErr bool
+		err     error
 	}{
-		// TODO: Add test cases.
+		{
+			name: "Happy path",
+			args: args{
+				info: dto.NewChecklistItemInfo{
+					ChecklistID:  1,
+					Name:         "dfdfdfdf",
+					Done:         true,
+					ListPosition: 1,
+				},
+				query: func(mock sqlmock.Sqlmock, args args) {
+					query, _, _ := sq.
+						Insert("public.checklist_item").
+						Columns("name", "list_position", "id_checklist", "done").
+						Values(args.info.Name, args.info.ListPosition, args.info.ChecklistID, args.info.Done).
+						Suffix("RETURNING id").
+						PlaceholderFormat(sq.Dollar).
+						ToSql()
+					mock.ExpectQuery(regexp.QuoteMeta(query)).
+						WithArgs(
+							args.info.Name,
+							args.info.ListPosition,
+							args.info.ChecklistID,
+							args.info.Done,
+						).
+						WillReturnRows(sqlmock.NewRows([]string{"id"}).
+							AddRow(1),
+						)
+				},
+			},
+			wantErr: false,
+			err:     nil,
+		},
+		{
+			name: "Query fail",
+			args: args{
+				info: dto.NewChecklistItemInfo{
+					ChecklistID:  1,
+					Name:         "dfdfdfdf",
+					Done:         true,
+					ListPosition: 1,
+				},
+				query: func(mock sqlmock.Sqlmock, args args) {
+					query, _, _ := sq.
+						Insert("public.checklist_item").
+						Columns("name", "list_position", "id_checklist", "done").
+						Values(args.info.Name, args.info.ListPosition, args.info.ChecklistID, args.info.Done).
+						Suffix("RETURNING id").
+						PlaceholderFormat(sq.Dollar).
+						ToSql()
+					mock.ExpectQuery(regexp.QuoteMeta(query)).
+						WithArgs(
+							args.info.Name,
+							args.info.ListPosition,
+							args.info.ChecklistID,
+							args.info.Done,
+						).
+						WillReturnError(apperrors.ErrChecklistItemNotCreated)
+				},
+			},
+			wantErr: true,
+			err:     apperrors.ErrChecklistItemNotCreated,
+		},
 	}
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-			s := PostgresChecklistItemStorage{
-				db: tt.fields.db,
+			t.Parallel()
+			db, mock, err := sqlmock.New()
+			if err != nil {
+				t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 			}
-			got, err := s.Create(tt.args.ctx, tt.args.info)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("Create() error = %v, wantErr %v", err, tt.wantErr)
-				return
+			defer db.Close()
+
+			ctx := context.WithValue(
+				context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+				dto.RequestIDKey, uuid.New(),
+			)
+
+			tt.args.query(mock, tt.args)
+
+			s := NewChecklistItemStorage(db)
+
+			if _, err := s.Create(ctx, tt.args.info); (err != nil) != tt.wantErr {
+				t.Errorf("PostgresChecklistItemStorage.Create() error = %v, wantErr %v", err != nil, tt.wantErr)
 			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("Create() got = %v, want %v", got, tt.want)
+
+			if err := mock.ExpectationsWereMet(); err != nil {
+				t.Errorf("there were unfulfilled expectations: %s", err)
 			}
 		})
 	}
 }
 
 func TestPostgresChecklistItemStorage_Delete(t *testing.T) {
-	type fields struct {
-		db *sql.DB
-	}
+	t.Parallel()
 	type args struct {
-		ctx context.Context
-		id  dto.ChecklistItemID
+		info  dto.ChecklistItemID
+		query func(mock sqlmock.Sqlmock, args args)
 	}
 	tests := []struct {
 		name    string
-		fields  fields
 		args    args
 		wantErr bool
+		err     error
 	}{
-		// TODO: Add test cases.
+		{
+			name: "Happy path",
+			args: args{
+				info: dto.ChecklistItemID{
+					Value: 1,
+				},
+				query: func(mock sqlmock.Sqlmock, args args) {
+					query, _, _ := sq.
+						Delete("public.checklist_item").
+						Where(sq.Eq{"id": args.info.Value}).
+						PlaceholderFormat(sq.Dollar).
+						ToSql()
+					mock.ExpectExec(regexp.QuoteMeta(query)).
+						WithArgs(
+							args.info.Value,
+						).
+						WillReturnResult(sqlmock.NewResult(1, 1))
+				},
+			},
+			wantErr: false,
+			err:     nil,
+		},
+		{
+			name: "Query fail",
+			args: args{
+				info: dto.ChecklistItemID{
+					Value: 1,
+				},
+				query: func(mock sqlmock.Sqlmock, args args) {
+					query, _, _ := sq.
+						Delete("public.checklist_item").
+						Where(sq.Eq{"id": args.info.Value}).
+						PlaceholderFormat(sq.Dollar).
+						ToSql()
+					mock.ExpectExec(regexp.QuoteMeta(query)).
+						WithArgs(
+							args.info.Value,
+						).
+						WillReturnError(apperrors.ErrChecklistItemNotDeleted)
+				},
+			},
+			wantErr: true,
+			err:     apperrors.ErrChecklistItemNotDeleted,
+		},
 	}
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-			s := PostgresChecklistItemStorage{
-				db: tt.fields.db,
+			t.Parallel()
+			db, mock, err := sqlmock.New()
+			if err != nil {
+				t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 			}
-			if err := s.Delete(tt.args.ctx, tt.args.id); (err != nil) != tt.wantErr {
-				t.Errorf("Delete() error = %v, wantErr %v", err, tt.wantErr)
+			defer db.Close()
+
+			ctx := context.WithValue(
+				context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+				dto.RequestIDKey, uuid.New(),
+			)
+
+			tt.args.query(mock, tt.args)
+
+			s := NewChecklistItemStorage(db)
+
+			if err := s.Delete(ctx, tt.args.info); (err != nil) != tt.wantErr {
+				t.Errorf("PostgresChecklistItemStorage.Delete() error = %v, wantErr %v", err != nil, tt.wantErr)
+			}
+
+			if err := mock.ExpectationsWereMet(); err != nil {
+				t.Errorf("there were unfulfilled expectations: %s", err)
 			}
 		})
 	}
 }
 
 func TestPostgresChecklistItemStorage_ReadMany(t *testing.T) {
-	type fields struct {
-		db *sql.DB
-	}
+	t.Parallel()
 	type args struct {
-		ctx context.Context
-		ids dto.ChecklistItemStringIDs
+		info  dto.ChecklistItemStringIDs
+		query func(mock sqlmock.Sqlmock, args args)
 	}
 	tests := []struct {
 		name    string
-		fields  fields
 		args    args
-		want    *[]dto.ChecklistItemInfo
 		wantErr bool
+		err     error
 	}{
-		// TODO: Add test cases.
+		{
+			name: "Happy path",
+			args: args{
+				info: dto.ChecklistItemStringIDs{
+					Values: []string{"1", "2", "3"},
+				},
+				query: func(mock sqlmock.Sqlmock, args args) {
+					query, _, _ := sq.
+						Select("id", "name", "list_position", "id_checklist", "done").
+						From("public.checklist_item").
+						Where(sq.Eq{"id": args.info.Values}).
+						PlaceholderFormat(sq.Dollar).
+						ToSql()
+					mock.ExpectQuery(regexp.QuoteMeta(query)).
+						WithArgs(
+							args.info.Values[0],
+							args.info.Values[1],
+							args.info.Values[2],
+						).
+						WillReturnRows(sqlmock.NewRows([]string{"id", "name", "list_position", "id_checklist", "done"}).
+							AddRow(1, "name", 1, 1, true),
+						)
+				},
+			},
+			wantErr: false,
+			err:     nil,
+		},
+		{
+			name: "Query fail",
+			args: args{
+				info: dto.ChecklistItemStringIDs{
+					Values: []string{"1", "2", "3"},
+				},
+				query: func(mock sqlmock.Sqlmock, args args) {
+					query, _, _ := sq.
+						Select("id", "name", "list_position", "id_checklist", "done").
+						From("public.checklist_item").
+						Where(sq.Eq{"id": args.info.Values}).
+						PlaceholderFormat(sq.Dollar).
+						ToSql()
+					mock.ExpectQuery(regexp.QuoteMeta(query)).
+						WithArgs(
+							args.info.Values[0],
+							args.info.Values[1],
+							args.info.Values[2],
+						).
+						WillReturnError(apperrors.ErrCouldNotGetChecklistItem)
+				},
+			},
+			wantErr: true,
+			err:     apperrors.ErrCouldNotGetChecklistItem,
+		},
 	}
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-			s := PostgresChecklistItemStorage{
-				db: tt.fields.db,
+			t.Parallel()
+			db, mock, err := sqlmock.New()
+			if err != nil {
+				t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 			}
-			got, err := s.ReadMany(tt.args.ctx, tt.args.ids)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("ReadMany() error = %v, wantErr %v", err, tt.wantErr)
-				return
+			defer db.Close()
+
+			ctx := context.WithValue(
+				context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+				dto.RequestIDKey, uuid.New(),
+			)
+
+			tt.args.query(mock, tt.args)
+
+			s := NewChecklistItemStorage(db)
+
+			if _, err := s.ReadMany(ctx, tt.args.info); (err != nil) != tt.wantErr {
+				t.Errorf("PostgresChecklistItemStorage.ReadMany() error = %v, wantErr %v", err != nil, tt.wantErr)
 			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("ReadMany() got = %v, want %v", got, tt.want)
+
+			if err := mock.ExpectationsWereMet(); err != nil {
+				t.Errorf("there were unfulfilled expectations: %s", err)
 			}
 		})
 	}
 }
 
 func TestPostgresChecklistItemStorage_Update(t *testing.T) {
-	type fields struct {
-		db *sql.DB
-	}
+	t.Parallel()
 	type args struct {
-		ctx  context.Context
-		info dto.UpdatedChecklistItemInfo
+		info  dto.UpdatedChecklistItemInfo
+		query func(mock sqlmock.Sqlmock, args args)
 	}
 	tests := []struct {
 		name    string
-		fields  fields
 		args    args
 		wantErr bool
+		err     error
 	}{
-		// TODO: Add test cases.
+		{
+			name: "Happy path",
+			args: args{
+				info: dto.UpdatedChecklistItemInfo{
+					ID:           1,
+					Name:         "bfdbdfb",
+					Done:         true,
+					ListPosition: 1,
+				},
+				query: func(mock sqlmock.Sqlmock, args args) {
+					query, _, _ := sq.
+						Update("public.checklist_item").
+						Set("name", args.info.Name).
+						Set("done", args.info.Done).
+						Set("list_position", args.info.ListPosition).
+						Where(sq.Eq{"id": args.info.ID}).
+						PlaceholderFormat(sq.Dollar).
+						ToSql()
+					mock.ExpectExec(regexp.QuoteMeta(query)).
+						WithArgs(
+							args.info.Name,
+							args.info.Done,
+							args.info.ListPosition,
+							args.info.ID,
+						).
+						WillReturnResult(sqlmock.NewResult(1, 1))
+				},
+			},
+			wantErr: false,
+			err:     nil,
+		},
+		{
+			name: "Query fail",
+			args: args{
+				info: dto.UpdatedChecklistItemInfo{
+					ID:           1,
+					Name:         "bfdbdfb",
+					Done:         true,
+					ListPosition: 1,
+				},
+				query: func(mock sqlmock.Sqlmock, args args) {
+					query, _, _ := sq.
+						Update("public.checklist_item").
+						Set("name", args.info.Name).
+						Set("done", args.info.Done).
+						Set("list_position", args.info.ListPosition).
+						Where(sq.Eq{"id": args.info.ID}).
+						PlaceholderFormat(sq.Dollar).
+						ToSql()
+					mock.ExpectExec(regexp.QuoteMeta(query)).
+						WithArgs(
+							args.info.Name,
+							args.info.Done,
+							args.info.ListPosition,
+							args.info.ID,
+						).
+						WillReturnError(apperrors.ErrChecklistItemNotUpdated)
+				},
+			},
+			wantErr: true,
+			err:     apperrors.ErrChecklistItemNotUpdated,
+		},
 	}
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-			s := PostgresChecklistItemStorage{
-				db: tt.fields.db,
+			t.Parallel()
+			db, mock, err := sqlmock.New()
+			if err != nil {
+				t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 			}
-			if err := s.Update(tt.args.ctx, tt.args.info); (err != nil) != tt.wantErr {
-				t.Errorf("Update() error = %v, wantErr %v", err, tt.wantErr)
+			defer db.Close()
+
+			ctx := context.WithValue(
+				context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+				dto.RequestIDKey, uuid.New(),
+			)
+
+			tt.args.query(mock, tt.args)
+
+			s := NewChecklistItemStorage(db)
+
+			if err := s.Update(ctx, tt.args.info); (err != nil) != tt.wantErr {
+				t.Errorf("PostgresChecklistItemStorage.Update() error = %v, wantErr %v", err != nil, tt.wantErr)
+			}
+
+			if err := mock.ExpectationsWereMet(); err != nil {
+				t.Errorf("there were unfulfilled expectations: %s", err)
 			}
 		})
 	}

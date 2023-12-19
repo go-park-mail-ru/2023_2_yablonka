@@ -53,7 +53,7 @@ func (s PostgresCommentStorage) Create(ctx context.Context, info dto.NewCommentI
 	query := s.db.QueryRow(sql, args...)
 	err = query.Scan(&comment.ID, &comment.DateCreated)
 	if err != nil {
-		return nil, apperrors.ErrCouldNotGetTaskComments
+		return nil, apperrors.ErrCommentNotCreated
 	}
 	log.Println("Created comment")
 
@@ -92,7 +92,7 @@ func (s *PostgresCommentStorage) GetFromTask(ctx context.Context, id dto.TaskID)
 			&comment.DateCreated,
 		)
 		if err != nil {
-			return nil, apperrors.ErrCouldNotGetBoard
+			return nil, apperrors.ErrCouldNotGetTaskComments
 		}
 		comments = append(comments, comment)
 	}
@@ -128,7 +128,7 @@ func (s *PostgresCommentStorage) ReadMany(ctx context.Context, ids dto.CommentID
 
 	rows, err := s.db.Query(query, args...)
 	if err != nil {
-		return nil, apperrors.ErrCouldNotGetBoardUsers
+		return nil, apperrors.ErrCouldNotGetComments
 	}
 	defer rows.Close()
 	logger.DebugFmt("Got comment rows", requestID.String(), funcName, nodeName)
@@ -144,7 +144,7 @@ func (s *PostgresCommentStorage) ReadMany(ctx context.Context, ids dto.CommentID
 			&comment.DateCreated,
 		)
 		if err != nil {
-			return nil, apperrors.ErrCouldNotGetBoard
+			return nil, apperrors.ErrCouldNotGetComments
 		}
 		comments = append(comments, comment)
 	}
