@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"encoding/json"
 	"net/http"
 	"server/internal/apperrors"
 	logger "server/internal/logging"
@@ -10,6 +9,7 @@ import (
 	"server/internal/service"
 
 	"github.com/google/uuid"
+	"github.com/mailru/easyjson"
 )
 
 type ChecklistHandler struct {
@@ -44,7 +44,7 @@ func (clh ChecklistHandler) Create(w http.ResponseWriter, r *http.Request) {
 	logger.Info("---------------------------------- Creating Checklist ----------------------------------")
 
 	var newChecklistInfo dto.NewChecklistInfo
-	err := json.NewDecoder(r.Body).Decode(&newChecklistInfo)
+	err := easyjson.UnmarshalFromReader(r.Body, &newChecklistInfo)
 	if err != nil {
 		logger.Error(errorMessage + err.Error())
 		logger.Info(failBorder)
@@ -107,7 +107,7 @@ func (clh ChecklistHandler) Update(w http.ResponseWriter, r *http.Request) {
 	logger.Info("---------------------------------- Updating Checklist ----------------------------------")
 
 	var ChecklistInfo dto.UpdatedChecklistInfo
-	err := json.NewDecoder(r.Body).Decode(&ChecklistInfo)
+	err := easyjson.UnmarshalFromReader(r.Body, &ChecklistInfo)
 	if err != nil {
 		logger.Error(errorMessage + err.Error())
 		logger.Info(failBorder)
@@ -168,7 +168,7 @@ func (clh ChecklistHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	logger.Info("---------------------------------- Deleting Checklist ----------------------------------")
 
 	var checklistID dto.ChecklistID
-	err := json.NewDecoder(r.Body).Decode(&checklistID)
+	err := easyjson.UnmarshalFromReader(r.Body, &checklistID)
 	if err != nil {
 		logger.Error(errorMessage + err.Error())
 		logger.Info(failBorder)

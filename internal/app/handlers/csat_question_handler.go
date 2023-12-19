@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"encoding/json"
 	"net/http"
 	"server/internal/apperrors"
 	logger "server/internal/logging"
@@ -10,6 +9,7 @@ import (
 	"server/internal/service"
 
 	"github.com/google/uuid"
+	"github.com/mailru/easyjson"
 )
 
 type CSATQuestionHandler struct {
@@ -95,7 +95,7 @@ func (qh CSATQuestionHandler) Create(w http.ResponseWriter, r *http.Request) {
 	logger.Info("---------------------------------- Create CSAT question ----------------------------------")
 
 	var newQuestionInfo dto.NewCSATQuestionInfo
-	err := json.NewDecoder(r.Body).Decode(&newQuestionInfo)
+	err := easyjson.UnmarshalFromReader(r.Body, &newQuestionInfo)
 	if err != nil {
 		logger.Error(errorMessage + err.Error())
 		logger.Info(failBorder)
@@ -158,7 +158,7 @@ func (qh CSATQuestionHandler) Update(w http.ResponseWriter, r *http.Request) {
 	logger.Info("---------------------------------- Update CSAT question ----------------------------------")
 
 	var updatedQuestionInfo dto.UpdatedCSATQuestionInfo
-	err := json.NewDecoder(r.Body).Decode(&updatedQuestionInfo)
+	err := easyjson.UnmarshalFromReader(r.Body, &updatedQuestionInfo)
 	if err != nil {
 		logger.Error(errorMessage + err.Error())
 		logger.Info(failBorder)

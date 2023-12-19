@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"encoding/json"
 	"net/http"
 	"server/internal/apperrors"
 	logger "server/internal/logging"
@@ -175,7 +174,7 @@ func (ah AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 	logger.Info("---------------------------------- User Login ----------------------------------")
 
 	var signup dto.AuthInfo
-	err := json.NewDecoder(r.Body).Decode(&signup)
+	err := easyjson.UnmarshalFromReader(r.Body, &signup)
 	if err != nil {
 		logger.Error(errorMessage + err.Error())
 		logger.Info(failBorder)

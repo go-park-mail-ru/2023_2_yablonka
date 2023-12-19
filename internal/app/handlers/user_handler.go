@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"encoding/json"
 	"net/http"
 
 	apperrors "server/internal/apperrors"
@@ -14,6 +13,7 @@ import (
 
 	"github.com/asaskevich/govalidator"
 	"github.com/google/uuid"
+	"github.com/mailru/easyjson"
 )
 
 type UserHandler struct {
@@ -45,7 +45,7 @@ func (uh UserHandler) ChangePassword(w http.ResponseWriter, r *http.Request) {
 	logger.Info("---------------------------------- Changing user's password ----------------------------------")
 
 	var passwords dto.PasswordChangeInfo
-	err := json.NewDecoder(r.Body).Decode(&passwords)
+	err := easyjson.UnmarshalFromReader(r.Body, &passwords)
 	if err != nil {
 		logger.Error(errorMessage + err.Error())
 		logger.Info(failBorder)
@@ -122,7 +122,7 @@ func (uh UserHandler) ChangeProfile(w http.ResponseWriter, r *http.Request) {
 	logger.Info("---------------------------------- Changing user's profile ----------------------------------")
 
 	var newProfileInfo dto.UserProfileInfo
-	err := json.NewDecoder(r.Body).Decode(&newProfileInfo)
+	err := easyjson.UnmarshalFromReader(r.Body, &newProfileInfo)
 	if err != nil {
 		logger.Error(errorMessage + err.Error())
 		logger.Info(failBorder)
@@ -208,7 +208,7 @@ func (uh UserHandler) ChangeAvatar(w http.ResponseWriter, r *http.Request) {
 	}
 	logger.DebugFmt("User object acquired from context", requestID.String(), funcName, nodeName)
 
-	err := json.NewDecoder(r.Body).Decode(&avatarChangeInfo)
+	err := easyjson.UnmarshalFromReader(r.Body, &avatarChangeInfo)
 	if err != nil {
 		logger.Error(errorMessage + err.Error())
 		logger.Info(failBorder)
