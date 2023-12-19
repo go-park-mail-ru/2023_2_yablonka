@@ -133,17 +133,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install SSH Key
-        uses: shimataro/ssh-key-action@v2
-        with: 
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          known_hosts: 'placeholder'
-
-      - name: Adding Known Hosts
-        run: ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
+      - name: Create SSH Key
+        run: |
+          echo "${{ secrets.SSH_KEY }}" | tr -d '\r' > key.pem
+          chmod 400 key.pem
+        
 
       - name: Connect via SSH
-        run: ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}
+        run: ssh -i key.pem ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}
 
       - name: Deploy
         run: |
