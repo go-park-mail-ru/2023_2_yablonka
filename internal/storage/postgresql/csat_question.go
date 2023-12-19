@@ -6,10 +6,12 @@ import (
 	"fmt"
 	"log"
 	"server/internal/apperrors"
+	logger "server/internal/logging"
 	"server/internal/pkg/dto"
 	"server/internal/pkg/entities"
 
 	sq "github.com/Masterminds/squirrel"
+	"github.com/google/uuid"
 )
 
 // PostgresCSATQuestionStorage
@@ -225,21 +227,29 @@ func (s PostgresCSATQuestionStorage) Update(ctx context.Context, info dto.Update
 // удаляет CSAT вопрос в БД
 // или возвращает ошибки ...
 func (s PostgresCSATQuestionStorage) Delete(ctx context.Context, id dto.CSATQuestionID) error {
+	funcName := "PostgresCSATQuestionStorage.Delete"
+	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
+	requestID := ctx.Value(dto.RequestIDKey).(uuid.UUID)
+
 	sql, args, err := sq.
 		Delete("public.question").
 		Where(sq.Eq{"id": id.Value}).
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
-
 	if err != nil {
+		log.Println(err.Error())
+		logger.DebugFmt(err.Error(), requestID.String(), funcName, nodeName)
 		return apperrors.ErrCouldNotBuildQuery
 	}
+	logger.DebugFmt("Built query\n\t"+sql+"\nwith args\n\t"+fmt.Sprintf("%+v", args), requestID.String(), funcName, nodeName)
 
 	if _, err = s.db.Exec(sql, args...); err != nil {
+		log.Println(err.Error())
+		logger.DebugFmt(err.Error(), requestID.String(), funcName, nodeName)
 		return apperrors.ErrQuestionNotDeleted
 	}
 
-	return apperrors.ErrQuestionNotDeleted
+	return nil
 }
 
 // GetQuestionType
