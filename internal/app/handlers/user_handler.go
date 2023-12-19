@@ -1,7 +1,8 @@
 package handlers
 
 import (
-	"bytes"
+	"encoding/json"
+	"fmt"
 	"net/http"
 
 	apperrors "server/internal/apperrors"
@@ -200,6 +201,8 @@ func (uh UserHandler) ChangeAvatar(w http.ResponseWriter, r *http.Request) {
 	logger.Info("---------------------------------- Changing user's avatar ----------------------------------")
 
 	var avatarChangeInfo dto.AvatarChangeInfo
+	// var testAvatarChangeInfo dto.AvatarChangeInfo
+	var rawMap map[string]interface{}
 	user, ok := rCtx.Value(dto.UserObjKey).(*entities.User)
 	if !ok {
 		logger.Error(errorMessage + "No user object found")
@@ -209,11 +212,18 @@ func (uh UserHandler) ChangeAvatar(w http.ResponseWriter, r *http.Request) {
 	}
 	logger.DebugFmt("User object acquired from context", requestID.String(), funcName, nodeName)
 
-	testBuffer := bytes.Buffer{}
-	testBuffer.ReadFrom(r.Body)
-	bodyBytes := testBuffer.Bytes()
+	err := json.NewDecoder(r.Body).Decode(&rawMap)
+	if err != nil {
+		logger.Error(errorMessage + err.Error())
+		logger.Info(failBorder)
+		apperrors.ReturnError(apperrors.BadRequestResponse, w, r)
+		return
+	}
+	logger.DebugFmt("Test JSON parsed", requestID.String(), funcName, nodeName)
 
-	err := easyjson.Unmarshal(bodyBytes, &avatarChangeInfo)
+	logger.Debug(fmt.Sprintf("%v", rawMap["avatar"]))
+
+	err = easyjson.UnmarshalFromReader(r.Body, &avatarChangeInfo)
 	if err != nil {
 		logger.Error(errorMessage + err.Error())
 		logger.Info(failBorder)
