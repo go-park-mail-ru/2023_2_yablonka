@@ -387,6 +387,15 @@ definitions:
       user_id:
         type: integer
     type: object
+  dto.RemoveFileInfo:
+    properties:
+      file_path:
+        type: string
+      original_name:
+        type: string
+      task_id:
+        type: integer
+    type: object
   dto.RemoveTaskUserInfo:
     properties:
       task_id:
@@ -1813,6 +1822,40 @@ paths:
           schema:
             $ref: '#/definitions/apperrors.ErrorResponse'
       summary: Прикрепить файл к заданию
+      tags:
+      - tasks
+  /task/file/remove/:
+    delete:
+      consumes:
+      - application/json
+      description: Удаляет указанный файл и открепляет его от задания
+      parameters:
+      - description: информация об удаляемом файле
+        in: body
+        name: removeFileInfo
+        required: true
+        schema:
+          $ref: '#/definitions/dto.RemoveFileInfo'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: no content
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+      summary: Удалить файл из задания
       tags:
       - tasks
   /task/move/:

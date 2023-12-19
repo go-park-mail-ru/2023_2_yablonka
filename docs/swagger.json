@@ -1695,6 +1695,58 @@
                 }
             }
         },
+        "/task/file/remove/": {
+            "delete": {
+                "description": "Удаляет указанный файл и открепляет его от задания",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "tasks"
+                ],
+                "summary": "Удалить файл из задания",
+                "parameters": [
+                    {
+                        "description": "информация об удаляемом файле",
+                        "name": "removeFileInfo",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.RemoveFileInfo"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "no content",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/task/move/": {
             "post": {
                 "description": "Меняет порядок у заданий в старом и новом списках и меняет связь задания со списком",
@@ -2851,6 +2903,20 @@
                     "type": "integer"
                 },
                 "user_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.RemoveFileInfo": {
+            "type": "object",
+            "properties": {
+                "file_path": {
+                    "type": "string"
+                },
+                "original_name": {
+                    "type": "string"
+                },
+                "task_id": {
                     "type": "integer"
                 }
             }
