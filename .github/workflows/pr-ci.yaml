@@ -135,9 +135,8 @@ jobs:
 
       - name: Create SSH Key
         run: |
-          echo "${{ secrets.SSH_KEY }}" | tr -d '\r' > key.pem
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" | tr -d '\r' > key.pem
           chmod 400 key.pem
-        
 
       - name: Connect via SSH
         run: ssh -i key.pem ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}
