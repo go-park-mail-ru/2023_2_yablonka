@@ -38,4 +38,16 @@ type ITaskService interface {
 	// удаляет пользователя из карточки
 	// или возвращает ошибки ...
 	RemoveUser(context.Context, dto.RemoveTaskUserInfo) error
+	// GetFileList
+	// добавляет файл в задание
+	// или возвращает ошибки ...
+	GetFileList(context.Context, dto.TaskID) (*[]dto.AttachedFileInfo, error)
+	// Attach
+	// добавляет файл в задание
+	// или возвращает ошибки ...
+	Attach(context.Context, dto.NewFileInfo) (*dto.AttachedFileInfo, error)
+	// Remove
+	// добавляет файл в задание
+	// или возвращает ошибки ...
+	Remove(context.Context, dto.RemoveFileInfo) error
 }

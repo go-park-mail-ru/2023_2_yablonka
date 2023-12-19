@@ -1597,6 +1597,110 @@ const docTemplate = `{
                 }
             }
         },
+        "/task/file/": {
+            "post": {
+                "description": "Получает актуальный список файлов, прикреплённых к полученному заданию",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "tasks"
+                ],
+                "summary": "Получить список прикреплённых к файлу заданий",
+                "parameters": [
+                    {
+                        "description": "id задания",
+                        "name": "taskID",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.TaskID"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "список объектов файлов",
+                        "schema": {
+                            "$ref": "#/definitions/doc_structs.FileListResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/task/file/attach/": {
+            "post": {
+                "description": "Сохраняет полученный файл, возвращает оригинальное название и путь к файлу",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "tasks"
+                ],
+                "summary": "Прикрепить файл к заданию",
+                "parameters": [
+                    {
+                        "description": "файл и информация о нём",
+                        "name": "newFileInfo",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.NewFileInfo"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "объект с информацией о сохранённом файле",
+                        "schema": {
+                            "$ref": "#/definitions/doc_structs.FileResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/task/move/": {
             "post": {
                 "description": "Меняет порядок у заданий в старом и новом списках и меняет связь задания со списком",
@@ -2220,6 +2324,25 @@ const docTemplate = `{
                 }
             }
         },
+        "doc_structs.FileListResponse": {
+            "type": "object",
+            "properties": {
+                "files": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.AttachedFileInfo"
+                    }
+                }
+            }
+        },
+        "doc_structs.FileResponse": {
+            "type": "object",
+            "properties": {
+                "file": {
+                    "$ref": "#/definitions/dto.AttachedFileInfo"
+                }
+            }
+        },
         "doc_structs.ListResponse": {
             "type": "object",
             "properties": {
@@ -2310,6 +2433,23 @@ const docTemplate = `{
                     "items": {
                         "$ref": "#/definitions/dto.UserOwnedWorkspaceInfo"
                     }
+                }
+            }
+        },
+        "dto.AttachedFileInfo": {
+            "type": "object",
+            "properties": {
+                "date_created": {
+                    "type": "string"
+                },
+                "file_path": {
+                    "type": "string"
+                },
+                "original_name": {
+                    "type": "string"
+                },
+                "task_id": {
+                    "type": "integer"
                 }
             }
         },
@@ -2596,6 +2736,26 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "user_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.NewFileInfo": {
+            "type": "object",
+            "properties": {
+                "file": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "filename": {
+                    "type": "string"
+                },
+                "mimetype": {
+                    "type": "string"
+                },
+                "task_id": {
                     "type": "integer"
                 }
             }
