@@ -42,6 +42,18 @@ definitions:
       comment:
         $ref: '#/definitions/entities.Comment'
     type: object
+  doc_structs.FileListResponse:
+    properties:
+      files:
+        items:
+          $ref: '#/definitions/dto.AttachedFileInfo'
+        type: array
+    type: object
+  doc_structs.FileResponse:
+    properties:
+      file:
+        $ref: '#/definitions/dto.AttachedFileInfo'
+    type: object
   doc_structs.ListResponse:
     properties:
       list:
@@ -100,6 +112,17 @@ definitions:
         items:
           $ref: '#/definitions/dto.UserOwnedWorkspaceInfo'
         type: array
+    type: object
+  dto.AttachedFileInfo:
+    properties:
+      date_created:
+        type: string
+      file_path:
+        type: string
+      original_name:
+        type: string
+      task_id:
+        type: integer
     type: object
   dto.AuthInfo:
     properties:
@@ -286,6 +309,19 @@ definitions:
       user_id:
         type: integer
     type: object
+  dto.NewFileInfo:
+    properties:
+      file:
+        items:
+          type: integer
+        type: array
+      filename:
+        type: string
+      mimetype:
+        type: string
+      task_id:
+        type: integer
+    type: object
   dto.NewListInfo:
     properties:
       board_id:
@@ -349,6 +385,15 @@ definitions:
       board_id:
         type: integer
       user_id:
+        type: integer
+    type: object
+  dto.RemoveFileInfo:
+    properties:
+      file_path:
+        type: string
+      original_name:
+        type: string
+      task_id:
         type: integer
     type: object
   dto.RemoveTaskUserInfo:
@@ -1707,6 +1752,110 @@ paths:
           schema:
             $ref: '#/definitions/apperrors.ErrorResponse'
       summary: Удалить задание
+      tags:
+      - tasks
+  /task/file/:
+    post:
+      consumes:
+      - application/json
+      description: Получает актуальный список файлов, прикреплённых к полученному
+        заданию
+      parameters:
+      - description: id задания
+        in: body
+        name: taskID
+        required: true
+        schema:
+          $ref: '#/definitions/dto.TaskID'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: список объектов файлов
+          schema:
+            $ref: '#/definitions/doc_structs.FileListResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+      summary: Получить список прикреплённых к файлу заданий
+      tags:
+      - tasks
+  /task/file/attach/:
+    post:
+      consumes:
+      - application/json
+      description: Сохраняет полученный файл, возвращает оригинальное название и путь
+        к файлу
+      parameters:
+      - description: файл и информация о нём
+        in: body
+        name: newFileInfo
+        required: true
+        schema:
+          $ref: '#/definitions/dto.NewFileInfo'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: объект с информацией о сохранённом файле
+          schema:
+            $ref: '#/definitions/doc_structs.FileResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+      summary: Прикрепить файл к заданию
+      tags:
+      - tasks
+  /task/file/remove/:
+    delete:
+      consumes:
+      - application/json
+      description: Удаляет указанный файл и открепляет его от задания
+      parameters:
+      - description: информация об удаляемом файле
+        in: body
+        name: removeFileInfo
+        required: true
+        schema:
+          $ref: '#/definitions/dto.RemoveFileInfo'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: no content
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+      summary: Удалить файл из задания
       tags:
       - tasks
   /task/move/:
