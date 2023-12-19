@@ -133,14 +133,15 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Add known host
+        run: |
+          mkdir -p ~/.ssh/ && touch ~/.ssh/known_hosts
+          ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
+
       - name: Create SSH Key
         run: |
           echo "${{ secrets.SSH_PRIVATE_KEY }}" | tr -d '\r' > key.pem
           chmod 400 key.pem
-
-      - name: Check SSH Key
-        run: |
-          cat key.pem
 
       - name: Connect via SSH
         run: ssh -i key.pem ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}
