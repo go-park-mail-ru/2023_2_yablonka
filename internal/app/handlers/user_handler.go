@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"bytes"
 	"net/http"
 
 	apperrors "server/internal/apperrors"
@@ -208,7 +209,11 @@ func (uh UserHandler) ChangeAvatar(w http.ResponseWriter, r *http.Request) {
 	}
 	logger.DebugFmt("User object acquired from context", requestID.String(), funcName, nodeName)
 
-	err := easyjson.UnmarshalFromReader(r.Body, &avatarChangeInfo)
+	testBuffer := bytes.Buffer{}
+	testBuffer.ReadFrom(r.Body)
+	bodyBytes := testBuffer.Bytes()
+
+	err := easyjson.Unmarshal(bodyBytes, &avatarChangeInfo)
 	if err != nil {
 		logger.Error(errorMessage + err.Error())
 		logger.Info(failBorder)
