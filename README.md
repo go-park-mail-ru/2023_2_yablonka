@@ -1,5 +1,5 @@
 # 2023_2_yablonka
-![Coverage](https://img.shields.io/badge/Coverage-60.3%25-yellow)
+![Coverage](https://img.shields.io/badge/Coverage-61.6%25-yellow)
 
 Проект Trello команды ЯБлонька
 
