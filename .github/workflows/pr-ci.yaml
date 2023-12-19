@@ -143,18 +143,15 @@ jobs:
           echo "${{ secrets.SSH_PRIVATE_KEY }}" | tr -d '\r' > key.pem
           chmod 400 key.pem
 
-      - name: Connect via SSH
-        run: ssh -i key.pem ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}
-
-      - name: Deploy
+      - name: SSH and deploy
         run: |
+          ssh -i key.pem ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'ENDSSH'
           ${{ secrets.AUTH_COMMAND }}
           cd ${{ secrets.REPO_PATH }}
           git switch ${{ github.head_ref }} && git pull
           docker-compose up --build --detach
-      
-      - name: Check docker stati
-        run: |
           running_containers="$(docker ps --filter 'status=running')"
           all_containers="$(docker ps -a)"
           if [ "$running_containers != $all_containers" ]; then gh run cancel ${{ github.run_id }} && gh run watch ${{ github.run_id }}; fi
+          ENDSSH
+          
