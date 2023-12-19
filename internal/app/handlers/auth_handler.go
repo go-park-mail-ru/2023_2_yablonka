@@ -11,6 +11,7 @@ import (
 
 	"github.com/asaskevich/govalidator"
 	"github.com/google/uuid"
+	"github.com/mailru/easyjson"
 )
 
 type AuthHandler struct {
@@ -58,7 +59,7 @@ func (ah AuthHandler) LogIn(w http.ResponseWriter, r *http.Request) {
 	logger.Info("---------------------------------- User Login ----------------------------------")
 
 	var authInfo dto.AuthInfo
-	err := json.NewDecoder(r.Body).Decode(&authInfo)
+	err := easyjson.UnmarshalFromReader(r.Body, &authInfo)
 	if err != nil {
 		logger.Error(errorMessage + err.Error())
 		logger.Info(failBorder)
