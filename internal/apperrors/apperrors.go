@@ -54,6 +54,8 @@ var (
 
 // Ошибки, связанные с CSAT
 var (
+	// ErrCouldNotCreateQuestion ошибка: не удалось создать ответ CSAT в БД
+	ErrCouldNotCreateAnswer = errors.New("couldn't create answer")
 	// ErrCouldNotCreateQuestion ошибка: не удалось создать вопрос CSAT в БД
 	ErrCouldNotCreateQuestion = errors.New("couldn't create question")
 	// ErrCouldNotGetQuestions ошибка: не удалось получить все вопросы CSAT в БД
@@ -92,6 +94,8 @@ var (
 var (
 	// ErrCouldNotGetTaskComments ошибка: нельзя получить комментарии задания
 	ErrCouldNotGetTaskComments = errors.New("couldn't get the comments from task")
+	// ErrCouldNotGetComments ошибка: нельзя получить комментарии
+	ErrCouldNotGetComments = errors.New("couldn't get the comments")
 )
 
 // Ошибки, связанные с сервером
@@ -336,6 +340,8 @@ var ErrorMap = map[error]ErrorResponse{
 	ErrCouldNotCreateQuestion:   InternalServerErrorResponse,
 	ErrQuestionNotUpdated:       InternalServerErrorResponse,
 	ErrAvatarGone:               GoneResponse,
+	ErrCouldNotCreateAnswer:     InternalServerErrorResponse,
+	ErrCouldNotGetComments:      InternalServerErrorResponse,
 }
 
 func ErrorJSON(err ErrorResponse) []byte {
