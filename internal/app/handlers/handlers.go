@@ -1,10 +1,11 @@
 package handlers
 
 import (
-	"encoding/json"
 	"net/http"
 	"server/internal/pkg/dto"
 	"server/internal/service"
+
+	"github.com/mailru/easyjson"
 )
 
 // Handlers
@@ -138,7 +139,7 @@ func NewTaskHandler(ts service.ITaskService) *TaskHandler {
 // WriteResponse
 // формирует и отправляет JSON-ответ клиенту
 func WriteResponse(response dto.JSONResponse, w http.ResponseWriter, r *http.Request) error {
-	jsonResponse, err := json.Marshal(response)
+	jsonResponse, err := easyjson.Marshal(response)
 	if err != nil {
 		return err
 	}

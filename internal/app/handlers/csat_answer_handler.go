@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"encoding/json"
 	"net/http"
 	"server/internal/apperrors"
 	_ "server/internal/pkg/doc_structs"
@@ -12,6 +11,7 @@ import (
 	logger "server/internal/logging"
 
 	"github.com/google/uuid"
+	"github.com/mailru/easyjson"
 )
 
 type CSATAnswerHandler struct {
@@ -47,7 +47,7 @@ func (ah CSATAnswerHandler) Create(w http.ResponseWriter, r *http.Request) {
 	logger.Info("---------------------------------- Create CSAT answer ----------------------------------")
 
 	var CSATAnswerInfo dto.NewCSATAnswerInfo
-	err := json.NewDecoder(r.Body).Decode(&CSATAnswerInfo)
+	err := easyjson.UnmarshalFromReader(r.Body, &CSATAnswerInfo)
 	if err != nil {
 		logger.Error(errorMessage + err.Error())
 		logger.Info(failBorder)

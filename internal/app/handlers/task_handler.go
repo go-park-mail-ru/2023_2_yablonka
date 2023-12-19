@@ -11,6 +11,7 @@ import (
 	"server/internal/service"
 
 	"github.com/google/uuid"
+	"github.com/mailru/easyjson"
 )
 
 type TaskHandler struct {
@@ -45,7 +46,7 @@ func (th TaskHandler) Create(w http.ResponseWriter, r *http.Request) {
 	logger.Info("---------------------------------- Creating a new task ----------------------------------")
 
 	var newTaskInfo dto.NewTaskInfo
-	err := json.NewDecoder(r.Body).Decode(&newTaskInfo)
+	err := easyjson.UnmarshalFromReader(r.Body, &newTaskInfo)
 	if err != nil {
 		logger.Error(errorMessage + err.Error())
 		logger.Info(failBorder)
@@ -108,7 +109,7 @@ func (th TaskHandler) Read(w http.ResponseWriter, r *http.Request) {
 	logger.Info("---------------------------------- Getting task ----------------------------------")
 
 	var taskID dto.TaskID
-	err := json.NewDecoder(r.Body).Decode(&taskID)
+	err := easyjson.UnmarshalFromReader(r.Body, &taskID)
 	if err != nil {
 		logger.Error(errorMessage + err.Error())
 		logger.Info(failBorder)
@@ -171,7 +172,7 @@ func (th TaskHandler) Update(w http.ResponseWriter, r *http.Request) {
 	logger.Info("---------------------------------- Updating task ----------------------------------")
 
 	var taskInfo dto.UpdatedTaskInfo
-	err := json.NewDecoder(r.Body).Decode(&taskInfo)
+	err := easyjson.UnmarshalFromReader(r.Body, &taskInfo)
 	if err != nil {
 		logger.Error(errorMessage + err.Error())
 		logger.Info(failBorder)
@@ -232,7 +233,7 @@ func (th TaskHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	logger.Info("---------------------------------- Deleting task ----------------------------------")
 
 	var taskID dto.TaskID
-	err := json.NewDecoder(r.Body).Decode(&taskID)
+	err := easyjson.UnmarshalFromReader(r.Body, &taskID)
 	if err != nil {
 		logger.Error(errorMessage + err.Error())
 		logger.Info(failBorder)
@@ -293,7 +294,7 @@ func (th TaskHandler) AddUser(w http.ResponseWriter, r *http.Request) {
 	logger.Info("---------------------------------- Adding user to task ----------------------------------")
 
 	var info dto.AddTaskUserInfo
-	err := json.NewDecoder(r.Body).Decode(&info)
+	err := easyjson.UnmarshalFromReader(r.Body, &info)
 	if err != nil {
 		logger.Error(errorMessage + err.Error())
 		logger.Info(failBorder)
@@ -354,7 +355,7 @@ func (th TaskHandler) RemoveUser(w http.ResponseWriter, r *http.Request) {
 	logger.Info("---------------------------------- Removing user from task ----------------------------------")
 
 	var info dto.RemoveTaskUserInfo
-	err := json.NewDecoder(r.Body).Decode(&info)
+	err := easyjson.UnmarshalFromReader(r.Body, &info)
 	if err != nil {
 		logger.Error(errorMessage + err.Error())
 		logger.Info(failBorder)
@@ -414,7 +415,7 @@ func (th TaskHandler) Move(w http.ResponseWriter, r *http.Request) {
 	logger.Info("---------------------------------- TaskHandler.UpdateOrder ----------------------------------")
 
 	var taskMoveInfo dto.TaskMoveInfo
-	err := json.NewDecoder(r.Body).Decode(&taskMoveInfo)
+	err := easyjson.UnmarshalFromReader(r.Body, &taskMoveInfo)
 	if err != nil {
 		logger.Error(errorMessage + err.Error())
 		logger.Info(failBorder)
@@ -474,7 +475,7 @@ func (th TaskHandler) GetFileList(w http.ResponseWriter, r *http.Request) {
 	logger.Info("---------------------------------- TaskHandler.GetFileList ----------------------------------")
 
 	var taskID dto.TaskID
-	err := json.NewDecoder(r.Body).Decode(&taskID)
+	err := easyjson.UnmarshalFromReader(r.Body, &taskID)
 	if err != nil {
 		logger.Error(errorMessage + err.Error())
 		logger.Info(failBorder)
@@ -536,6 +537,7 @@ func (th TaskHandler) AttachFile(w http.ResponseWriter, r *http.Request) {
 	logger.Info("---------------------------------- TaskHandler.Attach ----------------------------------")
 
 	var newFileInfo dto.NewFileInfo
+	// err := easyjson.UnmarshalFromReader(r.Body, &newFileInfo)
 	err := json.NewDecoder(r.Body).Decode(&newFileInfo)
 	if err != nil {
 		logger.Error(errorMessage + err.Error())
@@ -609,7 +611,7 @@ func (th TaskHandler) RemoveFile(w http.ResponseWriter, r *http.Request) {
 	logger.Info("---------------------------------- TaskHandler.Remove ----------------------------------")
 
 	var fileInfo dto.RemoveFileInfo
-	err := json.NewDecoder(r.Body).Decode(&fileInfo)
+	err := easyjson.UnmarshalFromReader(r.Body, &fileInfo)
 	if err != nil {
 		logger.Error(errorMessage + err.Error())
 		logger.Info(failBorder)

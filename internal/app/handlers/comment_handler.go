@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"encoding/json"
 	"net/http"
 	"server/internal/apperrors"
 	_ "server/internal/pkg/doc_structs"
@@ -11,6 +10,7 @@ import (
 	logger "server/internal/logging"
 
 	"github.com/google/uuid"
+	"github.com/mailru/easyjson"
 )
 
 type CommentHandler struct {
@@ -45,7 +45,7 @@ func (ch CommentHandler) Create(w http.ResponseWriter, r *http.Request) {
 	logger.Info("---------------------------------- Create comment ----------------------------------")
 
 	var newCommentInfo dto.NewCommentInfo
-	err := json.NewDecoder(r.Body).Decode(&newCommentInfo)
+	err := easyjson.UnmarshalFromReader(r.Body, &newCommentInfo)
 	if err != nil {
 		logger.Error(errorMessage + err.Error())
 		logger.Info(failBorder)

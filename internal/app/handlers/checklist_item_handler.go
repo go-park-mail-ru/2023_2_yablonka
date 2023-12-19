@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"encoding/json"
 	"net/http"
 	"server/internal/apperrors"
 	logger "server/internal/logging"
@@ -10,6 +9,7 @@ import (
 	"server/internal/service"
 
 	"github.com/google/uuid"
+	"github.com/mailru/easyjson"
 )
 
 type ChecklistItemHandler struct {
@@ -44,7 +44,7 @@ func (clh ChecklistItemHandler) Create(w http.ResponseWriter, r *http.Request) {
 	logger.Info("---------------------------------- Creating ChecklistItem ----------------------------------")
 
 	var newChecklistItemInfo dto.NewChecklistItemInfo
-	err := json.NewDecoder(r.Body).Decode(&newChecklistItemInfo)
+	err := easyjson.UnmarshalFromReader(r.Body, &newChecklistItemInfo)
 	if err != nil {
 		logger.Error(errorMessage + err.Error())
 		logger.Info(failBorder)
@@ -107,7 +107,7 @@ func (clh ChecklistItemHandler) Update(w http.ResponseWriter, r *http.Request) {
 	logger.Info("---------------------------------- Updating ChecklistItem ----------------------------------")
 
 	var ChecklistItemInfo dto.UpdatedChecklistItemInfo
-	err := json.NewDecoder(r.Body).Decode(&ChecklistItemInfo)
+	err := easyjson.UnmarshalFromReader(r.Body, &ChecklistItemInfo)
 	if err != nil {
 		logger.Error(errorMessage + err.Error())
 		logger.Info(failBorder)
@@ -168,7 +168,7 @@ func (clh ChecklistItemHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	logger.Info("---------------------------------- Deleting ChecklistItem ----------------------------------")
 
 	var checklistItemID dto.ChecklistItemID
-	err := json.NewDecoder(r.Body).Decode(&checklistItemID)
+	err := easyjson.UnmarshalFromReader(r.Body, &checklistItemID)
 	if err != nil {
 		logger.Error(errorMessage + err.Error())
 		logger.Info(failBorder)
@@ -228,7 +228,7 @@ func (clh ChecklistItemHandler) UpdateOrder(w http.ResponseWriter, r *http.Reque
 	logger.Info("---------------------------------- ChecklistItemHandler.UpdateOrder ----------------------------------")
 
 	var checklistIDs dto.ChecklistItemIDs
-	err := json.NewDecoder(r.Body).Decode(&checklistIDs)
+	err := easyjson.UnmarshalFromReader(r.Body, &checklistIDs)
 	if err != nil {
 		logger.Error(errorMessage + err.Error())
 		logger.Info(failBorder)

@@ -13,6 +13,7 @@ import (
 
 	"github.com/asaskevich/govalidator"
 	"github.com/google/uuid"
+	"github.com/mailru/easyjson"
 )
 
 type BoardHandler struct {
@@ -47,7 +48,7 @@ func (bh BoardHandler) GetFullBoard(w http.ResponseWriter, r *http.Request) {
 	logger.Info("---------------------------------- Get board ----------------------------------")
 
 	var boardID dto.BoardID
-	err := json.NewDecoder(r.Body).Decode(&boardID)
+	err := easyjson.UnmarshalFromReader(r.Body, &boardID)
 	if err != nil {
 		logger.Error(errorMessage + err.Error())
 		logger.Info(failBorder)
@@ -119,6 +120,7 @@ func (bh BoardHandler) Create(w http.ResponseWriter, r *http.Request) {
 	logger.Info("---------------------------------- Creating board ----------------------------------")
 
 	var newBoardRequest dto.NewBoardRequest
+	// err := easyjson.UnmarshalFromReader(r.Body, &newBoardRequest)
 	err := json.NewDecoder(r.Body).Decode(&newBoardRequest)
 	if err != nil {
 		logger.Error(errorMessage + err.Error())
@@ -204,7 +206,7 @@ func (bh BoardHandler) UpdateData(w http.ResponseWriter, r *http.Request) {
 	logger.Info("---------------------------------- Updating board ----------------------------------")
 
 	var boardInfo dto.UpdatedBoardInfo
-	err := json.NewDecoder(r.Body).Decode(&boardInfo)
+	err := easyjson.UnmarshalFromReader(r.Body, &boardInfo)
 	if err != nil {
 		logger.Error(errorMessage + err.Error())
 		logger.Info(failBorder)
@@ -272,6 +274,7 @@ func (bh BoardHandler) UpdateThumbnail(w http.ResponseWriter, r *http.Request) {
 	logger.Info("---------------------------------- Updating board ----------------------------------")
 
 	var boardInfo dto.UpdatedBoardThumbnailInfo
+	// err := easyjson.UnmarshalFromReader(r.Body, &boardInfo)
 	err := json.NewDecoder(r.Body).Decode(&boardInfo)
 	if err != nil {
 		logger.Error(errorMessage + err.Error())
@@ -343,7 +346,7 @@ func (bh BoardHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	logger.Info("---------------------------------- Deleting board ----------------------------------")
 
 	var boardID dto.BoardID
-	err := json.NewDecoder(r.Body).Decode(&boardID)
+	err := easyjson.UnmarshalFromReader(r.Body, &boardID)
 	if err != nil {
 		logger.Error(errorMessage + err.Error())
 		logger.Info(failBorder)
@@ -412,7 +415,7 @@ func (bh BoardHandler) AddUser(w http.ResponseWriter, r *http.Request) {
 	logger.Info("---------------------------------- Adding user to board ----------------------------------")
 
 	var info dto.AddBoardUserRequest
-	err := json.NewDecoder(r.Body).Decode(&info)
+	err := easyjson.UnmarshalFromReader(r.Body, &info)
 	if err != nil {
 		logger.Error(errorMessage + err.Error())
 		logger.Info(failBorder)
@@ -480,7 +483,7 @@ func (bh BoardHandler) RemoveUser(w http.ResponseWriter, r *http.Request) {
 	logger.Info("---------------------------------- Removing user from board ----------------------------------")
 
 	var info dto.RemoveBoardUserInfo
-	err := json.NewDecoder(r.Body).Decode(&info)
+	err := easyjson.UnmarshalFromReader(r.Body, &info)
 	if err != nil {
 		logger.Error(errorMessage + err.Error())
 		logger.Info(failBorder)

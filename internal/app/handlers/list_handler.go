@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"encoding/json"
 	"net/http"
 	"server/internal/apperrors"
 	logger "server/internal/logging"
@@ -10,6 +9,7 @@ import (
 	"server/internal/service"
 
 	"github.com/google/uuid"
+	"github.com/mailru/easyjson"
 )
 
 type ListHandler struct {
@@ -43,7 +43,7 @@ func (lh ListHandler) Create(w http.ResponseWriter, r *http.Request) {
 	logger.Info("---------------------------------- Creating list ----------------------------------")
 
 	var newListInfo dto.NewListInfo
-	err := json.NewDecoder(r.Body).Decode(&newListInfo)
+	err := easyjson.UnmarshalFromReader(r.Body, &newListInfo)
 	if err != nil {
 		logger.Error(errorMessage + err.Error())
 		logger.Info(failBorder)
@@ -105,7 +105,7 @@ func (lh ListHandler) Update(w http.ResponseWriter, r *http.Request) {
 	logger.Info("---------------------------------- Updating list ----------------------------------")
 
 	var listInfo dto.UpdatedListInfo
-	err := json.NewDecoder(r.Body).Decode(&listInfo)
+	err := easyjson.UnmarshalFromReader(r.Body, &listInfo)
 	if err != nil {
 		logger.Error(errorMessage + err.Error())
 		logger.Info(failBorder)
@@ -165,7 +165,7 @@ func (lh ListHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	logger.Info("---------------------------------- Deleting list ----------------------------------")
 
 	var listID dto.ListID
-	err := json.NewDecoder(r.Body).Decode(&listID)
+	err := easyjson.UnmarshalFromReader(r.Body, &listID)
 	if err != nil {
 		logger.Error(errorMessage + err.Error())
 		logger.Info(failBorder)
@@ -225,7 +225,7 @@ func (lh ListHandler) UpdateOrder(w http.ResponseWriter, r *http.Request) {
 	logger.Info("---------------------------------- ListHandler.UpdateOrder ----------------------------------")
 
 	var listIDs dto.ListIDs
-	err := json.NewDecoder(r.Body).Decode(&listIDs)
+	err := easyjson.UnmarshalFromReader(r.Body, &listIDs)
 	if err != nil {
 		logger.Error(errorMessage + err.Error())
 		logger.Info(failBorder)

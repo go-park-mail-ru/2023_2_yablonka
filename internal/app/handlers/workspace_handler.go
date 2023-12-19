@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"encoding/json"
 	"net/http"
 	"server/internal/apperrors"
 	logger "server/internal/logging"
@@ -11,6 +10,7 @@ import (
 	"server/internal/service"
 
 	"github.com/google/uuid"
+	"github.com/mailru/easyjson"
 )
 
 type WorkspaceHandler struct {
@@ -108,7 +108,7 @@ func (wh WorkspaceHandler) Create(w http.ResponseWriter, r *http.Request) {
 	logger.Info("---------------------------------- Creating workspace ----------------------------------")
 
 	var newWorkspaceInfo dto.NewWorkspaceInfo
-	err := json.NewDecoder(r.Body).Decode(&newWorkspaceInfo)
+	err := easyjson.UnmarshalFromReader(r.Body, &newWorkspaceInfo)
 	if err != nil {
 		logger.Error(errorMessage + err.Error())
 		logger.Info(failBorder)
@@ -171,7 +171,7 @@ func (wh WorkspaceHandler) UpdateData(w http.ResponseWriter, r *http.Request) {
 	logger.Info("---------------------------------- Updating workspace data ----------------------------------")
 
 	var workspaceInfo dto.UpdatedWorkspaceInfo
-	err := json.NewDecoder(r.Body).Decode(&workspaceInfo)
+	err := easyjson.UnmarshalFromReader(r.Body, &workspaceInfo)
 	if err != nil {
 		logger.Error(errorMessage + err.Error())
 		logger.Info(failBorder)
@@ -232,7 +232,7 @@ func (wh WorkspaceHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	logger.Info("---------------------------------- Deleting workspace ----------------------------------")
 
 	var workspaceID dto.WorkspaceID
-	err := json.NewDecoder(r.Body).Decode(&workspaceID)
+	err := easyjson.UnmarshalFromReader(r.Body, &workspaceID)
 	if err != nil {
 		logger.Error(errorMessage + err.Error())
 		logger.Info(failBorder)
