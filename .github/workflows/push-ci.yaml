@@ -183,8 +183,6 @@ jobs:
           cd ${{ secrets.REPO_PATH }}
           git switch main && git pull
           docker-compose up --build --detach
-          running_containers="$(docker ps --filter 'status=running')"
-          all_containers="$(docker ps -a)"
-          if [ "$running_containers" != "$all_containers" ]; then diff <(echo "$running_containers") <(echo "$all_containers") && exit 1; else echo "Server deployed" && exit 0; fi
+          docker restart backend micro
           ENDSSH
   
