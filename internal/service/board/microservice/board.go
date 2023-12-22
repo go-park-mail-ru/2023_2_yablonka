@@ -44,7 +44,7 @@ func NewBoardService(
 	}
 }
 
-const nodeName string = "service"
+const nodeName = "service"
 
 // GetFullBoard
 // возвращает доску со связанными пользователями, списками и заданиями
