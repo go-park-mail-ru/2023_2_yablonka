@@ -190,14 +190,8 @@ func (s *PostgreSQLBoardStorage) GetLists(ctx context.Context, id dto.BoardID) (
 // или возвращает ошибки ...
 func (s *PostgreSQLBoardStorage) GetTags(ctx context.Context, id dto.BoardID) (*[]dto.TagInfo, error) {
 	funcName := "PostgreSQLBoardStorage.GetTags"
-	logger, ok := ctx.Value(dto.LoggerKey).(logger.ILogger)
-	if !ok {
-		return nil, apperrors.ErrNoLoggerFound
-	}
-	requestID, ok := ctx.Value(dto.RequestIDKey).(uuid.UUID)
-	if !ok {
-		return nil, apperrors.ErrNoRequestIDFound
-	}
+	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
+	requestID := ctx.Value(dto.RequestIDKey).(uuid.UUID)
 
 	query, args, err := sq.Select(allTagFields...).
 		From("public.tag").

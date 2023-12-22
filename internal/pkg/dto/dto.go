@@ -699,10 +699,9 @@ type NewTagInfo struct {
 // UpdatedTagInfo
 // DTO для обновленного тэга
 type UpdatedTagInfo struct {
-	ID     uint64 `json:"id"`
-	TaskID uint64 `json:"task_id"`
-	Name   string `json:"name"`
-	Color  string `json:"color"`
+	ID    uint64 `json:"id"`
+	Name  string `json:"name"`
+	Color string `json:"color"`
 }
 
 // TagAndTaskIDs
