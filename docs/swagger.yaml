@@ -343,7 +343,7 @@ definitions:
       actions:
         type: string
       board_id:
-        $ref: '#/definitions/dto.BoardID'
+        type: integer
     type: object
   dto.NewListInfo:
     properties:

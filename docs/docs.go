@@ -2948,7 +2948,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "board_id": {
-                    "$ref": "#/definitions/dto.BoardID"
+                    "type": "integer"
                 }
             }
         },
