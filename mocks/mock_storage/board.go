@@ -113,6 +113,21 @@ func (mr *MockIBoardStorageMockRecorder) GetById(arg0, arg1 any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetById", reflect.TypeOf((*MockIBoardStorage)(nil).GetById), arg0, arg1)
 }
 
+// GetHistory mocks base method.
+func (m *MockIBoardStorage) GetHistory(arg0 context.Context, arg1 dto.BoardID) (*[]dto.BoardHistoryEntry, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetHistory", arg0, arg1)
+	ret0, _ := ret[0].(*[]dto.BoardHistoryEntry)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetHistory indicates an expected call of GetHistory.
+func (mr *MockIBoardStorageMockRecorder) GetHistory(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetHistory", reflect.TypeOf((*MockIBoardStorage)(nil).GetHistory), arg0, arg1)
+}
+
 // GetLists mocks base method.
 func (m *MockIBoardStorage) GetLists(arg0 context.Context, arg1 dto.BoardID) (*[]dto.SingleListInfo, error) {
 	m.ctrl.T.Helper()
