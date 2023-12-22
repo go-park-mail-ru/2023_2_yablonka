@@ -153,7 +153,7 @@ func TestBoardStorage_GetById(t *testing.T) {
 		err     error
 	}{
 		{
-			name: "Successful run",
+			name: "Happy path",
 			args: args{
 				id: dto.BoardID{
 					Value: 1,
@@ -396,7 +396,7 @@ func TestBoardStorage_GetLists(t *testing.T) {
 		err     error
 	}{
 		{
-			name: "Successful run",
+			name: "Happy path",
 			args: args{
 				id: dto.BoardID{
 					Value: 1,
@@ -512,6 +512,174 @@ func TestBoardStorage_GetLists(t *testing.T) {
 	}
 }
 
+func TestBoardStorage_GetTags(t *testing.T) {
+	t.Parallel()
+	type args struct {
+		id    dto.BoardID
+		query func(mock sqlmock.Sqlmock, args args)
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+		err     error
+	}{
+		{
+			name: "Happy path",
+			args: args{
+				id: dto.BoardID{
+					Value: 1,
+				},
+				query: func(mock sqlmock.Sqlmock, args args) {
+					sql, _, _ := sq.Select(allTagFields...).
+						From("public.tag").
+						LeftJoin("public.tag_board ON public.tag.id = public.tag_board.id_tag").
+						Where(sq.Eq{"public.tag_board.id_board": args.id.Value}).
+						PlaceholderFormat(sq.Dollar).
+						ToSql()
+					mock.ExpectQuery(regexp.QuoteMeta(sql)).
+						WithArgs(args.id.Value).
+						WillReturnRows(sqlmock.NewRows(allTagFields).
+							AddRow(1, "Mock tag", "color"),
+						)
+				},
+			},
+			wantErr: false,
+			err:     nil,
+		},
+		{
+			name: "Query failed",
+			args: args{
+				id: dto.BoardID{
+					Value: 1,
+				},
+				query: func(mock sqlmock.Sqlmock, args args) {
+					sql, _, _ := sq.Select(allTagFields...).
+						From("public.tag").
+						LeftJoin("public.tag_board ON public.tag.id = public.tag_board.id_tag").
+						Where(sq.Eq{"public.tag_board.id_board": args.id.Value}).
+						PlaceholderFormat(sq.Dollar).
+						ToSql()
+					mock.ExpectQuery(regexp.QuoteMeta(sql)).
+						WithArgs(args.id.Value).
+						WillReturnError(apperrors.ErrCouldNotExecuteQuery)
+				},
+			},
+			wantErr: true,
+			err:     apperrors.ErrCouldNotExecuteQuery,
+		},
+		{
+			name: "Collecting rows failed",
+			args: args{
+				id: dto.BoardID{
+					Value: 1,
+				},
+				query: func(mock sqlmock.Sqlmock, args args) {
+					sql, _, _ := sq.Select(allTagFields...).
+						From("public.tag").
+						LeftJoin("public.tag_board ON public.tag.id = public.tag_board.id_tag").
+						Where(sq.Eq{"public.tag_board.id_board": args.id.Value}).
+						PlaceholderFormat(sq.Dollar).
+						ToSql()
+					mock.ExpectQuery(regexp.QuoteMeta(sql)).
+						WithArgs(args.id.Value).
+						WillReturnRows(
+							sqlmock.NewRows(allTagFields).
+								AddRow(1, "Mock tag", "color").
+								RowError(0, apperrors.ErrCouldNotCollectRows))
+				},
+			},
+			wantErr: true,
+			err:     apperrors.ErrCouldNotCollectRows,
+		},
+		{
+			name: "Scanning rows failed",
+			args: args{
+				id: dto.BoardID{
+					Value: 1,
+				},
+				query: func(mock sqlmock.Sqlmock, args args) {
+					sql, _, _ := sq.Select(allTagFields...).
+						From("public.tag").
+						LeftJoin("public.tag_board ON public.tag.id = public.tag_board.id_tag").
+						Where(sq.Eq{"public.tag_board.id_board": args.id.Value}).
+						PlaceholderFormat(sq.Dollar).
+						ToSql()
+					mock.ExpectQuery(regexp.QuoteMeta(sql)).
+						WithArgs(args.id.Value).
+						WillReturnRows(
+							sqlmock.NewRows(allTagFields).
+								AddRow(nil, nil, nil))
+				},
+			},
+			wantErr: true,
+			err:     apperrors.ErrCouldNotScanRows,
+		},
+		{
+			name: "Closing rows failed",
+			args: args{
+				id: dto.BoardID{
+					Value: 1,
+				},
+				query: func(mock sqlmock.Sqlmock, args args) {
+					sql, _, _ := sq.Select(allTagFields...).
+						From("public.tag").
+						LeftJoin("public.tag_board ON public.tag.id = public.tag_board.id_tag").
+						Where(sq.Eq{"public.tag_board.id_board": args.id.Value}).
+						PlaceholderFormat(sq.Dollar).
+						ToSql()
+					mock.ExpectQuery(regexp.QuoteMeta(sql)).
+						WithArgs(args.id.Value).
+						WillReturnRows(
+							sqlmock.NewRows(allTagFields).
+								AddRow(1, "Mock tag", "color").
+								CloseError(apperrors.ErrCouldNotCloseQuery))
+				},
+			},
+			wantErr: true,
+			err:     apperrors.ErrCouldNotCloseQuery,
+		},
+		{
+			name: "Error building query",
+			args: args{
+				id:    dto.BoardID{},
+				query: func(mock sqlmock.Sqlmock, args args) {},
+			},
+			wantErr: true,
+			err:     apperrors.ErrCouldNotBuildQuery,
+		},
+	}
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			db, mock, err := sqlmock.New()
+
+			if err != nil {
+				t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
+			}
+			defer db.Close()
+
+			tt.args.query(mock, tt.args)
+
+			ctx := context.WithValue(
+				context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+				dto.RequestIDKey, uuid.New(),
+			)
+
+			s := NewBoardStorage(db)
+
+			if _, err := s.GetTags(ctx, tt.args.id); (err != nil) != tt.wantErr {
+				t.Errorf("GetLists() error = %v, wantErr %v, err = %v", err != nil, tt.wantErr, err)
+			}
+
+			if err := mock.ExpectationsWereMet(); err != nil {
+				t.Errorf("there were unfulfilled expectations: %s", err)
+			}
+		})
+	}
+}
+
 func TestBoardStorage_UpdateData(t *testing.T) {
 	t.Parallel()
 	type args struct {
@@ -525,7 +693,7 @@ func TestBoardStorage_UpdateData(t *testing.T) {
 		err     error
 	}{
 		{
-			name: "Successful run",
+			name: "Happy path",
 			args: args{
 				info: dto.UpdatedBoardInfo{
 					ID:   1,
@@ -625,7 +793,7 @@ func TestBoardStorage_UpdateThumbnailUrl(t *testing.T) {
 		err     error
 	}{
 		{
-			name: "Successful run",
+			name: "Happy path",
 			args: args{
 				info: dto.BoardImageUrlInfo{
 					ID:  1,
@@ -1160,7 +1328,7 @@ func TestBoardStorage_Delete(t *testing.T) {
 		err     error
 	}{
 		{
-			name: "Successful run",
+			name: "Happy path",
 			args: args{
 				id: dto.BoardID{
 					Value: 1,
@@ -1257,7 +1425,7 @@ func TestBoardStorage_AddUser(t *testing.T) {
 		err     error
 	}{
 		{
-			name: "Successful run",
+			name: "Happy path",
 			args: args{
 				info: dto.AddBoardUserInfo{
 					UserID:      1,
@@ -1450,7 +1618,7 @@ func TestBoardStorage_RemoveUser(t *testing.T) {
 		err     error
 	}{
 		{
-			name: "Successful run",
+			name: "Happy path",
 			args: args{
 				info: dto.RemoveBoardUserInfo{
 					UserID:  1,

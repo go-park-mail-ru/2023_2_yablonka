@@ -46,7 +46,6 @@ func NewBoardStorage(db *sql.DB) *PostgreSQLBoardStorage {
 	}
 }
 
-// TODO Ограничить количество всего за раз
 // GetById
 // находит доску и связанные с ней списки и задания по id
 // или возвращает ошибки ...
@@ -186,8 +185,75 @@ func (s *PostgreSQLBoardStorage) GetLists(ctx context.Context, id dto.BoardID) (
 	return &lists, nil
 }
 
+// GetTags
+// находит тэги в доске
+// или возвращает ошибки ...
+func (s *PostgreSQLBoardStorage) GetTags(ctx context.Context, id dto.BoardID) (*[]dto.TagInfo, error) {
+	funcName := "PostgreSQLBoardStorage.GetTags"
+	logger, ok := ctx.Value(dto.LoggerKey).(logger.ILogger)
+	if !ok {
+		return nil, apperrors.ErrNoLoggerFound
+	}
+	requestID, ok := ctx.Value(dto.RequestIDKey).(uuid.UUID)
+	if !ok {
+		return nil, apperrors.ErrNoRequestIDFound
+	}
+
+	query, args, err := sq.Select(allTagFields...).
+		From("public.tag").
+		LeftJoin("public.tag_board ON public.tag.id = public.tag_board.id_tag").
+		Where(sq.Eq{"public.tag_board.id_board": id.Value}).
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
+	if err != nil {
+		logger.DebugFmt(err.Error(), requestID.String(), funcName, nodeName)
+		return nil, apperrors.ErrCouldNotBuildQuery
+	}
+	logger.DebugFmt("Built query\n\t"+query+"\nwith args\n\t"+fmt.Sprintf("%+v", args), requestID.String(), funcName, nodeName)
+
+	rows, err := s.db.Query(query, args...)
+	if err != nil {
+		logger.DebugFmt(err.Error(), requestID.String(), funcName, nodeName)
+		return nil, apperrors.ErrCouldNotExecuteQuery
+	}
+	logger.DebugFmt("Created query", requestID.String(), funcName, nodeName)
+
+	tags := []dto.TagInfo{}
+	for rows.Next() {
+		var tag dto.TagInfo
+
+		err = rows.Scan(
+			&tag.ID,
+			&tag.Name,
+			&tag.Color,
+		)
+		if err != nil {
+			logger.DebugFmt(err.Error(), requestID.String(), funcName, nodeName)
+			return nil, apperrors.ErrCouldNotScanRows
+		}
+
+		tags = append(tags, tag)
+	}
+
+	err = rows.Err()
+	if err != nil {
+		logger.DebugFmt(err.Error(), requestID.String(), funcName, nodeName)
+		return nil, apperrors.ErrCouldNotCollectRows
+	}
+	logger.DebugFmt("Collected tags", requestID.String(), funcName, nodeName)
+
+	err = rows.Close()
+	if err != nil {
+		logger.DebugFmt(err.Error(), requestID.String(), funcName, nodeName)
+		return nil, apperrors.ErrCouldNotCloseQuery
+	}
+	logger.DebugFmt("Closed rows", requestID.String(), funcName, nodeName)
+
+	return &tags, nil
+}
+
 // CheckAccess
-// находит пользователя в задании
+// находит пользователя в доске
 // или возвращает ошибки ...
 func (s *PostgreSQLBoardStorage) CheckAccess(ctx context.Context, info dto.CheckBoardAccessInfo) (bool, error) {
 	funcName := "PostgreSQLBoardStorage.CheckAccess"
@@ -219,6 +285,9 @@ func (s *PostgreSQLBoardStorage) CheckAccess(ctx context.Context, info dto.Check
 	return count > 0, nil
 }
 
+// Create
+// создает доску
+// или возвращает ошибки ...
 func (s *PostgreSQLBoardStorage) Create(ctx context.Context, info dto.NewBoardInfo) (*entities.Board, error) {
 	funcName := "PostgreSQLBoardStorage.Create"
 	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
@@ -272,8 +341,9 @@ func (s *PostgreSQLBoardStorage) Create(ctx context.Context, info dto.NewBoardIn
 	if err := row.Scan(&boardID, &newBoard.DateCreated); err != nil {
 		logger.DebugFmt("Board insert failed with error "+err.Error(), requestID.String(), funcName, nodeName)
 		err = tx.Rollback()
-		for err != nil {
-			err = tx.Rollback()
+		if err != nil {
+			logger.DebugFmt("Transaction rollback failed with error "+err.Error(), requestID.String(), funcName, nodeName)
+			return nil, apperrors.ErrCouldNotRollback
 		}
 		return nil, apperrors.ErrBoardNotCreated
 	}
@@ -302,8 +372,9 @@ func (s *PostgreSQLBoardStorage) Create(ctx context.Context, info dto.NewBoardIn
 	if err != nil {
 		logger.DebugFmt("Failed to build query with error "+err.Error(), requestID.String(), funcName, nodeName)
 		err = tx.Rollback()
-		for err != nil {
-			err = tx.Rollback()
+		if err != nil {
+			logger.DebugFmt("Transaction rollback failed with error "+err.Error(), requestID.String(), funcName, nodeName)
+			return nil, apperrors.ErrCouldNotRollback
 		}
 		return nil, apperrors.ErrCouldNotBuildQuery
 	}
@@ -313,8 +384,9 @@ func (s *PostgreSQLBoardStorage) Create(ctx context.Context, info dto.NewBoardIn
 	if err != nil {
 		logger.DebugFmt("Failed to execute query with error "+err.Error(), requestID.String(), funcName, nodeName)
 		err = tx.Rollback()
-		for err != nil {
-			err = tx.Rollback()
+		if err != nil {
+			logger.DebugFmt("Transaction rollback failed with error "+err.Error(), requestID.String(), funcName, nodeName)
+			return nil, apperrors.ErrCouldNotRollback
 		}
 		return nil, apperrors.ErrBoardNotCreated
 	}
@@ -329,8 +401,9 @@ func (s *PostgreSQLBoardStorage) Create(ctx context.Context, info dto.NewBoardIn
 	if err != nil {
 		logger.DebugFmt("Failed to build query with error "+err.Error(), requestID.String(), funcName, nodeName)
 		err = tx.Rollback()
-		for err != nil {
-			err = tx.Rollback()
+		if err != nil {
+			logger.DebugFmt("Transaction rollback failed with error "+err.Error(), requestID.String(), funcName, nodeName)
+			return nil, apperrors.ErrCouldNotRollback
 		}
 		return nil, apperrors.ErrCouldNotBuildQuery
 	}
@@ -340,8 +413,9 @@ func (s *PostgreSQLBoardStorage) Create(ctx context.Context, info dto.NewBoardIn
 	if err != nil {
 		logger.DebugFmt("Failed to execute query with error "+err.Error(), requestID.String(), funcName, nodeName)
 		err = tx.Rollback()
-		for err != nil {
-			err = tx.Rollback()
+		if err != nil {
+			logger.DebugFmt("Transaction rollback failed with error "+err.Error(), requestID.String(), funcName, nodeName)
+			return nil, apperrors.ErrCouldNotRollback
 		}
 		return nil, apperrors.ErrBoardNotCreated
 	}
@@ -351,8 +425,9 @@ func (s *PostgreSQLBoardStorage) Create(ctx context.Context, info dto.NewBoardIn
 	if err != nil {
 		logger.DebugFmt("Failed to commit changes", requestID.String(), funcName, nodeName)
 		err = tx.Rollback()
-		for err != nil {
-			err = tx.Rollback()
+		if err != nil {
+			logger.DebugFmt("Transaction rollback failed with error "+err.Error(), requestID.String(), funcName, nodeName)
+			return nil, apperrors.ErrCouldNotRollback
 		}
 		return nil, apperrors.ErrBoardNotCreated
 	}
@@ -361,6 +436,9 @@ func (s *PostgreSQLBoardStorage) Create(ctx context.Context, info dto.NewBoardIn
 	return newBoard, nil
 }
 
+// UpdateData
+// обновляет данные доски
+// или возвращает ошибки ...
 func (s *PostgreSQLBoardStorage) UpdateData(ctx context.Context, info dto.UpdatedBoardInfo) error {
 	funcName := "PostgreSQLBoardStorage.Create"
 	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
@@ -388,6 +466,9 @@ func (s *PostgreSQLBoardStorage) UpdateData(ctx context.Context, info dto.Update
 	return nil
 }
 
+// UpdateThumbnailUrl
+// обновляет картинку доски
+// или возвращает ошибки ...
 func (s *PostgreSQLBoardStorage) UpdateThumbnailUrl(ctx context.Context, info dto.BoardImageUrlInfo) error {
 	sql, args, err := sq.
 		Update("public.board").
@@ -409,6 +490,9 @@ func (s *PostgreSQLBoardStorage) UpdateThumbnailUrl(ctx context.Context, info dt
 	return nil
 }
 
+// Delete
+// удаляет доску
+// или возвращает ошибки ...
 func (s *PostgreSQLBoardStorage) Delete(ctx context.Context, id dto.BoardID) error {
 	sql, args, err := sq.
 		Delete("public.board").

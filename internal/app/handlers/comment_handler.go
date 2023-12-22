@@ -35,7 +35,6 @@ type CommentHandler struct {
 func (ch CommentHandler) Create(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
 	funcName := "CommentHandler.Create"
-	nodeName := "handler"
 	errorMessage := "Creating comment failed with error: "
 	failBorder := "---------------------------------- Create comment FAIL ----------------------------------"
 

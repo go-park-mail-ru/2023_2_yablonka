@@ -18,6 +18,7 @@ type Storages struct {
 	Workspace     IWorkspaceStorage
 	CSATAnswer    ICSATAnswerStorage
 	CSATQuestion  ICSATQuestionStorage
+	Tag           ITagStorage
 }
 
 func NewPostgresStorages(db *sql.DB) *Storages {
@@ -34,5 +35,6 @@ func NewPostgresStorages(db *sql.DB) *Storages {
 		Workspace:     postgresql.NewWorkspaceStorage(db),
 		CSATAnswer:    postgresql.NewCSATAnswerStorage(db),
 		CSATQuestion:  postgresql.NewCSATQuestionStorage(db),
+		Tag:           postgresql.NewTagStorage(db),
 	}
 }
