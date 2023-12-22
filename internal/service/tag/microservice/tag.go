@@ -7,8 +7,6 @@ import (
 	"server/internal/storage"
 )
 
-const nodeName = "service"
-
 type TagService struct {
 	storage storage.ITagStorage
 }

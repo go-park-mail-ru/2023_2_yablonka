@@ -25,7 +25,7 @@ type Handlers struct {
 	TagHandler
 }
 
-const nodeName string = "storage"
+const nodeName = "storage"
 
 // NewHandlers
 // возвращает HandlerManager со всеми хэндлерами приложения
