@@ -4558,7 +4558,7 @@ func easyjson56de76c1DecodeServerInternalPkgDto48(in *jlexer.Lexer, out *NewHist
 		}
 		switch key {
 		case "board_id":
-			(out.BoardID).UnmarshalEasyJSON(in)
+			out.BoardID = uint64(in.Uint64())
 		case "actions":
 			out.Actions = string(in.String())
 		default:
@@ -4583,7 +4583,7 @@ func easyjson56de76c1EncodeServerInternalPkgDto48(out *jwriter.Writer, in NewHis
 		} else {
 			out.RawString(prefix)
 		}
-		(in.BoardID).MarshalEasyJSON(out)
+		out.Uint64(uint64(in.BoardID))
 	}
 	{
 		const prefix string = ",\"actions\":"
