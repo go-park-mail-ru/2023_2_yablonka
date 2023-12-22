@@ -513,18 +513,17 @@ func TestPostgresTaskStorage_Read(t *testing.T) {
 						From("public.task").
 						Join("public.task_user ON public.task.id = public.task_user.id_task").
 						Join("public.comment ON public.task.id = public.comment.id_task").
+						Join("public.tag_task ON public.task.id = public.tag_task.id_task").
 						Where(sq.Eq{"public.task.id": args.id.Value}).
 						PlaceholderFormat(sq.Dollar).
 						ToSql()
 
-					userIDS := pq.StringArray([]string{})
-					commentIDs := pq.StringArray([]string{})
 					mock.ExpectQuery(regexp.QuoteMeta(query)).
 						WithArgs(
 							args.id.Value,
 						).
 						WillReturnRows(sqlmock.NewRows(allTaskFields2).
-							AddRow(1, 1, time.Now(), "ame", "dsd", 1, time.Now(), time.Now(), userIDS, commentIDs))
+							AddRow(1, 1, time.Now(), "ame", "dsd", 1, time.Now(), time.Now(), pq.StringArray([]string{}), pq.StringArray([]string{}), pq.StringArray([]string{})))
 				},
 			},
 			wantErr: false,
@@ -542,6 +541,7 @@ func TestPostgresTaskStorage_Read(t *testing.T) {
 						From("public.task").
 						Join("public.task_user ON public.task.id = public.task_user.id_task").
 						Join("public.comment ON public.task.id = public.comment.id_task").
+						Join("public.tag_task ON public.task.id = public.tag_task.id_task").
 						Where(sq.Eq{"public.task.id": args.id.Value}).
 						PlaceholderFormat(sq.Dollar).
 						ToSql()
