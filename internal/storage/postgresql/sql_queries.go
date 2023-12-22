@@ -18,7 +18,7 @@ var (
 	allListTaskAggFields = []string{"public.list.id", "public.list.id_board", "public.list.name", "public.list.list_position",
 		"array_remove(array_agg(public.task.id ORDER BY public.task.list_position), NULL)"}
 
-	allTagFields = []string{"public.tag.id", "public.tag.name", "public.list.color"}
+	allTagFields = []string{"public.tag.id", "public.tag.name", "public.tag.color"}
 
 	allTaskFields = []string{"public.task.id", "public.task.id_list", "public.task.date_created",
 		"public.task.name", "public.task.description", "public.task.list_position", "public.task.task_start", "public.task.task_end",
