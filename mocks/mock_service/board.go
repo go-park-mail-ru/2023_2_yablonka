@@ -98,6 +98,21 @@ func (mr *MockIBoardServiceMockRecorder) GetFullBoard(arg0, arg1 any) *gomock.Ca
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFullBoard", reflect.TypeOf((*MockIBoardService)(nil).GetFullBoard), arg0, arg1)
 }
 
+// GetHistory mocks base method.
+func (m *MockIBoardService) GetHistory(arg0 context.Context, arg1 dto.BoardID) (*[]dto.BoardHistoryEntry, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetHistory", arg0, arg1)
+	ret0, _ := ret[0].(*[]dto.BoardHistoryEntry)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetHistory indicates an expected call of GetHistory.
+func (mr *MockIBoardServiceMockRecorder) GetHistory(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetHistory", reflect.TypeOf((*MockIBoardService)(nil).GetHistory), arg0, arg1)
+}
+
 // RemoveUser mocks base method.
 func (m *MockIBoardService) RemoveUser(arg0 context.Context, arg1 dto.RemoveBoardUserInfo) error {
 	m.ctrl.T.Helper()

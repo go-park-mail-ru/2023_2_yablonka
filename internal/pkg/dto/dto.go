@@ -172,47 +172,6 @@ type AvatarChangeInfo struct {
 	Mimetype string `json:"mimetype" valid:"-"`
 }
 
-// func (info *AvatarChangeInfo) UnmarshalEasyJSON(l *jlexer.Lexer) {
-// 	isTopLevel := l.IsStart()
-// 	if l.IsNull() {
-// 		if isTopLevel {
-// 			l.Consumed()
-// 		}
-// 		l.Skip()
-// 		return
-// 	}
-// 	l.Delim('{')
-// 	for !l.IsDelim('}') {
-// 		key := l.UnsafeFieldName(false)
-// 		l.WantColon()
-// 		if l.IsNull() {
-// 			l.Skip()
-// 			l.WantComma()
-// 			continue
-// 		}
-// 		switch key {
-// 		case "avatar":
-// 			if l.IsNull() {
-// 				l.Skip()
-// 				info.Avatar = nil
-// 			} else {
-// 				info.Avatar = []byte(l.Bytes())
-// 			}
-// 		case "filename":
-// 			info.Filename = string(l.String())
-// 		case "mimetype":
-// 			info.Mimetype = string(l.String())
-// 		default:
-// 			l.SkipRecursive()
-// 		}
-// 		l.WantComma()
-// 	}
-// 	l.Delim('}')
-// 	if isTopLevel {
-// 		l.Consumed()
-// 	}
-// }
-
 // ImageRequest
 // структура для изменения аватарки
 type UserImageUrlInfo struct {
@@ -810,6 +769,18 @@ type RemoveFileInfo struct {
 	TaskID       uint64 `json:"task_id" valid:"-"`
 	OriginalName string `json:"original_name" valid:"-"`
 	FilePath     string `json:"file_path" valid:"-"`
+}
+
+type BoardHistoryEntry struct {
+	User       UserPublicInfo `json:"user" valid:"-"`
+	DateEdited time.Time      `json:"timestamp" valid:"-"`
+	Actions    string         `json:"actions" valid:"-"`
+}
+
+type NewHistoryEntry struct {
+	UserID  UserID  `json:"-" valid:"-"`
+	BoardID BoardID `json:"board_id" valid:"-"`
+	Actions string  `json:"actions" valid:"-"`
 }
 
 type JSONMap map[string]interface{}

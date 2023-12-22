@@ -99,6 +99,14 @@ func GetChiMux(manager handlers.Handlers, config config.Config, logger logging.I
 					"/board/user/remove/", http.HandlerFunc(manager.BoardHandler.RemoveUser)),
 				)
 			})
+			r.Route("/history", func(r chi.Router) {
+				r.Post("/", metricsMiddleware.WrapHandler(
+					"/board/history/", http.HandlerFunc(manager.BoardHandler.GetHistory)),
+				)
+				r.Post("/submit/", metricsMiddleware.WrapHandler(
+					"/board/history/submit/", http.HandlerFunc(manager.BoardHandler.SubmitEdit)),
+				)
+			})
 			r.Delete("/delete/", metricsMiddleware.WrapHandler(
 				"/board/delete/", http.HandlerFunc(manager.BoardHandler.Delete)),
 			)

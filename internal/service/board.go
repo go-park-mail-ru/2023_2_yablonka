@@ -29,4 +29,7 @@ type IBoardService interface {
 	// AddUser
 	// добавляет пользователя на доску
 	RemoveUser(context.Context, dto.RemoveBoardUserInfo) error
+	// GetHistory
+	// возвращает историю изменения доски
+	GetHistory(context.Context, dto.BoardID) (*[]dto.BoardHistoryEntry, error)
 }
