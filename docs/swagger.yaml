@@ -78,6 +78,11 @@ definitions:
           $ref: '#/definitions/dto.QuestionWithStats'
         type: array
     type: object
+  doc_structs.TagResponse:
+    properties:
+      tag:
+        $ref: '#/definitions/entities.Tag'
+    type: object
   doc_structs.TaskResponse:
     properties:
       task:
@@ -252,6 +257,10 @@ definitions:
         items:
           $ref: '#/definitions/dto.SingleListInfo'
         type: array
+      tags:
+        items:
+          $ref: '#/definitions/dto.TagInfo'
+        type: array
       users:
         items:
           $ref: '#/definitions/dto.UserPublicInfo'
@@ -355,6 +364,17 @@ definitions:
         type: integer
       name:
         type: string
+    type: object
+  dto.NewTagInfo:
+    properties:
+      board_id:
+        type: integer
+      color:
+        type: string
+      name:
+        type: string
+      task_id:
+        type: integer
     type: object
   dto.NewTaskInfo:
     properties:
@@ -482,10 +502,35 @@ definitions:
         type: string
       start:
         type: string
+      tags:
+        items:
+          type: string
+        type: array
       users:
         items:
           type: string
         type: array
+    type: object
+  dto.TagAndTaskIDs:
+    properties:
+      tag_id:
+        type: integer
+      task_id:
+        type: integer
+    type: object
+  dto.TagID:
+    properties:
+      tag_id:
+        type: integer
+    type: object
+  dto.TagInfo:
+    properties:
+      color:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
     type: object
   dto.TaskID:
     properties:
@@ -565,6 +610,17 @@ definitions:
         type: integer
       name:
         type: string
+    type: object
+  dto.UpdatedTagInfo:
+    properties:
+      color:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      task_id:
+        type: integer
     type: object
   dto.UpdatedTaskInfo:
     properties:
@@ -699,6 +755,19 @@ definitions:
         items:
           $ref: '#/definitions/entities.Task'
         type: array
+    type: object
+  entities.Tag:
+    properties:
+      board_id:
+        type: integer
+      color:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      task_id:
+        type: integer
     type: object
   entities.Task:
     properties:
@@ -1744,6 +1813,176 @@ paths:
       summary: Обновить порядок списков
       tags:
       - lists
+  /tag/add_to_task/:
+    post:
+      consumes:
+      - application/json
+      description: Добавить тэг к заданию
+      parameters:
+      - description: id тэга и связанного задания
+        in: body
+        name: tagAndTaskIDs
+        required: true
+        schema:
+          $ref: '#/definitions/dto.TagAndTaskIDs'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: no content
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+      summary: Добавить тэг к заданию
+      tags:
+      - tags
+  /tag/create/:
+    post:
+      consumes:
+      - application/json
+      description: Создать тэг
+      parameters:
+      - description: данные нового тэга
+        in: body
+        name: newTagInfo
+        required: true
+        schema:
+          $ref: '#/definitions/dto.NewTagInfo'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: объект тэга
+          schema:
+            $ref: '#/definitions/doc_structs.TagResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+      summary: Создать тэг
+      tags:
+      - tags
+  /tag/delete/:
+    delete:
+      consumes:
+      - application/json
+      description: Удалить тэг
+      parameters:
+      - description: id тэга
+        in: body
+        name: tagID
+        required: true
+        schema:
+          $ref: '#/definitions/dto.TagID'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: no content
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+      summary: Удалить тэг
+      tags:
+      - Tags
+  /tag/remove_from_task/:
+    post:
+      consumes:
+      - application/json
+      description: Добавить тэг к заданию
+      parameters:
+      - description: id тэга и связанного задания
+        in: body
+        name: tagAndTaskIDs
+        required: true
+        schema:
+          $ref: '#/definitions/dto.TagAndTaskIDs'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: no content
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+      summary: Добавить тэг к заданию
+      tags:
+      - tags
+  /tag/update/:
+    post:
+      consumes:
+      - application/json
+      description: Обновить тэг
+      parameters:
+      - description: обновленные данные тэга
+        in: body
+        name: tagInfo
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdatedTagInfo'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: no content
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+      summary: Обновить тэг
+      tags:
+      - tags
   /task/:
     post:
       consumes:
