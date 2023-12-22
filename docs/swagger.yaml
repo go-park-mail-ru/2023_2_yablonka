@@ -596,8 +596,6 @@ definitions:
         type: integer
       name:
         type: string
-      task_id:
-        type: integer
     type: object
   dto.UpdatedTaskInfo:
     properties:

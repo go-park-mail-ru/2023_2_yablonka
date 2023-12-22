@@ -3495,9 +3495,6 @@ const docTemplate = `{
                 },
                 "name": {
                     "type": "string"
-                },
-                "task_id": {
-                    "type": "integer"
                 }
             }
         },
