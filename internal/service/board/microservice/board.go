@@ -298,3 +298,9 @@ func (bs BoardService) RemoveUser(ctx context.Context, info dto.RemoveBoardUserI
 
 	return bs.boardStorage.RemoveUser(ctx, info)
 }
+
+// GetHistory
+// возвращает историю изменения доски
+func (bs BoardService) GetHistory(ctx context.Context, id dto.BoardID) (*[]dto.BoardHistoryEntry, error) {
+	return bs.boardStorage.GetHistory(ctx, id)
+}

@@ -72,6 +72,10 @@ var (
 		"public.file.name", "public.file.filepath", "public.file.date_created",
 	}
 
+	allHistoryEntryFields = []string{
+		"public.edit_history.edit_date", "public.edit_history.edit_summary",
+	}
+
 	// taskUserFields = []string{
 	// 	"id_task", "id_user",
 	// }

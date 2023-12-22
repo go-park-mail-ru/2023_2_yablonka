@@ -77,3 +77,7 @@ type FileResponse struct {
 type FileListResponse struct {
 	Files []dto.AttachedFileInfo `json:"files"`
 }
+
+type GetHistoryResponse struct {
+	Entries []dto.BoardHistoryEntry `json:"history"`
+}
