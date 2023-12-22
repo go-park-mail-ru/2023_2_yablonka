@@ -10,7 +10,7 @@ import (
 	_ "github.com/jackc/pgx/v5/stdlib"
 )
 
-const nodeName string = "storage"
+const nodeName = "storage"
 
 func GetDBConnection(conf config.DatabaseConfig) (*sql.DB, error) {
 	dbURL := fmt.Sprintf(

@@ -26,6 +26,10 @@ type IBoardStorage interface {
 	// находит списки в доске
 	// или возвращает ошибки ...
 	GetLists(context.Context, dto.BoardID) (*[]dto.SingleListInfo, error)
+	// GetTags
+	// находит тэги в доске
+	// или возвращает ошибки ...
+	GetTags(context.Context, dto.BoardID) (*[]dto.TagInfo, error)
 	// UpdateData
 	// обновляет доску
 	UpdateData(context.Context, dto.UpdatedBoardInfo) error
