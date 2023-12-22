@@ -186,6 +186,53 @@ func (s *PostgreSQLBoardStorage) GetLists(ctx context.Context, id dto.BoardID) (
 	return &lists, nil
 }
 
+// GetTags
+// находит тэги в доске
+// или возвращает ошибки ...
+func (s *PostgreSQLBoardStorage) GetTags(ctx context.Context, id dto.BoardID) (*[]dto.TagInfo, error) {
+	funcName := "PostgreSQLBoardStorage.GetTags"
+	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
+	requestID := ctx.Value(dto.RequestIDKey).(uuid.UUID)
+
+	query, args, err := sq.Select(allTagFields...).
+		From("public.tag").
+		LeftJoin("public.tag_board ON public.tag.id = public.tag_board.id_tag").
+		Where(sq.Eq{"public.tag_board.id_board": id.Value}).
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
+	if err != nil {
+		return nil, apperrors.ErrCouldNotBuildQuery
+	}
+	logger.DebugFmt("Built query\n\t"+query+"\nwith args\n\t"+fmt.Sprintf("%+v", args), requestID.String(), funcName, nodeName)
+
+	rows, err := s.db.Query(query, args...)
+	if err != nil {
+		logger.DebugFmt(err.Error(), requestID.String(), funcName, nodeName)
+		return nil, apperrors.ErrCouldNotGetList
+	}
+	defer rows.Close()
+	logger.DebugFmt("Got tag rows", requestID.String(), funcName, nodeName)
+
+	tags := []dto.TagInfo{}
+	for rows.Next() {
+		var tag dto.TagInfo
+
+		err = rows.Scan(
+			&tag.ID,
+			&tag.Name,
+			&tag.Color,
+		)
+		if err != nil {
+			logger.DebugFmt(err.Error(), requestID.String(), funcName, nodeName)
+			return nil, apperrors.ErrCouldNotGetBoard
+		}
+		tags = append(tags, tag)
+	}
+	logger.DebugFmt("Collected tags", requestID.String(), funcName, nodeName)
+
+	return &tags, nil
+}
+
 // CheckAccess
 // находит пользователя в задании
 // или возвращает ошибки ...
@@ -272,8 +319,9 @@ func (s *PostgreSQLBoardStorage) Create(ctx context.Context, info dto.NewBoardIn
 	if err := row.Scan(&boardID, &newBoard.DateCreated); err != nil {
 		logger.DebugFmt("Board insert failed with error "+err.Error(), requestID.String(), funcName, nodeName)
 		err = tx.Rollback()
-		for err != nil {
-			err = tx.Rollback()
+		if err != nil {
+			logger.DebugFmt("Transaction rollback failed with error "+err.Error(), requestID.String(), funcName, nodeName)
+			return nil, apperrors.ErrCouldNotRollback
 		}
 		return nil, apperrors.ErrBoardNotCreated
 	}
@@ -302,8 +350,9 @@ func (s *PostgreSQLBoardStorage) Create(ctx context.Context, info dto.NewBoardIn
 	if err != nil {
 		logger.DebugFmt("Failed to build query with error "+err.Error(), requestID.String(), funcName, nodeName)
 		err = tx.Rollback()
-		for err != nil {
-			err = tx.Rollback()
+		if err != nil {
+			logger.DebugFmt("Transaction rollback failed with error "+err.Error(), requestID.String(), funcName, nodeName)
+			return nil, apperrors.ErrCouldNotRollback
 		}
 		return nil, apperrors.ErrCouldNotBuildQuery
 	}
@@ -313,8 +362,9 @@ func (s *PostgreSQLBoardStorage) Create(ctx context.Context, info dto.NewBoardIn
 	if err != nil {
 		logger.DebugFmt("Failed to execute query with error "+err.Error(), requestID.String(), funcName, nodeName)
 		err = tx.Rollback()
-		for err != nil {
-			err = tx.Rollback()
+		if err != nil {
+			logger.DebugFmt("Transaction rollback failed with error "+err.Error(), requestID.String(), funcName, nodeName)
+			return nil, apperrors.ErrCouldNotRollback
 		}
 		return nil, apperrors.ErrBoardNotCreated
 	}
@@ -329,8 +379,9 @@ func (s *PostgreSQLBoardStorage) Create(ctx context.Context, info dto.NewBoardIn
 	if err != nil {
 		logger.DebugFmt("Failed to build query with error "+err.Error(), requestID.String(), funcName, nodeName)
 		err = tx.Rollback()
-		for err != nil {
-			err = tx.Rollback()
+		if err != nil {
+			logger.DebugFmt("Transaction rollback failed with error "+err.Error(), requestID.String(), funcName, nodeName)
+			return nil, apperrors.ErrCouldNotRollback
 		}
 		return nil, apperrors.ErrCouldNotBuildQuery
 	}
@@ -340,8 +391,9 @@ func (s *PostgreSQLBoardStorage) Create(ctx context.Context, info dto.NewBoardIn
 	if err != nil {
 		logger.DebugFmt("Failed to execute query with error "+err.Error(), requestID.String(), funcName, nodeName)
 		err = tx.Rollback()
-		for err != nil {
-			err = tx.Rollback()
+		if err != nil {
+			logger.DebugFmt("Transaction rollback failed with error "+err.Error(), requestID.String(), funcName, nodeName)
+			return nil, apperrors.ErrCouldNotRollback
 		}
 		return nil, apperrors.ErrBoardNotCreated
 	}
@@ -351,8 +403,9 @@ func (s *PostgreSQLBoardStorage) Create(ctx context.Context, info dto.NewBoardIn
 	if err != nil {
 		logger.DebugFmt("Failed to commit changes", requestID.String(), funcName, nodeName)
 		err = tx.Rollback()
-		for err != nil {
-			err = tx.Rollback()
+		if err != nil {
+			logger.DebugFmt("Transaction rollback failed with error "+err.Error(), requestID.String(), funcName, nodeName)
+			return nil, apperrors.ErrCouldNotRollback
 		}
 		return nil, apperrors.ErrBoardNotCreated
 	}
