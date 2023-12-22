@@ -534,3 +534,84 @@ func (s *PostgreSQLBoardStorage) RemoveUser(ctx context.Context, info dto.Remove
 
 	return nil
 }
+
+// GetHistory
+// возвращает историю изменения доски
+func (s *PostgreSQLBoardStorage) GetHistory(ctx context.Context, id dto.BoardID) (*[]dto.BoardHistoryEntry, error) {
+	funcName := "PostgreSQLBoardStorage.GetHistory"
+	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
+	requestID := ctx.Value(dto.RequestIDKey).(uuid.UUID)
+
+	entrySql, args, err := sq.Select(append(allHistoryEntryFields, allPublicUserFields...)...).
+		From("public.edit_history").
+		LeftJoin("public.user ON public.user.id = public.edit_history.id_user").
+		Where(sq.Eq{"public.edit_history.id_board": id.Value}).
+		OrderBy("public.edit_history.edit_date").
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
+	if err != nil {
+		return nil, apperrors.ErrCouldNotBuildQuery
+	}
+	logger.DebugFmt("Built query\n\t"+entrySql+"\nwith args\n\t"+fmt.Sprintf("%+v", args), requestID.String(), funcName, nodeName)
+
+	rows, err := s.db.Query(entrySql, args...)
+	if err != nil {
+		logger.DebugFmt(err.Error(), requestID.String(), funcName, nodeName)
+		return nil, apperrors.ErrCouldNotGetList
+	}
+	defer rows.Close()
+	logger.DebugFmt("Got history entries", requestID.String(), funcName, nodeName)
+
+	historyEntries := []dto.BoardHistoryEntry{}
+	for rows.Next() {
+		var edit dto.BoardHistoryEntry
+
+		err = rows.Scan(
+			&edit.DateEdited,
+			&edit.Actions,
+			&edit.User.ID,
+			&edit.User.Email,
+			&edit.User.Name,
+			&edit.User.Surname,
+			&edit.User.Description,
+			&edit.User.AvatarURL,
+		)
+		if err != nil {
+			logger.DebugFmt(err.Error(), requestID.String(), funcName, nodeName)
+			return nil, apperrors.ErrCouldNotGetBoard
+		}
+		historyEntries = append(historyEntries, edit)
+	}
+	logger.DebugFmt("Collected edit info rows", requestID.String(), funcName, nodeName)
+
+	return &historyEntries, nil
+}
+
+// SubmitEdit
+// записывает изменение доски в историю
+func (s *PostgreSQLBoardStorage) SubmitEdit(ctx context.Context, entry dto.NewHistoryEntry) error {
+	funcName := "PostgreSQLBoardStorage.SubmitEdit"
+	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
+	requestID := ctx.Value(dto.RequestIDKey).(uuid.UUID)
+
+	sql, args, err := sq.
+		Insert("public.edit_history").
+		Columns("id_user", "id_board", "edit_date", "edit_summary").
+		Values(entry.UserID, entry.BoardID, time.Now(), entry.Actions).
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
+	if err != nil {
+		logger.DebugFmt("Failed to build query with error "+err.Error(), requestID.String(), funcName, nodeName)
+		return apperrors.ErrCouldNotBuildQuery
+	}
+	logger.DebugFmt("Built query\n\t"+sql+"\nwith args\n\t"+fmt.Sprintf("%+v", args), requestID.String(), funcName, nodeName)
+
+	_, err = s.db.Exec(sql, args...)
+	if err != nil {
+		logger.DebugFmt("Insert failed with error "+err.Error(), requestID.String(), funcName, nodeName)
+		return apperrors.ErrCouldNotAddTaskUser
+	}
+	logger.DebugFmt("query executed", requestID.String(), funcName, nodeName)
+
+	return nil
+}
