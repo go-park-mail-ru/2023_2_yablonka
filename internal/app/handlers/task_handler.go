@@ -36,7 +36,6 @@ type TaskHandler struct {
 func (th TaskHandler) Create(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
 	funcName := "TaskHandler.Create"
-	nodeName := "handler"
 	errorMessage := "Creating a new task failed with error: "
 	failBorder := "---------------------------------- Creating a new task FAIL ----------------------------------"
 
@@ -99,7 +98,6 @@ func (th TaskHandler) Create(w http.ResponseWriter, r *http.Request) {
 func (th TaskHandler) Read(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
 	funcName := "TaskHandler.Read"
-	nodeName := "handler"
 	errorMessage := "Getting task failed with error: "
 	failBorder := "---------------------------------- Getting task FAIL ----------------------------------"
 
@@ -162,7 +160,6 @@ func (th TaskHandler) Read(w http.ResponseWriter, r *http.Request) {
 func (th TaskHandler) Update(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
 	funcName := "TaskHandler.Update"
-	nodeName := "handler"
 	errorMessage := "Updating task failed with error: "
 	failBorder := "---------------------------------- Updating task FAIL ----------------------------------"
 
@@ -223,7 +220,6 @@ func (th TaskHandler) Update(w http.ResponseWriter, r *http.Request) {
 func (th TaskHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
 	funcName := "TaskHandler.Delete"
-	nodeName := "handler"
 	errorMessage := "Deleting task failed with error: "
 	failBorder := "---------------------------------- Deleting task FAIL ----------------------------------"
 
@@ -284,7 +280,6 @@ func (th TaskHandler) Delete(w http.ResponseWriter, r *http.Request) {
 func (th TaskHandler) AddUser(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
 	funcName := "TaskHandler.AddUser"
-	nodeName := "handler"
 	errorMessage := "Adding user to task failed with error: "
 	failBorder := "---------------------------------- Adding user to task FAIL ----------------------------------"
 
@@ -345,7 +340,6 @@ func (th TaskHandler) AddUser(w http.ResponseWriter, r *http.Request) {
 func (th TaskHandler) RemoveUser(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
 	funcName := "TaskHandler.RemoveUser"
-	nodeName := "handler"
 	errorMessage := "Removing user from task failed with error: "
 	failBorder := "---------------------------------- Removing user from task FAIL ----------------------------------"
 

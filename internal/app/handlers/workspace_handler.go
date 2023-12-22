@@ -33,7 +33,6 @@ type WorkspaceHandler struct {
 func (wh WorkspaceHandler) GetUserWorkspaces(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
 	funcName := "WorkspaceHandler.GetUserWorkspaces"
-	nodeName := "handler"
 	errorMessage := "Getting user workspaces failed with error: "
 	failBorder := "---------------------------------- Getting user workspaces FAIL ----------------------------------"
 
@@ -98,7 +97,6 @@ func (wh WorkspaceHandler) GetUserWorkspaces(w http.ResponseWriter, r *http.Requ
 func (wh WorkspaceHandler) Create(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
 	funcName := "WorkspaceHandler.Create"
-	nodeName := "handler"
 	errorMessage := "Creating workspace failed with error: "
 	failBorder := "---------------------------------- Creating workspace FAIL ----------------------------------"
 
@@ -161,7 +159,6 @@ func (wh WorkspaceHandler) Create(w http.ResponseWriter, r *http.Request) {
 func (wh WorkspaceHandler) UpdateData(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
 	funcName := "WorkspaceHandler.UpdateData"
-	nodeName := "handler"
 	errorMessage := "Updating workspace data failed with error: "
 	failBorder := "---------------------------------- Updating workspace data FAIL ----------------------------------"
 
@@ -222,7 +219,6 @@ func (wh WorkspaceHandler) UpdateData(w http.ResponseWriter, r *http.Request) {
 func (wh WorkspaceHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
 	funcName := "WorkspaceHandler.Delete"
-	nodeName := "handler"
 	errorMessage := "Deleting workspace failed with error: "
 	failBorder := "---------------------------------- Deleting workspace FAIL ----------------------------------"
 

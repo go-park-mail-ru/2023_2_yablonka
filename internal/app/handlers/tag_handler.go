@@ -34,7 +34,6 @@ type TagHandler struct {
 func (th TagHandler) Create(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
 	funcName := "TagHandler.Create"
-	nodeName := "handler"
 	errorMessage := "Creating tag failed with error: "
 	failBorder := "---------------------------------- Creating Tag FAIL ----------------------------------"
 
@@ -97,7 +96,6 @@ func (th TagHandler) Create(w http.ResponseWriter, r *http.Request) {
 func (th TagHandler) Update(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
 	funcName := "TagHandler.Update"
-	nodeName := "handler"
 	errorMessage := "Updating failed with error: "
 	failBorder := "---------------------------------- Updating Tag FAIL ----------------------------------"
 
@@ -158,7 +156,6 @@ func (th TagHandler) Update(w http.ResponseWriter, r *http.Request) {
 func (th TagHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
 	funcName := "TagHandler.Delete"
-	nodeName := "handler"
 	errorMessage := "Deleting failed with error: "
 	failBorder := "---------------------------------- Deleting Tag FAIL ----------------------------------"
 
@@ -219,7 +216,6 @@ func (th TagHandler) Delete(w http.ResponseWriter, r *http.Request) {
 func (th TagHandler) AddToTask(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
 	funcName := "TagHandler.AddToTask"
-	nodeName := "handler"
 	errorMessage := "Adding tag to task failed with error: "
 	failBorder := "---------------------------------- Adding tag to task FAIL ----------------------------------"
 
@@ -280,7 +276,6 @@ func (th TagHandler) AddToTask(w http.ResponseWriter, r *http.Request) {
 func (th TagHandler) RemoveFromTask(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
 	funcName := "TagHandler.RemoveFromTask"
-	nodeName := "handler"
 	errorMessage := "Removing tag from task failed with error: "
 	failBorder := "---------------------------------- Removing tag from task FAIL ----------------------------------"
 
