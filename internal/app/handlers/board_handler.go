@@ -619,54 +619,56 @@ func (bh BoardHandler) GetHistory(w http.ResponseWriter, r *http.Request) {
 //
 // @Router /board/history/submit/ [post]
 func (bh BoardHandler) SubmitEdit(w http.ResponseWriter, r *http.Request) {
-	// rCtx := r.Context()
-	// funcName := "AddUser"
-	// errorMessage := "Adding user to board with error: "
-	// failBorder := "---------------------------------- Adding user to board FAIL ----------------------------------"
+	rCtx := r.Context()
+	funcName := "SubmitEdit"
+	errorMessage := "Adding edit to history failed with error: "
+	failBorder := "---------------------------------- Adding edit to history FAIL ----------------------------------"
 
-	// logger := rCtx.Value(dto.LoggerKey).(logger.ILogger)
-	// requestID := rCtx.Value(dto.RequestIDKey).(uuid.UUID)
-	// logger.Info("---------------------------------- Adding user to board ----------------------------------")
+	logger := rCtx.Value(dto.LoggerKey).(logger.ILogger)
+	requestID := rCtx.Value(dto.RequestIDKey).(uuid.UUID)
+	logger.Info("---------------------------------- Adding edit to history ----------------------------------")
 
-	// var info dto.AddBoardUserRequest
-	// err := easyjson.UnmarshalFromReader(r.Body, &info)
-	// if err != nil {
-	// 	logger.Error(errorMessage + err.Error())
-	// 	logger.Info(failBorder)
-	// 	apperrors.ReturnError(apperrors.BadRequestResponse, w, r)
-	// 	return
-	// }
-	// logger.DebugFmt("JSON Decoded", requestID.String(), funcName, nodeName)
+	var info dto.NewHistoryEntry
+	err := easyjson.UnmarshalFromReader(r.Body, &info)
+	if err != nil {
+		logger.Error(errorMessage + err.Error())
+		logger.Info(failBorder)
+		apperrors.ReturnError(apperrors.BadRequestResponse, w, r)
+		return
+	}
+	logger.DebugFmt("JSON Decoded", requestID.String(), funcName, nodeName)
 
-	// _, ok := rCtx.Value(dto.UserObjKey).(*entities.User)
-	// if !ok {
-	// 	logger.Error(errorMessage + "User not found")
-	// 	logger.Info(failBorder)
-	// 	apperrors.ReturnError(apperrors.GenericUnauthorizedResponse, w, r)
-	// 	return
-	// }
-	// logger.DebugFmt("User object acquired from context", requestID.String(), funcName, nodeName)
+	user, ok := rCtx.Value(dto.UserObjKey).(*entities.User)
+	if !ok {
+		logger.Error(errorMessage + "User not found")
+		logger.Info(failBorder)
+		apperrors.ReturnError(apperrors.GenericUnauthorizedResponse, w, r)
+		return
+	}
+	logger.DebugFmt("User object acquired from context", requestID.String(), funcName, nodeName)
 
-	// err = bh.bs.AddUser(rCtx, info)
-	// if err != nil {
-	// 	logger.Error(errorMessage + err.Error())
-	// 	logger.Info(failBorder)
-	// 	apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
-	// 	return
-	// }
-	// logger.DebugFmt("User added", requestID.String(), funcName, nodeName)
+	info.UserID = user.ID
 
-	// response := dto.JSONResponse{
-	// 	Body: dto.JSONMap{},
-	// }
-	// err = WriteResponse(response, w, r)
-	// if err != nil {
-	// 	logger.Error(errorMessage + err.Error())
-	// 	logger.Info(failBorder)
-	// 	apperrors.ReturnError(apperrors.InternalServerErrorResponse, w, r)
-	// 	return
-	// }
+	err = bh.bs.SubmitEdit(rCtx, info)
+	if err != nil {
+		logger.Error(errorMessage + err.Error())
+		logger.Info(failBorder)
+		apperrors.ReturnError(apperrors.ErrorMap[err], w, r)
+		return
+	}
+	logger.DebugFmt("Edit recorded", requestID.String(), funcName, nodeName)
 
-	// logger.DebugFmt("Response written", requestID.String(), funcName, nodeName)
-	// logger.Info("---------------------------------- Add user to board SUCCESS ----------------------------------")
+	response := dto.JSONResponse{
+		Body: dto.JSONMap{},
+	}
+	err = WriteResponse(response, w, r)
+	if err != nil {
+		logger.Error(errorMessage + err.Error())
+		logger.Info(failBorder)
+		apperrors.ReturnError(apperrors.InternalServerErrorResponse, w, r)
+		return
+	}
+
+	logger.DebugFmt("Response written", requestID.String(), funcName, nodeName)
+	logger.Info("---------------------------------- Add edit to history SUCCESS ----------------------------------")
 }

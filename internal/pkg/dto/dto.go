@@ -778,9 +778,9 @@ type BoardHistoryEntry struct {
 }
 
 type NewHistoryEntry struct {
-	UserID  UserID  `json:"-" valid:"-"`
-	BoardID BoardID `json:"board_id" valid:"-"`
-	Actions string  `json:"actions" valid:"-"`
+	UserID  uint64 `json:"-" valid:"-"`
+	BoardID uint64 `json:"board_id" valid:"-"`
+	Actions string `json:"actions" valid:"-"`
 }
 
 type JSONMap map[string]interface{}

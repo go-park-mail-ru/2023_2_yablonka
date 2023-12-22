@@ -32,4 +32,7 @@ type IBoardService interface {
 	// GetHistory
 	// возвращает историю изменения доски
 	GetHistory(context.Context, dto.BoardID) (*[]dto.BoardHistoryEntry, error)
+	// SubmitEdit
+	// записывает изменение доски в историю
+	SubmitEdit(context.Context, dto.NewHistoryEntry) error
 }
