@@ -46,7 +46,6 @@ func NewBoardStorage(db *sql.DB) *PostgreSQLBoardStorage {
 	}
 }
 
-// TODO Ограничить количество всего за раз
 // GetById
 // находит доску и связанные с ней списки и задания по id
 // или возвращает ошибки ...
@@ -191,8 +190,14 @@ func (s *PostgreSQLBoardStorage) GetLists(ctx context.Context, id dto.BoardID) (
 // или возвращает ошибки ...
 func (s *PostgreSQLBoardStorage) GetTags(ctx context.Context, id dto.BoardID) (*[]dto.TagInfo, error) {
 	funcName := "PostgreSQLBoardStorage.GetTags"
-	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
-	requestID := ctx.Value(dto.RequestIDKey).(uuid.UUID)
+	logger, ok := ctx.Value(dto.LoggerKey).(logger.ILogger)
+	if !ok {
+		return nil, apperrors.ErrNoLoggerFound
+	}
+	requestID, ok := ctx.Value(dto.RequestIDKey).(uuid.UUID)
+	if !ok {
+		return nil, apperrors.ErrNoRequestIDFound
+	}
 
 	query, args, err := sq.Select(allTagFields...).
 		From("public.tag").
@@ -201,6 +206,7 @@ func (s *PostgreSQLBoardStorage) GetTags(ctx context.Context, id dto.BoardID) (*
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
 	if err != nil {
+		logger.DebugFmt(err.Error(), requestID.String(), funcName, nodeName)
 		return nil, apperrors.ErrCouldNotBuildQuery
 	}
 	logger.DebugFmt("Built query\n\t"+query+"\nwith args\n\t"+fmt.Sprintf("%+v", args), requestID.String(), funcName, nodeName)
@@ -208,10 +214,9 @@ func (s *PostgreSQLBoardStorage) GetTags(ctx context.Context, id dto.BoardID) (*
 	rows, err := s.db.Query(query, args...)
 	if err != nil {
 		logger.DebugFmt(err.Error(), requestID.String(), funcName, nodeName)
-		return nil, apperrors.ErrCouldNotGetList
+		return nil, apperrors.ErrCouldNotExecuteQuery
 	}
-	defer rows.Close()
-	logger.DebugFmt("Got tag rows", requestID.String(), funcName, nodeName)
+	logger.DebugFmt("Created query", requestID.String(), funcName, nodeName)
 
 	tags := []dto.TagInfo{}
 	for rows.Next() {
@@ -224,17 +229,31 @@ func (s *PostgreSQLBoardStorage) GetTags(ctx context.Context, id dto.BoardID) (*
 		)
 		if err != nil {
 			logger.DebugFmt(err.Error(), requestID.String(), funcName, nodeName)
-			return nil, apperrors.ErrCouldNotGetBoard
+			return nil, apperrors.ErrCouldNotScanRows
 		}
+
 		tags = append(tags, tag)
 	}
+
+	err = rows.Err()
+	if err != nil {
+		logger.DebugFmt(err.Error(), requestID.String(), funcName, nodeName)
+		return nil, apperrors.ErrCouldNotCollectRows
+	}
 	logger.DebugFmt("Collected tags", requestID.String(), funcName, nodeName)
+
+	err = rows.Close()
+	if err != nil {
+		logger.DebugFmt(err.Error(), requestID.String(), funcName, nodeName)
+		return nil, apperrors.ErrCouldNotCloseQuery
+	}
+	logger.DebugFmt("Closed rows", requestID.String(), funcName, nodeName)
 
 	return &tags, nil
 }
 
 // CheckAccess
-// находит пользователя в задании
+// находит пользователя в доске
 // или возвращает ошибки ...
 func (s *PostgreSQLBoardStorage) CheckAccess(ctx context.Context, info dto.CheckBoardAccessInfo) (bool, error) {
 	funcName := "PostgreSQLBoardStorage.CheckAccess"
@@ -266,6 +285,9 @@ func (s *PostgreSQLBoardStorage) CheckAccess(ctx context.Context, info dto.Check
 	return count > 0, nil
 }
 
+// Create
+// создает доску
+// или возвращает ошибки ...
 func (s *PostgreSQLBoardStorage) Create(ctx context.Context, info dto.NewBoardInfo) (*entities.Board, error) {
 	funcName := "PostgreSQLBoardStorage.Create"
 	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
@@ -414,6 +436,9 @@ func (s *PostgreSQLBoardStorage) Create(ctx context.Context, info dto.NewBoardIn
 	return newBoard, nil
 }
 
+// UpdateData
+// обновляет данные доски
+// или возвращает ошибки ...
 func (s *PostgreSQLBoardStorage) UpdateData(ctx context.Context, info dto.UpdatedBoardInfo) error {
 	funcName := "PostgreSQLBoardStorage.Create"
 	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
@@ -441,6 +466,9 @@ func (s *PostgreSQLBoardStorage) UpdateData(ctx context.Context, info dto.Update
 	return nil
 }
 
+// UpdateThumbnailUrl
+// обновляет картинку доски
+// или возвращает ошибки ...
 func (s *PostgreSQLBoardStorage) UpdateThumbnailUrl(ctx context.Context, info dto.BoardImageUrlInfo) error {
 	sql, args, err := sq.
 		Update("public.board").
@@ -462,6 +490,9 @@ func (s *PostgreSQLBoardStorage) UpdateThumbnailUrl(ctx context.Context, info dt
 	return nil
 }
 
+// Delete
+// удаляет доску
+// или возвращает ошибки ...
 func (s *PostgreSQLBoardStorage) Delete(ctx context.Context, id dto.BoardID) error {
 	sql, args, err := sq.
 		Delete("public.board").
