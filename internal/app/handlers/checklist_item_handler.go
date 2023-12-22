@@ -34,7 +34,6 @@ type ChecklistItemHandler struct {
 func (clh ChecklistItemHandler) Create(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
 	funcName := "ChecklistItemHandler.Create"
-	nodeName := "handler"
 	errorMessage := "Creating ChecklistItem failed with error: "
 	failBorder := "---------------------------------- Creating ChecklistItem FAIL ----------------------------------"
 
@@ -97,7 +96,6 @@ func (clh ChecklistItemHandler) Create(w http.ResponseWriter, r *http.Request) {
 func (clh ChecklistItemHandler) Update(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
 	funcName := "ChecklistItemHandler.Update"
-	nodeName := "handler"
 	errorMessage := "Updating failed with error: "
 	failBorder := "---------------------------------- Updating ChecklistItem FAIL ----------------------------------"
 
@@ -158,7 +156,6 @@ func (clh ChecklistItemHandler) Update(w http.ResponseWriter, r *http.Request) {
 func (clh ChecklistItemHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
 	funcName := "ChecklistItemHandler.Delete"
-	nodeName := "handler"
 	errorMessage := "Deleting failed with error: "
 	failBorder := "---------------------------------- Deleting ChecklistItem FAIL ----------------------------------"
 

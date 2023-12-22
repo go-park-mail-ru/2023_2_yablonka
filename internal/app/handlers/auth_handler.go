@@ -164,7 +164,6 @@ func (ah AuthHandler) LogIn(w http.ResponseWriter, r *http.Request) {
 func (ah AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
 	funcName := "SignUp"
-	nodeName := "handler"
 	errorMessage := "Signing user up failed with error: "
 	failBorder := "---------------------------------- User SignUp FAIL ----------------------------------"
 
@@ -275,7 +274,6 @@ func (ah AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 func (ah AuthHandler) LogOut(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
 	funcName := "LogOut"
-	nodeName := "handler"
 	errorMessage := "Logging user out failed with error: "
 	failBorder := "---------------------------------- User LogOut FAIL ----------------------------------"
 
@@ -357,7 +355,6 @@ func (ah AuthHandler) LogOut(w http.ResponseWriter, r *http.Request) {
 // @Router /auth/verify [get]
 func (ah AuthHandler) VerifyAuthEndpoint(w http.ResponseWriter, r *http.Request) {
 	funcName := "LogOut"
-	nodeName := "handler"
 	errorMessage := "Logging user out failed with error: "
 	failBorder := "---------------------------------- User auth verification FAIL ----------------------------------"
 
