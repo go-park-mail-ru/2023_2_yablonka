@@ -98,21 +98,38 @@ var (
 	ErrCouldNotGetComments = errors.New("couldn't get the comments")
 )
 
-// Ошибки, связанные с сервером
+// Ошибки, связанные с БД
 var (
 	// ErrCouldNotBuildQuery ошибка: не удалось сформировать SQL запрос
-	ErrCouldNotBuildQuery       = errors.New("error building an SQL query")
+	ErrCouldNotBuildQuery = errors.New("error building an SQL query")
+	// ErrCouldNotExecuteQuery ошибка: не удалось выполнить SQL запрос
+	ErrCouldNotExecuteQuery = errors.New("error executing an SQL query")
+	// ErrCouldNotExecuteQuery ошибка: не удалось закрыть запрос
+	ErrCouldNotCloseQuery = errors.New("error closing SQL query")
+	// ErrCouldNotStartTransaction ошибка: не удалось начать транзакцию
 	ErrCouldNotStartTransaction = errors.New("error starting a transaction")
-	ErrCouldNotCollectRows      = errors.New("couldn't collect rows")
-	ErrCouldNotRollback         = errors.New("couldn't rollback a transaction")
+	// ErrCouldNotCollectRows ошибка: не удалось получить строки
+	ErrCouldNotCollectRows = errors.New("couldn't collect rows")
+	// ErrCouldNotScanRows ошибка: не удалось отсканировать строки
+	ErrCouldNotScanRows = errors.New("couldn't scan rows")
+	// ErrCouldNotRollback ошибка: не удалось отменить транзакцию
+	ErrCouldNotRollback = errors.New("couldn't rollback a transaction")
+	// ErrCouldNotCommit ошибка: не удалось коммитнуть изменения в бд
+	ErrCouldNotCommit = errors.New("failed to commit database changes")
+)
+
+// Ошибки, связанные с сервером
+var (
 	// ErrFailedToCreateFile ошибка: не удалось создать файл
 	ErrFailedToCreateFile = errors.New("failed to create file")
 	// ErrFailedToSaveFile ошибка: не удалось сохранить файл
 	ErrFailedToSaveFile = errors.New("failed to save file")
 	// ErrFailedToDeleteFile ошибка: не удалось удалить файл
 	ErrFailedToDeleteFile = errors.New("failed to delete file")
-	// ErrFailedToDeleteFile ошибка: не удалось коммитнуть изменения в бд
-	ErrCouldNotCommit = errors.New("failed to commit database changes")
+	// ErrNoLoggerFound ошибка: не удалось получить логгер из контекста
+	ErrNoLoggerFound = errors.New("no logger in context")
+	// ErrNoRequestIDFound ошибка: не удалось получить id запроса из контекста
+	ErrNoRequestIDFound = errors.New("no request id in context")
 )
 
 // Ошибки, связанные с BoardService
@@ -131,6 +148,8 @@ var (
 	ErrCouldNotGetBoard = errors.New("could not retrieve board")
 	// ErrCouldNotGetBoardUsers ошибка: пользователей у доски с полученным ID не существует
 	ErrCouldNotGetBoardUsers = errors.New("could not retrieve board users")
+	// ErrCouldNotGetBoardTags ошибка: не удалось полить тэги доски
+	ErrCouldNotGetBoardTags = errors.New("could not retrieve board tags")
 	// ErrNoBoardAccess ошибка: у запрашивающего пользователя нет доступа к полученной доске
 	ErrNoBoardAccess = errors.New("user has no access to board")
 	// ErrCouldNotAddBoardUser ошибка: не удалось добавить пользователя на доску
@@ -309,9 +328,6 @@ var ErrorMap = map[error]ErrorResponse{
 	ErrSessionNotCreated:            InternalServerErrorResponse,
 	ErrSessionExpired:               GenericUnauthorizedResponse,
 	ErrSessionNotCreated:            InternalServerErrorResponse,
-	ErrCouldNotBuildQuery:           InternalServerErrorResponse,
-	ErrCouldNotCollectRows:          InternalServerErrorResponse,
-	ErrCouldNotStartTransaction:     InternalServerErrorResponse,
 	ErrSessionNotFound:              GenericUnauthorizedResponse,
 	ErrWorkspaceNotCreated:          InternalServerErrorResponse,
 	ErrCouldNotGetWorkspace:         InternalServerErrorResponse,
@@ -353,7 +369,6 @@ var ErrorMap = map[error]ErrorResponse{
 	ErrCouldNotChangeTaskOrder:      BadRequestResponse,
 	ErrCouldNotChangeListOrder:      BadRequestResponse,
 	ErrCouldNotStoreAnswer:          InternalServerErrorResponse,
-	ErrCouldNotRollback:             InternalServerErrorResponse,
 	ErrCouldNotGetQuestions:         InternalServerErrorResponse,
 	ErrCouldNotCreateQuestion:       InternalServerErrorResponse,
 	ErrQuestionNotUpdated:           InternalServerErrorResponse,
@@ -363,7 +378,16 @@ var ErrorMap = map[error]ErrorResponse{
 	ErrTagNotCreated:                InternalServerErrorResponse,
 	ErrBoardTagConnectionNotCreated: InternalServerErrorResponse,
 	ErrTaskTagConnectionNotCreated:  InternalServerErrorResponse,
+	ErrCouldNotGetBoardTags:         InternalServerErrorResponse,
+	ErrCouldNotBuildQuery:           InternalServerErrorResponse,
+	ErrCouldNotExecuteQuery:         InternalServerErrorResponse,
+	ErrCouldNotCloseQuery:           InternalServerErrorResponse,
+	ErrCouldNotStartTransaction:     InternalServerErrorResponse,
+	ErrCouldNotCollectRows:          InternalServerErrorResponse,
+	ErrCouldNotScanRows:             InternalServerErrorResponse,
+	ErrCouldNotRollback:             InternalServerErrorResponse,
 	ErrCouldNotCommit:               InternalServerErrorResponse,
+	ErrNoLoggerFound:                InternalServerErrorResponse,
 }
 
 func ErrorJSON(err ErrorResponse) []byte {
