@@ -30,7 +30,7 @@ var (
 		"public.task.name", "public.task.description", "public.task.list_position", "public.task.task_start", "public.task.task_end",
 		"array_remove(array_agg(public.task_user.id_user ORDER BY public.task_user.id_user), NULL)",
 		"array_remove(array_agg(public.comment.id ORDER BY public.comment.date_created), NULL)",
-		"array_remove(array_agg(public.tag_task.id_tag), NULL)",
+		"array_remove(array_agg(public.tag_task.id_tag ORDER BY public.tag_task.id_tag), NULL)",
 	}
 	allChecklistFields = []string{"public.checklist.id", "public.checklist.id_task", "public.checklist.name", "public.checklist.list_position",
 		"array_remove(array_agg(public.checklist_item.id ORDER BY public.checklist_item.list_position), NULL)",
