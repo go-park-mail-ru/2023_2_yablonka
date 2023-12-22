@@ -386,6 +386,12 @@ type SingleListInfo struct {
 	TaskIDs      []string `json:"cards"`
 }
 
+type TagInfo struct {
+	ID    uint64 `json:"id"`
+	Name  string `json:"name"`
+	Color string `json:"color"`
+}
+
 type SingleTaskInfo struct {
 	ID           uint64     `json:"id"`
 	ListID       uint64     `json:"list_id"`
@@ -398,6 +404,7 @@ type SingleTaskInfo struct {
 	UserIDs      []string   `json:"users"`
 	CommentIDs   []string   `json:"comments"`
 	ChecklistIDs []string   `json:"checklists"`
+	TagIDs       []string   `json:"tags"`
 	// Checklists
 }
 
@@ -409,6 +416,7 @@ type FullBoardResult struct {
 	Comments       []CommentInfo       `json:"comments"`
 	Checklists     []ChecklistInfo     `json:"checklists"`
 	ChecklistItems []ChecklistItemInfo `json:"checklist_items"`
+	Tags           []TagInfo           `json:"tags"`
 }
 
 //easyjson:skip
@@ -604,7 +612,7 @@ type NewChecklistItemInfo struct {
 	ListPosition uint64 `json:"list_position"`
 }
 
-// NewChecklistInfo
+// ChecklistInfo
 // DTO для чеклиста
 type ChecklistInfo struct {
 	ID           uint64   `json:"id"`
@@ -677,6 +685,37 @@ type NewTaskInfo struct {
 	ListID       uint64 `json:"list_id"`
 	Name         string `json:"name"`
 	ListPosition uint64 `json:"list_position"`
+}
+
+// NewTagInfo
+// DTO для нового тэга
+type NewTagInfo struct {
+	TaskID  uint64 `json:"task_id"`
+	BoardID uint64 `json:"board_id"`
+	Name    string `json:"name"`
+	Color   string `json:"color"`
+}
+
+// UpdatedTagInfo
+// DTO для обновленного тэга
+type UpdatedTagInfo struct {
+	ID     uint64 `json:"id"`
+	TaskID uint64 `json:"task_id"`
+	Name   string `json:"name"`
+	Color  string `json:"color"`
+}
+
+// TagAndTaskIDs
+// DTO для тэга и связанного задания
+type TagAndTaskIDs struct {
+	TagID  uint64 `json:"tag_id"`
+	TaskID uint64 `json:"task_id"`
+}
+
+// TagID
+// DTO для id тэга
+type TagID struct {
+	Value uint64 `json:"tag_id"`
 }
 
 // UpdatedTaskInfo

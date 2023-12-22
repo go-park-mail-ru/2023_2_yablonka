@@ -35,6 +35,10 @@ type TaskResponse struct {
 	Task entities.Task `json:"task"`
 }
 
+type TagResponse struct {
+	Tag entities.Tag `json:"tag"`
+}
+
 type BoardResponse struct {
 	Board dto.FullBoardResult `json:"board"`
 }
