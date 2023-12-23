@@ -1441,6 +1441,266 @@ const docTemplate = `{
                 }
             }
         },
+        "/tag/add_to_task/": {
+            "post": {
+                "description": "Добавить тэг к заданию",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "tags"
+                ],
+                "summary": "Добавить тэг к заданию",
+                "parameters": [
+                    {
+                        "description": "id тэга и связанного задания",
+                        "name": "tagAndTaskIDs",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.TagAndTaskIDs"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "no content",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/tag/create/": {
+            "post": {
+                "description": "Создать тэг",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "tags"
+                ],
+                "summary": "Создать тэг",
+                "parameters": [
+                    {
+                        "description": "данные нового тэга",
+                        "name": "newTagInfo",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.NewTagInfo"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "объект тэга",
+                        "schema": {
+                            "$ref": "#/definitions/doc_structs.TagResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/tag/delete/": {
+            "delete": {
+                "description": "Удалить тэг",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Tags"
+                ],
+                "summary": "Удалить тэг",
+                "parameters": [
+                    {
+                        "description": "id тэга",
+                        "name": "tagID",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.TagID"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "no content",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/tag/remove_from_task/": {
+            "post": {
+                "description": "Добавить тэг к заданию",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "tags"
+                ],
+                "summary": "Добавить тэг к заданию",
+                "parameters": [
+                    {
+                        "description": "id тэга и связанного задания",
+                        "name": "tagAndTaskIDs",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.TagAndTaskIDs"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "no content",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/tag/update/": {
+            "post": {
+                "description": "Обновить тэг",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "tags"
+                ],
+                "summary": "Обновить тэг",
+                "parameters": [
+                    {
+                        "description": "обновленные данные тэга",
+                        "name": "tagInfo",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.UpdatedTagInfo"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "no content",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/task/": {
             "post": {
                 "description": "Получить задание",
@@ -2422,6 +2682,14 @@ const docTemplate = `{
                 }
             }
         },
+        "doc_structs.TagResponse": {
+            "type": "object",
+            "properties": {
+                "tag": {
+                    "$ref": "#/definitions/entities.Tag"
+                }
+            }
+        },
         "doc_structs.TaskResponse": {
             "type": "object",
             "properties": {
@@ -2678,6 +2946,12 @@ const docTemplate = `{
                         "$ref": "#/definitions/dto.SingleListInfo"
                     }
                 },
+                "tags": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.TagInfo"
+                    }
+                },
                 "users": {
                     "type": "array",
                     "items": {
@@ -2829,6 +3103,23 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.NewTagInfo": {
+            "type": "object",
+            "properties": {
+                "board_id": {
+                    "type": "integer"
+                },
+                "color": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "task_id": {
+                    "type": "integer"
+                }
+            }
+        },
         "dto.NewTaskInfo": {
             "type": "object",
             "properties": {
@@ -2909,6 +3200,9 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "user_id": {
+                    "type": "integer"
+                },
+                "workspace_id": {
                     "type": "integer"
                 }
             }
@@ -3023,11 +3317,50 @@ const docTemplate = `{
                 "start": {
                     "type": "string"
                 },
+                "tags": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
                 "users": {
                     "type": "array",
                     "items": {
                         "type": "string"
                     }
+                }
+            }
+        },
+        "dto.TagAndTaskIDs": {
+            "type": "object",
+            "properties": {
+                "tag_id": {
+                    "type": "integer"
+                },
+                "task_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.TagID": {
+            "type": "object",
+            "properties": {
+                "tag_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.TagInfo": {
+            "type": "object",
+            "properties": {
+                "color": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
                 }
             }
         },
@@ -3147,6 +3480,20 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "list_position": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.UpdatedTagInfo": {
+            "type": "object",
+            "properties": {
+                "color": {
+                    "type": "string"
+                },
+                "id": {
                     "type": "integer"
                 },
                 "name": {
@@ -3358,6 +3705,26 @@ const docTemplate = `{
                     "items": {
                         "$ref": "#/definitions/entities.Task"
                     }
+                }
+            }
+        },
+        "entities.Tag": {
+            "type": "object",
+            "properties": {
+                "board_id": {
+                    "type": "integer"
+                },
+                "color": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "task_id": {
+                    "type": "integer"
                 }
             }
         },

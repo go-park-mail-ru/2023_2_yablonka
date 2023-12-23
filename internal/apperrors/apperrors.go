@@ -98,19 +98,38 @@ var (
 	ErrCouldNotGetComments = errors.New("couldn't get the comments")
 )
 
-// Ошибки, связанные с сервером
+// Ошибки, связанные с БД
 var (
 	// ErrCouldNotBuildQuery ошибка: не удалось сформировать SQL запрос
-	ErrCouldNotBuildQuery       = errors.New("error building an SQL query")
-	ErrCouldNotStartTransaction = errors.New("error starting a transaction")
-	ErrCouldNotCollectRows      = errors.New("couldn't collect rows")
-	ErrCouldNotRollback         = errors.New("couldn't rollback a transaction")
+	ErrCouldNotBuildQuery = errors.New("error building an SQL query")
+	// ErrCouldNotExecuteQuery ошибка: не удалось выполнить SQL запрос
+	ErrCouldNotExecuteQuery = errors.New("error executing an SQL query")
+	// ErrCouldNotExecuteQuery ошибка: не удалось закрыть запрос
+	ErrCouldNotCloseQuery = errors.New("error closing SQL query")
+	// ErrCouldNotBeginTransaction ошибка: не удалось начать транзакцию
+	ErrCouldNotBeginTransaction = errors.New("error starting a transaction")
+	// ErrCouldNotCollectRows ошибка: не удалось получить строки
+	ErrCouldNotCollectRows = errors.New("couldn't collect rows")
+	// ErrCouldNotScanRows ошибка: не удалось отсканировать строки
+	ErrCouldNotScanRows = errors.New("couldn't scan rows")
+	// ErrCouldNotRollback ошибка: не удалось отменить транзакцию
+	ErrCouldNotRollback = errors.New("couldn't rollback a transaction")
+	// ErrCouldNotCommit ошибка: не удалось коммитнуть изменения в бд
+	ErrCouldNotCommit = errors.New("failed to commit database changes")
+)
+
+// Ошибки, связанные с сервером
+var (
 	// ErrFailedToCreateFile ошибка: не удалось создать файл
 	ErrFailedToCreateFile = errors.New("failed to create file")
 	// ErrFailedToSaveFile ошибка: не удалось сохранить файл
 	ErrFailedToSaveFile = errors.New("failed to save file")
 	// ErrFailedToDeleteFile ошибка: не удалось удалить файл
 	ErrFailedToDeleteFile = errors.New("failed to delete file")
+	// ErrNoLoggerFound ошибка: не удалось получить логгер из контекста
+	ErrNoLoggerFound = errors.New("no logger in context")
+	// ErrNoRequestIDFound ошибка: не удалось получить id запроса из контекста
+	ErrNoRequestIDFound = errors.New("no request id in context")
 )
 
 // Ошибки, связанные с BoardService
@@ -129,6 +148,8 @@ var (
 	ErrCouldNotGetBoard = errors.New("could not retrieve board")
 	// ErrCouldNotGetBoardUsers ошибка: пользователей у доски с полученным ID не существует
 	ErrCouldNotGetBoardUsers = errors.New("could not retrieve board users")
+	// ErrCouldNotGetBoardTags ошибка: не удалось полить тэги доски
+	ErrCouldNotGetBoardTags = errors.New("could not retrieve board tags")
 	// ErrNoBoardAccess ошибка: у запрашивающего пользователя нет доступа к полученной доске
 	ErrNoBoardAccess = errors.New("user has no access to board")
 	// ErrCouldNotAddBoardUser ошибка: не удалось добавить пользователя на доску
@@ -141,10 +162,26 @@ var (
 var (
 	// ErrWorkspaceNotDeleted ошибка: не удалось создать рабочее прострнство в БД
 	ErrWorkspaceNotCreated = errors.New("workspace couldn't be created")
-	// ErrWorkspaceNotDeleted ошибка: не удалось получить рабочее прострнство в БД
+	// ErrCouldNotGetWorkspace ошибка: не удалось получить рабочее прострнство в БД
 	ErrCouldNotGetWorkspace = errors.New("workspace couldn't be retreived")
 	// ErrWorkspaceNotDeleted ошибка: не удалось удалить рабочее прострнство в БД
 	ErrWorkspaceNotDeleted = errors.New("user couldn't be deleted")
+)
+
+// Ошибки, связанные с TagService
+var (
+	// ErrTagNotCreated ошибка: не удалось создать тэг
+	ErrTagNotCreated = errors.New("tag couldn't be created")
+	// ErrTagNotCreated ошибка: не удалось обновить тэг
+	ErrTagNotUpdated = errors.New("tag couldn't be updated")
+	// ErrTagNotAddedToTask ошибка: не удалось добавить тэг к заданию
+	ErrTagNotAddedToTask = errors.New("tag couldn't be added to task")
+	// ErrTagNotRemovedFromTask ошибка: не удалось удалить тэг из задания
+	ErrTagNotRemovedFromTask = errors.New("tag couldn't be removed from task")
+	// ErrBoardTagConnectionNotCreated ошибка: не удалось создать связь между тэгом и доской
+	ErrBoardTagConnectionNotCreated = errors.New("could not create connection between tag and board")
+	// ErrTaskTagConnectionNotCreated ошибка: не удалось создать связь между тэгом и заданием
+	ErrTaskTagConnectionNotCreated = errors.New("could not create connection between tag and task")
 )
 
 // Ошибки, связанные с ListService
@@ -274,74 +311,83 @@ var GoneResponse = ErrorResponse{
 // ErrorMap
 // карта для связи ошибок приложения и ответа бэкэнд-сервера
 var ErrorMap = map[error]ErrorResponse{
-	ErrGRPCServerError:          InternalServerErrorResponse,
-	ErrUserNotFound:             WrongLoginResponse,
-	ErrWrongPassword:            WrongLoginResponse,
-	ErrUserAlreadyExists:        StatusConflictResponse,
-	ErrUserNotCreated:           InternalServerErrorResponse,
-	ErrUserNotUpdated:           InternalServerErrorResponse,
-	ErrTokenNotGenerated:        InternalServerErrorResponse,
-	ErrCSRFNotFound:             GenericUnauthorizedResponse,
-	ErrCSRFNotCreated:           InternalServerErrorResponse,
-	ErrCSRFExpired:              GenericUnauthorizedResponse,
-	ErrSessionDurationMissing:   InternalServerErrorResponse,
-	ErrSessionNullDuration:      InternalServerErrorResponse,
-	ErrSessionIDLengthMissing:   InternalServerErrorResponse,
-	ErrSessionNullIDLength:      InternalServerErrorResponse,
-	ErrSessionNotCreated:        InternalServerErrorResponse,
-	ErrSessionExpired:           GenericUnauthorizedResponse,
-	ErrSessionNotCreated:        InternalServerErrorResponse,
-	ErrCouldNotBuildQuery:       InternalServerErrorResponse,
-	ErrCouldNotCollectRows:      InternalServerErrorResponse,
-	ErrCouldNotStartTransaction: InternalServerErrorResponse,
-	ErrSessionNotFound:          GenericUnauthorizedResponse,
-	ErrWorkspaceNotCreated:      InternalServerErrorResponse,
-	ErrCouldNotGetWorkspace:     InternalServerErrorResponse,
-	ErrWorkspaceNotDeleted:      InternalServerErrorResponse,
-	ErrBoardNotCreated:          InternalServerErrorResponse,
-	ErrBoardNotUpdated:          InternalServerErrorResponse,
-	ErrBoardNotDeleted:          InternalServerErrorResponse,
-	ErrCouldNotGetBoard:         InternalServerErrorResponse,
-	ErrNoBoardAccess:            ForbiddenResponse,
-	ErrCouldNotAddBoardUser:     InternalServerErrorResponse,
-	ErrCouldNotRemoveBoardUser:  InternalServerErrorResponse,
-	ErrCouldNotAddTaskUser:      InternalServerErrorResponse,
-	ErrCouldNotRemoveTaskUser:   InternalServerErrorResponse,
-	ErrTaskNotCreated:           InternalServerErrorResponse,
-	ErrTaskNotUpdated:           InternalServerErrorResponse,
-	ErrTaskNotDeleted:           InternalServerErrorResponse,
-	ErrCouldNotGetTask:          InternalServerErrorResponse,
-	ErrCouldNotGetTaskFiles:     InternalServerErrorResponse,
-	ErrListNotCreated:           InternalServerErrorResponse,
-	ErrListNotUpdated:           InternalServerErrorResponse,
-	ErrListNotDeleted:           InternalServerErrorResponse,
-	ErrCouldNotGetChecklist:     InternalServerErrorResponse,
-	ErrChecklistNotCreated:      InternalServerErrorResponse,
-	ErrChecklistNotUpdated:      InternalServerErrorResponse,
-	ErrChecklistNotDeleted:      InternalServerErrorResponse,
-	ErrCouldNotGetChecklistItem: InternalServerErrorResponse,
-	ErrChecklistItemNotCreated:  InternalServerErrorResponse,
-	ErrChecklistItemNotUpdated:  InternalServerErrorResponse,
-	ErrChecklistItemNotDeleted:  InternalServerErrorResponse,
-	ErrCommentNotCreated:        InternalServerErrorResponse,
-	ErrUserAlreadyInBoard:       StatusConflictResponse,
-	ErrUserNotInBoard:           StatusConflictResponse,
-	ErrUserAlreadyInTask:        StatusConflictResponse,
-	ErrUserNotInTask:            StatusConflictResponse,
-	ErrFailedToCreateFile:       InternalServerErrorResponse,
-	ErrFailedToSaveFile:         InternalServerErrorResponse,
-	ErrFailedToDeleteFile:       InternalServerErrorResponse,
-	ErrAnswerRatingTooBig:       BadRequestResponse,
-	ErrCouldNotChangeTaskOrder:  BadRequestResponse,
-	ErrCouldNotChangeListOrder:  BadRequestResponse,
-	ErrCouldNotStoreAnswer:      InternalServerErrorResponse,
-	ErrCouldNotRollback:         InternalServerErrorResponse,
-	ErrCouldNotGetQuestions:     InternalServerErrorResponse,
-	ErrCouldNotCreateQuestion:   InternalServerErrorResponse,
-	ErrQuestionNotUpdated:       InternalServerErrorResponse,
-	ErrAvatarGone:               GoneResponse,
-	ErrCouldNotCreateAnswer:     InternalServerErrorResponse,
-	ErrCouldNotGetComments:      InternalServerErrorResponse,
+	ErrGRPCServerError:              InternalServerErrorResponse,
+	ErrUserNotFound:                 WrongLoginResponse,
+	ErrWrongPassword:                WrongLoginResponse,
+	ErrUserAlreadyExists:            StatusConflictResponse,
+	ErrUserNotCreated:               InternalServerErrorResponse,
+	ErrUserNotUpdated:               InternalServerErrorResponse,
+	ErrTokenNotGenerated:            InternalServerErrorResponse,
+	ErrCSRFNotFound:                 GenericUnauthorizedResponse,
+	ErrCSRFNotCreated:               InternalServerErrorResponse,
+	ErrCSRFExpired:                  GenericUnauthorizedResponse,
+	ErrSessionDurationMissing:       InternalServerErrorResponse,
+	ErrSessionNullDuration:          InternalServerErrorResponse,
+	ErrSessionIDLengthMissing:       InternalServerErrorResponse,
+	ErrSessionNullIDLength:          InternalServerErrorResponse,
+	ErrSessionNotCreated:            InternalServerErrorResponse,
+	ErrSessionExpired:               GenericUnauthorizedResponse,
+	ErrSessionNotCreated:            InternalServerErrorResponse,
+	ErrSessionNotFound:              GenericUnauthorizedResponse,
+	ErrWorkspaceNotCreated:          InternalServerErrorResponse,
+	ErrCouldNotGetWorkspace:         InternalServerErrorResponse,
+	ErrWorkspaceNotDeleted:          InternalServerErrorResponse,
+	ErrBoardNotCreated:              InternalServerErrorResponse,
+	ErrBoardNotUpdated:              InternalServerErrorResponse,
+	ErrBoardNotDeleted:              InternalServerErrorResponse,
+	ErrCouldNotGetBoard:             InternalServerErrorResponse,
+	ErrNoBoardAccess:                ForbiddenResponse,
+	ErrCouldNotAddBoardUser:         InternalServerErrorResponse,
+	ErrCouldNotRemoveBoardUser:      InternalServerErrorResponse,
+	ErrCouldNotAddTaskUser:          InternalServerErrorResponse,
+	ErrCouldNotRemoveTaskUser:       InternalServerErrorResponse,
+	ErrTaskNotCreated:               InternalServerErrorResponse,
+	ErrTaskNotUpdated:               InternalServerErrorResponse,
+	ErrTaskNotDeleted:               InternalServerErrorResponse,
+	ErrCouldNotGetTask:              InternalServerErrorResponse,
+	ErrCouldNotGetTaskFiles:         InternalServerErrorResponse,
+	ErrListNotCreated:               InternalServerErrorResponse,
+	ErrListNotUpdated:               InternalServerErrorResponse,
+	ErrListNotDeleted:               InternalServerErrorResponse,
+	ErrCouldNotGetChecklist:         InternalServerErrorResponse,
+	ErrChecklistNotCreated:          InternalServerErrorResponse,
+	ErrChecklistNotUpdated:          InternalServerErrorResponse,
+	ErrChecklistNotDeleted:          InternalServerErrorResponse,
+	ErrCouldNotGetChecklistItem:     InternalServerErrorResponse,
+	ErrChecklistItemNotCreated:      InternalServerErrorResponse,
+	ErrChecklistItemNotUpdated:      InternalServerErrorResponse,
+	ErrChecklistItemNotDeleted:      InternalServerErrorResponse,
+	ErrCommentNotCreated:            InternalServerErrorResponse,
+	ErrUserAlreadyInBoard:           StatusConflictResponse,
+	ErrUserNotInBoard:               StatusConflictResponse,
+	ErrUserAlreadyInTask:            StatusConflictResponse,
+	ErrUserNotInTask:                StatusConflictResponse,
+	ErrFailedToCreateFile:           InternalServerErrorResponse,
+	ErrFailedToSaveFile:             InternalServerErrorResponse,
+	ErrFailedToDeleteFile:           InternalServerErrorResponse,
+	ErrAnswerRatingTooBig:           BadRequestResponse,
+	ErrCouldNotChangeTaskOrder:      BadRequestResponse,
+	ErrCouldNotChangeListOrder:      BadRequestResponse,
+	ErrCouldNotStoreAnswer:          InternalServerErrorResponse,
+	ErrCouldNotGetQuestions:         InternalServerErrorResponse,
+	ErrCouldNotCreateQuestion:       InternalServerErrorResponse,
+	ErrQuestionNotUpdated:           InternalServerErrorResponse,
+	ErrAvatarGone:                   GoneResponse,
+	ErrCouldNotCreateAnswer:         InternalServerErrorResponse,
+	ErrCouldNotGetComments:          InternalServerErrorResponse,
+	ErrTagNotCreated:                InternalServerErrorResponse,
+	ErrBoardTagConnectionNotCreated: InternalServerErrorResponse,
+	ErrTaskTagConnectionNotCreated:  InternalServerErrorResponse,
+	ErrCouldNotGetBoardTags:         InternalServerErrorResponse,
+	ErrCouldNotBuildQuery:           InternalServerErrorResponse,
+	ErrCouldNotExecuteQuery:         InternalServerErrorResponse,
+	ErrCouldNotCloseQuery:           InternalServerErrorResponse,
+	ErrCouldNotBeginTransaction:     InternalServerErrorResponse,
+	ErrCouldNotCollectRows:          InternalServerErrorResponse,
+	ErrCouldNotScanRows:             InternalServerErrorResponse,
+	ErrCouldNotRollback:             InternalServerErrorResponse,
+	ErrCouldNotCommit:               InternalServerErrorResponse,
+	ErrNoLoggerFound:                InternalServerErrorResponse,
 }
 
 func ErrorJSON(err ErrorResponse) []byte {

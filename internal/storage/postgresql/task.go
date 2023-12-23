@@ -90,6 +90,7 @@ func (s *PostgresTaskStorage) Read(ctx context.Context, id dto.TaskID) (*dto.Sin
 		From("public.task").
 		Join("public.task_user ON public.task.id = public.task_user.id_task").
 		Join("public.comment ON public.task.id = public.comment.id_task").
+		Join("public.tag_task ON public.task.id = public.tag_task.id_task").
 		Where(sq.Eq{"public.task.id": id.Value}).
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
@@ -112,6 +113,7 @@ func (s *PostgresTaskStorage) Read(ctx context.Context, id dto.TaskID) (*dto.Sin
 		&task.End,
 		(*pq.StringArray)(&task.UserIDs),
 		(*pq.StringArray)(&task.CommentIDs),
+		(*pq.StringArray)(&task.TagIDs),
 	); err != nil {
 		log.Println("Failed to query DB with error", err.Error())
 		return nil, apperrors.ErrCouldNotGetTask
@@ -458,7 +460,7 @@ func (s PostgresTaskStorage) AttachFile(ctx context.Context, info dto.AttachedFi
 	tx, err := s.db.BeginTx(ctx, &sql.TxOptions{})
 	if err != nil {
 		logger.DebugFmt("Failed to start transaction with error "+err.Error(), requestID.String(), funcName, nodeName)
-		return apperrors.ErrCouldNotStartTransaction
+		return apperrors.ErrCouldNotBeginTransaction
 	}
 	logger.DebugFmt("Transaction started", requestID.String(), funcName, nodeName)
 
@@ -555,7 +557,7 @@ func (s PostgresTaskStorage) RemoveFile(ctx context.Context, info dto.RemoveFile
 	tx, err := s.db.BeginTx(ctx, &sql.TxOptions{})
 	if err != nil {
 		logger.DebugFmt("Failed to start transaction with error "+err.Error(), requestID.String(), funcName, nodeName)
-		return apperrors.ErrCouldNotStartTransaction
+		return apperrors.ErrCouldNotBeginTransaction
 	}
 	logger.DebugFmt("Transaction started", requestID.String(), funcName, nodeName)
 
