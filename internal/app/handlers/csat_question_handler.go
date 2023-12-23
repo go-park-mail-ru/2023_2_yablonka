@@ -32,7 +32,6 @@ type CSATQuestionHandler struct {
 func (qh CSATQuestionHandler) GetQuestions(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
 	funcName := "CSATQuestionHandler.GetQuestions"
-	nodeName := "handler"
 	errorMessage := "Getting all CSAT questions failed with error: "
 	failBorder := "---------------------------------- Get all CSAT questions FAIL ----------------------------------"
 
@@ -85,7 +84,6 @@ func (qh CSATQuestionHandler) GetQuestions(w http.ResponseWriter, r *http.Reques
 func (qh CSATQuestionHandler) Create(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
 	funcName := "CSATQuestionHandler.Create"
-	nodeName := "handler"
 	errorMessage := "Creating CSAT question failed with error: "
 	failBorder := "---------------------------------- Create CSAT question FAIL ----------------------------------"
 
@@ -148,7 +146,6 @@ func (qh CSATQuestionHandler) Create(w http.ResponseWriter, r *http.Request) {
 func (qh CSATQuestionHandler) Update(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
 	funcName := "CSATQuestionHandler.Update"
-	nodeName := "handler"
 	errorMessage := "Updating CSAT question failed with error: "
 	failBorder := "---------------------------------- Update CSAT question FAIL ----------------------------------"
 
@@ -207,7 +204,6 @@ func (qh CSATQuestionHandler) Update(w http.ResponseWriter, r *http.Request) {
 func (qh CSATQuestionHandler) GetStats(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
 	funcName := "CSATQuestionHandler.GetStats"
-	nodeName := "handler"
 	errorMessage := "Getting CSAT question stats failed with error: "
 	failBorder := "---------------------------------- Getting CSAT question stats FAIL ----------------------------------"
 

@@ -37,7 +37,6 @@ type CSATAnswerHandler struct {
 func (ah CSATAnswerHandler) Create(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
 	funcName := "CSATAnswerHandler.Create"
-	nodeName := "handler"
 	errorMessage := "Creating CSAT answer failed with error: "
 	failBorder := "---------------------------------- Create CSAT answer FAIL ----------------------------------"
 

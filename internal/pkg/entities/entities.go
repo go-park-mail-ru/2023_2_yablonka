@@ -67,6 +67,16 @@ type List struct {
 	Tasks        []Task  `json:"tasks"`
 }
 
+// Tag
+// структура для хранения тэга
+type Tag struct {
+	ID      uint64 `json:"id"`
+	TaskID  uint64 `json:"task_id"`
+	BoardID uint64 `json:"board_id"`
+	Name    string `json:"name"`
+	Color   string `json:"color"`
+}
+
 // QuestionType
 // структура для хранения типа вопроса
 type QuestionType struct {

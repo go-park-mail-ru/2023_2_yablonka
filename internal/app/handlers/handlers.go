@@ -22,9 +22,10 @@ type Handlers struct {
 	ChecklistItemHandler
 	CSATAnswerHandler
 	CSATQuestionHandler
+	TagHandler
 }
 
-const nodeName string = "storage"
+const nodeName = "storage"
 
 // NewHandlers
 // возвращает HandlerManager со всеми хэндлерами приложения
@@ -41,6 +42,7 @@ func NewHandlers(services *service.Services) *Handlers {
 		ChecklistItemHandler: *NewChecklistItemHandler(services.ChecklistItem),
 		CSATAnswerHandler:    *NewCSATAnswerHandler(services.CSATAnswer, services.CSATQuestion),
 		CSATQuestionHandler:  *NewCSATQuestionHandler(services.CSATQuestion),
+		TagHandler:           *NewTagHandler(services.Tag),
 	}
 }
 
@@ -51,6 +53,14 @@ func NewAuthHandler(as service.IAuthService, us service.IUserService, cs service
 		as: as,
 		us: us,
 		cs: cs,
+	}
+}
+
+// NewTagHandler
+// возвращает TagHandler с необходимыми сервисами
+func NewTagHandler(ts service.ITagService) *TagHandler {
+	return &TagHandler{
+		ts: ts,
 	}
 }
 
