@@ -268,8 +268,15 @@ func (s PostgresTagStorage) RemoveFromTask(ctx context.Context, ids dto.TagAndTa
 // или возвращает ошибки ...
 func (s PostgresTagStorage) Delete(ctx context.Context, id dto.TagID) error {
 	funcName := "PostgresTagStorage.Delete"
-	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
-	requestID := ctx.Value(dto.RequestIDKey).(uuid.UUID)
+	logger, ok := ctx.Value(dto.LoggerKey).(logger.ILogger)
+	if !ok {
+		return apperrors.ErrNoLoggerFound
+	}
+	requestID, ok := ctx.Value(dto.RequestIDKey).(uuid.UUID)
+	if !ok {
+		logger.DebugFmt("No request ID found", requestID.String(), funcName, nodeName)
+		return apperrors.ErrNoRequestIDFound
+	}
 
 	query, args, err := sq.
 		Delete("public.tag").
