@@ -3201,6 +3201,9 @@ const docTemplate = `{
                 },
                 "user_id": {
                     "type": "integer"
+                },
+                "workspace_id": {
+                    "type": "integer"
                 }
             }
         },
