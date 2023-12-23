@@ -827,8 +827,274 @@ func TestPostgresTagStorage_Delete(t *testing.T) {
 	}
 }
 
-/*
-func TestPostgresTagStorage_AddToTask(t *testing.T) {}
+func TestPostgresTagStorage_AddToTask(t *testing.T) {
+	t.Parallel()
+	type args struct {
+		info  dto.TagAndTaskIDs
+		query func(mock sqlmock.Sqlmock, args args)
+		ctx   context.Context
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+		err     error
+	}{
+		{
+			name: "Happy path",
+			args: args{
+				info: dto.TagAndTaskIDs{
+					TagID:  0,
+					TaskID: 0,
+				},
+				ctx: context.WithValue(
+					context.WithValue(
+						context.Background(),
+						dto.LoggerKey, getLogger()),
+					dto.RequestIDKey, uuid.New(),
+				),
+				query: func(mock sqlmock.Sqlmock, args args) {
+					sql, _, _ := sq.
+						Insert("public.tag_task").
+						Columns("id_tag", "id_task").
+						Values(args.info.TagID, args.info.TaskID).
+						PlaceholderFormat(sq.Dollar).
+						ToSql()
+					mock.ExpectExec(regexp.QuoteMeta(sql)).
+						WithArgs(
+							args.info.TagID,
+							args.info.TaskID,
+						).
+						WillReturnResult(sqlmock.NewResult(1, 1))
+				},
+			},
+			wantErr: false,
+			err:     nil,
+		},
+		{
+			name: "Building query failed",
+			args: args{
+				info:  dto.TagAndTaskIDs{},
+				ctx:   context.Background(),
+				query: func(mock sqlmock.Sqlmock, args args) {},
+			},
+			wantErr: true,
+			err:     apperrors.ErrCouldNotBuildQuery,
+		},
+		{
+			name: "No logger found",
+			args: args{
+				info:  dto.TagAndTaskIDs{},
+				ctx:   context.Background(),
+				query: func(mock sqlmock.Sqlmock, args args) {},
+			},
+			wantErr: true,
+			err:     apperrors.ErrNoLoggerFound,
+		},
+		{
+			name: "No request ID found",
+			args: args{
+				info: dto.TagAndTaskIDs{},
+				ctx: context.WithValue(
+					context.Background(),
+					dto.LoggerKey, getLogger()),
+				query: func(mock sqlmock.Sqlmock, args args) {},
+			},
+			wantErr: true,
+			err:     apperrors.ErrNoRequestIDFound,
+		},
+		{
+			name: "Executing query failed",
+			args: args{
+				info: dto.TagAndTaskIDs{
+					TagID:  0,
+					TaskID: 0,
+				},
+				ctx: context.WithValue(
+					context.WithValue(
+						context.Background(),
+						dto.LoggerKey, getLogger()),
+					dto.RequestIDKey, uuid.New(),
+				),
+				query: func(mock sqlmock.Sqlmock, args args) {
+					sql, _, _ := sq.
+						Insert("public.tag_task").
+						Columns("id_tag", "id_task").
+						Values(args.info.TagID, args.info.TaskID).
+						PlaceholderFormat(sq.Dollar).
+						ToSql()
+					mock.ExpectExec(regexp.QuoteMeta(sql)).
+						WithArgs(
+							args.info.TagID,
+							args.info.TaskID,
+						).
+						WillReturnError(apperrors.ErrCouldNotExecuteQuery)
+				},
+			},
+			wantErr: true,
+			err:     apperrors.ErrCouldNotExecuteQuery,
+		},
+	}
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			db, mock, err := sqlmock.New()
 
-func TestPostgresTagStorage_RemoveFromTask(t *testing.T) {}
-*/
+			if err != nil {
+				t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
+			}
+			defer db.Close()
+
+			tt.args.query(mock, tt.args)
+
+			s := NewTagStorage(db)
+
+			if err := s.AddToTask(tt.args.ctx, tt.args.info); (err != nil) != tt.wantErr {
+				t.Errorf("PostgresTagStorage.Create() error = %v, wantErr %v", err != nil, tt.wantErr)
+			}
+
+			if err := mock.ExpectationsWereMet(); err != nil {
+				t.Errorf("there were unfulfilled expectations: %s", err)
+			}
+		})
+	}
+}
+
+func TestPostgresTagStorage_RemoveFromTask(t *testing.T) {
+	t.Parallel()
+	type args struct {
+		info  dto.TagAndTaskIDs
+		query func(mock sqlmock.Sqlmock, args args)
+		ctx   context.Context
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+		err     error
+	}{
+		{
+			name: "Happy path",
+			args: args{
+				info: dto.TagAndTaskIDs{
+					TagID:  0,
+					TaskID: 0,
+				},
+				ctx: context.WithValue(
+					context.WithValue(
+						context.Background(),
+						dto.LoggerKey, getLogger()),
+					dto.RequestIDKey, uuid.New(),
+				),
+				query: func(mock sqlmock.Sqlmock, args args) {
+					sql, _, _ := sq.
+						Delete("public.tag_task").
+						Where(sq.And{
+							sq.Eq{"id_task": args.info.TaskID},
+							sq.Eq{"id_tag": args.info.TagID},
+						}).
+						PlaceholderFormat(sq.Dollar).
+						ToSql()
+					mock.ExpectExec(regexp.QuoteMeta(sql)).
+						WithArgs(
+							args.info.TagID,
+							args.info.TaskID,
+						).
+						WillReturnResult(sqlmock.NewResult(1, 1))
+				},
+			},
+			wantErr: false,
+			err:     nil,
+		},
+		{
+			name: "Building query failed",
+			args: args{
+				info:  dto.TagAndTaskIDs{},
+				ctx:   context.Background(),
+				query: func(mock sqlmock.Sqlmock, args args) {},
+			},
+			wantErr: true,
+			err:     apperrors.ErrCouldNotBuildQuery,
+		},
+		{
+			name: "No logger found",
+			args: args{
+				info:  dto.TagAndTaskIDs{},
+				ctx:   context.Background(),
+				query: func(mock sqlmock.Sqlmock, args args) {},
+			},
+			wantErr: true,
+			err:     apperrors.ErrNoLoggerFound,
+		},
+		{
+			name: "No request ID found",
+			args: args{
+				info: dto.TagAndTaskIDs{},
+				ctx: context.WithValue(
+					context.Background(),
+					dto.LoggerKey, getLogger()),
+				query: func(mock sqlmock.Sqlmock, args args) {},
+			},
+			wantErr: true,
+			err:     apperrors.ErrNoRequestIDFound,
+		},
+		{
+			name: "Executing query failed",
+			args: args{
+				info: dto.TagAndTaskIDs{
+					TagID:  0,
+					TaskID: 0,
+				},
+				ctx: context.WithValue(
+					context.WithValue(
+						context.Background(),
+						dto.LoggerKey, getLogger()),
+					dto.RequestIDKey, uuid.New(),
+				),
+				query: func(mock sqlmock.Sqlmock, args args) {
+					sql, _, _ := sq.
+						Delete("public.tag_task").
+						Where(sq.And{
+							sq.Eq{"id_task": args.info.TaskID},
+							sq.Eq{"id_tag": args.info.TagID},
+						}).
+						PlaceholderFormat(sq.Dollar).
+						ToSql()
+					mock.ExpectExec(regexp.QuoteMeta(sql)).
+						WithArgs(
+							args.info.TagID,
+							args.info.TaskID,
+						).
+						WillReturnError(apperrors.ErrCouldNotExecuteQuery)
+				},
+			},
+			wantErr: true,
+			err:     apperrors.ErrCouldNotExecuteQuery,
+		},
+	}
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			db, mock, err := sqlmock.New()
+
+			if err != nil {
+				t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
+			}
+			defer db.Close()
+
+			tt.args.query(mock, tt.args)
+
+			s := NewTagStorage(db)
+
+			if err := s.RemoveFromTask(tt.args.ctx, tt.args.info); (err != nil) != tt.wantErr {
+				t.Errorf("PostgresTagStorage.Create() error = %v, wantErr %v", err != nil, tt.wantErr)
+			}
+
+			if err := mock.ExpectationsWereMet(); err != nil {
+				t.Errorf("there were unfulfilled expectations: %s", err)
+			}
+		})
+	}
+}

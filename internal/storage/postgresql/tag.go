@@ -192,8 +192,15 @@ func (s PostgresTagStorage) Update(ctx context.Context, info dto.UpdatedTagInfo)
 // или возвращает ошибки ...
 func (s PostgresTagStorage) AddToTask(ctx context.Context, ids dto.TagAndTaskIDs) error {
 	funcName := "PostgresTagStorage.AddToTask"
-	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
-	requestID := ctx.Value(dto.RequestIDKey).(uuid.UUID)
+	logger, ok := ctx.Value(dto.LoggerKey).(logger.ILogger)
+	if !ok {
+		return apperrors.ErrNoLoggerFound
+	}
+	requestID, ok := ctx.Value(dto.RequestIDKey).(uuid.UUID)
+	if !ok {
+		logger.DebugFmt("No request ID found", requestID.String(), funcName, nodeName)
+		return apperrors.ErrNoRequestIDFound
+	}
 
 	query, args, err := sq.
 		Insert("public.tag_task").
@@ -210,7 +217,7 @@ func (s PostgresTagStorage) AddToTask(ctx context.Context, ids dto.TagAndTaskIDs
 	_, err = s.db.Exec(query, args...)
 	if err != nil {
 		logger.DebugFmt("Failed to update tag_task with error "+err.Error(), requestID.String(), funcName, nodeName)
-		return apperrors.ErrTagNotAddedToTask
+		return apperrors.ErrCouldNotExecuteQuery
 	}
 	log.Println("Tag added to task")
 
@@ -222,8 +229,15 @@ func (s PostgresTagStorage) AddToTask(ctx context.Context, ids dto.TagAndTaskIDs
 // или возвращает ошибки ...
 func (s PostgresTagStorage) RemoveFromTask(ctx context.Context, ids dto.TagAndTaskIDs) error {
 	funcName := "PostgresTagStorage.RemoveFromTask"
-	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
-	requestID := ctx.Value(dto.RequestIDKey).(uuid.UUID)
+	logger, ok := ctx.Value(dto.LoggerKey).(logger.ILogger)
+	if !ok {
+		return apperrors.ErrNoLoggerFound
+	}
+	requestID, ok := ctx.Value(dto.RequestIDKey).(uuid.UUID)
+	if !ok {
+		logger.DebugFmt("No request ID found", requestID.String(), funcName, nodeName)
+		return apperrors.ErrNoRequestIDFound
+	}
 
 	query, args, err := sq.
 		Delete("public.tag_task").
@@ -242,7 +256,7 @@ func (s PostgresTagStorage) RemoveFromTask(ctx context.Context, ids dto.TagAndTa
 	_, err = s.db.Exec(query, args...)
 	if err != nil {
 		logger.DebugFmt("Failed to update tag_task with error "+err.Error(), requestID.String(), funcName, nodeName)
-		return apperrors.ErrTagNotRemovedFromTask
+		return apperrors.ErrCouldNotExecuteQuery
 	}
 	log.Println("Tag removed from task")
 
@@ -254,15 +268,8 @@ func (s PostgresTagStorage) RemoveFromTask(ctx context.Context, ids dto.TagAndTa
 // или возвращает ошибки ...
 func (s PostgresTagStorage) Delete(ctx context.Context, id dto.TagID) error {
 	funcName := "PostgresTagStorage.Delete"
-	logger, ok := ctx.Value(dto.LoggerKey).(logger.ILogger)
-	if !ok {
-		return apperrors.ErrNoLoggerFound
-	}
-	requestID, ok := ctx.Value(dto.RequestIDKey).(uuid.UUID)
-	if !ok {
-		logger.DebugFmt("No request ID found", requestID.String(), funcName, nodeName)
-		return apperrors.ErrNoRequestIDFound
-	}
+	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
+	requestID := ctx.Value(dto.RequestIDKey).(uuid.UUID)
 
 	query, args, err := sq.
 		Delete("public.tag").
