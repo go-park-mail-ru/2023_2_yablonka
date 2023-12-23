@@ -164,11 +164,6 @@ func (s PostgresChecklistItemStorage) Delete(ctx context.Context, id dto.Checkli
 // меняет порядок списков в БД по данным
 // или возвращает ошибки ...
 func (s PostgresChecklistItemStorage) UpdateOrder(ctx context.Context, ids dto.ChecklistItemIDs) error {
-	if len(ids.Values) == 0 {
-		log.Println("Storage -- Empty list")
-		return apperrors.ErrCouldNotChangeListOrder
-	}
-
 	caseBuilder := sq.Case()
 	for i, id := range ids.Values {
 		caseBuilder = caseBuilder.When(sq.Eq{"id": fmt.Sprintf("%v", id)}, fmt.Sprintf("%v", i)).Else("list_position")
@@ -189,7 +184,7 @@ func (s PostgresChecklistItemStorage) UpdateOrder(ctx context.Context, ids dto.C
 	if err != nil {
 		log.Println("Storage -- Failed to update checklist")
 		log.Println("Error", err.Error())
-		return apperrors.ErrChecklistNotUpdated
+		return apperrors.ErrCouldNotExecuteQuery
 	}
 	log.Println("Storage -- Checklist order updated")
 

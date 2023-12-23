@@ -91,11 +91,11 @@ func TestPostgresWorkspaceStorage_Create(t *testing.T) {
 					Email: "kdanil01@mail.ru",
 				},
 				query: func(mock sqlmock.Sqlmock, args args) {
-					mock.ExpectBegin().WillReturnError(apperrors.ErrCouldNotStartTransaction)
+					mock.ExpectBegin().WillReturnError(apperrors.ErrCouldNotBeginTransaction)
 				},
 			},
 			wantErr: true,
-			err:     apperrors.ErrCouldNotStartTransaction,
+			err:     apperrors.ErrCouldNotBeginTransaction,
 		},
 		{
 			name: "Bad workspace query",

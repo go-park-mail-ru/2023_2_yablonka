@@ -85,7 +85,7 @@ func TestPostgresAuthStorage_CreateSession(t *testing.T) {
 			err:     apperrors.ErrCouldNotBuildQuery,
 		},
 		{
-			name: "Bad query (Could not exec)",
+			name: "Executing query failed",
 			args: args{
 				session: &entities.Session{
 					SessionID:  ".",
