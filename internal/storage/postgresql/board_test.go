@@ -1643,11 +1643,10 @@ func TestBoardStorage_RemoveUser(t *testing.T) {
 			err:     nil,
 		},
 		{
-			name: "Bad request (could not build query)",
+			name: "Building query failed",
 			args: args{
-				info: dto.RemoveBoardUserInfo{},
-				query: func(mock sqlmock.Sqlmock, args args) {
-				},
+				info:  dto.RemoveBoardUserInfo{},
+				query: func(mock sqlmock.Sqlmock, args args) {},
 			},
 			wantErr: true,
 			err:     apperrors.ErrCouldNotBuildQuery,
