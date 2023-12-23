@@ -301,7 +301,7 @@ func (s PostgresWorkspaceStorage) Create(ctx context.Context, info dto.NewWorksp
 	if err != nil {
 		logger.DebugFmt(errorMessage+err.Error(), requestID.String(), funcName, nodeName)
 		logger.Debug(failBorder)
-		return nil, apperrors.ErrCouldNotStartTransaction
+		return nil, apperrors.ErrCouldNotBeginTransaction
 	}
 	logger.DebugFmt("Began transaction", requestID.String(), funcName, nodeName)
 

@@ -106,8 +106,8 @@ var (
 	ErrCouldNotExecuteQuery = errors.New("error executing an SQL query")
 	// ErrCouldNotExecuteQuery ошибка: не удалось закрыть запрос
 	ErrCouldNotCloseQuery = errors.New("error closing SQL query")
-	// ErrCouldNotStartTransaction ошибка: не удалось начать транзакцию
-	ErrCouldNotStartTransaction = errors.New("error starting a transaction")
+	// ErrCouldNotBeginTransaction ошибка: не удалось начать транзакцию
+	ErrCouldNotBeginTransaction = errors.New("error starting a transaction")
 	// ErrCouldNotCollectRows ошибка: не удалось получить строки
 	ErrCouldNotCollectRows = errors.New("couldn't collect rows")
 	// ErrCouldNotScanRows ошибка: не удалось отсканировать строки
@@ -382,7 +382,7 @@ var ErrorMap = map[error]ErrorResponse{
 	ErrCouldNotBuildQuery:           InternalServerErrorResponse,
 	ErrCouldNotExecuteQuery:         InternalServerErrorResponse,
 	ErrCouldNotCloseQuery:           InternalServerErrorResponse,
-	ErrCouldNotStartTransaction:     InternalServerErrorResponse,
+	ErrCouldNotBeginTransaction:     InternalServerErrorResponse,
 	ErrCouldNotCollectRows:          InternalServerErrorResponse,
 	ErrCouldNotScanRows:             InternalServerErrorResponse,
 	ErrCouldNotRollback:             InternalServerErrorResponse,
