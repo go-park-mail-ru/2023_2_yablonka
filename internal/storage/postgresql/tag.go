@@ -33,14 +33,14 @@ func NewTagStorage(db *sql.DB) *PostgresTagStorage {
 // или возвращает ошибки ...
 func (s PostgresTagStorage) Create(ctx context.Context, info dto.NewTagInfo) (*entities.Tag, error) {
 	funcName := "PostgresTagStorage.Create"
-	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
-	requestID := ctx.Value(dto.RequestIDKey).(uuid.UUID)
-
-	newTag := &entities.Tag{
-		Name:    info.Name,
-		Color:   info.Color,
-		TaskID:  info.TaskID,
-		BoardID: info.BoardID,
+	logger, ok := ctx.Value(dto.LoggerKey).(logger.ILogger)
+	if !ok {
+		return nil, apperrors.ErrNoLoggerFound
+	}
+	requestID, ok := ctx.Value(dto.RequestIDKey).(uuid.UUID)
+	if !ok {
+		logger.DebugFmt("No request ID found", requestID.String(), funcName, nodeName)
+		return nil, apperrors.ErrNoRequestIDFound
 	}
 
 	query1, args, err := sq.
@@ -63,15 +63,21 @@ func (s PostgresTagStorage) Create(ctx context.Context, info dto.NewTagInfo) (*e
 	}
 	logger.DebugFmt("Transaction started", requestID.String(), funcName, nodeName)
 
+	newTag := &entities.Tag{
+		Name:    info.Name,
+		Color:   info.Color,
+		TaskID:  info.TaskID,
+		BoardID: info.BoardID,
+	}
 	row := tx.QueryRow(query1, args...)
 	if err := row.Scan(&newTag.ID); err != nil {
-		logger.DebugFmt("Board insert failed with error "+err.Error(), requestID.String(), funcName, nodeName)
+		logger.DebugFmt("Creating tag failed with error "+err.Error(), requestID.String(), funcName, nodeName)
 		err = tx.Rollback()
 		if err != nil {
 			logger.DebugFmt("Transaction rollback failed with error "+err.Error(), requestID.String(), funcName, nodeName)
 			return nil, apperrors.ErrCouldNotRollback
 		}
-		return nil, apperrors.ErrTagNotCreated
+		return nil, apperrors.ErrCouldNotScanRows
 	}
 	logger.DebugFmt("Tag created", requestID.String(), funcName, nodeName)
 
@@ -100,7 +106,7 @@ func (s PostgresTagStorage) Create(ctx context.Context, info dto.NewTagInfo) (*e
 			logger.DebugFmt("Transaction rollback failed with error "+err.Error(), requestID.String(), funcName, nodeName)
 			return nil, apperrors.ErrCouldNotRollback
 		}
-		return nil, apperrors.ErrBoardTagConnectionNotCreated
+		return nil, apperrors.ErrCouldNotExecuteQuery
 	}
 	logger.DebugFmt("Connection between board and tag created", requestID.String(), funcName, nodeName)
 
@@ -129,18 +135,13 @@ func (s PostgresTagStorage) Create(ctx context.Context, info dto.NewTagInfo) (*e
 			logger.DebugFmt("Transaction rollback failed with error "+err.Error(), requestID.String(), funcName, nodeName)
 			return nil, apperrors.ErrCouldNotRollback
 		}
-		return nil, apperrors.ErrTaskTagConnectionNotCreated
+		return nil, apperrors.ErrCouldNotExecuteQuery
 	}
 	logger.DebugFmt("Board linked to creator", requestID.String(), funcName, nodeName)
 
 	err = tx.Commit()
 	if err != nil {
 		logger.DebugFmt("Failed to commit changes with:"+err.Error(), requestID.String(), funcName, nodeName)
-		err = tx.Rollback()
-		if err != nil {
-			logger.DebugFmt("Transaction rollback failed with error "+err.Error(), requestID.String(), funcName, nodeName)
-			return nil, apperrors.ErrCouldNotRollback
-		}
 		return nil, apperrors.ErrCouldNotCommit
 	}
 	logger.DebugFmt("Changes commited", requestID.String(), funcName, nodeName)
@@ -153,8 +154,15 @@ func (s PostgresTagStorage) Create(ctx context.Context, info dto.NewTagInfo) (*e
 // или возвращает ошибки ...
 func (s PostgresTagStorage) Update(ctx context.Context, info dto.UpdatedTagInfo) error {
 	funcName := "PostgresTagStorage.Update"
-	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
-	requestID := ctx.Value(dto.RequestIDKey).(uuid.UUID)
+	logger, ok := ctx.Value(dto.LoggerKey).(logger.ILogger)
+	if !ok {
+		return apperrors.ErrNoLoggerFound
+	}
+	requestID, ok := ctx.Value(dto.RequestIDKey).(uuid.UUID)
+	if !ok {
+		logger.DebugFmt("No request ID found", requestID.String(), funcName, nodeName)
+		return apperrors.ErrNoRequestIDFound
+	}
 
 	query, args, err := sq.
 		Update("public.tag").
@@ -172,9 +180,9 @@ func (s PostgresTagStorage) Update(ctx context.Context, info dto.UpdatedTagInfo)
 	_, err = s.db.Exec(query, args...)
 	if err != nil {
 		logger.DebugFmt("Failed to update tag with error "+err.Error(), requestID.String(), funcName, nodeName)
-		return apperrors.ErrTagNotUpdated
+		return apperrors.ErrCouldNotExecuteQuery
 	}
-	log.Println("Tag updated")
+	logger.DebugFmt("Tag updated", requestID.String(), funcName, nodeName)
 
 	return nil
 }
@@ -246,8 +254,15 @@ func (s PostgresTagStorage) RemoveFromTask(ctx context.Context, ids dto.TagAndTa
 // или возвращает ошибки ...
 func (s PostgresTagStorage) Delete(ctx context.Context, id dto.TagID) error {
 	funcName := "PostgresTagStorage.Delete"
-	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
-	requestID := ctx.Value(dto.RequestIDKey).(uuid.UUID)
+	logger, ok := ctx.Value(dto.LoggerKey).(logger.ILogger)
+	if !ok {
+		return apperrors.ErrNoLoggerFound
+	}
+	requestID, ok := ctx.Value(dto.RequestIDKey).(uuid.UUID)
+	if !ok {
+		logger.DebugFmt("No request ID found", requestID.String(), funcName, nodeName)
+		return apperrors.ErrNoRequestIDFound
+	}
 
 	query, args, err := sq.
 		Delete("public.tag").
@@ -263,7 +278,7 @@ func (s PostgresTagStorage) Delete(ctx context.Context, id dto.TagID) error {
 	_, err = s.db.Exec(query, args...)
 	if err != nil {
 		logger.DebugFmt("Failed to update tag with error "+err.Error(), requestID.String(), funcName, nodeName)
-		return apperrors.ErrTagNotUpdated
+		return apperrors.ErrCouldNotExecuteQuery
 	}
 	log.Println("Tag deleted")
 
