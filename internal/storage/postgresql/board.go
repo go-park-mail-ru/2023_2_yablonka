@@ -597,18 +597,100 @@ func (s *PostgreSQLBoardStorage) RemoveUser(ctx context.Context, info dto.Remove
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
 	if err != nil {
+		logger.DebugFmt("Building query failed with error "+err.Error(), requestID.String(), funcName, nodeName)
 		return apperrors.ErrCouldNotBuildQuery
 	}
 	logger.DebugFmt("Built query\n\t"+query+"\nwith args\n\t"+fmt.Sprintf("%+v", args), requestID.String(), funcName, nodeName)
 
-	_, err = s.db.Exec(query, args...)
+	tx, err := s.db.BeginTx(ctx, &sql.TxOptions{})
+	if err != nil {
+		logger.DebugFmt("Failed to start transaction with error "+err.Error(), requestID.String(), funcName, nodeName)
+		return apperrors.ErrCouldNotStartTransaction
+	}
+	logger.DebugFmt("Transaction started", requestID.String(), funcName, nodeName)
+
+	_, err = tx.Exec(query, args...)
 	if err != nil {
 		logger.DebugFmt("Delete failed with error "+err.Error(), requestID.String(), funcName, nodeName)
 		return apperrors.ErrCouldNotRemoveTaskUser
 	}
 	logger.DebugFmt("query executed", requestID.String(), funcName, nodeName)
 
-	// TODO: Remove user from workspace if that was the last board
+	query2, args, err := sq.Select("count(*)").
+		From("public.board_user").
+		LeftJoin("public.board ON public.board_user.id_board = public.board.id").
+		Where(sq.Eq{
+			"public.board.id_workspace": info.WorkspaceID,
+			"public.board_user.id_user": info.UserID,
+		}).
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
+	if err != nil {
+		logger.DebugFmt("Building query failed with error "+err.Error(), requestID.String(), funcName, nodeName)
+		return apperrors.ErrCouldNotBuildQuery
+	}
+	logger.DebugFmt("Built query\n\t"+query2+"\nwith args\n\t"+fmt.Sprintf("%+v", args), requestID.String(), funcName, nodeName)
+
+	row := s.db.QueryRow(query2, args...)
+	logger.DebugFmt("Got board count row", requestID.String(), funcName, nodeName)
+
+	var count uint64
+	if row.Scan(&count) != nil {
+		logger.DebugFmt("Scanning rows failed with error "+err.Error(), requestID.String(), funcName, nodeName)
+		return apperrors.ErrCouldNotScanRows
+	}
+	logger.DebugFmt("Checked workspace access", requestID.String(), funcName, nodeName)
+
+	if count != 0 {
+		logger.DebugFmt("User still has boards in this workspace", requestID.String(), funcName, nodeName)
+		err = tx.Commit()
+		if err != nil {
+			logger.DebugFmt("Failed to commit changes", requestID.String(), funcName, nodeName)
+			err = tx.Rollback()
+			if err != nil {
+				logger.DebugFmt("Transaction rollback failed with error "+err.Error(), requestID.String(), funcName, nodeName)
+				return apperrors.ErrCouldNotRollback
+			}
+			return apperrors.ErrCouldNotCommit
+		}
+		logger.DebugFmt("Changes commited", requestID.String(), funcName, nodeName)
+
+		return nil
+	}
+	logger.DebugFmt("User doesn't have any boards in this workspace", requestID.String(), funcName, nodeName)
+
+	query3, args, err := sq.
+		Delete("public.user_workspace").
+		Where(sq.And{
+			sq.Eq{"id_user": info.UserID},
+			sq.Eq{"id_workspace": info.WorkspaceID},
+		}).
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
+	if err != nil {
+		logger.DebugFmt("Building query failed with error "+err.Error(), requestID.String(), funcName, nodeName)
+		return apperrors.ErrCouldNotBuildQuery
+	}
+	logger.DebugFmt("Built query\n\t"+query+"\nwith args\n\t"+fmt.Sprintf("%+v", args), requestID.String(), funcName, nodeName)
+
+	_, err = s.db.Exec(query3, args...)
+	if err != nil {
+		logger.DebugFmt("Delete failed with error "+err.Error(), requestID.String(), funcName, nodeName)
+		return apperrors.ErrCouldNotRemoveTaskUser
+	}
+	logger.DebugFmt("query executed", requestID.String(), funcName, nodeName)
+
+	err = tx.Commit()
+	if err != nil {
+		logger.DebugFmt("Failed to commit changes", requestID.String(), funcName, nodeName)
+		err = tx.Rollback()
+		if err != nil {
+			logger.DebugFmt("Transaction rollback failed with error "+err.Error(), requestID.String(), funcName, nodeName)
+			return apperrors.ErrCouldNotRollback
+		}
+		return apperrors.ErrCouldNotCommit
+	}
+	logger.DebugFmt("Changes commited", requestID.String(), funcName, nodeName)
 
 	return nil
 }
