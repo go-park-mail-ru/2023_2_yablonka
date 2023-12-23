@@ -326,7 +326,7 @@ func (s *PostgreSQLBoardStorage) Create(ctx context.Context, info dto.NewBoardIn
 	tx, err := s.db.BeginTx(ctx, &sql.TxOptions{})
 	if err != nil {
 		logger.DebugFmt("Failed to start transaction with error "+err.Error(), requestID.String(), funcName, nodeName)
-		return nil, apperrors.ErrCouldNotStartTransaction
+		return nil, apperrors.ErrCouldNotBeginTransaction
 	}
 	logger.DebugFmt("Transaction started", requestID.String(), funcName, nodeName)
 
@@ -516,7 +516,7 @@ func (s *PostgreSQLBoardStorage) AddUser(ctx context.Context, info dto.AddBoardU
 
 	tx, err := s.db.BeginTx(ctx, &sql.TxOptions{})
 	if err != nil {
-		return apperrors.ErrCouldNotStartTransaction
+		return apperrors.ErrCouldNotBeginTransaction
 	}
 
 	query1, args, err := sq.
@@ -605,14 +605,19 @@ func (s *PostgreSQLBoardStorage) RemoveUser(ctx context.Context, info dto.Remove
 	tx, err := s.db.BeginTx(ctx, &sql.TxOptions{})
 	if err != nil {
 		logger.DebugFmt("Failed to start transaction with error "+err.Error(), requestID.String(), funcName, nodeName)
-		return apperrors.ErrCouldNotStartTransaction
+		return apperrors.ErrCouldNotBeginTransaction
 	}
 	logger.DebugFmt("Transaction started", requestID.String(), funcName, nodeName)
 
 	_, err = tx.Exec(query, args...)
 	if err != nil {
 		logger.DebugFmt("Delete failed with error "+err.Error(), requestID.String(), funcName, nodeName)
-		return apperrors.ErrCouldNotRemoveTaskUser
+		err = tx.Rollback()
+		if err != nil {
+			logger.DebugFmt("Transaction rollback failed with error "+err.Error(), requestID.String(), funcName, nodeName)
+			return apperrors.ErrCouldNotRollback
+		}
+		return apperrors.ErrCouldNotExecuteQuery
 	}
 	logger.DebugFmt("query executed", requestID.String(), funcName, nodeName)
 
@@ -627,16 +632,27 @@ func (s *PostgreSQLBoardStorage) RemoveUser(ctx context.Context, info dto.Remove
 		ToSql()
 	if err != nil {
 		logger.DebugFmt("Building query failed with error "+err.Error(), requestID.String(), funcName, nodeName)
+		err = tx.Rollback()
+		if err != nil {
+			logger.DebugFmt("Transaction rollback failed with error "+err.Error(), requestID.String(), funcName, nodeName)
+			return apperrors.ErrCouldNotRollback
+		}
 		return apperrors.ErrCouldNotBuildQuery
 	}
 	logger.DebugFmt("Built query\n\t"+query2+"\nwith args\n\t"+fmt.Sprintf("%+v", args), requestID.String(), funcName, nodeName)
 
-	row := s.db.QueryRow(query2, args...)
+	row := tx.QueryRow(query2, args...)
 	logger.DebugFmt("Got board count row", requestID.String(), funcName, nodeName)
 
 	var count uint64
-	if row.Scan(&count) != nil {
+	err = row.Scan(&count)
+	if err != nil {
 		logger.DebugFmt("Scanning rows failed with error "+err.Error(), requestID.String(), funcName, nodeName)
+		err = tx.Rollback()
+		if err != nil {
+			logger.DebugFmt("Transaction rollback failed with error "+err.Error(), requestID.String(), funcName, nodeName)
+			return apperrors.ErrCouldNotRollback
+		}
 		return apperrors.ErrCouldNotScanRows
 	}
 	logger.DebugFmt("Checked workspace access", requestID.String(), funcName, nodeName)
@@ -669,25 +685,30 @@ func (s *PostgreSQLBoardStorage) RemoveUser(ctx context.Context, info dto.Remove
 		ToSql()
 	if err != nil {
 		logger.DebugFmt("Building query failed with error "+err.Error(), requestID.String(), funcName, nodeName)
+		err = tx.Rollback()
+		if err != nil {
+			logger.DebugFmt("Transaction rollback failed with error "+err.Error(), requestID.String(), funcName, nodeName)
+			return apperrors.ErrCouldNotRollback
+		}
 		return apperrors.ErrCouldNotBuildQuery
 	}
 	logger.DebugFmt("Built query\n\t"+query+"\nwith args\n\t"+fmt.Sprintf("%+v", args), requestID.String(), funcName, nodeName)
 
-	_, err = s.db.Exec(query3, args...)
+	_, err = tx.Exec(query3, args...)
 	if err != nil {
-		logger.DebugFmt("Delete failed with error "+err.Error(), requestID.String(), funcName, nodeName)
-		return apperrors.ErrCouldNotRemoveTaskUser
+		logger.DebugFmt("Deleting workspace connection failed with error "+err.Error(), requestID.String(), funcName, nodeName)
+		err = tx.Rollback()
+		if err != nil {
+			logger.DebugFmt("Transaction rollback failed with error "+err.Error(), requestID.String(), funcName, nodeName)
+			return apperrors.ErrCouldNotRollback
+		}
+		return apperrors.ErrCouldNotExecuteQuery
 	}
 	logger.DebugFmt("query executed", requestID.String(), funcName, nodeName)
 
 	err = tx.Commit()
 	if err != nil {
 		logger.DebugFmt("Failed to commit changes", requestID.String(), funcName, nodeName)
-		err = tx.Rollback()
-		if err != nil {
-			logger.DebugFmt("Transaction rollback failed with error "+err.Error(), requestID.String(), funcName, nodeName)
-			return apperrors.ErrCouldNotRollback
-		}
 		return apperrors.ErrCouldNotCommit
 	}
 	logger.DebugFmt("Changes commited", requestID.String(), funcName, nodeName)

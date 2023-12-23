@@ -59,7 +59,7 @@ func (s PostgresTagStorage) Create(ctx context.Context, info dto.NewTagInfo) (*e
 	tx, err := s.db.BeginTx(ctx, &sql.TxOptions{})
 	if err != nil {
 		logger.DebugFmt("Failed to start transaction with error "+err.Error(), requestID.String(), funcName, nodeName)
-		return nil, apperrors.ErrCouldNotStartTransaction
+		return nil, apperrors.ErrCouldNotBeginTransaction
 	}
 	logger.DebugFmt("Transaction started", requestID.String(), funcName, nodeName)
 

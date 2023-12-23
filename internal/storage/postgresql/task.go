@@ -460,7 +460,7 @@ func (s PostgresTaskStorage) AttachFile(ctx context.Context, info dto.AttachedFi
 	tx, err := s.db.BeginTx(ctx, &sql.TxOptions{})
 	if err != nil {
 		logger.DebugFmt("Failed to start transaction with error "+err.Error(), requestID.String(), funcName, nodeName)
-		return apperrors.ErrCouldNotStartTransaction
+		return apperrors.ErrCouldNotBeginTransaction
 	}
 	logger.DebugFmt("Transaction started", requestID.String(), funcName, nodeName)
 
@@ -557,7 +557,7 @@ func (s PostgresTaskStorage) RemoveFile(ctx context.Context, info dto.RemoveFile
 	tx, err := s.db.BeginTx(ctx, &sql.TxOptions{})
 	if err != nil {
 		logger.DebugFmt("Failed to start transaction with error "+err.Error(), requestID.String(), funcName, nodeName)
-		return apperrors.ErrCouldNotStartTransaction
+		return apperrors.ErrCouldNotBeginTransaction
 	}
 	logger.DebugFmt("Transaction started", requestID.String(), funcName, nodeName)
 
