@@ -612,6 +612,7 @@ func TestPostgresTaskStorage_ReadMany(t *testing.T) {
 						LeftJoin("public.task_user ON public.task.id = public.task_user.id_task").
 						LeftJoin("public.comment ON public.task.id = public.comment.id_task").
 						LeftJoin("public.checklist ON public.task.id = public.checklist.id_task").
+						LeftJoin("public.tag_task ON public.task.id = public.tag_task.id_task").
 						Where(sq.Eq{"public.task.id": args.id.Values}).
 						GroupBy("public.task.id", "public.task.id_list").
 						PlaceholderFormat(sq.Dollar).
@@ -620,12 +621,13 @@ func TestPostgresTaskStorage_ReadMany(t *testing.T) {
 					userIDS := pq.StringArray([]string{})
 					commentIDs := pq.StringArray([]string{})
 					checklistIDs := pq.StringArray([]string{})
+					tagIDs := pq.StringArray([]string{})
 					mock.ExpectQuery(regexp.QuoteMeta(query)).
 						WithArgs(
 							"1", "2",
 						).
 						WillReturnRows(sqlmock.NewRows(allTaskFields).
-							AddRow(1, 1, time.Now(), "ame", "dsd", 1, time.Now(), time.Now(), userIDS, commentIDs, checklistIDs))
+							AddRow(1, 1, time.Now(), "ame", "dsd", 1, time.Now(), time.Now(), userIDS, commentIDs, checklistIDs, tagIDs))
 				},
 			},
 			wantErr: false,
@@ -644,6 +646,7 @@ func TestPostgresTaskStorage_ReadMany(t *testing.T) {
 						LeftJoin("public.task_user ON public.task.id = public.task_user.id_task").
 						LeftJoin("public.comment ON public.task.id = public.comment.id_task").
 						LeftJoin("public.checklist ON public.task.id = public.checklist.id_task").
+						LeftJoin("public.tag_task ON public.task.id = public.tag_task.id_task").
 						Where(sq.Eq{"public.task.id": args.id.Values}).
 						GroupBy("public.task.id", "public.task.id_list").
 						PlaceholderFormat(sq.Dollar).
@@ -655,6 +658,15 @@ func TestPostgresTaskStorage_ReadMany(t *testing.T) {
 						).
 						WillReturnError(apperrors.ErrCouldNotGetBoard)
 				},
+			},
+			wantErr: true,
+			err:     apperrors.ErrCouldNotGetBoard,
+		},
+		{
+			name: "Building query failed",
+			args: args{
+				id:    &dto.TaskIDs{},
+				query: func(mock sqlmock.Sqlmock, args args) {},
 			},
 			wantErr: true,
 			err:     apperrors.ErrCouldNotGetBoard,
