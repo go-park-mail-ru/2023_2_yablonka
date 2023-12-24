@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"net/http"
 	"server/internal/apperrors"
 	logger "server/internal/logging"
@@ -52,7 +53,9 @@ func (th TagHandler) Create(w http.ResponseWriter, r *http.Request) {
 	}
 	logger.DebugFmt("request struct decoded", requestID.String(), funcName, nodeName)
 
+	logger.DebugFmt(fmt.Sprintf("Adding tag pre-color %v", newTagInfo), requestID.String(), funcName, nodeName)
 	newTagInfo.Color = "FFFFFF"
+	logger.DebugFmt(fmt.Sprintf("Adding tag post-color %v", newTagInfo), requestID.String(), funcName, nodeName)
 	tag, err := th.ts.Create(rCtx, newTagInfo)
 	if err != nil {
 		logger.Error(errorMessage + err.Error())
