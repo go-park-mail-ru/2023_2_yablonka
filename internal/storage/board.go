@@ -44,4 +44,10 @@ type IBoardStorage interface {
 	// RemoveUser
 	// удаляет пользователя с доски
 	RemoveUser(context.Context, dto.RemoveBoardUserInfo) error
+	// GetHistory
+	// возвращает историю изменения доски
+	GetHistory(context.Context, dto.BoardID) (*[]dto.BoardHistoryEntry, error)
+	// SubmitEdit
+	// записывает изменение доски в историю
+	SubmitEdit(context.Context, dto.NewHistoryEntry) error
 }

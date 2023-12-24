@@ -54,6 +54,13 @@ definitions:
       file:
         $ref: '#/definitions/dto.AttachedFileInfo'
     type: object
+  doc_structs.GetHistoryResponse:
+    properties:
+      history:
+        items:
+          $ref: '#/definitions/dto.BoardHistoryEntry'
+        type: array
+    type: object
   doc_structs.ListResponse:
     properties:
       list:
@@ -141,6 +148,15 @@ definitions:
         type: string
       mimetype:
         type: string
+    type: object
+  dto.BoardHistoryEntry:
+    properties:
+      actions:
+        type: string
+      timestamp:
+        type: string
+      user:
+        $ref: '#/definitions/dto.UserPublicInfo'
     type: object
   dto.BoardID:
     properties:
@@ -320,6 +336,13 @@ definitions:
       mimetype:
         type: string
       task_id:
+        type: integer
+    type: object
+  dto.NewHistoryEntry:
+    properties:
+      actions:
+        type: string
+      board_id:
         type: integer
     type: object
   dto.NewListInfo:
@@ -950,6 +973,75 @@ paths:
           schema:
             $ref: '#/definitions/apperrors.ErrorResponse'
       summary: Удалить доску
+      tags:
+      - boards
+  /board/history/:
+    post:
+      consumes:
+      - application/json
+      description: 'Получить историю изменений доски: список, каждый элемент которого
+        состоит из автора изменения, даты изменения и изменения'
+      parameters:
+      - description: ID доски, для которой запрашивается история
+        in: body
+        name: info
+        required: true
+        schema:
+          $ref: '#/definitions/dto.BoardID'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Список изменений
+          schema:
+            $ref: '#/definitions/doc_structs.GetHistoryResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+      summary: Получить историю изменений доски
+      tags:
+      - boards
+  /board/history/submit/:
+    post:
+      consumes:
+      - application/json
+      description: Записывает изменения данной доски в историю изменений
+      parameters:
+      - description: ID доски и изменения
+        in: body
+        name: info
+        required: true
+        schema:
+          $ref: '#/definitions/dto.NewHistoryEntry'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: no content
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+      summary: Добавить изменение в историю
       tags:
       - boards
   /board/update/:

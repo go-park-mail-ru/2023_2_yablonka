@@ -371,6 +371,110 @@ const docTemplate = `{
                 }
             }
         },
+        "/board/history/": {
+            "post": {
+                "description": "Получить историю изменений доски: список, каждый элемент которого состоит из автора изменения, даты изменения и изменения",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "boards"
+                ],
+                "summary": "Получить историю изменений доски",
+                "parameters": [
+                    {
+                        "description": "ID доски, для которой запрашивается история",
+                        "name": "info",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.BoardID"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Список изменений",
+                        "schema": {
+                            "$ref": "#/definitions/doc_structs.GetHistoryResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/board/history/submit/": {
+            "post": {
+                "description": "Записывает изменения данной доски в историю изменений",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "boards"
+                ],
+                "summary": "Добавить изменение в историю",
+                "parameters": [
+                    {
+                        "description": "ID доски и изменения",
+                        "name": "info",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.NewHistoryEntry"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "no content",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/board/update/": {
             "post": {
                 "description": "Обновить доску",
@@ -2395,6 +2499,17 @@ const docTemplate = `{
                 }
             }
         },
+        "doc_structs.GetHistoryResponse": {
+            "type": "object",
+            "properties": {
+                "history": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.BoardHistoryEntry"
+                    }
+                }
+            }
+        },
         "doc_structs.ListResponse": {
             "type": "object",
             "properties": {
@@ -2530,6 +2645,20 @@ const docTemplate = `{
                 },
                 "mimetype": {
                     "type": "string"
+                }
+            }
+        },
+        "dto.BoardHistoryEntry": {
+            "type": "object",
+            "properties": {
+                "actions": {
+                    "type": "string"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "user": {
+                    "$ref": "#/definitions/dto.UserPublicInfo"
                 }
             }
         },
@@ -2808,6 +2937,17 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "task_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.NewHistoryEntry": {
+            "type": "object",
+            "properties": {
+                "actions": {
+                    "type": "string"
+                },
+                "board_id": {
                     "type": "integer"
                 }
             }
