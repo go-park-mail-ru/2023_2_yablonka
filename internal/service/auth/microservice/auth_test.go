@@ -1,24 +1,21 @@
-package microservice
+package microservice_test
 
-/*
 import (
 	"context"
-	"fmt"
-	"log"
 	"reflect"
 	"server/internal/apperrors"
 	"server/internal/config"
 	logging "server/internal/logging"
 	"server/internal/pkg/dto"
-	"server/internal/storage"
+	"server/internal/service/auth/microservice"
 	auth_microservice "server/microservices/auth/auth"
+	"server/mocks/mock_grcp"
 	"server/mocks/mock_storage"
 	"testing"
-	"time"
 
+	"github.com/google/uuid"
 	"go.uber.org/mock/gomock"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 func getLogger() logging.ILogger {
@@ -35,74 +32,119 @@ func getLogger() logging.ILogger {
 
 func TestAuthService_AuthUser(t *testing.T) {
 	type args struct {
-		id dto.UserID
+		id    dto.UserID
+		ctx   context.Context
+		query func(ctx context.Context, storage mock_storage.MockIAuthStorage, client mock_grcp.MockAuthServiceClient, args args) dto.SessionToken
 	}
 	tests := []struct {
 		name    string
 		args    args
-		want    dto.SessionToken
 		wantErr bool
 		err     error
 	}{
 		{
 			name: "Happy path",
-			args: args{},
-			want: dto.SessionToken{
-				ID:             "Session ID",
-				ExpirationDate: time.Now().Add(time.Duration(14 * 24 * time.Hour)),
+			args: args{
+				ctx: context.WithValue(
+					context.WithValue(
+						context.Background(), dto.LoggerKey, getLogger()),
+					dto.RequestIDKey, uuid.New(),
+				),
+				query: func(ctx context.Context, storage mock_storage.MockIAuthStorage, client mock_grcp.MockAuthServiceClient, args args) dto.SessionToken {
+					grpcRequest := &auth_microservice.AuthUserRequest{
+						RequestID: ctx.Value(dto.RequestIDKey).(uuid.UUID).String(),
+						Value:     &auth_microservice.UserID{Value: args.id.Value},
+					}
+					response := auth_microservice.SessionToken{
+						ID:             "Session ID",
+						ExpirationDate: timestamppb.Now(),
+					}
+
+					client.EXPECT().AuthUser(ctx, grpcRequest).Return(
+						&auth_microservice.AuthUserResponse{
+							Code:     auth_microservice.ErrorCode_OK,
+							Response: &response,
+						},
+						nil,
+					)
+					return dto.SessionToken{
+						ID:             response.ID,
+						ExpirationDate: response.ExpirationDate.AsTime(),
+					}
+				},
 			},
 			wantErr: false,
 			err:     nil,
 		},
 		{
-			name:    "Bad request",
-			args:    args{},
-			want:    dto.SessionToken{},
+			name: "No request ID",
+			args: args{
+				ctx: context.WithValue(
+					context.Background(), dto.LoggerKey, getLogger()),
+				query: func(ctx context.Context, storage mock_storage.MockIAuthStorage, client mock_grcp.MockAuthServiceClient, args args) dto.SessionToken {
+					return dto.SessionToken{}
+				},
+			},
 			wantErr: true,
-			err:     apperrors.ErrTokenNotGenerated,
+			err:     apperrors.ErrNoRequestIDFound,
+		},
+		{
+			name: "GRPC request failed",
+			args: args{
+				ctx: context.WithValue(
+					context.WithValue(
+						context.Background(), dto.LoggerKey, getLogger()),
+					dto.RequestIDKey, uuid.New(),
+				),
+				query: func(ctx context.Context, storage mock_storage.MockIAuthStorage, client mock_grcp.MockAuthServiceClient, args args) dto.SessionToken {
+					grpcRequest := &auth_microservice.AuthUserRequest{
+						RequestID: ctx.Value(dto.RequestIDKey).(uuid.UUID).String(),
+						Value:     &auth_microservice.UserID{Value: args.id.Value},
+					}
+					response := auth_microservice.SessionToken{}
+
+					client.EXPECT().AuthUser(ctx, grpcRequest).Return(
+						&auth_microservice.AuthUserResponse{
+							Code:     auth_microservice.ErrorCode_COULD_NOT_BUILD_QUERY,
+							Response: &response,
+						},
+						nil,
+					)
+					return dto.SessionToken{}
+				},
+			},
+			wantErr: true,
+			err:     microservice.AuthServiceErrors[auth_microservice.ErrorCode_COULD_NOT_BUILD_QUERY],
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
-
 			storage := mock_storage.NewMockIAuthStorage(ctrl)
-			grcpConn, err := grpc.Dial(
-				fmt.Sprintf("%v:%v", "localhost", "8083"),
-				grpc.WithTransportCredentials(insecure.NewCredentials()),
-			)
-			if err != nil {
-				log.Println("Failed to connect to the GRPC server as client")
-			}
-			defer grcpConn.Close()
-
-			ctx := context.WithValue(
-				context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
-				dto.RequestIDKey, uuid.New(),
-			)
+			client := mock_grcp.NewMockAuthServiceClient(ctrl)
 
 			cfg, _ := config.NewSessionConfig()
 
-			if !tt.wantErr {
-				storage.EXPECT().CreateSession(ctx, tt.args.id).Return(tt.want, nil)
-			} else {
-				storage.EXPECT().CreateSession(ctx, tt.args.id).Return(nil, tt.err)
-			}
+			want := tt.args.query(tt.args.ctx, *storage, *client, tt.args)
 
-			a := NewAuthService(*cfg, storage, grcpConn)
+			a := microservice.NewAuthService(*cfg, storage, client)
 
-			got, err := a.AuthUser(ctx, tt.args.id)
+			got, err := a.AuthUser(tt.args.ctx, tt.args.id)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("AuthUser() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("AuthService.AuthUser() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("AuthUser() got = %v, want %v", got, tt.want)
+			if !reflect.DeepEqual(got, want) {
+				t.Errorf("AuthUser() got = %v, want %v", got, want)
+			}
+			if !reflect.DeepEqual(err, tt.err) {
+				t.Errorf("AuthUser() got = %v, want %v", got, want)
 			}
 		})
 	}
 }
 
+/*
 func TestAuthService_GetLifetime(t *testing.T) {
 	type fields struct {
 		sessionDuration time.Duration

@@ -12,7 +12,6 @@ import (
 	logger "server/internal/logging"
 
 	"github.com/google/uuid"
-	"google.golang.org/grpc"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
@@ -37,8 +36,7 @@ const nodeName = "service"
 
 // NewAuthService
 // возвращает AuthSessionService с инициализированной датой истечения сессии и хранилищем сессий
-func NewAuthService(config config.SessionConfig, authStorage storage.IAuthStorage, connection *grpc.ClientConn) *AuthService {
-	client := microservice.NewAuthServiceClient(connection)
+func NewAuthService(config config.SessionConfig, authStorage storage.IAuthStorage, client microservice.AuthServiceClient) *AuthService {
 	return &AuthService{
 		sessionDuration: config.Duration,
 		sessionIDLength: config.IDLength,
@@ -53,7 +51,10 @@ func NewAuthService(config config.SessionConfig, authStorage storage.IAuthStorag
 func (a *AuthService) AuthUser(ctx context.Context, id dto.UserID) (dto.SessionToken, error) {
 	funcName := "AuthService.AuthUser"
 	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
-	requestID := ctx.Value(dto.RequestIDKey).(uuid.UUID)
+	requestID, ok := ctx.Value(dto.RequestIDKey).(uuid.UUID)
+	if !ok {
+		return dto.SessionToken{}, apperrors.ErrNoRequestIDFound
+	}
 
 	grpcRequest := &microservice.AuthUserRequest{
 		RequestID: requestID.String(),
