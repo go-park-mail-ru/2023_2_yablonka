@@ -199,6 +199,25 @@ func GetChiMux(manager handlers.Handlers, config config.Config, logger logging.I
 				"/comment/create/", http.HandlerFunc(manager.CommentHandler.Create)),
 			)
 		})
+		r.Route("/tag", func(r chi.Router) {
+			r.Use(middleware.AuthMiddleware(manager.AuthHandler.GetAuthService(), manager.AuthHandler.GetUserService()))
+			r.Use(middleware.CSRFMiddleware(manager.AuthHandler.GetCSRFService()))
+			r.Post("/create/", metricsMiddleware.WrapHandler(
+				"/tag/create/", http.HandlerFunc(manager.TagHandler.Create)),
+			)
+			r.Post("/update/", metricsMiddleware.WrapHandler(
+				"/tag/update/", http.HandlerFunc(manager.TagHandler.Update)),
+			)
+			r.Post("/add_to_task/", metricsMiddleware.WrapHandler(
+				"/tag/add_to_task/", http.HandlerFunc(manager.TagHandler.AddToTask)),
+			)
+			r.Delete("/remove_from_task/", metricsMiddleware.WrapHandler(
+				"/tag/remove_from_task/", http.HandlerFunc(manager.TagHandler.RemoveFromTask)),
+			)
+			r.Delete("/delete/", metricsMiddleware.WrapHandler(
+				"/tag/delete/", http.HandlerFunc(manager.TagHandler.Delete)),
+			)
+		})
 	})
 	mux.Route("/swagger/", func(r chi.Router) {
 		r.Get("/*", metricsMiddleware.WrapHandler(

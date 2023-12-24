@@ -44,7 +44,7 @@ func NewBoardService(
 	}
 }
 
-const nodeName string = "service"
+const nodeName = "service"
 
 // GetFullBoard
 // возвращает доску со связанными пользователями, списками и заданиями
@@ -126,10 +126,17 @@ func (bs BoardService) GetFullBoard(ctx context.Context, info dto.IndividualBoar
 	}
 	logger.DebugFmt("Got checklist items", requestID.String(), funcName, nodeName)
 
+	tags, err := bs.boardStorage.GetTags(ctx, boardID)
+	if err != nil {
+		return nil, err
+	}
+	logger.DebugFmt("Got tags", requestID.String(), funcName, nodeName)
+
 	return &dto.FullBoardResult{
 		Users:          *users,
 		Board:          *board,
 		Lists:          *lists,
+		Tags:           *tags,
 		Tasks:          *tasks,
 		Comments:       *comments,
 		Checklists:     *checklists,

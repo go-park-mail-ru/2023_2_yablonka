@@ -18,6 +18,8 @@ const _ = grpc.SupportPackageIsVersion7
 // AuthServiceClient is the client API for AuthService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+
+//go:generate mockgen -source=$GOFILE -destination=../../../mocks/mock_grcp/$GOFILE -package=mock_grcp
 type AuthServiceClient interface {
 	AuthUser(ctx context.Context, in *AuthUserRequest, opts ...grpc.CallOption) (*AuthUserResponse, error)
 	VerifyAuth(ctx context.Context, in *VerifyAuthRequest, opts ...grpc.CallOption) (*VerifyAuthResponse, error)

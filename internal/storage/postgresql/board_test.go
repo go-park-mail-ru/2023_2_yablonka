@@ -153,7 +153,7 @@ func TestBoardStorage_GetById(t *testing.T) {
 		err     error
 	}{
 		{
-			name: "Successful run",
+			name: "Happy path",
 			args: args{
 				id: dto.BoardID{
 					Value: 1,
@@ -396,7 +396,7 @@ func TestBoardStorage_GetLists(t *testing.T) {
 		err     error
 	}{
 		{
-			name: "Successful run",
+			name: "Happy path",
 			args: args{
 				id: dto.BoardID{
 					Value: 1,
@@ -512,6 +512,174 @@ func TestBoardStorage_GetLists(t *testing.T) {
 	}
 }
 
+func TestBoardStorage_GetTags(t *testing.T) {
+	t.Parallel()
+	type args struct {
+		id    dto.BoardID
+		query func(mock sqlmock.Sqlmock, args args)
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+		err     error
+	}{
+		{
+			name: "Happy path",
+			args: args{
+				id: dto.BoardID{
+					Value: 1,
+				},
+				query: func(mock sqlmock.Sqlmock, args args) {
+					sql, _, _ := sq.Select(allTagFields...).
+						From("public.tag").
+						LeftJoin("public.tag_board ON public.tag.id = public.tag_board.id_tag").
+						Where(sq.Eq{"public.tag_board.id_board": args.id.Value}).
+						PlaceholderFormat(sq.Dollar).
+						ToSql()
+					mock.ExpectQuery(regexp.QuoteMeta(sql)).
+						WithArgs(args.id.Value).
+						WillReturnRows(sqlmock.NewRows(allTagFields).
+							AddRow(1, "Mock tag", "color"),
+						)
+				},
+			},
+			wantErr: false,
+			err:     nil,
+		},
+		{
+			name: "Query failed",
+			args: args{
+				id: dto.BoardID{
+					Value: 1,
+				},
+				query: func(mock sqlmock.Sqlmock, args args) {
+					sql, _, _ := sq.Select(allTagFields...).
+						From("public.tag").
+						LeftJoin("public.tag_board ON public.tag.id = public.tag_board.id_tag").
+						Where(sq.Eq{"public.tag_board.id_board": args.id.Value}).
+						PlaceholderFormat(sq.Dollar).
+						ToSql()
+					mock.ExpectQuery(regexp.QuoteMeta(sql)).
+						WithArgs(args.id.Value).
+						WillReturnError(apperrors.ErrCouldNotExecuteQuery)
+				},
+			},
+			wantErr: true,
+			err:     apperrors.ErrCouldNotExecuteQuery,
+		},
+		{
+			name: "Collecting rows failed",
+			args: args{
+				id: dto.BoardID{
+					Value: 1,
+				},
+				query: func(mock sqlmock.Sqlmock, args args) {
+					sql, _, _ := sq.Select(allTagFields...).
+						From("public.tag").
+						LeftJoin("public.tag_board ON public.tag.id = public.tag_board.id_tag").
+						Where(sq.Eq{"public.tag_board.id_board": args.id.Value}).
+						PlaceholderFormat(sq.Dollar).
+						ToSql()
+					mock.ExpectQuery(regexp.QuoteMeta(sql)).
+						WithArgs(args.id.Value).
+						WillReturnRows(
+							sqlmock.NewRows(allTagFields).
+								AddRow(1, "Mock tag", "color").
+								RowError(0, apperrors.ErrCouldNotCollectRows))
+				},
+			},
+			wantErr: true,
+			err:     apperrors.ErrCouldNotCollectRows,
+		},
+		{
+			name: "Scanning rows failed",
+			args: args{
+				id: dto.BoardID{
+					Value: 1,
+				},
+				query: func(mock sqlmock.Sqlmock, args args) {
+					sql, _, _ := sq.Select(allTagFields...).
+						From("public.tag").
+						LeftJoin("public.tag_board ON public.tag.id = public.tag_board.id_tag").
+						Where(sq.Eq{"public.tag_board.id_board": args.id.Value}).
+						PlaceholderFormat(sq.Dollar).
+						ToSql()
+					mock.ExpectQuery(regexp.QuoteMeta(sql)).
+						WithArgs(args.id.Value).
+						WillReturnRows(
+							sqlmock.NewRows(allTagFields).
+								AddRow(nil, nil, nil))
+				},
+			},
+			wantErr: true,
+			err:     apperrors.ErrCouldNotScanRows,
+		},
+		{
+			name: "Closing rows failed",
+			args: args{
+				id: dto.BoardID{
+					Value: 1,
+				},
+				query: func(mock sqlmock.Sqlmock, args args) {
+					sql, _, _ := sq.Select(allTagFields...).
+						From("public.tag").
+						LeftJoin("public.tag_board ON public.tag.id = public.tag_board.id_tag").
+						Where(sq.Eq{"public.tag_board.id_board": args.id.Value}).
+						PlaceholderFormat(sq.Dollar).
+						ToSql()
+					mock.ExpectQuery(regexp.QuoteMeta(sql)).
+						WithArgs(args.id.Value).
+						WillReturnRows(
+							sqlmock.NewRows(allTagFields).
+								AddRow(1, "Mock tag", "color").
+								CloseError(apperrors.ErrCouldNotCloseQuery))
+				},
+			},
+			wantErr: true,
+			err:     apperrors.ErrCouldNotCloseQuery,
+		},
+		{
+			name: "Error building query",
+			args: args{
+				id:    dto.BoardID{},
+				query: func(mock sqlmock.Sqlmock, args args) {},
+			},
+			wantErr: true,
+			err:     apperrors.ErrCouldNotBuildQuery,
+		},
+	}
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			db, mock, err := sqlmock.New()
+
+			if err != nil {
+				t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
+			}
+			defer db.Close()
+
+			tt.args.query(mock, tt.args)
+
+			ctx := context.WithValue(
+				context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+				dto.RequestIDKey, uuid.New(),
+			)
+
+			s := NewBoardStorage(db)
+
+			if _, err := s.GetTags(ctx, tt.args.id); (err != nil) != tt.wantErr {
+				t.Errorf("GetLists() error = %v, wantErr %v, err = %v", err != nil, tt.wantErr, err)
+			}
+
+			if err := mock.ExpectationsWereMet(); err != nil {
+				t.Errorf("there were unfulfilled expectations: %s", err)
+			}
+		})
+	}
+}
+
 func TestBoardStorage_UpdateData(t *testing.T) {
 	t.Parallel()
 	type args struct {
@@ -525,7 +693,7 @@ func TestBoardStorage_UpdateData(t *testing.T) {
 		err     error
 	}{
 		{
-			name: "Successful run",
+			name: "Happy path",
 			args: args{
 				info: dto.UpdatedBoardInfo{
 					ID:   1,
@@ -625,7 +793,7 @@ func TestBoardStorage_UpdateThumbnailUrl(t *testing.T) {
 		err     error
 	}{
 		{
-			name: "Successful run",
+			name: "Happy path",
 			args: args{
 				info: dto.BoardImageUrlInfo{
 					ID:  1,
@@ -897,7 +1065,7 @@ func TestBoardStorage_Create(t *testing.T) {
 				},
 			},
 			wantErr: true,
-			err:     apperrors.ErrCouldNotStartTransaction,
+			err:     apperrors.ErrCouldNotBeginTransaction,
 		},
 		{
 			name: "Bad request (could not insert board)",
@@ -1160,7 +1328,7 @@ func TestBoardStorage_Delete(t *testing.T) {
 		err     error
 	}{
 		{
-			name: "Successful run",
+			name: "Happy path",
 			args: args{
 				id: dto.BoardID{
 					Value: 1,
@@ -1257,7 +1425,7 @@ func TestBoardStorage_AddUser(t *testing.T) {
 		err     error
 	}{
 		{
-			name: "Successful run",
+			name: "Happy path",
 			args: args{
 				info: dto.AddBoardUserInfo{
 					UserID:      1,
@@ -1450,14 +1618,17 @@ func TestBoardStorage_RemoveUser(t *testing.T) {
 		err     error
 	}{
 		{
-			name: "Successful run",
+			name: "Happy path (no boards left)",
 			args: args{
 				info: dto.RemoveBoardUserInfo{
-					UserID:  1,
-					BoardID: 1,
+					UserID:      1,
+					BoardID:     1,
+					WorkspaceID: 1,
 				},
 				query: func(mock sqlmock.Sqlmock, args args) {
-					sql, _, _ := sq.
+					mock.ExpectBegin()
+
+					query1, _, _ := sq.
 						Delete("public.board_user").
 						Where(sq.And{
 							sq.Eq{"id_user": args.info.UserID},
@@ -1465,34 +1636,64 @@ func TestBoardStorage_RemoveUser(t *testing.T) {
 						}).
 						PlaceholderFormat(sq.Dollar).
 						ToSql()
-
-					mock.ExpectExec(regexp.QuoteMeta(sql)).
-						WithArgs(args.info.UserID, args.info.BoardID).
+					mock.ExpectExec(regexp.QuoteMeta(query1)).
+						WithArgs(
+							args.info.UserID,
+							args.info.BoardID,
+						).
 						WillReturnResult(sqlmock.NewResult(1, 1))
+
+					query2, _, _ := sq.Select("count(*)").
+						From("public.board_user").
+						LeftJoin("public.board ON public.board_user.id_board = public.board.id").
+						Where(sq.Eq{
+							"public.board.id_workspace": args.info.WorkspaceID,
+							"public.board_user.id_user": args.info.UserID,
+						}).
+						PlaceholderFormat(sq.Dollar).
+						ToSql()
+					mock.ExpectQuery(regexp.QuoteMeta(query2)).
+						WithArgs(
+							args.info.WorkspaceID,
+							args.info.UserID,
+						).
+						WillReturnRows(sqlmock.NewRows([]string{"count(*)"}).
+							AddRow(0),
+						)
+
+					query3, _, _ := sq.
+						Delete("public.user_workspace").
+						Where(sq.And{
+							sq.Eq{"id_user": args.info.UserID},
+							sq.Eq{"id_workspace": args.info.WorkspaceID},
+						}).
+						PlaceholderFormat(sq.Dollar).
+						ToSql()
+					mock.ExpectExec(regexp.QuoteMeta(query3)).
+						WithArgs(
+							args.info.UserID,
+							args.info.WorkspaceID,
+						).
+						WillReturnResult(sqlmock.NewResult(1, 1))
+
+					mock.ExpectCommit()
 				},
 			},
 			wantErr: false,
 			err:     nil,
 		},
 		{
-			name: "Bad request (could not build query)",
-			args: args{
-				info: dto.RemoveBoardUserInfo{},
-				query: func(mock sqlmock.Sqlmock, args args) {
-				},
-			},
-			wantErr: true,
-			err:     apperrors.ErrCouldNotBuildQuery,
-		},
-		{
-			name: "Bad request (could not execute query)",
+			name: "Happy path (boards left)",
 			args: args{
 				info: dto.RemoveBoardUserInfo{
-					UserID:  1,
-					BoardID: 1,
+					UserID:      1,
+					BoardID:     1,
+					WorkspaceID: 1,
 				},
 				query: func(mock sqlmock.Sqlmock, args args) {
-					sql, _, _ := sq.
+					mock.ExpectBegin()
+
+					query1, _, _ := sq.
 						Delete("public.board_user").
 						Where(sq.And{
 							sq.Eq{"id_user": args.info.UserID},
@@ -1500,14 +1701,379 @@ func TestBoardStorage_RemoveUser(t *testing.T) {
 						}).
 						PlaceholderFormat(sq.Dollar).
 						ToSql()
+					mock.ExpectExec(regexp.QuoteMeta(query1)).
+						WithArgs(
+							args.info.UserID,
+							args.info.BoardID,
+						).
+						WillReturnResult(sqlmock.NewResult(1, 1))
 
-					mock.ExpectExec(regexp.QuoteMeta(sql)).
-						WithArgs(args.info.UserID, args.info.BoardID).
-						WillReturnError(errors.New("Mock delete query fail"))
+					query2, _, _ := sq.Select("count(*)").
+						From("public.board_user").
+						LeftJoin("public.board ON public.board_user.id_board = public.board.id").
+						Where(sq.Eq{
+							"public.board.id_workspace": args.info.WorkspaceID,
+							"public.board_user.id_user": args.info.UserID,
+						}).
+						PlaceholderFormat(sq.Dollar).
+						ToSql()
+					mock.ExpectQuery(regexp.QuoteMeta(query2)).
+						WithArgs(
+							args.info.UserID,
+							args.info.WorkspaceID,
+						).
+						WillReturnRows(sqlmock.NewRows([]string{"count(*)"}).
+							AddRow(1),
+						)
+
+					mock.ExpectCommit()
+				},
+			},
+			wantErr: false,
+			err:     nil,
+		},
+		{
+			name: "Building query 1 failed",
+			args: args{
+				info:  dto.RemoveBoardUserInfo{},
+				query: func(mock sqlmock.Sqlmock, args args) {},
+			},
+			wantErr: true,
+			err:     apperrors.ErrCouldNotBuildQuery,
+		},
+		{
+			name: "Beginning transaction failed",
+			args: args{
+				info: dto.RemoveBoardUserInfo{
+					UserID:      1,
+					BoardID:     1,
+					WorkspaceID: 1,
+				},
+				query: func(mock sqlmock.Sqlmock, args args) {
+					mock.ExpectBegin().WillReturnError(apperrors.ErrCouldNotBeginTransaction)
 				},
 			},
 			wantErr: true,
-			err:     apperrors.ErrCouldNotRemoveBoardUser,
+			err:     apperrors.ErrCouldNotBeginTransaction,
+		},
+		{
+			name: "Query 1 execution failed",
+			args: args{
+				info: dto.RemoveBoardUserInfo{
+					UserID:      1,
+					BoardID:     1,
+					WorkspaceID: 1,
+				},
+				query: func(mock sqlmock.Sqlmock, args args) {
+					mock.ExpectBegin()
+
+					query1, _, _ := sq.
+						Delete("public.board_user").
+						Where(sq.And{
+							sq.Eq{"id_user": args.info.UserID},
+							sq.Eq{"id_board": args.info.BoardID},
+						}).
+						PlaceholderFormat(sq.Dollar).
+						ToSql()
+					mock.ExpectExec(regexp.QuoteMeta(query1)).
+						WithArgs(
+							args.info.UserID,
+							args.info.BoardID,
+						).
+						WillReturnError(apperrors.ErrCouldNotExecuteQuery)
+					mock.ExpectRollback()
+				},
+			},
+			wantErr: true,
+			err:     apperrors.ErrCouldNotExecuteQuery,
+		},
+		{
+			name: "Executing query 2 failed",
+			args: args{
+				info: dto.RemoveBoardUserInfo{
+					UserID:      1,
+					BoardID:     1,
+					WorkspaceID: 1,
+				},
+				query: func(mock sqlmock.Sqlmock, args args) {
+					mock.ExpectBegin()
+
+					query1, _, _ := sq.
+						Delete("public.board_user").
+						Where(sq.And{
+							sq.Eq{"id_user": args.info.UserID},
+							sq.Eq{"id_board": args.info.BoardID},
+						}).
+						PlaceholderFormat(sq.Dollar).
+						ToSql()
+					mock.ExpectExec(regexp.QuoteMeta(query1)).
+						WithArgs(
+							args.info.UserID,
+							args.info.BoardID,
+						).
+						WillReturnResult(sqlmock.NewResult(1, 1))
+
+					query2, _, _ := sq.Select("count(*)").
+						From("public.board_user").
+						LeftJoin("public.board ON public.board_user.id_board = public.board.id").
+						Where(sq.Eq{
+							"public.board.id_workspace": args.info.WorkspaceID,
+							"public.board_user.id_user": args.info.UserID,
+						}).
+						PlaceholderFormat(sq.Dollar).
+						ToSql()
+					mock.ExpectQuery(regexp.QuoteMeta(query2)).
+						WithArgs(
+							args.info.WorkspaceID,
+							args.info.UserID,
+						).
+						WillReturnError(apperrors.ErrCouldNotScanRows)
+
+					mock.ExpectRollback()
+				},
+			},
+			wantErr: true,
+			err:     apperrors.ErrCouldNotScanRows,
+		},
+		{
+			name: "Executing query 3 failed",
+			args: args{
+				info: dto.RemoveBoardUserInfo{
+					UserID:      1,
+					BoardID:     1,
+					WorkspaceID: 1,
+				},
+				query: func(mock sqlmock.Sqlmock, args args) {
+					mock.ExpectBegin()
+
+					query1, _, _ := sq.
+						Delete("public.board_user").
+						Where(sq.And{
+							sq.Eq{"id_user": args.info.UserID},
+							sq.Eq{"id_board": args.info.BoardID},
+						}).
+						PlaceholderFormat(sq.Dollar).
+						ToSql()
+					mock.ExpectExec(regexp.QuoteMeta(query1)).
+						WithArgs(
+							args.info.UserID,
+							args.info.BoardID,
+						).
+						WillReturnResult(sqlmock.NewResult(1, 1))
+
+					query2, _, _ := sq.Select("count(*)").
+						From("public.board_user").
+						LeftJoin("public.board ON public.board_user.id_board = public.board.id").
+						Where(sq.Eq{
+							"public.board.id_workspace": args.info.WorkspaceID,
+							"public.board_user.id_user": args.info.UserID,
+						}).
+						PlaceholderFormat(sq.Dollar).
+						ToSql()
+					mock.ExpectQuery(regexp.QuoteMeta(query2)).
+						WithArgs(
+							args.info.UserID,
+							args.info.WorkspaceID,
+						).
+						WillReturnError(apperrors.ErrCouldNotExecuteQuery)
+
+					mock.ExpectRollback()
+				},
+			},
+			wantErr: true,
+			err:     apperrors.ErrCouldNotExecuteQuery,
+		},
+		{
+			name: "Commiting failed",
+			args: args{
+				info: dto.RemoveBoardUserInfo{
+					UserID:      1,
+					BoardID:     1,
+					WorkspaceID: 1,
+				},
+				query: func(mock sqlmock.Sqlmock, args args) {
+					mock.ExpectBegin()
+
+					query1, _, _ := sq.
+						Delete("public.board_user").
+						Where(sq.And{
+							sq.Eq{"id_user": args.info.UserID},
+							sq.Eq{"id_board": args.info.BoardID},
+						}).
+						PlaceholderFormat(sq.Dollar).
+						ToSql()
+					mock.ExpectExec(regexp.QuoteMeta(query1)).
+						WithArgs(
+							args.info.UserID,
+							args.info.BoardID,
+						).
+						WillReturnResult(sqlmock.NewResult(1, 1))
+
+					query2, _, _ := sq.Select("count(*)").
+						From("public.board_user").
+						LeftJoin("public.board ON public.board_user.id_board = public.board.id").
+						Where(sq.Eq{
+							"public.board.id_workspace": args.info.WorkspaceID,
+							"public.board_user.id_user": args.info.UserID,
+						}).
+						PlaceholderFormat(sq.Dollar).
+						ToSql()
+					mock.ExpectQuery(regexp.QuoteMeta(query2)).
+						WithArgs(
+							args.info.WorkspaceID,
+							args.info.UserID,
+						).
+						WillReturnRows(sqlmock.NewRows([]string{"count(*)"}).
+							AddRow(0),
+						)
+
+					query3, _, _ := sq.
+						Delete("public.user_workspace").
+						Where(sq.And{
+							sq.Eq{"id_user": args.info.UserID},
+							sq.Eq{"id_workspace": args.info.WorkspaceID},
+						}).
+						PlaceholderFormat(sq.Dollar).
+						ToSql()
+					mock.ExpectExec(regexp.QuoteMeta(query3)).
+						WithArgs(
+							args.info.UserID,
+							args.info.WorkspaceID,
+						).
+						WillReturnResult(sqlmock.NewResult(1, 1))
+
+					mock.ExpectCommit().WillReturnError(apperrors.ErrCouldNotCommit)
+				},
+			},
+			wantErr: true,
+			err:     apperrors.ErrCouldNotCommit,
+		},
+		{
+			name: "Query 1 execution rollback failed",
+			args: args{
+				info: dto.RemoveBoardUserInfo{
+					UserID:      1,
+					BoardID:     1,
+					WorkspaceID: 1,
+				},
+				query: func(mock sqlmock.Sqlmock, args args) {
+					mock.ExpectBegin()
+
+					query1, _, _ := sq.
+						Delete("public.board_user").
+						Where(sq.And{
+							sq.Eq{"id_user": args.info.UserID},
+							sq.Eq{"id_board": args.info.BoardID},
+						}).
+						PlaceholderFormat(sq.Dollar).
+						ToSql()
+					mock.ExpectExec(regexp.QuoteMeta(query1)).
+						WithArgs(
+							args.info.UserID,
+							args.info.BoardID,
+						).
+						WillReturnError(apperrors.ErrCouldNotExecuteQuery)
+					mock.ExpectRollback().WillReturnError(apperrors.ErrCouldNotRollback)
+				},
+			},
+			wantErr: true,
+			err:     apperrors.ErrCouldNotRollback,
+		},
+		{
+			name: "Executing query 2 and rollback failed",
+			args: args{
+				info: dto.RemoveBoardUserInfo{
+					UserID:      1,
+					BoardID:     1,
+					WorkspaceID: 1,
+				},
+				query: func(mock sqlmock.Sqlmock, args args) {
+					mock.ExpectBegin()
+
+					query1, _, _ := sq.
+						Delete("public.board_user").
+						Where(sq.And{
+							sq.Eq{"id_user": args.info.UserID},
+							sq.Eq{"id_board": args.info.BoardID},
+						}).
+						PlaceholderFormat(sq.Dollar).
+						ToSql()
+					mock.ExpectExec(regexp.QuoteMeta(query1)).
+						WithArgs(
+							args.info.UserID,
+							args.info.BoardID,
+						).
+						WillReturnResult(sqlmock.NewResult(1, 1))
+
+					query2, _, _ := sq.Select("count(*)").
+						From("public.board_user").
+						LeftJoin("public.board ON public.board_user.id_board = public.board.id").
+						Where(sq.Eq{
+							"public.board.id_workspace": args.info.WorkspaceID,
+							"public.board_user.id_user": args.info.UserID,
+						}).
+						PlaceholderFormat(sq.Dollar).
+						ToSql()
+					mock.ExpectQuery(regexp.QuoteMeta(query2)).
+						WithArgs(
+							args.info.WorkspaceID,
+							args.info.UserID,
+						).
+						WillReturnError(apperrors.ErrCouldNotScanRows)
+
+					mock.ExpectRollback().WillReturnError(apperrors.ErrCouldNotRollback)
+				},
+			},
+			wantErr: true,
+			err:     apperrors.ErrCouldNotRollback,
+		},
+		{
+			name: "Executing query 3 and rollback failed",
+			args: args{
+				info: dto.RemoveBoardUserInfo{
+					UserID:      1,
+					BoardID:     1,
+					WorkspaceID: 1,
+				},
+				query: func(mock sqlmock.Sqlmock, args args) {
+					mock.ExpectBegin()
+
+					query1, _, _ := sq.
+						Delete("public.board_user").
+						Where(sq.And{
+							sq.Eq{"id_user": args.info.UserID},
+							sq.Eq{"id_board": args.info.BoardID},
+						}).
+						PlaceholderFormat(sq.Dollar).
+						ToSql()
+					mock.ExpectExec(regexp.QuoteMeta(query1)).
+						WithArgs(
+							args.info.UserID,
+							args.info.BoardID,
+						).
+						WillReturnResult(sqlmock.NewResult(1, 1))
+
+					query2, _, _ := sq.Select("count(*)").
+						From("public.board_user").
+						LeftJoin("public.board ON public.board_user.id_board = public.board.id").
+						Where(sq.Eq{
+							"public.board.id_workspace": args.info.WorkspaceID,
+							"public.board_user.id_user": args.info.UserID,
+						}).
+						PlaceholderFormat(sq.Dollar).
+						ToSql()
+					mock.ExpectQuery(regexp.QuoteMeta(query2)).
+						WithArgs(
+							args.info.UserID,
+							args.info.WorkspaceID,
+						).
+						WillReturnError(apperrors.ErrCouldNotExecuteQuery)
+
+					mock.ExpectRollback().WillReturnError(apperrors.ErrCouldNotRollback)
+				},
+			},
+			wantErr: true,
+			err:     apperrors.ErrCouldNotRollback,
 		},
 	}
 	for _, tt := range tests {
@@ -1515,7 +2081,6 @@ func TestBoardStorage_RemoveUser(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 			db, mock, err := sqlmock.New()
-
 			if err != nil {
 				t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 			}
