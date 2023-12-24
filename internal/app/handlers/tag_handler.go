@@ -262,8 +262,8 @@ func (th TagHandler) AddToTask(w http.ResponseWriter, r *http.Request) {
 	logger.Info("---------------------------------- Adding tag to task SUCCESS ----------------------------------")
 }
 
-// @Summary Добавить тэг к заданию
-// @Description Добавить тэг к заданию
+// @Summary Открепить тэг от задания
+// @Description Открепить тэг от задания
 // @Tags tags
 //
 // @Accept  json
@@ -276,7 +276,7 @@ func (th TagHandler) AddToTask(w http.ResponseWriter, r *http.Request) {
 // @Failure 401  {object}  apperrors.ErrorResponse
 // @Failure 500  {object}  apperrors.ErrorResponse
 //
-// @Router /tag/remove_from_task/ [post]
+// @Router /tag/remove_from_task/ [delete]
 func (th TagHandler) RemoveFromTask(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
 	funcName := "TagHandler.RemoveFromTask"

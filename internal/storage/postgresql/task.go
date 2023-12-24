@@ -429,7 +429,7 @@ func (s PostgresTaskStorage) GetFileList(ctx context.Context, id dto.TaskID) (*[
 	rows, err := s.db.Query(sql, args...)
 	if err != nil {
 		logger.DebugFmt("Failed to get task files with error "+err.Error(), requestID.String(), funcName, nodeName)
-		return nil, apperrors.ErrCouldNotGetTaskFiles
+		return nil, apperrors.ErrCouldNotExecuteQuery
 	}
 	defer rows.Close()
 	logger.DebugFmt("Got task files", requestID.String(), funcName, nodeName)
@@ -445,7 +445,7 @@ func (s PostgresTaskStorage) GetFileList(ctx context.Context, id dto.TaskID) (*[
 			&file.DateCreated,
 		)
 		if err != nil {
-			return nil, apperrors.ErrCouldNotGetTaskFiles
+			return nil, apperrors.ErrCouldNotScanRows
 		}
 		files = append(files, file)
 	}
@@ -484,10 +484,11 @@ func (s PostgresTaskStorage) AttachFile(ctx context.Context, info dto.AttachedFi
 	if err := row.Scan(&fileID); err != nil {
 		logger.DebugFmt("File insert failed with error "+err.Error(), requestID.String(), funcName, nodeName)
 		err = tx.Rollback()
-		for err != nil {
-			err = tx.Rollback()
+		if err != nil {
+			logger.DebugFmt("Failed to rollback "+err.Error(), requestID.String(), funcName, nodeName)
+			return apperrors.ErrCouldNotRollback
 		}
-		return apperrors.ErrTaskNotUpdated
+		return apperrors.ErrCouldNotExecuteQuery
 	}
 	logger.DebugFmt("File entry created", requestID.String(), funcName, nodeName)
 
@@ -499,6 +500,11 @@ func (s PostgresTaskStorage) AttachFile(ctx context.Context, info dto.AttachedFi
 		ToSql()
 	if err != nil {
 		logger.DebugFmt("Failed to build query with error "+err.Error(), requestID.String(), funcName, nodeName)
+		err = tx.Rollback()
+		if err != nil {
+			logger.DebugFmt("Failed to rollback "+err.Error(), requestID.String(), funcName, nodeName)
+			return apperrors.ErrCouldNotRollback
+		}
 		return apperrors.ErrCouldNotBuildQuery
 	}
 	logger.DebugFmt("Built query\n\t"+fileTaskQuery+"\nwith args\n\t"+fmt.Sprintf("%+v", args), requestID.String(), funcName, nodeName)
@@ -507,21 +513,18 @@ func (s PostgresTaskStorage) AttachFile(ctx context.Context, info dto.AttachedFi
 	if err != nil {
 		logger.DebugFmt("Failed to execute query with error "+err.Error(), requestID.String(), funcName, nodeName)
 		err = tx.Rollback()
-		for err != nil {
-			err = tx.Rollback()
+		if err != nil {
+			logger.DebugFmt("Failed to rollback "+err.Error(), requestID.String(), funcName, nodeName)
+			return apperrors.ErrCouldNotRollback
 		}
-		return apperrors.ErrTaskNotUpdated
+		return apperrors.ErrCouldNotExecuteQuery
 	}
 	logger.DebugFmt("File linked to task", requestID.String(), funcName, nodeName)
 
 	err = tx.Commit()
 	if err != nil {
 		logger.DebugFmt("Failed to commit changes", requestID.String(), funcName, nodeName)
-		err = tx.Rollback()
-		for err != nil {
-			err = tx.Rollback()
-		}
-		return apperrors.ErrTaskNotUpdated
+		return apperrors.ErrCouldNotCommit
 	}
 	logger.DebugFmt("Changes commited", requestID.String(), funcName, nodeName)
 
@@ -533,7 +536,7 @@ func (s PostgresTaskStorage) RemoveFile(ctx context.Context, info dto.RemoveFile
 	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
 	requestID := ctx.Value(dto.RequestIDKey).(uuid.UUID)
 
-	fileIDQuery, args, err := sq.
+	query1, args, err := sq.
 		Select("id").
 		From("public.file").
 		Where(sq.And{
@@ -546,49 +549,17 @@ func (s PostgresTaskStorage) RemoveFile(ctx context.Context, info dto.RemoveFile
 		logger.DebugFmt("Failed to build query with error "+err.Error(), requestID.String(), funcName, nodeName)
 		return apperrors.ErrCouldNotBuildQuery
 	}
-	logger.DebugFmt("Built query\n\t"+fileIDQuery+"\nwith args\n\t"+fmt.Sprintf("%+v", args), requestID.String(), funcName, nodeName)
+	logger.DebugFmt("Built query\n\t"+query1+"\nwith args\n\t"+fmt.Sprintf("%+v", args), requestID.String(), funcName, nodeName)
 
 	var fileID int
-	row := s.db.QueryRow(fileIDQuery, args...)
+	row := s.db.QueryRow(query1, args...)
 	if err := row.Scan(&fileID); err != nil {
 		logger.DebugFmt("Failed to get file ID with error "+err.Error(), requestID.String(), funcName, nodeName)
-		return apperrors.ErrTaskNotUpdated
+		return apperrors.ErrCouldNotExecuteQuery
 	}
 	logger.DebugFmt("File entry created", requestID.String(), funcName, nodeName)
 
-	tx, err := s.db.BeginTx(ctx, &sql.TxOptions{})
-	if err != nil {
-		logger.DebugFmt("Failed to start transaction with error "+err.Error(), requestID.String(), funcName, nodeName)
-		return apperrors.ErrCouldNotBeginTransaction
-	}
-	logger.DebugFmt("Transaction started", requestID.String(), funcName, nodeName)
-
-	fileTaskQuery, args, err := sq.
-		Delete("public.task_file").
-		Where(sq.And{
-			sq.Eq{"id_task": info.TaskID},
-			sq.Eq{"id_file": fileID},
-		}).
-		PlaceholderFormat(sq.Dollar).
-		ToSql()
-	if err != nil {
-		logger.DebugFmt("Failed to build query with error "+err.Error(), requestID.String(), funcName, nodeName)
-		return apperrors.ErrCouldNotBuildQuery
-	}
-	logger.DebugFmt("Built query\n\t"+fileTaskQuery+"\nwith args\n\t"+fmt.Sprintf("%+v", args), requestID.String(), funcName, nodeName)
-
-	_, err = tx.Exec(fileTaskQuery, args...)
-	if err != nil {
-		logger.DebugFmt("Failed to execute query with error "+err.Error(), requestID.String(), funcName, nodeName)
-		err = tx.Rollback()
-		for err != nil {
-			err = tx.Rollback()
-		}
-		return apperrors.ErrTaskNotUpdated
-	}
-	logger.DebugFmt("File unlinked from task", requestID.String(), funcName, nodeName)
-
-	fileQuery, args, err := sq.
+	query2, args, err := sq.
 		Delete("public.file").
 		Where(sq.Eq{"id": fileID}).
 		PlaceholderFormat(sq.Dollar).
@@ -597,29 +568,14 @@ func (s PostgresTaskStorage) RemoveFile(ctx context.Context, info dto.RemoveFile
 		logger.DebugFmt("Failed to build query with error "+err.Error(), requestID.String(), funcName, nodeName)
 		return apperrors.ErrCouldNotBuildQuery
 	}
-	logger.DebugFmt("Built query\n\t"+fileQuery+"\nwith args\n\t"+fmt.Sprintf("%+v", args), requestID.String(), funcName, nodeName)
+	logger.DebugFmt("Built query\n\t"+query2+"\nwith args\n\t"+fmt.Sprintf("%+v", args), requestID.String(), funcName, nodeName)
 
-	_, err = tx.Exec(fileQuery, args...)
+	_, err = s.db.Exec(query2, args...)
 	if err != nil {
 		logger.DebugFmt("Failed to execute query with error "+err.Error(), requestID.String(), funcName, nodeName)
-		err = tx.Rollback()
-		for err != nil {
-			err = tx.Rollback()
-		}
-		return apperrors.ErrTaskNotUpdated
+		return apperrors.ErrCouldNotExecuteQuery
 	}
 	logger.DebugFmt("File deleted from database", requestID.String(), funcName, nodeName)
-
-	err = tx.Commit()
-	if err != nil {
-		logger.DebugFmt("Failed to commit changes", requestID.String(), funcName, nodeName)
-		err = tx.Rollback()
-		for err != nil {
-			err = tx.Rollback()
-		}
-		return apperrors.ErrTaskNotUpdated
-	}
-	logger.DebugFmt("Changes commited", requestID.String(), funcName, nodeName)
 
 	return nil
 }

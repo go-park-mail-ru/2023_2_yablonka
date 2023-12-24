@@ -176,11 +176,6 @@ func (s PostgresListStorage) Delete(ctx context.Context, id dto.ListID) error {
 // меняет порядок списков в БД по данным
 // или возвращает ошибки ...
 func (s PostgresListStorage) UpdateOrder(ctx context.Context, ids dto.ListIDs) error {
-	if len(ids.Values) == 0 {
-		log.Println("Storage -- Empty list")
-		return apperrors.ErrCouldNotChangeListOrder
-	}
-
 	caseBuilder := sq.Case()
 	for i, id := range ids.Values {
 		caseBuilder = caseBuilder.When(sq.Eq{"id": fmt.Sprintf("%v", id)}, fmt.Sprintf("%v", i)).Else("list_position")
@@ -202,7 +197,7 @@ func (s PostgresListStorage) UpdateOrder(ctx context.Context, ids dto.ListIDs) e
 	if err != nil {
 		log.Println("Storage -- Failed to create list")
 		log.Println("Error", err.Error())
-		return apperrors.ErrCouldNotChangeListOrder
+		return apperrors.ErrCouldNotExecuteQuery
 	}
 
 	log.Println("Storage -- List created")

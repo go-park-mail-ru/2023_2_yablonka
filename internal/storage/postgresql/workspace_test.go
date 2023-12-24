@@ -320,6 +320,16 @@ func TestPostgresWorkspaceStorage_Create(t *testing.T) {
 			wantErr: true,
 			err:     apperrors.ErrCouldNotRollback,
 		},
+		{
+			name: "Building query failed",
+			args: args{
+				info:  dto.NewWorkspaceInfo{},
+				user:  &entities.User{},
+				query: func(mock sqlmock.Sqlmock, args args) {},
+			},
+			wantErr: true,
+			err:     apperrors.ErrCouldNotBuildQuery,
+		},
 	}
 	for _, tt := range tests {
 		tt := tt

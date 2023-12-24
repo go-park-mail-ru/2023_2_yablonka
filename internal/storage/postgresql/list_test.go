@@ -2,6 +2,7 @@ package postgresql
 
 import (
 	"context"
+	"fmt"
 	"regexp"
 	"server/internal/apperrors"
 	"server/internal/pkg/dto"
@@ -84,6 +85,15 @@ func TestPostgresListStorage_Create(t *testing.T) {
 			},
 			wantErr: true,
 			err:     apperrors.ErrListNotCreated,
+		},
+		{
+			name: "Building query failed",
+			args: args{
+				info:  &dto.NewListInfo{},
+				query: func(mock sqlmock.Sqlmock, args args) {},
+			},
+			wantErr: true,
+			err:     apperrors.ErrCouldNotBuildQuery,
 		},
 	}
 	for _, tt := range tests {
@@ -171,6 +181,15 @@ func TestPostgresListStorage_Delete(t *testing.T) {
 			},
 			wantErr: true,
 			err:     apperrors.ErrListNotDeleted,
+		},
+		{
+			name: "Building query failed",
+			args: args{
+				info:  &dto.ListID{},
+				query: func(mock sqlmock.Sqlmock, args args) {},
+			},
+			wantErr: true,
+			err:     apperrors.ErrCouldNotBuildQuery,
 		},
 	}
 	for _, tt := range tests {
@@ -273,6 +292,15 @@ func TestPostgresListStorage_Update(t *testing.T) {
 			wantErr: true,
 			err:     apperrors.ErrListNotUpdated,
 		},
+		{
+			name: "Building query failed",
+			args: args{
+				info:  &dto.UpdatedListInfo{},
+				query: func(mock sqlmock.Sqlmock, args args) {},
+			},
+			wantErr: true,
+			err:     apperrors.ErrCouldNotBuildQuery,
+		},
 	}
 	for _, tt := range tests {
 		tt := tt
@@ -367,6 +395,15 @@ func TestPostgresListStorage_GetTasksWithID(t *testing.T) {
 			wantErr: true,
 			err:     apperrors.ErrCouldNotGetTask,
 		},
+		{
+			name: "Building query failed",
+			args: args{
+				info:  &dto.ListIDs{},
+				query: func(mock sqlmock.Sqlmock, args args) {},
+			},
+			wantErr: true,
+			err:     apperrors.ErrCouldNotBuildQuery,
+		},
 	}
 	for _, tt := range tests {
 		tt := tt
@@ -388,6 +425,112 @@ func TestPostgresListStorage_GetTasksWithID(t *testing.T) {
 			s := NewListStorage(db)
 
 			if _, err := s.GetTasksWithID(ctx, *tt.args.info); (err != nil) != tt.wantErr {
+				t.Errorf("PostgresListStorage.Update() error = %v, wantErr %v", err != nil, tt.wantErr)
+			}
+
+			if err := mock.ExpectationsWereMet(); err != nil {
+				t.Errorf("there were unfulfilled expectations: %s", err)
+			}
+		})
+	}
+}
+
+func TestPostgresListStorage_UpdateOrder(t *testing.T) {
+	t.Parallel()
+	type args struct {
+		info  dto.ListIDs
+		query func(mock sqlmock.Sqlmock, args args)
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+		err     error
+	}{
+		{
+			name: "Happy path",
+			args: args{
+				info: dto.ListIDs{
+					Values: []uint64{1, 2, 3},
+				},
+				query: func(mock sqlmock.Sqlmock, args args) {
+					caseBuilder := sq.Case()
+					for i, id := range args.info.Values {
+						caseBuilder = caseBuilder.When(sq.Eq{"id": fmt.Sprintf("%v", id)}, fmt.Sprintf("%v", i)).Else("list_position")
+					}
+
+					query1, _, _ := sq.
+						Update("public.list").
+						Set("list_position", caseBuilder).
+						PlaceholderFormat(sq.Dollar).
+						ToSql()
+					mock.ExpectExec(regexp.QuoteMeta(query1)).
+						WithArgs(
+							"1", "2", "3",
+						).
+						WillReturnResult(sqlmock.NewResult(1, 1))
+				},
+			},
+			wantErr: false,
+			err:     nil,
+		},
+		{
+			name: "Building query failed",
+			args: args{
+				info:  dto.ListIDs{},
+				query: func(mock sqlmock.Sqlmock, args args) {},
+			},
+			wantErr: true,
+			err:     apperrors.ErrCouldNotBuildQuery,
+		},
+		{
+			name: "Executing query failed",
+			args: args{
+				info: dto.ListIDs{
+					Values: []uint64{1, 2, 3},
+				},
+				query: func(mock sqlmock.Sqlmock, args args) {
+					caseBuilder := sq.Case()
+					for i, id := range args.info.Values {
+						caseBuilder = caseBuilder.When(sq.Eq{"id": fmt.Sprintf("%v", id)}, fmt.Sprintf("%v", i)).Else("list_position")
+					}
+
+					query1, _, _ := sq.
+						Update("public.list").
+						Set("list_position", caseBuilder).
+						PlaceholderFormat(sq.Dollar).
+						ToSql()
+					mock.ExpectExec(regexp.QuoteMeta(query1)).
+						WithArgs(
+							"1", "2", "3",
+						).
+						WillReturnError(apperrors.ErrCouldNotExecuteQuery)
+				},
+			},
+			wantErr: true,
+			err:     apperrors.ErrCouldNotExecuteQuery,
+		},
+	}
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			db, mock, err := sqlmock.New()
+			if err != nil {
+				t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
+			}
+			defer db.Close()
+
+			ctx := context.WithValue(
+				context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+				dto.RequestIDKey, uuid.New(),
+			)
+
+			tt.args.query(mock, tt.args)
+
+			s := NewListStorage(db)
+
+			if err := s.UpdateOrder(ctx, tt.args.info); (err != nil) != tt.wantErr {
 				t.Errorf("PostgresListStorage.Update() error = %v, wantErr %v", err != nil, tt.wantErr)
 			}
 
