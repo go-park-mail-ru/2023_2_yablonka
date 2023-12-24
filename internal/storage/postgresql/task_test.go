@@ -513,18 +513,17 @@ func TestPostgresTaskStorage_Read(t *testing.T) {
 						From("public.task").
 						Join("public.task_user ON public.task.id = public.task_user.id_task").
 						Join("public.comment ON public.task.id = public.comment.id_task").
+						Join("public.tag_task ON public.task.id = public.tag_task.id_task").
 						Where(sq.Eq{"public.task.id": args.id.Value}).
 						PlaceholderFormat(sq.Dollar).
 						ToSql()
 
-					userIDS := pq.StringArray([]string{})
-					commentIDs := pq.StringArray([]string{})
 					mock.ExpectQuery(regexp.QuoteMeta(query)).
 						WithArgs(
 							args.id.Value,
 						).
 						WillReturnRows(sqlmock.NewRows(allTaskFields2).
-							AddRow(1, 1, time.Now(), "ame", "dsd", 1, time.Now(), time.Now(), userIDS, commentIDs))
+							AddRow(1, 1, time.Now(), "ame", "dsd", 1, time.Now(), time.Now(), pq.StringArray([]string{}), pq.StringArray([]string{}), pq.StringArray([]string{})))
 				},
 			},
 			wantErr: false,
@@ -542,6 +541,7 @@ func TestPostgresTaskStorage_Read(t *testing.T) {
 						From("public.task").
 						Join("public.task_user ON public.task.id = public.task_user.id_task").
 						Join("public.comment ON public.task.id = public.comment.id_task").
+						Join("public.tag_task ON public.task.id = public.tag_task.id_task").
 						Where(sq.Eq{"public.task.id": args.id.Value}).
 						PlaceholderFormat(sq.Dollar).
 						ToSql()
@@ -612,6 +612,7 @@ func TestPostgresTaskStorage_ReadMany(t *testing.T) {
 						LeftJoin("public.task_user ON public.task.id = public.task_user.id_task").
 						LeftJoin("public.comment ON public.task.id = public.comment.id_task").
 						LeftJoin("public.checklist ON public.task.id = public.checklist.id_task").
+						LeftJoin("public.tag_task ON public.task.id = public.tag_task.id_task").
 						Where(sq.Eq{"public.task.id": args.id.Values}).
 						GroupBy("public.task.id", "public.task.id_list").
 						PlaceholderFormat(sq.Dollar).
@@ -620,12 +621,13 @@ func TestPostgresTaskStorage_ReadMany(t *testing.T) {
 					userIDS := pq.StringArray([]string{})
 					commentIDs := pq.StringArray([]string{})
 					checklistIDs := pq.StringArray([]string{})
+					tagIDs := pq.StringArray([]string{})
 					mock.ExpectQuery(regexp.QuoteMeta(query)).
 						WithArgs(
 							"1", "2",
 						).
 						WillReturnRows(sqlmock.NewRows(allTaskFields).
-							AddRow(1, 1, time.Now(), "ame", "dsd", 1, time.Now(), time.Now(), userIDS, commentIDs, checklistIDs))
+							AddRow(1, 1, time.Now(), "ame", "dsd", 1, time.Now(), time.Now(), userIDS, commentIDs, checklistIDs, tagIDs))
 				},
 			},
 			wantErr: false,
@@ -644,6 +646,7 @@ func TestPostgresTaskStorage_ReadMany(t *testing.T) {
 						LeftJoin("public.task_user ON public.task.id = public.task_user.id_task").
 						LeftJoin("public.comment ON public.task.id = public.comment.id_task").
 						LeftJoin("public.checklist ON public.task.id = public.checklist.id_task").
+						LeftJoin("public.tag_task ON public.task.id = public.tag_task.id_task").
 						Where(sq.Eq{"public.task.id": args.id.Values}).
 						GroupBy("public.task.id", "public.task.id_list").
 						PlaceholderFormat(sq.Dollar).
@@ -655,6 +658,15 @@ func TestPostgresTaskStorage_ReadMany(t *testing.T) {
 						).
 						WillReturnError(apperrors.ErrCouldNotGetBoard)
 				},
+			},
+			wantErr: true,
+			err:     apperrors.ErrCouldNotGetBoard,
+		},
+		{
+			name: "Building query failed",
+			args: args{
+				id:    &dto.TaskIDs{},
+				query: func(mock sqlmock.Sqlmock, args args) {},
 			},
 			wantErr: true,
 			err:     apperrors.ErrCouldNotGetBoard,
@@ -788,6 +800,628 @@ func TestPostgresTaskStorage_Update(t *testing.T) {
 
 			if err := s.Update(ctx, *tt.args.info); (err != nil) != tt.wantErr {
 				t.Errorf("PostgresTaskStorage.Update() error = %v, wantErr %v", err != nil, tt.wantErr)
+			}
+
+			if err := mock.ExpectationsWereMet(); err != nil {
+				t.Errorf("there were unfulfilled expectations: %s", err)
+			}
+		})
+	}
+}
+
+func TestPostgresTaskStorage_AttachFile(t *testing.T) {
+	t.Parallel()
+	type args struct {
+		info  dto.AttachedFileInfo
+		query func(mock sqlmock.Sqlmock, args args)
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+		err     error
+	}{
+		{
+			name: "Happy path",
+			args: args{
+				info: dto.AttachedFileInfo{
+					TaskID:       1,
+					OriginalName: "sdvsd",
+					FilePath:     "sdvsd",
+					DateCreated:  time.Now(),
+				},
+				query: func(mock sqlmock.Sqlmock, args args) {
+					fileID := 1
+
+					mock.ExpectBegin()
+
+					query1, _, _ := sq.
+						Insert("public.file").
+						Columns(allFileInfoFields...).
+						Values(args.info.OriginalName, args.info.FilePath, args.info.DateCreated).
+						PlaceholderFormat(sq.Dollar).
+						Suffix("RETURNING id").
+						ToSql()
+					mock.ExpectQuery(regexp.QuoteMeta(query1)).
+						WithArgs(
+							args.info.OriginalName,
+							args.info.FilePath,
+							args.info.DateCreated,
+						).
+						WillReturnRows(sqlmock.NewRows([]string{"id"}).
+							AddRow(fileID),
+						)
+
+					query2, _, _ := sq.
+						Insert("public.task_file").
+						Columns("id_task", "id_file").
+						Values(args.info.TaskID, fileID).
+						PlaceholderFormat(sq.Dollar).
+						ToSql()
+					mock.ExpectExec(regexp.QuoteMeta(query2)).
+						WithArgs(
+							args.info.TaskID,
+							fileID,
+						).
+						WillReturnResult(sqlmock.NewResult(1, 1))
+
+					mock.ExpectCommit()
+				},
+			},
+			wantErr: false,
+			err:     nil,
+		},
+		{
+			name: "Building query 1 failed",
+			args: args{
+				info:  dto.AttachedFileInfo{},
+				query: func(mock sqlmock.Sqlmock, args args) {},
+			},
+			wantErr: true,
+			err:     apperrors.ErrCouldNotBuildQuery,
+		},
+		{
+			name: "Beginning transaction failed",
+			args: args{
+				info: dto.AttachedFileInfo{},
+				query: func(mock sqlmock.Sqlmock, args args) {
+					mock.ExpectBegin().WillReturnError(apperrors.ErrCouldNotBeginTransaction)
+				},
+			},
+			wantErr: true,
+			err:     apperrors.ErrCouldNotBeginTransaction,
+		},
+		{
+			name: "Executing query 1 failed",
+			args: args{
+				info: dto.AttachedFileInfo{
+					TaskID:       1,
+					OriginalName: "sdvsd",
+					FilePath:     "sdvsd",
+					DateCreated:  time.Now(),
+				},
+				query: func(mock sqlmock.Sqlmock, args args) {
+					mock.ExpectBegin()
+
+					query1, _, _ := sq.
+						Insert("public.file").
+						Columns(allFileInfoFields...).
+						Values(args.info.OriginalName, args.info.FilePath, args.info.DateCreated).
+						PlaceholderFormat(sq.Dollar).
+						Suffix("RETURNING id").
+						ToSql()
+					mock.ExpectQuery(regexp.QuoteMeta(query1)).
+						WithArgs(
+							args.info.OriginalName,
+							args.info.FilePath,
+							args.info.DateCreated,
+						).
+						WillReturnError(apperrors.ErrCouldNotExecuteQuery)
+
+					mock.ExpectRollback()
+				},
+			},
+			wantErr: true,
+			err:     apperrors.ErrCouldNotExecuteQuery,
+		},
+		{
+			name: "Executing query 1 and rollback failed",
+			args: args{
+				info: dto.AttachedFileInfo{
+					TaskID:       1,
+					OriginalName: "sdvsd",
+					FilePath:     "sdvsd",
+					DateCreated:  time.Now(),
+				},
+				query: func(mock sqlmock.Sqlmock, args args) {
+					mock.ExpectBegin()
+
+					query1, _, _ := sq.
+						Insert("public.file").
+						Columns(allFileInfoFields...).
+						Values(args.info.OriginalName, args.info.FilePath, args.info.DateCreated).
+						PlaceholderFormat(sq.Dollar).
+						Suffix("RETURNING id").
+						ToSql()
+					mock.ExpectQuery(regexp.QuoteMeta(query1)).
+						WithArgs(
+							args.info.OriginalName,
+							args.info.FilePath,
+							args.info.DateCreated,
+						).
+						WillReturnError(apperrors.ErrCouldNotExecuteQuery)
+
+					mock.ExpectRollback().WillReturnError(apperrors.ErrCouldNotRollback)
+				},
+			},
+			wantErr: true,
+			err:     apperrors.ErrCouldNotRollback,
+		},
+		{
+			name: "Executing query 2 failed",
+			args: args{
+				info: dto.AttachedFileInfo{
+					TaskID:       1,
+					OriginalName: "sdvsd",
+					FilePath:     "sdvsd",
+					DateCreated:  time.Now(),
+				},
+				query: func(mock sqlmock.Sqlmock, args args) {
+					fileID := 1
+
+					mock.ExpectBegin()
+
+					query1, _, _ := sq.
+						Insert("public.file").
+						Columns(allFileInfoFields...).
+						Values(args.info.OriginalName, args.info.FilePath, args.info.DateCreated).
+						PlaceholderFormat(sq.Dollar).
+						Suffix("RETURNING id").
+						ToSql()
+					mock.ExpectQuery(regexp.QuoteMeta(query1)).
+						WithArgs(
+							args.info.OriginalName,
+							args.info.FilePath,
+							args.info.DateCreated,
+						).
+						WillReturnRows(sqlmock.NewRows([]string{"id"}).
+							AddRow(fileID),
+						)
+
+					query2, _, _ := sq.
+						Insert("public.task_file").
+						Columns("id_task", "id_file").
+						Values(args.info.TaskID, fileID).
+						PlaceholderFormat(sq.Dollar).
+						ToSql()
+					mock.ExpectExec(regexp.QuoteMeta(query2)).
+						WithArgs(
+							args.info.TaskID,
+							fileID,
+						).
+						WillReturnError(apperrors.ErrCouldNotExecuteQuery)
+
+					mock.ExpectRollback()
+				},
+			},
+			wantErr: true,
+			err:     apperrors.ErrCouldNotExecuteQuery,
+		},
+		{
+			name: "Executing query 2 and rollback failed",
+			args: args{
+				info: dto.AttachedFileInfo{
+					TaskID:       1,
+					OriginalName: "sdvsd",
+					FilePath:     "sdvsd",
+					DateCreated:  time.Now(),
+				},
+				query: func(mock sqlmock.Sqlmock, args args) {
+					fileID := 1
+
+					mock.ExpectBegin()
+
+					query1, _, _ := sq.
+						Insert("public.file").
+						Columns(allFileInfoFields...).
+						Values(args.info.OriginalName, args.info.FilePath, args.info.DateCreated).
+						PlaceholderFormat(sq.Dollar).
+						Suffix("RETURNING id").
+						ToSql()
+					mock.ExpectQuery(regexp.QuoteMeta(query1)).
+						WithArgs(
+							args.info.OriginalName,
+							args.info.FilePath,
+							args.info.DateCreated,
+						).
+						WillReturnRows(sqlmock.NewRows([]string{"id"}).
+							AddRow(fileID),
+						)
+
+					query2, _, _ := sq.
+						Insert("public.task_file").
+						Columns("id_task", "id_file").
+						Values(args.info.TaskID, fileID).
+						PlaceholderFormat(sq.Dollar).
+						ToSql()
+					mock.ExpectExec(regexp.QuoteMeta(query2)).
+						WithArgs(
+							args.info.TaskID,
+							fileID,
+						).
+						WillReturnError(apperrors.ErrCouldNotExecuteQuery)
+
+					mock.ExpectRollback().WillReturnError(apperrors.ErrCouldNotRollback)
+				},
+			},
+			wantErr: true,
+			err:     apperrors.ErrCouldNotRollback,
+		},
+		{
+			name: "Commiting failed",
+			args: args{
+				info: dto.AttachedFileInfo{
+					TaskID:       1,
+					OriginalName: "sdvsd",
+					FilePath:     "sdvsd",
+					DateCreated:  time.Now(),
+				},
+				query: func(mock sqlmock.Sqlmock, args args) {
+					fileID := 1
+
+					mock.ExpectBegin()
+
+					query1, _, _ := sq.
+						Insert("public.file").
+						Columns(allFileInfoFields...).
+						Values(args.info.OriginalName, args.info.FilePath, args.info.DateCreated).
+						PlaceholderFormat(sq.Dollar).
+						Suffix("RETURNING id").
+						ToSql()
+					mock.ExpectQuery(regexp.QuoteMeta(query1)).
+						WithArgs(
+							args.info.OriginalName,
+							args.info.FilePath,
+							args.info.DateCreated,
+						).
+						WillReturnRows(sqlmock.NewRows([]string{"id"}).
+							AddRow(fileID),
+						)
+
+					query2, _, _ := sq.
+						Insert("public.task_file").
+						Columns("id_task", "id_file").
+						Values(args.info.TaskID, fileID).
+						PlaceholderFormat(sq.Dollar).
+						ToSql()
+					mock.ExpectExec(regexp.QuoteMeta(query2)).
+						WithArgs(
+							args.info.TaskID,
+							fileID,
+						).
+						WillReturnResult(sqlmock.NewResult(1, 1))
+
+					mock.ExpectCommit().WillReturnError(apperrors.ErrCouldNotCommit)
+				},
+			},
+			wantErr: true,
+			err:     apperrors.ErrCouldNotCommit,
+		},
+	}
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			db, mock, err := sqlmock.New()
+			if err != nil {
+				t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
+			}
+			defer db.Close()
+
+			ctx := context.WithValue(
+				context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+				dto.RequestIDKey, uuid.New(),
+			)
+
+			tt.args.query(mock, tt.args)
+
+			s := NewTaskStorage(db)
+
+			if err := s.AttachFile(ctx, tt.args.info); (err != nil) != tt.wantErr {
+				t.Errorf("PostgresTaskStorage.AttachFile() error = %v, wantErr %v", err != nil, tt.wantErr)
+			}
+
+			if err := mock.ExpectationsWereMet(); err != nil {
+				t.Errorf("there were unfulfilled expectations: %s", err)
+			}
+		})
+	}
+}
+
+func TestPostgresTaskStorage_RemoveFile(t *testing.T) {
+	t.Parallel()
+	type args struct {
+		info  dto.RemoveFileInfo
+		query func(mock sqlmock.Sqlmock, args args)
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+		err     error
+	}{
+		{
+			name: "Happy path",
+			args: args{
+				info: dto.RemoveFileInfo{
+					TaskID:       1,
+					OriginalName: "sdvsd",
+					FilePath:     "sdvsd",
+				},
+				query: func(mock sqlmock.Sqlmock, args args) {
+					fileID := 1
+
+					query1, _, _ := sq.
+						Select("id").
+						From("public.file").
+						Where(sq.And{
+							sq.Eq{"name": args.info.OriginalName},
+							sq.Eq{"filepath": args.info.FilePath},
+						}).
+						PlaceholderFormat(sq.Dollar).
+						ToSql()
+					mock.ExpectQuery(regexp.QuoteMeta(query1)).
+						WithArgs(
+							args.info.OriginalName,
+							args.info.FilePath,
+						).
+						WillReturnRows(sqlmock.NewRows([]string{"id"}).
+							AddRow(fileID),
+						)
+
+					query2, _, _ := sq.
+						Delete("public.file").
+						Where(sq.Eq{"id": fileID}).
+						PlaceholderFormat(sq.Dollar).
+						ToSql()
+					mock.ExpectExec(regexp.QuoteMeta(query2)).
+						WithArgs(
+							fileID,
+						).
+						WillReturnResult(sqlmock.NewResult(1, 1))
+				},
+			},
+			wantErr: false,
+			err:     nil,
+		},
+		{
+			name: "Building query 1 failed",
+			args: args{
+				info:  dto.RemoveFileInfo{},
+				query: func(mock sqlmock.Sqlmock, args args) {},
+			},
+			wantErr: true,
+			err:     apperrors.ErrCouldNotBuildQuery,
+		},
+		{
+			name: "Executing query 1 failed",
+			args: args{
+				info: dto.RemoveFileInfo{
+					TaskID:       1,
+					OriginalName: "sdvsd",
+					FilePath:     "sdvsd",
+				},
+				query: func(mock sqlmock.Sqlmock, args args) {
+					query1, _, _ := sq.
+						Select("id").
+						From("public.file").
+						Where(sq.And{
+							sq.Eq{"name": args.info.OriginalName},
+							sq.Eq{"filepath": args.info.FilePath},
+						}).
+						PlaceholderFormat(sq.Dollar).
+						ToSql()
+					mock.ExpectQuery(regexp.QuoteMeta(query1)).
+						WithArgs(
+							args.info.OriginalName,
+							args.info.FilePath,
+						).
+						WillReturnError(apperrors.ErrCouldNotExecuteQuery)
+				},
+			},
+			wantErr: true,
+			err:     apperrors.ErrCouldNotExecuteQuery,
+		},
+		{
+			name: "Executing query 2 failed",
+			args: args{
+				info: dto.RemoveFileInfo{
+					TaskID:       1,
+					OriginalName: "sdvsd",
+					FilePath:     "sdvsd",
+				},
+				query: func(mock sqlmock.Sqlmock, args args) {
+					fileID := 1
+
+					query1, _, _ := sq.
+						Select("id").
+						From("public.file").
+						Where(sq.And{
+							sq.Eq{"name": args.info.OriginalName},
+							sq.Eq{"filepath": args.info.FilePath},
+						}).
+						PlaceholderFormat(sq.Dollar).
+						ToSql()
+					mock.ExpectQuery(regexp.QuoteMeta(query1)).
+						WithArgs(
+							args.info.OriginalName,
+							args.info.FilePath,
+						).
+						WillReturnRows(sqlmock.NewRows([]string{"id"}).
+							AddRow(fileID),
+						)
+
+					query2, _, _ := sq.
+						Delete("public.file").
+						Where(sq.Eq{"id": fileID}).
+						PlaceholderFormat(sq.Dollar).
+						ToSql()
+					mock.ExpectExec(regexp.QuoteMeta(query2)).
+						WithArgs(
+							fileID,
+						).
+						WillReturnError(apperrors.ErrCouldNotExecuteQuery)
+				},
+			},
+			wantErr: true,
+			err:     apperrors.ErrCouldNotExecuteQuery,
+		},
+	}
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			db, mock, err := sqlmock.New()
+			if err != nil {
+				t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
+			}
+			defer db.Close()
+
+			ctx := context.WithValue(
+				context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+				dto.RequestIDKey, uuid.New(),
+			)
+
+			tt.args.query(mock, tt.args)
+
+			s := NewTaskStorage(db)
+
+			if err := s.RemoveFile(ctx, tt.args.info); (err != nil) != tt.wantErr {
+				t.Errorf("PostgresTaskStorage.RemoveFile() error = %v, wantErr %v", err != nil, tt.wantErr)
+			}
+
+			if err := mock.ExpectationsWereMet(); err != nil {
+				t.Errorf("there were unfulfilled expectations: %s", err)
+			}
+		})
+	}
+}
+
+func TestPostgresTaskStorage_GetFileList(t *testing.T) {
+	t.Parallel()
+	type args struct {
+		id    *dto.TaskID
+		query func(mock sqlmock.Sqlmock, args args)
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+		err     error
+	}{
+		{
+			name: "Happy path",
+			args: args{
+				id: &dto.TaskID{
+					Value: 1,
+				},
+				query: func(mock sqlmock.Sqlmock, args args) {
+					query, _, _ := sq.
+						Select(allPublicFileInfoFields...).
+						From("public.file").
+						Join("public.task_file ON public.task_file.id_file = public.file.id").
+						Where(sq.Eq{"public.task_file.id_task": args.id.Value}).
+						PlaceholderFormat(sq.Dollar).
+						ToSql()
+					mock.ExpectQuery(regexp.QuoteMeta(query)).
+						WithArgs(
+							args.id.Value,
+						).
+						WillReturnRows(sqlmock.NewRows(allPublicFileInfoFields).
+							AddRow("ame", "dsd", time.Now()))
+				},
+			},
+			wantErr: false,
+			err:     nil,
+		},
+		{
+			name: "Executing query failed",
+			args: args{
+				id: &dto.TaskID{
+					Value: 1,
+				},
+				query: func(mock sqlmock.Sqlmock, args args) {
+					query, _, _ := sq.
+						Select(allPublicFileInfoFields...).
+						From("public.file").
+						Join("public.task_file ON public.task_file.id_file = public.file.id").
+						Where(sq.Eq{"public.task_file.id_task": args.id.Value}).
+						PlaceholderFormat(sq.Dollar).
+						ToSql()
+					mock.ExpectQuery(regexp.QuoteMeta(query)).
+						WithArgs(
+							args.id.Value,
+						).
+						WillReturnError(apperrors.ErrCouldNotExecuteQuery)
+				},
+			},
+			wantErr: true,
+			err:     apperrors.ErrCouldNotExecuteQuery,
+		},
+		{
+			name: "Building query failed",
+			args: args{
+				id:    &dto.TaskID{},
+				query: func(mock sqlmock.Sqlmock, args args) {},
+			},
+			wantErr: true,
+			err:     apperrors.ErrCouldNotBuildQuery,
+		},
+		{
+			name: "Scanning rows failed",
+			args: args{
+				id: &dto.TaskID{
+					Value: 1,
+				},
+				query: func(mock sqlmock.Sqlmock, args args) {
+					query, _, _ := sq.
+						Select(allPublicFileInfoFields...).
+						From("public.file").
+						Join("public.task_file ON public.task_file.id_file = public.file.id").
+						Where(sq.Eq{"public.task_file.id_task": args.id.Value}).
+						PlaceholderFormat(sq.Dollar).
+						ToSql()
+					mock.ExpectQuery(regexp.QuoteMeta(query)).
+						WithArgs(
+							args.id.Value,
+						).
+						WillReturnRows(sqlmock.NewRows(allPublicFileInfoFields).
+							AddRow(nil, nil, nil))
+				},
+			},
+			wantErr: true,
+			err:     apperrors.ErrCouldNotScanRows,
+		},
+	}
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			db, mock, err := sqlmock.New()
+			if err != nil {
+				t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
+			}
+			defer db.Close()
+
+			ctx := context.WithValue(
+				context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
+				dto.RequestIDKey, uuid.New(),
+			)
+
+			tt.args.query(mock, tt.args)
+
+			s := NewTaskStorage(db)
+
+			if _, err := s.GetFileList(ctx, *tt.args.id); (err != nil) != tt.wantErr {
+				t.Errorf("PostgresTaskStorage.GetFileList() error = %v, wantErr %v", err != nil, tt.wantErr)
 			}
 
 			if err := mock.ExpectationsWereMet(); err != nil {
