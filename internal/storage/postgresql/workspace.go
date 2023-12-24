@@ -301,7 +301,7 @@ func (s PostgresWorkspaceStorage) Create(ctx context.Context, info dto.NewWorksp
 	if err != nil {
 		logger.DebugFmt(errorMessage+err.Error(), requestID.String(), funcName, nodeName)
 		logger.Debug(failBorder)
-		return nil, apperrors.ErrCouldNotStartTransaction
+		return nil, apperrors.ErrCouldNotBeginTransaction
 	}
 	logger.DebugFmt("Began transaction", requestID.String(), funcName, nodeName)
 
@@ -445,61 +445,3 @@ func (s PostgresWorkspaceStorage) Delete(ctx context.Context, id dto.WorkspaceID
 
 	return nil
 }
-
-/*
-
-// GetWorkspace
-// находит рабочее пространство и связанные доски в БД по его id
-// или возвращает ошибки ...
-func (s PostgresWorkspaceStorage) GetWorkspace(ctx context.Context, id dto.WorkspaceID) (*entities.Workspace, error) {
-	funcName := "PostgresWorkspaceStorage.GetWorkspace"
-	errorMessage := "Creating workspace failed with error: "
-	failBorder := ">>>>>>>>>>>>>>>>>>> PostgresWorkspaceStorage.GetWorkspace FAIL <<<<<<<<<<<<<<<<<<<<<<<"
-	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
-requestID := ctx.Value(dto.RequestIDKey).(uuid.UUID)
-
-	logger.Debug(">>>>>>>>>>>>>>>> PostgresWorkspaceStorage.GetWorkspace <<<<<<<<<<<<<<<<<<<")
-
-	sql, args, err := sq.
-		Select(allWorkspaceAndBoardFields...).
-		From("public.workspace").
-		Join("public.board ON public.workspace.id = public.board.workspace_id").
-		Where(sq.Eq{"public.workspace.id": id.Value}).
-		ToSql()
-	if err != nil {
-		logger.DebugFmt(errorMessage+err.Error(), requestID.String(), funcName, nodeName)
-		logger.Debug(failBorder)
-		return nil, err
-	}
-
-	rows, err := s.db.Query(sql, args...)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
-	var workspace entities.Workspace
-	for rows.Next() {
-		var board entities.Board
-
-		err = rows.Scan(
-			&workspace,
-			&board)
-		if err != nil {
-			logger.DebugFmt(errorMessage+err.Error(), requestID.String(), funcName, nodeName)
-			logger.Debug(failBorder)
-			return nil, err
-		}
-
-		workspace.Boards = append(workspace.Boards, board)
-	}
-	if rows.Err() != nil {
-		logger.DebugFmt(errorMessage+err.Error(), requestID.String(), funcName, nodeName)
-		logger.Debug(failBorder)
-		return nil, err
-	}
-
-	return &workspace, nil
-}
-
-*/
