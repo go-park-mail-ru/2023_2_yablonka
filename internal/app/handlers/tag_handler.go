@@ -52,6 +52,7 @@ func (th TagHandler) Create(w http.ResponseWriter, r *http.Request) {
 	}
 	logger.DebugFmt("request struct decoded", requestID.String(), funcName, nodeName)
 
+	newTagInfo.Color = "FFFFFF"
 	tag, err := th.ts.Create(rCtx, newTagInfo)
 	if err != nil {
 		logger.Error(errorMessage + err.Error())
@@ -104,8 +105,8 @@ func (th TagHandler) Update(w http.ResponseWriter, r *http.Request) {
 
 	logger.Info("---------------------------------- Updating Tag ----------------------------------")
 
-	var TagInfo dto.UpdatedTagInfo
-	err := easyjson.UnmarshalFromReader(r.Body, &TagInfo)
+	var tagInfo dto.UpdatedTagInfo
+	err := easyjson.UnmarshalFromReader(r.Body, &tagInfo)
 	if err != nil {
 		logger.Error(errorMessage + err.Error())
 		logger.Info(failBorder)
@@ -114,7 +115,7 @@ func (th TagHandler) Update(w http.ResponseWriter, r *http.Request) {
 	}
 	logger.DebugFmt("request struct decoded", requestID.String(), funcName, nodeName)
 
-	err = th.ts.Update(rCtx, TagInfo)
+	err = th.ts.Update(rCtx, tagInfo)
 	if err != nil {
 		logger.Error(errorMessage + err.Error())
 		logger.Info(failBorder)

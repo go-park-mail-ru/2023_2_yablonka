@@ -14,6 +14,7 @@ import (
 
 func TestPostgresTagStorage_Create(t *testing.T) {
 	t.Parallel()
+	color := "dfbdfbdf"
 	type args struct {
 		info  dto.NewTagInfo
 		query func(mock sqlmock.Sqlmock, args args)
@@ -32,7 +33,7 @@ func TestPostgresTagStorage_Create(t *testing.T) {
 					TaskID:  1,
 					BoardID: 1,
 					Name:    "gfhfghfh",
-					Color:   "dfbdfbdf",
+					Color:   color,
 				},
 				ctx: context.WithValue(
 					context.WithValue(
@@ -113,7 +114,7 @@ func TestPostgresTagStorage_Create(t *testing.T) {
 					TaskID:  1,
 					BoardID: 1,
 					Name:    "gfhfghfh",
-					Color:   "dfbdfbdf",
+					Color:   color,
 				},
 				ctx: context.WithValue(
 					context.WithValue(
@@ -136,7 +137,7 @@ func TestPostgresTagStorage_Create(t *testing.T) {
 					TaskID:  1,
 					BoardID: 1,
 					Name:    "gfhfghfh",
-					Color:   "dfbdfbdf",
+					Color:   color,
 				},
 				ctx: context.WithValue(
 					context.WithValue(
@@ -174,7 +175,7 @@ func TestPostgresTagStorage_Create(t *testing.T) {
 					TaskID:  1,
 					BoardID: 1,
 					Name:    "gfhfghfh",
-					Color:   "dfbdfbdf",
+					Color:   color,
 				},
 				ctx: context.WithValue(
 					context.WithValue(
@@ -212,7 +213,7 @@ func TestPostgresTagStorage_Create(t *testing.T) {
 					TaskID:  1,
 					BoardID: 1,
 					Name:    "gfhfghfh",
-					Color:   "dfbdfbdf",
+					Color:   color,
 				},
 				ctx: context.WithValue(
 					context.WithValue(
@@ -265,7 +266,7 @@ func TestPostgresTagStorage_Create(t *testing.T) {
 					TaskID:  1,
 					BoardID: 1,
 					Name:    "gfhfghfh",
-					Color:   "dfbdfbdf",
+					Color:   color,
 				},
 				ctx: context.WithValue(
 					context.WithValue(
@@ -318,7 +319,7 @@ func TestPostgresTagStorage_Create(t *testing.T) {
 					TaskID:  1,
 					BoardID: 1,
 					Name:    "gfhfghfh",
-					Color:   "dfbdfbdf",
+					Color:   color,
 				},
 				ctx: context.WithValue(
 					context.WithValue(
@@ -384,7 +385,7 @@ func TestPostgresTagStorage_Create(t *testing.T) {
 					TaskID:  1,
 					BoardID: 1,
 					Name:    "gfhfghfh",
-					Color:   "dfbdfbdf",
+					Color:   color,
 				},
 				ctx: context.WithValue(
 					context.WithValue(
@@ -450,7 +451,7 @@ func TestPostgresTagStorage_Create(t *testing.T) {
 					TaskID:  1,
 					BoardID: 1,
 					Name:    "gfhfghfh",
-					Color:   "dfbdfbdf",
+					Color:   color,
 				},
 				ctx: context.WithValue(
 					context.WithValue(
