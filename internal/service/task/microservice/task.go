@@ -5,7 +5,6 @@ import (
 	"crypto/sha256"
 	"fmt"
 	"os"
-	"path"
 	"server/internal/apperrors"
 	logger "server/internal/logging"
 	"server/internal/pkg/dto"
@@ -128,17 +127,18 @@ func (ts TaskService) Attach(ctx context.Context, info dto.NewFileInfo) (*dto.At
 	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
 	requestID := ctx.Value(dto.RequestIDKey).(uuid.UUID)
 
-	fileName := hashFromFileInfo(info.Filename, info.Mimetype,
+	nameHash := hashFromFileInfo(info.Filename, info.Mimetype,
 		strconv.FormatUint(info.UserID, 10), strconv.FormatUint(info.TaskID, 10),
 		requestID.String(), time.Now().String())
-	extension := path.Ext(info.Filename)
 
-	if err := os.MkdirAll("attachments/task/"+strconv.FormatUint(info.TaskID, 10), 0755); err != nil {
+	fileDir := "attachments/task/" + strconv.FormatUint(info.TaskID, 10) + "/" + nameHash
+
+	if err := os.MkdirAll(fileDir, 0755); err != nil {
 		logger.DebugFmt("Failed to create directory with error: "+err.Error(), requestID.String(), funcName, nodeName)
 		return &dto.AttachedFileInfo{}, apperrors.ErrFailedToCreateFile
 	}
 
-	fileLocation := "attachments/task/" + strconv.FormatUint(info.TaskID, 10) + "/" + fileName + extension
+	fileLocation := fileDir + "/" + info.Filename
 
 	f, err := os.Create(fileLocation)
 	if err != nil {
