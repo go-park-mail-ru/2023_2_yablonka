@@ -1702,8 +1702,8 @@ const docTemplate = `{
             }
         },
         "/tag/remove_from_task/": {
-            "post": {
-                "description": "Добавить тэг к заданию",
+            "delete": {
+                "description": "Открепить тэг от задания",
                 "consumes": [
                     "application/json"
                 ],
@@ -1713,7 +1713,7 @@ const docTemplate = `{
                 "tags": [
                     "tags"
                 ],
-                "summary": "Добавить тэг к заданию",
+                "summary": "Открепить тэг от задания",
                 "parameters": [
                     {
                         "description": "id тэга и связанного задания",
