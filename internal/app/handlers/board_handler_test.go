@@ -1408,7 +1408,7 @@ func TestBoardHandler_Unit_AddUser(t *testing.T) {
 					bs.
 						EXPECT().
 						AddUser(gomock.Any(), args.request).
-						Return(apperrors.ErrNoBoardAccess)
+						Return(args.addedUser, apperrors.ErrNoBoardAccess)
 
 					body := bytes.NewReader([]byte(fmt.Sprintf(
 						`{"user_email":"%s", "board_id":%v, "workspace_id":%v}`,
@@ -1463,7 +1463,7 @@ func TestBoardHandler_Unit_AddUser(t *testing.T) {
 					bs.
 						EXPECT().
 						AddUser(gomock.Any(), args.request).
-						Return(apperrors.ErrUserAlreadyInBoard)
+						Return(args.addedUser, apperrors.ErrUserAlreadyInBoard)
 
 					body := bytes.NewReader([]byte(fmt.Sprintf(
 						`{"user_email":"%s", "board_id":%v, "workspace_id":%v}`,
@@ -1518,7 +1518,7 @@ func TestBoardHandler_Unit_AddUser(t *testing.T) {
 					bs.
 						EXPECT().
 						AddUser(gomock.Any(), args.request).
-						Return(apperrors.ErrCouldNotAddBoardUser)
+						Return(args.addedUser, apperrors.ErrCouldNotAddBoardUser)
 
 					body := bytes.NewReader([]byte(fmt.Sprintf(
 						`{"user_email":"%s", "board_id":%v, "workspace_id":%v}`,

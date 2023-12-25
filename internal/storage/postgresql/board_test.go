@@ -1469,13 +1469,14 @@ func TestBoardStorage_AddUser(t *testing.T) {
 						WithArgs(args.info.BoardID, args.info.UserID).
 						WillReturnResult(sqlmock.NewResult(1, 1))
 
+					mock.ExpectCommit()
+
 					mock.ExpectQuery(regexp.QuoteMeta(userQuery)).
 						WithArgs(args.info.UserID).
 						WillReturnRows(sqlmock.NewRows(allPublicUserFields).
 							AddRow(args.addedUser.ID, args.addedUser.Email, "", "", "", ""),
 						)
 
-					mock.ExpectCommit()
 				},
 			},
 			wantErr: false,
