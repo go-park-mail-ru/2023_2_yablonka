@@ -1244,6 +1244,7 @@ func TestBoardHandler_Unit_AddUser(t *testing.T) {
 		user         *entities.User
 		session      dto.SessionToken
 		request      dto.AddBoardUserRequest
+		addedUser    dto.UserPublicInfo
 		expectations func(bs *mock_service.MockIBoardService, args args) *http.Request
 	}
 	tests := []struct {
@@ -1268,6 +1269,10 @@ func TestBoardHandler_Unit_AddUser(t *testing.T) {
 					BoardID:     uint64(1),
 					WorkspaceID: uint64(1),
 				},
+				addedUser: dto.UserPublicInfo{
+					ID:    uint64(2),
+					Email: "seconduser@email.com",
+				},
 				expectations: func(bs *mock_service.MockIBoardService, args args) *http.Request {
 					cookie := &http.Cookie{
 						Name:     "tabula_user",
@@ -1281,7 +1286,7 @@ func TestBoardHandler_Unit_AddUser(t *testing.T) {
 					bs.
 						EXPECT().
 						AddUser(gomock.Any(), args.request).
-						Return(nil)
+						Return(args.addedUser, nil)
 
 					body := bytes.NewReader([]byte(fmt.Sprintf(
 						`{"user_email":"%s", "board_id":%v, "workspace_id":%v}`,
@@ -1403,7 +1408,7 @@ func TestBoardHandler_Unit_AddUser(t *testing.T) {
 					bs.
 						EXPECT().
 						AddUser(gomock.Any(), args.request).
-						Return(apperrors.ErrNoBoardAccess)
+						Return(args.addedUser, apperrors.ErrNoBoardAccess)
 
 					body := bytes.NewReader([]byte(fmt.Sprintf(
 						`{"user_email":"%s", "board_id":%v, "workspace_id":%v}`,
@@ -1458,7 +1463,7 @@ func TestBoardHandler_Unit_AddUser(t *testing.T) {
 					bs.
 						EXPECT().
 						AddUser(gomock.Any(), args.request).
-						Return(apperrors.ErrUserAlreadyInBoard)
+						Return(args.addedUser, apperrors.ErrUserAlreadyInBoard)
 
 					body := bytes.NewReader([]byte(fmt.Sprintf(
 						`{"user_email":"%s", "board_id":%v, "workspace_id":%v}`,
@@ -1513,7 +1518,7 @@ func TestBoardHandler_Unit_AddUser(t *testing.T) {
 					bs.
 						EXPECT().
 						AddUser(gomock.Any(), args.request).
-						Return(apperrors.ErrCouldNotAddBoardUser)
+						Return(args.addedUser, apperrors.ErrCouldNotAddBoardUser)
 
 					body := bytes.NewReader([]byte(fmt.Sprintf(
 						`{"user_email":"%s", "board_id":%v, "workspace_id":%v}`,

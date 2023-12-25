@@ -42,7 +42,7 @@ func TestBoardService_AddUser(t *testing.T) {
 				checklistStorage:     tt.fields.checklistStorage,
 				checklistItemStorage: tt.fields.checklistItemStorage,
 			}
-			if err := bs.AddUser(tt.args.ctx, tt.args.request); (err != nil) != tt.wantErr {
+			if _, err := bs.AddUser(tt.args.ctx, tt.args.request); (err != nil) != tt.wantErr {
 				t.Errorf("AddUser() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
