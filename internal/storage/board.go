@@ -41,7 +41,7 @@ type IBoardStorage interface {
 	Create(context.Context, dto.NewBoardInfo) (*entities.Board, error)
 	// Delete
 	// удаляет доску
-	Delete(context.Context, dto.BoardID) error
+	Delete(context.Context, dto.BoardDeleteRequest) error
 	// AddUser
 	// добавляет пользователя на доску
 	AddUser(context.Context, dto.AddBoardUserInfo) (dto.UserPublicInfo, error)

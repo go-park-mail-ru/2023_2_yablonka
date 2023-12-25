@@ -217,8 +217,8 @@ func (bs BoardService) UpdateThumbnail(ctx context.Context, info dto.UpdatedBoar
 
 // Delete
 // удаляет доску
-func (bs BoardService) Delete(ctx context.Context, id dto.BoardID) error {
-	return bs.boardStorage.Delete(ctx, id)
+func (bs BoardService) Delete(ctx context.Context, info dto.BoardDeleteRequest) error {
+	return bs.boardStorage.Delete(ctx, info)
 }
 
 // AddUser

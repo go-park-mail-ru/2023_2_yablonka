@@ -103,8 +103,8 @@ func TestBoardService_Delete(t *testing.T) {
 		checklistItemStorage storage.IChecklistItemStorage
 	}
 	type args struct {
-		ctx context.Context
-		id  dto.BoardID
+		ctx  context.Context
+		info dto.BoardDeleteRequest
 	}
 	tests := []struct {
 		name    string
@@ -124,7 +124,7 @@ func TestBoardService_Delete(t *testing.T) {
 				checklistStorage:     tt.fields.checklistStorage,
 				checklistItemStorage: tt.fields.checklistItemStorage,
 			}
-			if err := bs.Delete(tt.args.ctx, tt.args.id); (err != nil) != tt.wantErr {
+			if err := bs.Delete(tt.args.ctx, tt.args.info); (err != nil) != tt.wantErr {
 				t.Errorf("Delete() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})

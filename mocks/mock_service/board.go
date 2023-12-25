@@ -71,7 +71,7 @@ func (mr *MockIBoardServiceMockRecorder) Create(arg0, arg1 any) *gomock.Call {
 }
 
 // Delete mocks base method.
-func (m *MockIBoardService) Delete(arg0 context.Context, arg1 dto.BoardID) error {
+func (m *MockIBoardService) Delete(arg0 context.Context, arg1 dto.BoardDeleteRequest) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Delete", arg0, arg1)
 	ret0, _ := ret[0].(error)

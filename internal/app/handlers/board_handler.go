@@ -345,8 +345,8 @@ func (bh BoardHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	requestID := rCtx.Value(dto.RequestIDKey).(uuid.UUID)
 	logger.Info("---------------------------------- Deleting board ----------------------------------")
 
-	var boardID dto.BoardID
-	err := easyjson.UnmarshalFromReader(r.Body, &boardID)
+	var info dto.BoardDeleteRequest
+	err := easyjson.UnmarshalFromReader(r.Body, &info)
 	if err != nil {
 		logger.Error(errorMessage + err.Error())
 		logger.Info(failBorder)
@@ -364,7 +364,7 @@ func (bh BoardHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	}
 	logger.DebugFmt("User object acquired from context", requestID.String(), funcName, nodeName)
 
-	err = bh.bs.Delete(rCtx, boardID)
+	err = bh.bs.Delete(rCtx, info)
 	if err != nil {
 		logger.Error(errorMessage + err.Error())
 		logger.Info(failBorder)

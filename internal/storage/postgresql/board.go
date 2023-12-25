@@ -487,10 +487,10 @@ func (s *PostgreSQLBoardStorage) UpdateThumbnailUrl(ctx context.Context, info dt
 // Delete
 // удаляет доску
 // или возвращает ошибки ...
-func (s *PostgreSQLBoardStorage) Delete(ctx context.Context, id dto.BoardID) error {
+func (s *PostgreSQLBoardStorage) Delete(ctx context.Context, info dto.BoardDeleteRequest) error {
 	sql, args, err := sq.
 		Delete("public.board").
-		Where(sq.Eq{"id": id.Value}).
+		Where(sq.Eq{"id": info.BoardID}).
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
 

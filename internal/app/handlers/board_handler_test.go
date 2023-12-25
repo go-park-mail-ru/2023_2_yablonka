@@ -1037,7 +1037,7 @@ func TestBoardHandler_Unit_Delete(t *testing.T) {
 	type args struct {
 		user         *entities.User
 		session      dto.SessionToken
-		boardID      dto.BoardID
+		request      dto.BoardDeleteRequest
 		expectations func(bs *mock_service.MockIBoardService, args args) *http.Request
 	}
 	tests := []struct {
@@ -1057,7 +1057,10 @@ func TestBoardHandler_Unit_Delete(t *testing.T) {
 					Email:        "mock@mail.com",
 					PasswordHash: "Mock hash",
 				},
-				boardID: dto.BoardID{Value: uint64(1)},
+				request: dto.BoardDeleteRequest{
+					BoardID:     uint64(1),
+					WorkspaceID: uint64(1),
+				},
 				expectations: func(bs *mock_service.MockIBoardService, args args) *http.Request {
 					cookie := &http.Cookie{
 						Name:     "tabula_user",
@@ -1070,10 +1073,10 @@ func TestBoardHandler_Unit_Delete(t *testing.T) {
 
 					bs.
 						EXPECT().
-						Delete(gomock.Any(), args.boardID).
+						Delete(gomock.Any(), args.request).
 						Return(nil)
 
-					body := bytes.NewReader([]byte(fmt.Sprintf(`{"board_id":%v}`, args.boardID.Value)))
+					body := bytes.NewReader([]byte(fmt.Sprintf(`{"board_id":%v, "workspace_id":%v}`, args.request.BoardID, args.request.WorkspaceID)))
 
 					r := httptest.
 						NewRequest("DELETE", "/api/v2/board/delete/", body).
@@ -1140,7 +1143,7 @@ func TestBoardHandler_Unit_Delete(t *testing.T) {
 						Path:     "/api/v2/",
 					}
 
-					body := bytes.NewReader([]byte(fmt.Sprintf(`{"board_id":%v}`, args.boardID.Value)))
+					body := bytes.NewReader([]byte(fmt.Sprintf(`{"board_id":%v, "workspace_id":%v}`, args.request.BoardID, args.request.WorkspaceID)))
 
 					r := httptest.
 						NewRequest("DELETE", "/api/v2/board/delete/", body).
@@ -1169,7 +1172,10 @@ func TestBoardHandler_Unit_Delete(t *testing.T) {
 				session: dto.SessionToken{
 					ID: "Mock session",
 				},
-				boardID: dto.BoardID{Value: uint64(1)},
+				request: dto.BoardDeleteRequest{
+					BoardID:     uint64(1),
+					WorkspaceID: uint64(1),
+				},
 				expectations: func(bs *mock_service.MockIBoardService, args args) *http.Request {
 					cookie := &http.Cookie{
 						Name:     "tabula_user",
@@ -1182,10 +1188,10 @@ func TestBoardHandler_Unit_Delete(t *testing.T) {
 
 					bs.
 						EXPECT().
-						Delete(gomock.Any(), args.boardID).
+						Delete(gomock.Any(), args.request).
 						Return(apperrors.ErrBoardNotDeleted)
 
-					body := bytes.NewReader([]byte(fmt.Sprintf(`{"board_id":%v}`, args.boardID.Value)))
+					body := bytes.NewReader([]byte(fmt.Sprintf(`{"board_id":%v, "workspace_id":%v}`, args.request.BoardID, args.request.WorkspaceID)))
 
 					r := httptest.
 						NewRequest("DELETE", "/api/v2/board/delete/", body).
