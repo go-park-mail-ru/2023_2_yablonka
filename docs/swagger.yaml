@@ -2325,7 +2325,7 @@ paths:
       tags:
       - tasks
   /user/edit/:
-    post:
+    put:
       consumes:
       - application/json
       description: В ответ ничего не шлёт
@@ -2350,8 +2350,26 @@ paths:
       summary: Поменять данные профиля
       tags:
       - auth
-  /user/edit/change_avatar/:
-    post:
+  /user/edit/avatar/:
+    delete:
+      consumes:
+      - application/json
+      description: Удалить аватарку
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Ссылка на новую аватарку
+          schema:
+            $ref: '#/definitions/doc_structs.AvatarUploadResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+      summary: Удалить аватарку
+      tags:
+      - user
+    put:
       consumes:
       - application/json
       description: В ответ шлёт ссылку на файл
@@ -2376,8 +2394,8 @@ paths:
       summary: Поменять аватарку
       tags:
       - user
-  /user/edit/change_password/:
-    post:
+  /user/edit/password/:
+    put:
       consumes:
       - application/json
       description: Получает старый и новый пароли
@@ -2400,25 +2418,6 @@ paths:
           schema:
             $ref: '#/definitions/apperrors.ErrorResponse'
       summary: Поменять пароль
-      tags:
-      - user
-  /user/edit/delete_avatar/:
-    delete:
-      consumes:
-      - application/json
-      description: Удалить аватарку
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Ссылка на новую аватарку
-          schema:
-            $ref: '#/definitions/doc_structs.AvatarUploadResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/apperrors.ErrorResponse'
-      summary: Удалить аватарку
       tags:
       - user
   /user/workspaces:
