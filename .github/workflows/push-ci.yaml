@@ -25,12 +25,16 @@ jobs:
       - name: Build .env file
         uses: ./.github/actions/build-dot-env
         with:
-          jwt_secret: ${{ secrets.JWT_SECRET }}
           session_days: ${{ vars.SESSION_DURATION_DAYS }}
           session_hours: ${{ vars.SESSION_DURATION_HOURS }}
           session_minutes: ${{ vars.SESSION_DURATION_MINUTES }}
           session_seconds: ${{ vars.SESSION_DURATION_SECONDS }}
           session_id_length: ${{ vars.SESSION_ID_LENGTH }}
+          migrator_pw: ${{ secrets.MIGRATOR_PASSWORD }}
+          postgres_user: ${{ secrets.POSTGRES_USER }}
+          postgres_pwd: ${{ secrets.POSTGRES_PASSWORD }}
+          postgres_table: ${{ secrets.POSTGRES_TABLE }}
+          postgres_host: ${{ secrets.POSTGRES_HOST }}
 
       - name: Build the binary
         run: go build -o yablonka-backend ./cmd/app/main.go
