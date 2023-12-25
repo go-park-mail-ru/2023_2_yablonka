@@ -1592,7 +1592,7 @@ func TestBoardStorage_AddUser(t *testing.T) {
 
 			s := NewBoardStorage(db)
 
-			err = s.AddUser(ctx, tt.args.info)
+			_, err = s.AddUser(ctx, tt.args.info)
 
 			if (err != nil) != tt.wantErr {
 				t.Errorf("AddUser() error = %v, wantErr %v, err = %v", err != nil, tt.wantErr, err)
