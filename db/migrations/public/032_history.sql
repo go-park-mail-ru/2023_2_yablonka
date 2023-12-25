@@ -8,12 +8,12 @@ CREATE TABLE IF NOT EXISTS public.edit_history
     CONSTRAINT edit_id_user_fkey FOREIGN KEY (id_user)
         REFERENCES public."user" (id) MATCH SIMPLE
         ON UPDATE NO ACTION
-        ON DELETE SET NULL
+        ON DELETE CASCADE
         NOT VALID,
     CONSTRAINT edit_id_board_fkey FOREIGN KEY (id_board)
         REFERENCES public."board" (id) MATCH SIMPLE
         ON UPDATE NO ACTION
-        ON DELETE SET NULL
+        ON DELETE CASCADE
         NOT VALID
 )
 
