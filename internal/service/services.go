@@ -10,6 +10,7 @@ import (
 	csat "server/internal/service/csat"
 	csrf "server/internal/service/csrf"
 	list "server/internal/service/list"
+	tag "server/internal/service/tag"
 	task "server/internal/service/task"
 	user "server/internal/service/user"
 	workspace "server/internal/service/workspace"
@@ -31,6 +32,7 @@ type Services struct {
 	Workspace     IWorkspaceService
 	CSATQuestion  ICSATQuestionService
 	CSATAnswer    ICSATSAnswerService
+	Tag           ITagService
 }
 
 func NewMicroServices(storages *storage.Storages, config config.SessionConfig, conn *grpc.ClientConn) *Services {
@@ -47,5 +49,6 @@ func NewMicroServices(storages *storage.Storages, config config.SessionConfig, c
 		Task:          task.NewMicroTaskService(storages.Task, storages.User, conn),
 		User:          user.NewMicroUserService(storages.User, conn),
 		Workspace:     workspace.NewMicroWorkspaceService(storages.Workspace, conn),
+		Tag:           tag.NewMicroTagService(storages.Tag, conn),
 	}
 }
