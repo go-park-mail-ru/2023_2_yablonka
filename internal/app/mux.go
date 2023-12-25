@@ -98,6 +98,9 @@ func GetChiMux(manager handlers.Handlers, config config.Config, logger logging.I
 				r.Put("/", metricsMiddleware.WrapHandler(
 					"/board/update/", http.HandlerFunc(manager.BoardHandler.UpdateData)),
 				)
+				r.Delete("/", metricsMiddleware.WrapHandler(
+					"/board/delete/", http.HandlerFunc(manager.BoardHandler.Delete)),
+				)
 				r.Route("/thumbnail", func(r chi.Router) {
 					r.Put("/", metricsMiddleware.WrapHandler(
 						"/board/update/thumbnail/", http.HandlerFunc(manager.BoardHandler.UpdateThumbnail)),
@@ -120,9 +123,6 @@ func GetChiMux(manager handlers.Handlers, config config.Config, logger logging.I
 						"/board/history/submit/", http.HandlerFunc(manager.BoardHandler.SubmitEdit)),
 					)
 				})
-				r.Delete("/", metricsMiddleware.WrapHandler(
-					"/board/delete/", http.HandlerFunc(manager.BoardHandler.Delete)),
-				)
 			})
 		})
 		r.Route("/list", func(r chi.Router) {

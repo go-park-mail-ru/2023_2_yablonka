@@ -35,7 +35,7 @@ type BoardHandler struct {
 // @Failure 401  {object}  apperrors.ErrorResponse
 // @Failure 500  {object}  apperrors.ErrorResponse
 //
-// @Router /board/ [post]
+// @Router /board/{boardID} [get]
 func (bh BoardHandler) GetFullBoard(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
 	funcName := "GetFullBoard"
@@ -48,14 +48,7 @@ func (bh BoardHandler) GetFullBoard(w http.ResponseWriter, r *http.Request) {
 	logger.Info("---------------------------------- Get board ----------------------------------")
 
 	var boardID dto.BoardID
-	err := easyjson.UnmarshalFromReader(r.Body, &boardID)
-	if err != nil {
-		logger.Error(errorMessage + err.Error())
-		logger.Info(failBorder)
-		apperrors.ReturnError(apperrors.BadRequestResponse, w, r)
-		return
-	}
-	logger.DebugFmt("JSON Decoded", requestID.String(), funcName, nodeName)
+	boardID.Value = rCtx.Value(dto.BoardIDKey).(uint64)
 
 	user, ok := rCtx.Value(dto.UserObjKey).(*entities.User)
 	if !ok {
@@ -108,7 +101,7 @@ func (bh BoardHandler) GetFullBoard(w http.ResponseWriter, r *http.Request) {
 // @Failure 401  {object}  apperrors.ErrorResponse
 // @Failure 500  {object}  apperrors.ErrorResponse
 //
-// @Router /board/create/ [post]
+// @Router /board/ [post]
 func (bh BoardHandler) Create(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
 	funcName := "Create"
@@ -194,7 +187,7 @@ func (bh BoardHandler) Create(w http.ResponseWriter, r *http.Request) {
 // @Failure 401  {object}  apperrors.ErrorResponse
 // @Failure 500  {object}  apperrors.ErrorResponse
 //
-// @Router /board/update/ [post]
+// @Router /board/{boardID} [put]
 func (bh BoardHandler) UpdateData(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
 	funcName := "UpdateData"
@@ -214,6 +207,8 @@ func (bh BoardHandler) UpdateData(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	logger.DebugFmt("JSON Decoded", requestID.String(), funcName, nodeName)
+
+	boardInfo.ID = rCtx.Value(dto.BoardIDKey).(uint64)
 
 	_, ok := rCtx.Value(dto.UserObjKey).(*entities.User)
 	if !ok {
@@ -262,7 +257,7 @@ func (bh BoardHandler) UpdateData(w http.ResponseWriter, r *http.Request) {
 // @Failure 401  {object}  apperrors.ErrorResponse
 // @Failure 500  {object}  apperrors.ErrorResponse
 //
-// @Router /board/update/change_thumbnail/ [post]
+// @Router /board/{boardID}/thumbnail/ [put]
 func (bh BoardHandler) UpdateThumbnail(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
 	funcName := "UpdateThumbnail"
@@ -283,6 +278,8 @@ func (bh BoardHandler) UpdateThumbnail(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	logger.DebugFmt("JSON Decoded", requestID.String(), funcName, nodeName)
+
+	boardInfo.ID = rCtx.Value(dto.BoardIDKey).(uint64)
 
 	_, ok := rCtx.Value(dto.UserObjKey).(*entities.User)
 	if !ok {
@@ -334,7 +331,7 @@ func (bh BoardHandler) UpdateThumbnail(w http.ResponseWriter, r *http.Request) {
 // @Failure 401  {object}  apperrors.ErrorResponse
 // @Failure 500  {object}  apperrors.ErrorResponse
 //
-// @Router /board/delete/ [delete]
+// @Router /board/{boardID}/ [delete]
 func (bh BoardHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
 	funcName := "Delete"
@@ -346,14 +343,7 @@ func (bh BoardHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	logger.Info("---------------------------------- Deleting board ----------------------------------")
 
 	var boardID dto.BoardID
-	err := easyjson.UnmarshalFromReader(r.Body, &boardID)
-	if err != nil {
-		logger.Error(errorMessage + err.Error())
-		logger.Info(failBorder)
-		apperrors.ReturnError(apperrors.BadRequestResponse, w, r)
-		return
-	}
-	logger.DebugFmt("JSON Decoded", requestID.String(), funcName, nodeName)
+	boardID.Value = rCtx.Value(dto.BoardIDKey).(uint64)
 
 	_, ok := rCtx.Value(dto.UserObjKey).(*entities.User)
 	if !ok {
@@ -364,7 +354,7 @@ func (bh BoardHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	}
 	logger.DebugFmt("User object acquired from context", requestID.String(), funcName, nodeName)
 
-	err = bh.bs.Delete(rCtx, boardID)
+	err := bh.bs.Delete(rCtx, boardID)
 	if err != nil {
 		logger.Error(errorMessage + err.Error())
 		logger.Info(failBorder)
@@ -403,7 +393,7 @@ func (bh BoardHandler) Delete(w http.ResponseWriter, r *http.Request) {
 // @Failure 401  {object}  apperrors.ErrorResponse
 // @Failure 500  {object}  apperrors.ErrorResponse
 //
-// @Router /board/user/add/ [post]
+// @Router /board/{boardID}/user/{userEmail}/ [put]
 func (bh BoardHandler) AddUser(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
 	funcName := "AddUser"
@@ -423,6 +413,9 @@ func (bh BoardHandler) AddUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	logger.DebugFmt("JSON Decoded", requestID.String(), funcName, nodeName)
+
+	info.BoardID = rCtx.Value(dto.BoardIDKey).(uint64)
+	info.UserEmail = rCtx.Value(dto.UserIDKey).(string)
 
 	_, ok := rCtx.Value(dto.UserObjKey).(*entities.User)
 	if !ok {
@@ -473,7 +466,7 @@ func (bh BoardHandler) AddUser(w http.ResponseWriter, r *http.Request) {
 // @Failure 401  {object}  apperrors.ErrorResponse
 // @Failure 500  {object}  apperrors.ErrorResponse
 //
-// @Router /board/user/remove/ [delete]
+// @Router /board/{boardID}/user/{userID}/ [delete]
 func (bh BoardHandler) RemoveUser(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
 	funcName := "RemoveUser"
@@ -485,14 +478,8 @@ func (bh BoardHandler) RemoveUser(w http.ResponseWriter, r *http.Request) {
 	logger.Info("---------------------------------- Removing user from board ----------------------------------")
 
 	var info dto.RemoveBoardUserInfo
-	err := easyjson.UnmarshalFromReader(r.Body, &info)
-	if err != nil {
-		logger.Error(errorMessage + err.Error())
-		logger.Info(failBorder)
-		apperrors.ReturnError(apperrors.BadRequestResponse, w, r)
-		return
-	}
-	logger.DebugFmt("JSON Decoded", requestID.String(), funcName, nodeName)
+	info.BoardID = rCtx.Value(dto.BoardIDKey).(uint64)
+	info.UserID = rCtx.Value(dto.UserIDKey).(uint64)
 
 	user, ok := rCtx.Value(dto.UserObjKey).(*entities.User)
 	if !ok {
@@ -510,7 +497,7 @@ func (bh BoardHandler) RemoveUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = bh.bs.RemoveUser(rCtx, info)
+	err := bh.bs.RemoveUser(rCtx, info)
 	if err != nil {
 		logger.Error(errorMessage + err.Error())
 		logger.Info(failBorder)
@@ -549,7 +536,7 @@ func (bh BoardHandler) RemoveUser(w http.ResponseWriter, r *http.Request) {
 // @Failure 401  {object}  apperrors.ErrorResponse
 // @Failure 500  {object}  apperrors.ErrorResponse
 //
-// @Router /board/history/ [post]
+// @Router /board/{boardID}/history [get]
 func (bh BoardHandler) GetHistory(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
 	funcName := "GetHistory"
@@ -561,14 +548,7 @@ func (bh BoardHandler) GetHistory(w http.ResponseWriter, r *http.Request) {
 	logger.Info("---------------------------------- Getting board history ----------------------------------")
 
 	var info dto.BoardID
-	err := easyjson.UnmarshalFromReader(r.Body, &info)
-	if err != nil {
-		logger.Error(errorMessage + err.Error())
-		logger.Info(failBorder)
-		apperrors.ReturnError(apperrors.BadRequestResponse, w, r)
-		return
-	}
-	logger.DebugFmt("JSON Decoded", requestID.String(), funcName, nodeName)
+	info.Value = rCtx.Value(dto.BoardIDKey).(uint64)
 
 	_, ok := rCtx.Value(dto.UserObjKey).(*entities.User)
 	if !ok {
@@ -619,7 +599,7 @@ func (bh BoardHandler) GetHistory(w http.ResponseWriter, r *http.Request) {
 // @Failure 401  {object}  apperrors.ErrorResponse
 // @Failure 500  {object}  apperrors.ErrorResponse
 //
-// @Router /board/history/submit/ [post]
+// @Router /board/{boardID}/history/ [put]
 func (bh BoardHandler) SubmitEdit(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
 	funcName := "SubmitEdit"
@@ -639,6 +619,8 @@ func (bh BoardHandler) SubmitEdit(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	logger.DebugFmt("JSON Decoded", requestID.String(), funcName, nodeName)
+
+	info.BoardID = rCtx.Value(dto.BoardIDKey).(uint64)
 
 	user, ok := rCtx.Value(dto.UserObjKey).(*entities.User)
 	if !ok {

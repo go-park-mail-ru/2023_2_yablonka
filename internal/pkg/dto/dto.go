@@ -281,8 +281,8 @@ type IndividualBoardInfo struct {
 // AddBoardUserRequest
 // DTO для запроса добавления пользователя в доску
 type AddBoardUserRequest struct {
-	UserEmail   string `json:"user_email"`
-	BoardID     uint64 `json:"board_id"`
+	UserEmail   string `json:"-"`
+	BoardID     uint64 `json:"-"`
 	WorkspaceID uint64 `json:"workspace_id"`
 }
 
@@ -297,9 +297,9 @@ type AddBoardUserInfo struct {
 // RemoveBoardUserInfo
 // DTO для удаления пользователя из доски
 type RemoveBoardUserInfo struct {
-	UserID      uint64 `json:"user_id"`
+	UserID      uint64 `json:"-"`
 	WorkspaceID uint64 `json:"workspace_id"`
-	BoardID     uint64 `json:"board_id"`
+	BoardID     uint64 `json:"-"`
 }
 
 // AddTaskUserInfo
@@ -698,7 +698,7 @@ type UpdatedTaskInfo struct {
 // UpdatedBoardInfo
 // DTO для обновленной доски
 type UpdatedBoardInfo struct {
-	ID   uint64 `json:"id"`
+	ID   uint64 `json:"-"`
 	Name string `json:"name"`
 }
 
@@ -707,7 +707,7 @@ type UpdatedBoardInfo struct {
 //
 //easyjson:skip
 type UpdatedBoardThumbnailInfo struct {
-	ID        uint64 `json:"id"`
+	ID        uint64 `json:"-"`
 	Thumbnail []byte `json:"thumbnail"`
 }
 
@@ -825,7 +825,7 @@ type BoardHistoryEntry struct {
 
 type NewHistoryEntry struct {
 	UserID  uint64 `json:"-" valid:"-"`
-	BoardID uint64 `json:"board_id" valid:"-"`
+	BoardID uint64 `json:"-" valid:"-"`
 	Actions string `json:"actions" valid:"-"`
 }
 
