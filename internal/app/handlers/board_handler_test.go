@@ -9,6 +9,7 @@ import (
 	"net/http/httptest"
 	"reflect"
 	"server/internal/app/handlers"
+	"server/internal/app/middleware/parsers"
 	"server/internal/apperrors"
 	"server/internal/pkg/dto"
 	"server/internal/pkg/entities"
@@ -29,17 +30,28 @@ func createBoardMux(
 	BoardHandler := *handlers.NewBoardHandler(mockAuthService, mockBoardService)
 
 	mux := chi.NewRouter()
-	mux.Route("/api/v2", func(r chi.Router) {
+	mux.Route("/api/v3", func(r chi.Router) {
 		r.Route("/board", func(r chi.Router) {
-			r.Post("/", BoardHandler.GetFullBoard)
-			r.Post("/create/", BoardHandler.Create)
-			r.Post("/update/", BoardHandler.UpdateData)
-			r.Post("/update/change_thumbnail/", BoardHandler.UpdateThumbnail)
-			r.Route("/user", func(r chi.Router) {
-				r.Post("/add/", BoardHandler.AddUser)
-				r.Post("/remove/", BoardHandler.RemoveUser)
+			r.Post("/", BoardHandler.Create)
+
+			r.Route("/{boardID}", func(r chi.Router) {
+				r.Use(parsers.BoardCtx)
+				r.Get("/", BoardHandler.GetFullBoard)
+				r.Put("/", BoardHandler.UpdateData)
+				r.Delete("/", BoardHandler.Delete)
+				r.Route("/thumbnail", func(r chi.Router) {
+					r.Put("/", BoardHandler.UpdateThumbnail)
+				})
+				r.Route("/user/{userID}", func(r chi.Router) {
+					r.Use(parsers.UserCtx)
+					r.Put("/", BoardHandler.AddUser)
+					r.Delete("/", BoardHandler.RemoveUser)
+				})
+				r.Route("/history", func(r chi.Router) {
+					r.Get("/", BoardHandler.GetHistory)
+					r.Put("/", BoardHandler.SubmitEdit)
+				})
 			})
-			r.Delete("/delete/", BoardHandler.Delete)
 		})
 	})
 	return mux, nil
@@ -96,7 +108,7 @@ func TestBoardHandler_Unit_GetFullBoard(t *testing.T) {
 						HttpOnly: true,
 						SameSite: http.SameSiteLaxMode,
 						Expires:  args.session.ExpirationDate,
-						Path:     "/api/v2/",
+						Path:     "/api/v3/",
 					}
 
 					bs.
@@ -104,10 +116,10 @@ func TestBoardHandler_Unit_GetFullBoard(t *testing.T) {
 						GetFullBoard(gomock.Any(), requestedBoard).
 						Return(&args.resultBoard, nil)
 
-					body := bytes.NewReader([]byte(fmt.Sprintf(`{"board_id":%v}`, args.boardID.Value)))
+					body := bytes.NewReader([]byte(""))
 
 					r := httptest.
-						NewRequest("POST", "/api/v2/board/", body).
+						NewRequest("GET", fmt.Sprintf("/api/v3/board/%v", args.boardID.Value), body).
 						WithContext(
 							context.WithValue(
 								context.WithValue(
@@ -139,13 +151,13 @@ func TestBoardHandler_Unit_GetFullBoard(t *testing.T) {
 						HttpOnly: true,
 						SameSite: http.SameSiteLaxMode,
 						Expires:  args.session.ExpirationDate,
-						Path:     "/api/v2/",
+						Path:     "/api/v3/",
 					}
 
-					body := bytes.NewReader([]byte(fmt.Sprintf(`{"board_id":%v}`, args.boardID.Value)))
+					body := bytes.NewReader([]byte(""))
 
 					r := httptest.
-						NewRequest("POST", "/api/v2/board/", body).
+						NewRequest("GET", fmt.Sprintf("/api/v3/board/%v", args.boardID.Value), body).
 						WithContext(
 							context.WithValue(
 								context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
@@ -161,7 +173,7 @@ func TestBoardHandler_Unit_GetFullBoard(t *testing.T) {
 			expectedCode: http.StatusUnauthorized,
 		},
 		{
-			name: "Bad request (invalid JSON)",
+			name: "Bad request (invalid URL param)",
 			args: args{
 				session: dto.SessionToken{
 					ID: "Mock session",
@@ -173,13 +185,13 @@ func TestBoardHandler_Unit_GetFullBoard(t *testing.T) {
 						HttpOnly: true,
 						SameSite: http.SameSiteLaxMode,
 						Expires:  args.session.ExpirationDate,
-						Path:     "/api/v2/",
+						Path:     "/api/v3/",
 					}
 
 					body := bytes.NewReader([]byte(""))
 
 					r := httptest.
-						NewRequest("POST", "/api/v2/board/", body).
+						NewRequest("GET", "/api/v3/board/mock_bad_ID", body).
 						WithContext(
 							context.WithValue(
 								context.WithValue(
@@ -232,7 +244,7 @@ func TestBoardHandler_Unit_GetFullBoard(t *testing.T) {
 						HttpOnly: true,
 						SameSite: http.SameSiteLaxMode,
 						Expires:  args.session.ExpirationDate,
-						Path:     "/api/v2/",
+						Path:     "/api/v3/",
 					}
 
 					bs.
@@ -240,10 +252,10 @@ func TestBoardHandler_Unit_GetFullBoard(t *testing.T) {
 						GetFullBoard(gomock.Any(), requestedBoard).
 						Return(&dto.FullBoardResult{}, apperrors.ErrCouldNotGetBoard)
 
-					body := bytes.NewReader([]byte(fmt.Sprintf(`{"board_id":%v}`, args.boardID.Value)))
+					body := bytes.NewReader([]byte(""))
 
 					r := httptest.
-						NewRequest("POST", "/api/v2/board/", body).
+						NewRequest("GET", fmt.Sprintf("/api/v3/board/%v", args.boardID.Value), body).
 						WithContext(
 							context.WithValue(
 								context.WithValue(
@@ -296,7 +308,7 @@ func TestBoardHandler_Unit_GetFullBoard(t *testing.T) {
 						HttpOnly: true,
 						SameSite: http.SameSiteLaxMode,
 						Expires:  args.session.ExpirationDate,
-						Path:     "/api/v2/",
+						Path:     "/api/v3/",
 					}
 
 					bs.
@@ -304,10 +316,10 @@ func TestBoardHandler_Unit_GetFullBoard(t *testing.T) {
 						GetFullBoard(gomock.Any(), requestedBoard).
 						Return(&dto.FullBoardResult{}, apperrors.ErrNoBoardAccess)
 
-					body := bytes.NewReader([]byte(fmt.Sprintf(`{"board_id":%v}`, args.boardID.Value)))
+					body := bytes.NewReader([]byte(""))
 
 					r := httptest.
-						NewRequest("POST", "/api/v2/board/", body).
+						NewRequest("GET", fmt.Sprintf("/api/v3/board/%v", args.boardID.Value), body).
 						WithContext(
 							context.WithValue(
 								context.WithValue(
@@ -408,7 +420,7 @@ func TestBoardHandler_Unit_Create(t *testing.T) {
 						HttpOnly: true,
 						SameSite: http.SameSiteLaxMode,
 						Expires:  args.session.ExpirationDate,
-						Path:     "/api/v2/",
+						Path:     "/api/v3/",
 					}
 
 					info := dto.NewBoardInfo{
@@ -426,7 +438,7 @@ func TestBoardHandler_Unit_Create(t *testing.T) {
 					body := bytes.NewReader([]byte(fmt.Sprintf(`{"name":"%s", "workspace_id":%v}`, args.newBoard.Name, args.newBoard.WorkspaceID)))
 
 					r := httptest.
-						NewRequest("POST", "/api/v2/board/create/", body).
+						NewRequest("POST", "/api/v3/board/", body).
 						WithContext(
 							context.WithValue(
 								context.WithValue(
@@ -456,7 +468,7 @@ func TestBoardHandler_Unit_Create(t *testing.T) {
 					body := bytes.NewReader([]byte(""))
 
 					r := httptest.
-						NewRequest("POST", "/api/v2/board/create/", body).
+						NewRequest("POST", "/api/v3/board/", body).
 						WithContext(
 							context.WithValue(
 								context.WithValue(
@@ -487,13 +499,13 @@ func TestBoardHandler_Unit_Create(t *testing.T) {
 						HttpOnly: true,
 						SameSite: http.SameSiteLaxMode,
 						Expires:  args.session.ExpirationDate,
-						Path:     "/api/v2/",
+						Path:     "/api/v3/",
 					}
 
 					body := bytes.NewReader([]byte(fmt.Sprintf(`{"name":"%s", "workspace_id":%v}`, args.newBoard.Name, args.newBoard.WorkspaceID)))
 
 					r := httptest.
-						NewRequest("POST", "/api/v2/board/create/", body).
+						NewRequest("POST", "/api/v3/board/", body).
 						WithContext(
 							context.WithValue(
 								context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
@@ -530,7 +542,7 @@ func TestBoardHandler_Unit_Create(t *testing.T) {
 						HttpOnly: true,
 						SameSite: http.SameSiteLaxMode,
 						Expires:  args.session.ExpirationDate,
-						Path:     "/api/v2/",
+						Path:     "/api/v3/",
 					}
 
 					info := dto.NewBoardInfo{
@@ -548,7 +560,7 @@ func TestBoardHandler_Unit_Create(t *testing.T) {
 					body := bytes.NewReader([]byte(fmt.Sprintf(`{"name":"%s", "workspace_id":%v}`, args.newBoard.Name, args.newBoard.WorkspaceID)))
 
 					r := httptest.
-						NewRequest("POST", "/api/v2/board/create/", body).
+						NewRequest("POST", "/api/v3/board/", body).
 						WithContext(
 							context.WithValue(
 								context.WithValue(
@@ -642,7 +654,7 @@ func TestBoardHandler_Unit_UpdateData(t *testing.T) {
 						HttpOnly: true,
 						SameSite: http.SameSiteLaxMode,
 						Expires:  args.session.ExpirationDate,
-						Path:     "/api/v2/",
+						Path:     "/api/v3/",
 					}
 
 					bs.
@@ -650,10 +662,10 @@ func TestBoardHandler_Unit_UpdateData(t *testing.T) {
 						UpdateData(gomock.Any(), args.updatedBoard).
 						Return(nil)
 
-					body := bytes.NewReader([]byte(fmt.Sprintf(`{"name":"%s", "id":%v}`, args.updatedBoard.Name, args.updatedBoard.ID)))
+					body := bytes.NewReader([]byte(fmt.Sprintf(`{"name":"%s"}`, args.updatedBoard.Name)))
 
 					r := httptest.
-						NewRequest("POST", "/api/v2/board/update/", body).
+						NewRequest("PUT", fmt.Sprintf("/api/v3/board/%v/", args.updatedBoard.ID), body).
 						WithContext(
 							context.WithValue(
 								context.WithValue(
@@ -683,7 +695,7 @@ func TestBoardHandler_Unit_UpdateData(t *testing.T) {
 					body := bytes.NewReader([]byte(""))
 
 					r := httptest.
-						NewRequest("POST", "/api/v2/board/update/", body).
+						NewRequest("PUT", fmt.Sprintf("/api/v3/board/%v/", args.updatedBoard.ID), body).
 						WithContext(
 							context.WithValue(
 								context.WithValue(
@@ -714,13 +726,13 @@ func TestBoardHandler_Unit_UpdateData(t *testing.T) {
 						HttpOnly: true,
 						SameSite: http.SameSiteLaxMode,
 						Expires:  args.session.ExpirationDate,
-						Path:     "/api/v2/",
+						Path:     "/api/v3/",
 					}
 
-					body := bytes.NewReader([]byte(fmt.Sprintf(`{"name":"%s", "d":%v}`, args.updatedBoard.Name, args.updatedBoard.ID)))
+					body := bytes.NewReader([]byte(fmt.Sprintf(`{"name":"%s"}`, args.updatedBoard.Name)))
 
 					r := httptest.
-						NewRequest("POST", "/api/v2/board/update/", body).
+						NewRequest("PUT", fmt.Sprintf("/api/v3/board/%v/", args.updatedBoard.ID), body).
 						WithContext(
 							context.WithValue(
 								context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
@@ -757,7 +769,7 @@ func TestBoardHandler_Unit_UpdateData(t *testing.T) {
 						HttpOnly: true,
 						SameSite: http.SameSiteLaxMode,
 						Expires:  args.session.ExpirationDate,
-						Path:     "/api/v2/",
+						Path:     "/api/v3/",
 					}
 
 					bs.
@@ -765,10 +777,10 @@ func TestBoardHandler_Unit_UpdateData(t *testing.T) {
 						UpdateData(gomock.Any(), args.updatedBoard).
 						Return(apperrors.ErrBoardNotUpdated)
 
-					body := bytes.NewReader([]byte(fmt.Sprintf(`{"name":"%s", "id":%v}`, args.updatedBoard.Name, args.updatedBoard.ID)))
+					body := bytes.NewReader([]byte(fmt.Sprintf(`{"name":"%s"}`, args.updatedBoard.Name)))
 
 					r := httptest.
-						NewRequest("POST", "/api/v2/board/update/", body).
+						NewRequest("PUT", fmt.Sprintf("/api/v3/board/%v/", args.updatedBoard.ID), body).
 						WithContext(
 							context.WithValue(
 								context.WithValue(
@@ -856,7 +868,7 @@ func TestBoardHandler_Unit_UpdateThumbnail(t *testing.T) {
 						HttpOnly: true,
 						SameSite: http.SameSiteLaxMode,
 						Expires:  args.session.ExpirationDate,
-						Path:     "/api/v2/",
+						Path:     "/api/v3/",
 					}
 
 					bs.
@@ -864,10 +876,10 @@ func TestBoardHandler_Unit_UpdateThumbnail(t *testing.T) {
 						UpdateThumbnail(gomock.Any(), args.updatedThumbnail).
 						Return(&args.resultUrl, nil)
 
-					body := bytes.NewReader([]byte(fmt.Sprintf(`{"thumbnail":%v, "id":%v}`, args.updatedThumbnail.Thumbnail, args.updatedThumbnail.ID)))
+					body := bytes.NewReader([]byte(fmt.Sprintf(`{"thumbnail":%v}`, args.updatedThumbnail.Thumbnail)))
 
 					r := httptest.
-						NewRequest("POST", "/api/v2/board/update/change_thumbnail/", body).
+						NewRequest("PUT", fmt.Sprintf("/api/v3/board/%v/thumbnail/", args.updatedThumbnail.ID), body).
 						WithContext(
 							context.WithValue(
 								context.WithValue(
@@ -897,7 +909,7 @@ func TestBoardHandler_Unit_UpdateThumbnail(t *testing.T) {
 					body := bytes.NewReader([]byte(""))
 
 					r := httptest.
-						NewRequest("POST", "/api/v2/board/update/change_thumbnail/", body).
+						NewRequest("PUT", fmt.Sprintf("/api/v3/board/%v/thumbnail/", args.updatedThumbnail.ID), body).
 						WithContext(
 							context.WithValue(
 								context.WithValue(
@@ -928,13 +940,13 @@ func TestBoardHandler_Unit_UpdateThumbnail(t *testing.T) {
 						HttpOnly: true,
 						SameSite: http.SameSiteLaxMode,
 						Expires:  args.session.ExpirationDate,
-						Path:     "/api/v2/",
+						Path:     "/api/v3/",
 					}
 
-					body := bytes.NewReader([]byte(fmt.Sprintf(`{"thumbnail":%v, "id":%v}`, args.updatedThumbnail.Thumbnail, args.updatedThumbnail.ID)))
+					body := bytes.NewReader([]byte(fmt.Sprintf(`{"thumbnail":%v}`, args.updatedThumbnail.Thumbnail)))
 
 					r := httptest.
-						NewRequest("POST", "/api/v2/board/update/change_thumbnail/", body).
+						NewRequest("PUT", fmt.Sprintf("/api/v3/board/%v/thumbnail/", args.updatedThumbnail.ID), body).
 						WithContext(
 							context.WithValue(
 								context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
@@ -971,7 +983,7 @@ func TestBoardHandler_Unit_UpdateThumbnail(t *testing.T) {
 						HttpOnly: true,
 						SameSite: http.SameSiteLaxMode,
 						Expires:  args.session.ExpirationDate,
-						Path:     "/api/v2/",
+						Path:     "/api/v3/",
 					}
 
 					bs.
@@ -979,10 +991,10 @@ func TestBoardHandler_Unit_UpdateThumbnail(t *testing.T) {
 						UpdateThumbnail(gomock.Any(), args.updatedThumbnail).
 						Return(&dto.UrlObj{}, apperrors.ErrBoardNotUpdated)
 
-					body := bytes.NewReader([]byte(fmt.Sprintf(`{"thumbnail":%v, "id":%v}`, args.updatedThumbnail.Thumbnail, args.updatedThumbnail.ID)))
+					body := bytes.NewReader([]byte(fmt.Sprintf(`{"thumbnail":%v}`, args.updatedThumbnail.Thumbnail)))
 
 					r := httptest.
-						NewRequest("POST", "/api/v2/board/update/change_thumbnail/", body).
+						NewRequest("PUT", fmt.Sprintf("/api/v3/board/%v/thumbnail/", args.updatedThumbnail.ID), body).
 						WithContext(
 							context.WithValue(
 								context.WithValue(
@@ -1065,7 +1077,7 @@ func TestBoardHandler_Unit_Delete(t *testing.T) {
 						HttpOnly: true,
 						SameSite: http.SameSiteLaxMode,
 						Expires:  args.session.ExpirationDate,
-						Path:     "/api/v2/",
+						Path:     "/api/v3/",
 					}
 
 					bs.
@@ -1073,10 +1085,10 @@ func TestBoardHandler_Unit_Delete(t *testing.T) {
 						Delete(gomock.Any(), args.boardID).
 						Return(nil)
 
-					body := bytes.NewReader([]byte(fmt.Sprintf(`{"board_id":%v}`, args.boardID.Value)))
+					body := bytes.NewReader([]byte(""))
 
 					r := httptest.
-						NewRequest("DELETE", "/api/v2/board/delete/", body).
+						NewRequest("DELETE", fmt.Sprintf("/api/v3/board/%v/", args.boardID.Value), body).
 						WithContext(
 							context.WithValue(
 								context.WithValue(
@@ -1095,7 +1107,7 @@ func TestBoardHandler_Unit_Delete(t *testing.T) {
 			expectedCode: http.StatusOK,
 		},
 		{
-			name: "Bad request (invalid JSON)",
+			name: "Bad request (invalid URL param)",
 			args: args{
 				session: dto.SessionToken{
 					ID: "Mock session",
@@ -1106,7 +1118,7 @@ func TestBoardHandler_Unit_Delete(t *testing.T) {
 					body := bytes.NewReader([]byte(""))
 
 					r := httptest.
-						NewRequest("DELETE", "/api/v2/board/delete/", body).
+						NewRequest("DELETE", fmt.Sprintf("/api/v3/board/%v/", "badvalue"), body).
 						WithContext(
 							context.WithValue(
 								context.WithValue(
@@ -1137,13 +1149,13 @@ func TestBoardHandler_Unit_Delete(t *testing.T) {
 						HttpOnly: true,
 						SameSite: http.SameSiteLaxMode,
 						Expires:  args.session.ExpirationDate,
-						Path:     "/api/v2/",
+						Path:     "/api/v3/",
 					}
 
-					body := bytes.NewReader([]byte(fmt.Sprintf(`{"board_id":%v}`, args.boardID.Value)))
+					body := bytes.NewReader([]byte(""))
 
 					r := httptest.
-						NewRequest("DELETE", "/api/v2/board/delete/", body).
+						NewRequest("DELETE", fmt.Sprintf("/api/v3/board/%v/", args.boardID.Value), body).
 						WithContext(
 							context.WithValue(
 								context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
@@ -1177,7 +1189,7 @@ func TestBoardHandler_Unit_Delete(t *testing.T) {
 						HttpOnly: true,
 						SameSite: http.SameSiteLaxMode,
 						Expires:  args.session.ExpirationDate,
-						Path:     "/api/v2/",
+						Path:     "/api/v3/",
 					}
 
 					bs.
@@ -1185,10 +1197,10 @@ func TestBoardHandler_Unit_Delete(t *testing.T) {
 						Delete(gomock.Any(), args.boardID).
 						Return(apperrors.ErrBoardNotDeleted)
 
-					body := bytes.NewReader([]byte(fmt.Sprintf(`{"board_id":%v}`, args.boardID.Value)))
+					body := bytes.NewReader([]byte(""))
 
 					r := httptest.
-						NewRequest("DELETE", "/api/v2/board/delete/", body).
+						NewRequest("DELETE", fmt.Sprintf("/api/v3/board/%v/", args.boardID.Value), body).
 						WithContext(
 							context.WithValue(
 								context.WithValue(
@@ -1280,7 +1292,7 @@ func TestBoardHandler_Unit_AddUser(t *testing.T) {
 						HttpOnly: true,
 						SameSite: http.SameSiteLaxMode,
 						Expires:  args.session.ExpirationDate,
-						Path:     "/api/v2/",
+						Path:     "/api/v3/",
 					}
 
 					bs.
@@ -1289,12 +1301,15 @@ func TestBoardHandler_Unit_AddUser(t *testing.T) {
 						Return(args.addedUser, nil)
 
 					body := bytes.NewReader([]byte(fmt.Sprintf(
-						`{"user_email":"%s", "board_id":%v, "workspace_id":%v}`,
-						args.request.UserEmail, args.request.BoardID, args.request.WorkspaceID,
+						`{"workspace_id":%v}`,
+						args.request.WorkspaceID,
 					)))
 
 					r := httptest.
-						NewRequest("POST", "/api/v2/board/user/add/", body).
+						NewRequest("PUT",
+							fmt.Sprintf("/api/v3/board/%v/user/%v/",
+								args.request.BoardID, args.addedUser.Email),
+							body).
 						WithContext(
 							context.WithValue(
 								context.WithValue(
@@ -1324,7 +1339,10 @@ func TestBoardHandler_Unit_AddUser(t *testing.T) {
 					body := bytes.NewReader([]byte(""))
 
 					r := httptest.
-						NewRequest("POST", "/api/v2/board/user/add/", body).
+						NewRequest("PUT",
+							fmt.Sprintf("/api/v3/board/%v/user/%v/",
+								args.request.BoardID, args.addedUser.Email),
+							body).
 						WithContext(
 							context.WithValue(
 								context.WithValue(
@@ -1355,16 +1373,19 @@ func TestBoardHandler_Unit_AddUser(t *testing.T) {
 						HttpOnly: true,
 						SameSite: http.SameSiteLaxMode,
 						Expires:  args.session.ExpirationDate,
-						Path:     "/api/v2/",
+						Path:     "/api/v3/",
 					}
 
 					body := bytes.NewReader([]byte(fmt.Sprintf(
-						`{"user_email":"%s", "board_id":%v, "workspace_id":%v}`,
-						args.request.UserEmail, args.request.BoardID, args.request.WorkspaceID,
+						`{"workspace_id":%v}`,
+						args.request.WorkspaceID,
 					)))
 
 					r := httptest.
-						NewRequest("POST", "/api/v2/board/user/add/", body).
+						NewRequest("PUT",
+							fmt.Sprintf("/api/v3/board/%v/user/%v/",
+								args.request.BoardID, args.addedUser.Email),
+							body).
 						WithContext(
 							context.WithValue(
 								context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
@@ -1402,7 +1423,7 @@ func TestBoardHandler_Unit_AddUser(t *testing.T) {
 						HttpOnly: true,
 						SameSite: http.SameSiteLaxMode,
 						Expires:  args.session.ExpirationDate,
-						Path:     "/api/v2/",
+						Path:     "/api/v3/",
 					}
 
 					bs.
@@ -1411,12 +1432,15 @@ func TestBoardHandler_Unit_AddUser(t *testing.T) {
 						Return(args.addedUser, apperrors.ErrNoBoardAccess)
 
 					body := bytes.NewReader([]byte(fmt.Sprintf(
-						`{"user_email":"%s", "board_id":%v, "workspace_id":%v}`,
-						args.request.UserEmail, args.request.BoardID, args.request.WorkspaceID,
+						`{"workspace_id":%v}`,
+						args.request.WorkspaceID,
 					)))
 
 					r := httptest.
-						NewRequest("POST", "/api/v2/board/user/add/", body).
+						NewRequest("PUT",
+							fmt.Sprintf("/api/v3/board/%v/user/%v/",
+								args.request.BoardID, args.request.UserEmail),
+							body).
 						WithContext(
 							context.WithValue(
 								context.WithValue(
@@ -1457,7 +1481,7 @@ func TestBoardHandler_Unit_AddUser(t *testing.T) {
 						HttpOnly: true,
 						SameSite: http.SameSiteLaxMode,
 						Expires:  args.session.ExpirationDate,
-						Path:     "/api/v2/",
+						Path:     "/api/v3/",
 					}
 
 					bs.
@@ -1466,12 +1490,15 @@ func TestBoardHandler_Unit_AddUser(t *testing.T) {
 						Return(args.addedUser, apperrors.ErrUserAlreadyInBoard)
 
 					body := bytes.NewReader([]byte(fmt.Sprintf(
-						`{"user_email":"%s", "board_id":%v, "workspace_id":%v}`,
-						args.request.UserEmail, args.request.BoardID, args.request.WorkspaceID,
+						`{"workspace_id":%v}`,
+						args.request.WorkspaceID,
 					)))
 
 					r := httptest.
-						NewRequest("POST", "/api/v2/board/user/add/", body).
+						NewRequest("PUT",
+							fmt.Sprintf("/api/v3/board/%v/user/%v/",
+								args.request.BoardID, args.request.UserEmail),
+							body).
 						WithContext(
 							context.WithValue(
 								context.WithValue(
@@ -1512,7 +1539,7 @@ func TestBoardHandler_Unit_AddUser(t *testing.T) {
 						HttpOnly: true,
 						SameSite: http.SameSiteLaxMode,
 						Expires:  args.session.ExpirationDate,
-						Path:     "/api/v2/",
+						Path:     "/api/v3/",
 					}
 
 					bs.
@@ -1521,12 +1548,15 @@ func TestBoardHandler_Unit_AddUser(t *testing.T) {
 						Return(args.addedUser, apperrors.ErrCouldNotAddBoardUser)
 
 					body := bytes.NewReader([]byte(fmt.Sprintf(
-						`{"user_email":"%s", "board_id":%v, "workspace_id":%v}`,
-						args.request.UserEmail, args.request.BoardID, args.request.WorkspaceID,
+						`{"workspace_id":%v}`,
+						args.request.WorkspaceID,
 					)))
 
 					r := httptest.
-						NewRequest("POST", "/api/v2/board/user/add/", body).
+						NewRequest("PUT",
+							fmt.Sprintf("/api/v3/board/%v/user/%v/",
+								args.request.BoardID, args.request.UserEmail),
+							body).
 						WithContext(
 							context.WithValue(
 								context.WithValue(
@@ -1612,7 +1642,7 @@ func TestBoardHandler_Unit_RemoveUser(t *testing.T) {
 						HttpOnly: true,
 						SameSite: http.SameSiteLaxMode,
 						Expires:  args.session.ExpirationDate,
-						Path:     "/api/v2/",
+						Path:     "/api/v3/",
 					}
 
 					bs.
@@ -1620,13 +1650,13 @@ func TestBoardHandler_Unit_RemoveUser(t *testing.T) {
 						RemoveUser(gomock.Any(), args.info).
 						Return(nil)
 
-					body := bytes.NewReader([]byte(fmt.Sprintf(
-						`{"user_id":%v, "board_id":%v}`,
-						args.info.UserID, args.info.BoardID,
-					)))
+					body := bytes.NewReader([]byte(""))
 
 					r := httptest.
-						NewRequest("POST", "/api/v2/board/user/remove/", body).
+						NewRequest("DELETE",
+							fmt.Sprintf("/api/v3/board/%v/user/%v/",
+								args.info.BoardID, args.info.UserID),
+							body).
 						WithContext(
 							context.WithValue(
 								context.WithValue(
@@ -1645,7 +1675,7 @@ func TestBoardHandler_Unit_RemoveUser(t *testing.T) {
 			expectedCode: http.StatusOK,
 		},
 		{
-			name: "Bad request (invalid JSON)",
+			name: "Bad request (invalid URL params)",
 			args: args{
 				session: dto.SessionToken{
 					ID: "Mock session",
@@ -1656,7 +1686,7 @@ func TestBoardHandler_Unit_RemoveUser(t *testing.T) {
 					body := bytes.NewReader([]byte(""))
 
 					r := httptest.
-						NewRequest("POST", "/api/v2/board/user/remove/", body).
+						NewRequest("DELETE", "/api/v3/board/badID/user/badID/", body).
 						WithContext(
 							context.WithValue(
 								context.WithValue(
@@ -1687,16 +1717,16 @@ func TestBoardHandler_Unit_RemoveUser(t *testing.T) {
 						HttpOnly: true,
 						SameSite: http.SameSiteLaxMode,
 						Expires:  args.session.ExpirationDate,
-						Path:     "/api/v2/",
+						Path:     "/api/v3/",
 					}
 
-					body := bytes.NewReader([]byte(fmt.Sprintf(
-						`{"user_id":%v, "board_id":%v}`,
-						args.info.UserID, args.info.BoardID,
-					)))
+					body := bytes.NewReader([]byte(""))
 
 					r := httptest.
-						NewRequest("POST", "/api/v2/board/user/remove/", body).
+						NewRequest("DELETE",
+							fmt.Sprintf("/api/v3/board/%v/user/%v/",
+								args.info.BoardID, args.info.UserID),
+							body).
 						WithContext(
 							context.WithValue(
 								context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
@@ -1733,7 +1763,7 @@ func TestBoardHandler_Unit_RemoveUser(t *testing.T) {
 						HttpOnly: true,
 						SameSite: http.SameSiteLaxMode,
 						Expires:  args.session.ExpirationDate,
-						Path:     "/api/v2/",
+						Path:     "/api/v3/",
 					}
 
 					bs.
@@ -1741,13 +1771,13 @@ func TestBoardHandler_Unit_RemoveUser(t *testing.T) {
 						RemoveUser(gomock.Any(), args.info).
 						Return(apperrors.ErrNoBoardAccess)
 
-					body := bytes.NewReader([]byte(fmt.Sprintf(
-						`{"user_id":%v, "board_id":%v}`,
-						args.info.UserID, args.info.BoardID,
-					)))
+					body := bytes.NewReader([]byte(""))
 
 					r := httptest.
-						NewRequest("POST", "/api/v2/board/user/remove/", body).
+						NewRequest("DELETE",
+							fmt.Sprintf("/api/v3/board/%v/user/%v/",
+								args.info.BoardID, args.info.UserID),
+							body).
 						WithContext(
 							context.WithValue(
 								context.WithValue(
@@ -1787,7 +1817,7 @@ func TestBoardHandler_Unit_RemoveUser(t *testing.T) {
 						HttpOnly: true,
 						SameSite: http.SameSiteLaxMode,
 						Expires:  args.session.ExpirationDate,
-						Path:     "/api/v2/",
+						Path:     "/api/v3/",
 					}
 
 					bs.
@@ -1795,13 +1825,13 @@ func TestBoardHandler_Unit_RemoveUser(t *testing.T) {
 						RemoveUser(gomock.Any(), args.info).
 						Return(apperrors.ErrUserNotInBoard)
 
-					body := bytes.NewReader([]byte(fmt.Sprintf(
-						`{"user_id":%v, "board_id":%v}`,
-						args.info.UserID, args.info.BoardID,
-					)))
+					body := bytes.NewReader([]byte(""))
 
 					r := httptest.
-						NewRequest("POST", "/api/v2/board/user/remove/", body).
+						NewRequest("DELETE",
+							fmt.Sprintf("/api/v3/board/%v/user/%v/",
+								args.info.BoardID, args.info.UserID),
+							body).
 						WithContext(
 							context.WithValue(
 								context.WithValue(
@@ -1841,7 +1871,7 @@ func TestBoardHandler_Unit_RemoveUser(t *testing.T) {
 						HttpOnly: true,
 						SameSite: http.SameSiteLaxMode,
 						Expires:  args.session.ExpirationDate,
-						Path:     "/api/v2/",
+						Path:     "/api/v3/",
 					}
 
 					bs.
@@ -1849,13 +1879,13 @@ func TestBoardHandler_Unit_RemoveUser(t *testing.T) {
 						RemoveUser(gomock.Any(), args.info).
 						Return(apperrors.ErrCouldNotRemoveBoardUser)
 
-					body := bytes.NewReader([]byte(fmt.Sprintf(
-						`{"user_id":%v, "board_id":%v}`,
-						args.info.UserID, args.info.BoardID,
-					)))
+					body := bytes.NewReader([]byte(""))
 
 					r := httptest.
-						NewRequest("POST", "/api/v2/board/user/remove/", body).
+						NewRequest("DELETE",
+							fmt.Sprintf("/api/v3/board/%v/user/%v/",
+								args.info.BoardID, args.info.UserID),
+							body).
 						WithContext(
 							context.WithValue(
 								context.WithValue(

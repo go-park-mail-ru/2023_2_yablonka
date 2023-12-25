@@ -100,10 +100,6 @@ definitions:
     type: object
   dto.AddBoardUserRequest:
     properties:
-      board_id:
-        type: integer
-      user_email:
-        type: string
       workspace_id:
         type: integer
     type: object
@@ -351,8 +347,6 @@ definitions:
     properties:
       actions:
         type: string
-      board_id:
-        type: integer
     type: object
   dto.NewListInfo:
     properties:
@@ -425,10 +419,6 @@ definitions:
     type: object
   dto.RemoveBoardUserInfo:
     properties:
-      board_id:
-        type: integer
-      user_id:
-        type: integer
       workspace_id:
         type: integer
     type: object
@@ -559,15 +549,11 @@ definitions:
     type: object
   dto.UpdatedBoardInfo:
     properties:
-      id:
-        type: integer
       name:
         type: string
     type: object
   dto.UpdatedBoardThumbnailInfo:
     properties:
-      id:
-        type: integer
       thumbnail:
         items:
           type: integer
@@ -641,8 +627,6 @@ definitions:
     properties:
       description:
         type: string
-      id:
-        type: integer
       name:
         type: string
     type: object
@@ -946,40 +930,6 @@ paths:
     post:
       consumes:
       - application/json
-      description: Получить доску
-      parameters:
-      - description: id доски
-        in: body
-        name: boardID
-        required: true
-        schema:
-          $ref: '#/definitions/dto.BoardID'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: объект доски
-          schema:
-            $ref: '#/definitions/doc_structs.BoardResponse'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/apperrors.ErrorResponse'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/apperrors.ErrorResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/apperrors.ErrorResponse'
-      summary: Получить доску
-      tags:
-      - boards
-  /board/create/:
-    post:
-      consumes:
-      - application/json
       description: Создать доску
       parameters:
       - description: данные новой доски
@@ -1010,7 +960,74 @@ paths:
       summary: Создать доску
       tags:
       - boards
-  /board/delete/:
+  /board/{boardID}:
+    get:
+      consumes:
+      - application/json
+      description: Получить доску
+      parameters:
+      - description: id доски
+        in: body
+        name: boardID
+        required: true
+        schema:
+          $ref: '#/definitions/dto.BoardID'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: объект доски
+          schema:
+            $ref: '#/definitions/doc_structs.BoardResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+      summary: Получить доску
+      tags:
+      - boards
+    put:
+      consumes:
+      - application/json
+      description: Обновить доску
+      parameters:
+      - description: обновленные данные доски
+        in: body
+        name: boardInfo
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdatedBoardInfo'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: no content
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+      summary: Обновить доску
+      tags:
+      - boards
+  /board/{boardID}/:
     delete:
       consumes:
       - application/json
@@ -1044,8 +1061,8 @@ paths:
       summary: Удалить доску
       tags:
       - boards
-  /board/history/:
-    post:
+  /board/{boardID}/history:
+    get:
       consumes:
       - application/json
       description: 'Получить историю изменений доски: список, каждый элемент которого
@@ -1079,8 +1096,8 @@ paths:
       summary: Получить историю изменений доски
       tags:
       - boards
-  /board/history/submit/:
-    post:
+  /board/{boardID}/history/:
+    put:
       consumes:
       - application/json
       description: Записывает изменения данной доски в историю изменений
@@ -1113,42 +1130,8 @@ paths:
       summary: Добавить изменение в историю
       tags:
       - boards
-  /board/update/:
-    post:
-      consumes:
-      - application/json
-      description: Обновить доску
-      parameters:
-      - description: обновленные данные доски
-        in: body
-        name: boardInfo
-        required: true
-        schema:
-          $ref: '#/definitions/dto.UpdatedBoardInfo'
-      produces:
-      - application/json
-      responses:
-        "204":
-          description: no content
-          schema:
-            type: string
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/apperrors.ErrorResponse'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/apperrors.ErrorResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/apperrors.ErrorResponse'
-      summary: Обновить доску
-      tags:
-      - boards
-  /board/update/change_thumbnail/:
-    post:
+  /board/{boardID}/thumbnail/:
+    put:
       consumes:
       - application/json
       description: Обновить картинку доску
@@ -1181,8 +1164,8 @@ paths:
       summary: Обновить картинку доски
       tags:
       - boards
-  /board/user/add/:
-    post:
+  /board/{boardID}/user/{userEmail}/:
+    put:
       consumes:
       - application/json
       description: Добавить пользователя в доску
@@ -1215,7 +1198,7 @@ paths:
       summary: Добавить пользователя в доску
       tags:
       - boards
-  /board/user/remove/:
+  /board/{boardID}/user/{userID}/:
     delete:
       consumes:
       - application/json
@@ -2327,7 +2310,7 @@ paths:
       tags:
       - tasks
   /user/edit/:
-    post:
+    put:
       consumes:
       - application/json
       description: В ответ ничего не шлёт
@@ -2352,8 +2335,26 @@ paths:
       summary: Поменять данные профиля
       tags:
       - auth
-  /user/edit/change_avatar/:
-    post:
+  /user/edit/avatar/:
+    delete:
+      consumes:
+      - application/json
+      description: Удалить аватарку
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Ссылка на новую аватарку
+          schema:
+            $ref: '#/definitions/doc_structs.AvatarUploadResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+      summary: Удалить аватарку
+      tags:
+      - user
+    put:
       consumes:
       - application/json
       description: В ответ шлёт ссылку на файл
@@ -2378,8 +2379,8 @@ paths:
       summary: Поменять аватарку
       tags:
       - user
-  /user/edit/change_password/:
-    post:
+  /user/edit/password/:
+    put:
       consumes:
       - application/json
       description: Получает старый и новый пароли
@@ -2402,25 +2403,6 @@ paths:
           schema:
             $ref: '#/definitions/apperrors.ErrorResponse'
       summary: Поменять пароль
-      tags:
-      - user
-  /user/edit/delete_avatar/:
-    delete:
-      consumes:
-      - application/json
-      description: Удалить аватарку
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Ссылка на новую аватарку
-          schema:
-            $ref: '#/definitions/doc_structs.AvatarUploadResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/apperrors.ErrorResponse'
-      summary: Удалить аватарку
       tags:
       - user
   /user/workspaces:
@@ -2451,7 +2433,7 @@ paths:
       summary: Вывести все рабочие пространства и доски текущего пользователя
       tags:
       - workspaces
-  /workspace/create/:
+  /workspace/:
     post:
       consumes:
       - application/json
@@ -2485,7 +2467,41 @@ paths:
       summary: Создать рабочее пространство
       tags:
       - workspaces
-  /workspace/delete/:
+  /workspace/{workspaceID}/:
+    put:
+      consumes:
+      - application/json
+      description: Обновить рабочее пространство
+      parameters:
+      - description: обновленные данные рабочего пространства
+        in: body
+        name: workspaceInfo
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdatedWorkspaceInfo'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: no content
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+      summary: Обновить рабочее пространство
+      tags:
+      - workspaces
+  /workspace/{workspaceID}/delete/:
     delete:
       consumes:
       - application/json
@@ -2517,40 +2533,6 @@ paths:
           schema:
             $ref: '#/definitions/apperrors.ErrorResponse'
       summary: Удалить рабочее пространство
-      tags:
-      - workspaces
-  /workspace/update/:
-    post:
-      consumes:
-      - application/json
-      description: Обновить рабочее пространство
-      parameters:
-      - description: обновленные данные рабочего пространства
-        in: body
-        name: workspaceInfo
-        required: true
-        schema:
-          $ref: '#/definitions/dto.UpdatedWorkspaceInfo'
-      produces:
-      - application/json
-      responses:
-        "204":
-          description: no content
-          schema:
-            type: string
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/apperrors.ErrorResponse'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/apperrors.ErrorResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/apperrors.ErrorResponse'
-      summary: Обновить рабочее пространство
       tags:
       - workspaces
 swagger: "2.0"

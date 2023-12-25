@@ -264,7 +264,7 @@ func TestPostgresListStorage_Update(t *testing.T) {
 			err:     nil,
 		},
 		{
-			name: "Happy path",
+			name: "Updating list failed",
 			args: args{
 				info: &dto.UpdatedListInfo{
 					ID:   1,
