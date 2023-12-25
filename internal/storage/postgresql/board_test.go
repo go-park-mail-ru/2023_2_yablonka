@@ -1415,8 +1415,9 @@ func TestBoardStorage_Delete(t *testing.T) {
 func TestBoardStorage_AddUser(t *testing.T) {
 	t.Parallel()
 	type args struct {
-		info  dto.AddBoardUserInfo
-		query func(mock sqlmock.Sqlmock, args args)
+		info      dto.AddBoardUserInfo
+		addedUser dto.UserPublicInfo
+		query     func(mock sqlmock.Sqlmock, args args)
 	}
 	tests := []struct {
 		name    string
@@ -1431,6 +1432,10 @@ func TestBoardStorage_AddUser(t *testing.T) {
 					UserID:      1,
 					WorkspaceID: 1,
 					BoardID:     1,
+				},
+				addedUser: dto.UserPublicInfo{
+					ID:    1,
+					Email: "mock@user.com",
 				},
 				query: func(mock sqlmock.Sqlmock, args args) {
 					boardUserQuery, _, _ := sq.
@@ -1447,6 +1452,13 @@ func TestBoardStorage_AddUser(t *testing.T) {
 						PlaceholderFormat(sq.Dollar).
 						ToSql()
 
+					userQuery, _, _ := sq.
+						Select(allPublicUserFields...).
+						From("public.user").
+						Where(sq.Eq{"id": args.info.UserID}).
+						PlaceholderFormat(sq.Dollar).
+						ToSql()
+
 					mock.ExpectBegin()
 
 					mock.ExpectExec(regexp.QuoteMeta(boardUserQuery)).
@@ -1456,6 +1468,12 @@ func TestBoardStorage_AddUser(t *testing.T) {
 					mock.ExpectExec(regexp.QuoteMeta(userWorkSpaceQuery)).
 						WithArgs(args.info.BoardID, args.info.UserID).
 						WillReturnResult(sqlmock.NewResult(1, 1))
+
+					mock.ExpectQuery(regexp.QuoteMeta(userQuery)).
+						WithArgs(args.info.UserID).
+						WillReturnRows(sqlmock.NewRows(allPublicUserFields).
+							AddRow(args.addedUser.ID, args.addedUser.Email, "", "", "", ""),
+						)
 
 					mock.ExpectCommit()
 				},
