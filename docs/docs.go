@@ -217,58 +217,6 @@ const docTemplate = `{
         },
         "/board/": {
             "post": {
-                "description": "Получить доску",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "boards"
-                ],
-                "summary": "Получить доску",
-                "parameters": [
-                    {
-                        "description": "id доски",
-                        "name": "boardID",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/dto.BoardID"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "объект доски",
-                        "schema": {
-                            "$ref": "#/definitions/doc_structs.BoardResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/apperrors.ErrorResponse"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/apperrors.ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/apperrors.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/board/create/": {
-            "post": {
                 "description": "Создать доску",
                 "consumes": [
                     "application/json"
@@ -319,7 +267,109 @@ const docTemplate = `{
                 }
             }
         },
-        "/board/delete/": {
+        "/board/{boardID}": {
+            "get": {
+                "description": "Получить доску",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "boards"
+                ],
+                "summary": "Получить доску",
+                "parameters": [
+                    {
+                        "description": "id доски",
+                        "name": "boardID",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.BoardID"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "объект доски",
+                        "schema": {
+                            "$ref": "#/definitions/doc_structs.BoardResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "Обновить доску",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "boards"
+                ],
+                "summary": "Обновить доску",
+                "parameters": [
+                    {
+                        "description": "обновленные данные доски",
+                        "name": "boardInfo",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.UpdatedBoardInfo"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "no content",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/board/{boardID}/": {
             "delete": {
                 "description": "Удалить доску",
                 "consumes": [
@@ -371,8 +421,8 @@ const docTemplate = `{
                 }
             }
         },
-        "/board/history/": {
-            "post": {
+        "/board/{boardID}/history": {
+            "get": {
                 "description": "Получить историю изменений доски: список, каждый элемент которого состоит из автора изменения, даты изменения и изменения",
                 "consumes": [
                     "application/json"
@@ -423,8 +473,8 @@ const docTemplate = `{
                 }
             }
         },
-        "/board/history/submit/": {
-            "post": {
+        "/board/{boardID}/history/": {
+            "put": {
                 "description": "Записывает изменения данной доски в историю изменений",
                 "consumes": [
                     "application/json"
@@ -475,60 +525,8 @@ const docTemplate = `{
                 }
             }
         },
-        "/board/update/": {
-            "post": {
-                "description": "Обновить доску",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "boards"
-                ],
-                "summary": "Обновить доску",
-                "parameters": [
-                    {
-                        "description": "обновленные данные доски",
-                        "name": "boardInfo",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/dto.UpdatedBoardInfo"
-                        }
-                    }
-                ],
-                "responses": {
-                    "204": {
-                        "description": "no content",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/apperrors.ErrorResponse"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/apperrors.ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/apperrors.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/board/update/change_thumbnail/": {
-            "post": {
+        "/board/{boardID}/thumbnail/": {
+            "put": {
                 "description": "Обновить картинку доску",
                 "consumes": [
                     "application/json"
@@ -579,8 +577,8 @@ const docTemplate = `{
                 }
             }
         },
-        "/board/user/add/": {
-            "post": {
+        "/board/{boardID}/user/{userEmail}/": {
+            "put": {
                 "description": "Добавить пользователя в доску",
                 "consumes": [
                     "application/json"
@@ -631,7 +629,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/board/user/remove/": {
+        "/board/{boardID}/user/{userID}/": {
             "delete": {
                 "description": "Удалить пользователя из доски",
                 "consumes": [
@@ -2830,12 +2828,6 @@ const docTemplate = `{
         "dto.AddBoardUserRequest": {
             "type": "object",
             "properties": {
-                "board_id": {
-                    "type": "integer"
-                },
-                "user_email": {
-                    "type": "string"
-                },
                 "workspace_id": {
                     "type": "integer"
                 }
@@ -3218,9 +3210,6 @@ const docTemplate = `{
             "properties": {
                 "actions": {
                     "type": "string"
-                },
-                "board_id": {
-                    "type": "integer"
                 }
             }
         },
@@ -3334,12 +3323,6 @@ const docTemplate = `{
         "dto.RemoveBoardUserInfo": {
             "type": "object",
             "properties": {
-                "board_id": {
-                    "type": "integer"
-                },
-                "user_id": {
-                    "type": "integer"
-                },
                 "workspace_id": {
                     "type": "integer"
                 }
@@ -3541,9 +3524,6 @@ const docTemplate = `{
         "dto.UpdatedBoardInfo": {
             "type": "object",
             "properties": {
-                "id": {
-                    "type": "integer"
-                },
                 "name": {
                     "type": "string"
                 }
@@ -3552,9 +3532,6 @@ const docTemplate = `{
         "dto.UpdatedBoardThumbnailInfo": {
             "type": "object",
             "properties": {
-                "id": {
-                    "type": "integer"
-                },
                 "thumbnail": {
                     "type": "array",
                     "items": {
