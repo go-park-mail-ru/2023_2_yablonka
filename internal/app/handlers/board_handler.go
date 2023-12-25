@@ -398,7 +398,7 @@ func (bh BoardHandler) Delete(w http.ResponseWriter, r *http.Request) {
 //
 // @Param info body dto.AddBoardUserRequest true "мэйл пользователя, id доски и воркспейса"
 //
-// @Success 204  {string}  string "no content"
+// @Success 204  {object}  doc_structs.UserResponse
 // @Failure 400  {object}  apperrors.ErrorResponse
 // @Failure 401  {object}  apperrors.ErrorResponse
 // @Failure 500  {object}  apperrors.ErrorResponse
@@ -433,7 +433,7 @@ func (bh BoardHandler) AddUser(w http.ResponseWriter, r *http.Request) {
 	}
 	logger.DebugFmt("User object acquired from context", requestID.String(), funcName, nodeName)
 
-	err = bh.bs.AddUser(rCtx, info)
+	addedUser, err := bh.bs.AddUser(rCtx, info)
 	if err != nil {
 		logger.Error(errorMessage + err.Error())
 		logger.Info(failBorder)
@@ -443,7 +443,9 @@ func (bh BoardHandler) AddUser(w http.ResponseWriter, r *http.Request) {
 	logger.DebugFmt("User added", requestID.String(), funcName, nodeName)
 
 	response := dto.JSONResponse{
-		Body: dto.JSONMap{},
+		Body: dto.JSONMap{
+			"user": addedUser,
+		},
 	}
 	err = WriteResponse(response, w, r)
 	if err != nil {

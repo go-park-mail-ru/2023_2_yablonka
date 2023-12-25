@@ -223,7 +223,7 @@ func (bs BoardService) Delete(ctx context.Context, id dto.BoardID) error {
 
 // AddUser
 // добавляет пользователя на доску
-func (bs BoardService) AddUser(ctx context.Context, request dto.AddBoardUserRequest) error {
+func (bs BoardService) AddUser(ctx context.Context, request dto.AddBoardUserRequest) (dto.UserPublicInfo, error) {
 	funcName := "BoardService.AddUser"
 	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
 	requestID := ctx.Value(dto.RequestIDKey).(uuid.UUID)
@@ -234,30 +234,30 @@ func (bs BoardService) AddUser(ctx context.Context, request dto.AddBoardUserRequ
 	}
 	requestingUserAccess, err := bs.boardStorage.CheckAccess(ctx, accessInfo)
 	if err != nil {
-		return apperrors.ErrCouldNotGetUser
+		return dto.UserPublicInfo{}, apperrors.ErrCouldNotGetUser
 	}
 	logger.DebugFmt("got user", requestID.String(), funcName, nodeName)
 
 	if !requestingUserAccess {
-		return apperrors.ErrNoBoardAccess
+		return dto.UserPublicInfo{}, apperrors.ErrNoBoardAccess
 	}
 	logger.DebugFmt("Requesting user has access to board", requestID.String(), funcName, nodeName)
 
 	targetUser, err := bs.userStorage.GetWithLogin(ctx, dto.UserLogin{Value: request.UserEmail})
 	if err != nil {
-		return apperrors.ErrUserNotFound
+		return dto.UserPublicInfo{}, apperrors.ErrUserNotFound
 	}
 	logger.DebugFmt("user found", requestID.String(), funcName, nodeName)
 
 	accessInfo.UserID = targetUser.ID
 	userAccess, err := bs.boardStorage.CheckAccess(ctx, accessInfo)
 	if err != nil {
-		return apperrors.ErrCouldNotGetUser
+		return dto.UserPublicInfo{}, apperrors.ErrCouldNotGetUser
 	}
 	logger.DebugFmt("got user", requestID.String(), funcName, nodeName)
 
 	if userAccess {
-		return apperrors.ErrUserAlreadyInBoard
+		return dto.UserPublicInfo{}, apperrors.ErrUserAlreadyInBoard
 	}
 	logger.DebugFmt("user not in board", requestID.String(), funcName, nodeName)
 
