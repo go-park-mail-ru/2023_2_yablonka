@@ -33,7 +33,7 @@ type UserHandler struct {
 // @Success 200  {string} string "no content"
 // @Failure 500  {object}  apperrors.ErrorResponse
 //
-// @Router /user/edit/change_password/ [post]
+// @Router /user/edit/password/ [put]
 func (uh UserHandler) ChangePassword(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
 	funcName := "UserHandler.ChangePassword"
@@ -110,7 +110,7 @@ func (uh UserHandler) ChangePassword(w http.ResponseWriter, r *http.Request) {
 // @Success 200  {string} string "no content"
 // @Failure 500  {object}  apperrors.ErrorResponse
 //
-// @Router /user/edit/ [post]
+// @Router /user/edit/ [put]
 func (uh UserHandler) ChangeProfile(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
 	funcName := "UserHandler.ChangeProfile"
@@ -187,7 +187,7 @@ func (uh UserHandler) ChangeProfile(w http.ResponseWriter, r *http.Request) {
 // @Success 200  {object}  doc_structs.AvatarUploadResponse "Ссылка на новую аватарку"
 // @Failure 500  {object}  apperrors.ErrorResponse
 //
-// @Router /user/edit/change_avatar/ [post]
+// @Router /user/edit/avatar/ [put]
 func (uh UserHandler) ChangeAvatar(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
 	funcName := "UserHandler.ChangeAvatar"
@@ -211,18 +211,6 @@ func (uh UserHandler) ChangeAvatar(w http.ResponseWriter, r *http.Request) {
 	}
 	logger.DebugFmt("User object acquired from context", requestID.String(), funcName, nodeName)
 
-	// err := json.NewDecoder(r.Body).Decode(&avatarChangeInfo)
-	// if err != nil {
-	// 	logger.Error(errorMessage + err.Error())
-	// 	logger.Info(failBorder)
-	// 	apperrors.ReturnError(apperrors.BadRequestResponse, w, r)
-	// 	return
-	// }
-	// logger.DebugFmt("Test JSON parsed", requestID.String(), funcName, nodeName)
-
-	// logger.Debug(fmt.Sprintf("%v", rawMap["avatar"]))
-
-	// err := easyjson.UnmarshalFromReader(r.Body, &avatarChangeInfo)
 	err := json.NewDecoder(r.Body).Decode(&avatarChangeInfo)
 	if err != nil {
 		logger.Error(errorMessage + err.Error())
@@ -278,7 +266,7 @@ func (uh UserHandler) ChangeAvatar(w http.ResponseWriter, r *http.Request) {
 // @Success 200  {object}  doc_structs.AvatarUploadResponse "Ссылка на новую аватарку"
 // @Failure 500  {object}  apperrors.ErrorResponse
 //
-// @Router /user/edit/delete_avatar/ [delete]
+// @Router /user/edit/avatar/ [delete]
 func (uh UserHandler) DeleteAvatar(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
 	funcName := "UserHandler.DeleteAvatar"

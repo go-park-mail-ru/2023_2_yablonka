@@ -51,21 +51,19 @@ func GetChiMux(manager handlers.Handlers, config config.Config, logger logging.I
 			r.Get("/workspaces", metricsMiddleware.WrapHandler(
 				"/user/workspaces", http.HandlerFunc(manager.WorkspaceHandler.GetUserWorkspaces)),
 			)
-			r.Route("/edit", func(r chi.Router) {
+			r.Put("/", metricsMiddleware.WrapHandler(
+				"/user/", http.HandlerFunc(manager.UserHandler.ChangeProfile)),
+			)
+			r.Put("/password/", metricsMiddleware.WrapHandler(
+				"/user/password/", http.HandlerFunc(manager.UserHandler.ChangePassword)),
+			)
+			r.Route("/avatar", func(r chi.Router) {
 				r.Put("/", metricsMiddleware.WrapHandler(
-					"/user/edit/", http.HandlerFunc(manager.UserHandler.ChangeProfile)),
+					"/user/avatar/", http.HandlerFunc(manager.UserHandler.ChangeAvatar)),
 				)
-				r.Put("/password/", metricsMiddleware.WrapHandler(
-					"/user/edit/password/", http.HandlerFunc(manager.UserHandler.ChangePassword)),
+				r.Delete("/", metricsMiddleware.WrapHandler(
+					"/user/avatar/delete", http.HandlerFunc(manager.UserHandler.DeleteAvatar)),
 				)
-				r.Route("/avatar", func(r chi.Router) {
-					r.Put("/", metricsMiddleware.WrapHandler(
-						"/user/edit/avatar/", http.HandlerFunc(manager.UserHandler.ChangeAvatar)),
-					)
-					r.Delete("/", metricsMiddleware.WrapHandler(
-						"/user/edit/avatar/delete", http.HandlerFunc(manager.UserHandler.DeleteAvatar)),
-					)
-				})
 			})
 		})
 		r.Route("/workspace", func(r chi.Router) {
