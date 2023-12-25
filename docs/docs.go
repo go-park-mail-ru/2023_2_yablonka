@@ -2326,7 +2326,7 @@ const docTemplate = `{
             }
         },
         "/user/edit/": {
-            "post": {
+            "put": {
                 "description": "В ответ ничего не шлёт",
                 "consumes": [
                     "application/json"
@@ -2365,8 +2365,8 @@ const docTemplate = `{
                 }
             }
         },
-        "/user/edit/change_avatar/": {
-            "post": {
+        "/user/edit/avatar/": {
+            "put": {
                 "description": "В ответ шлёт ссылку на файл",
                 "consumes": [
                     "application/json"
@@ -2403,10 +2403,37 @@ const docTemplate = `{
                         }
                     }
                 }
+            },
+            "delete": {
+                "description": "Удалить аватарку",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "Удалить аватарку",
+                "responses": {
+                    "200": {
+                        "description": "Ссылка на новую аватарку",
+                        "schema": {
+                            "$ref": "#/definitions/doc_structs.AvatarUploadResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/apperrors.ErrorResponse"
+                        }
+                    }
+                }
             }
         },
-        "/user/edit/change_password/": {
-            "post": {
+        "/user/edit/password/": {
+            "put": {
                 "description": "Получает старый и новый пароли",
                 "consumes": [
                     "application/json"
@@ -2434,35 +2461,6 @@ const docTemplate = `{
                         "description": "no content",
                         "schema": {
                             "type": "string"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/apperrors.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/user/edit/delete_avatar/": {
-            "delete": {
-                "description": "Удалить аватарку",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "user"
-                ],
-                "summary": "Удалить аватарку",
-                "responses": {
-                    "200": {
-                        "description": "Ссылка на новую аватарку",
-                        "schema": {
-                            "$ref": "#/definitions/doc_structs.AvatarUploadResponse"
                         }
                     },
                     "500": {
@@ -2515,7 +2513,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/workspace/create/": {
+        "/workspace/": {
             "post": {
                 "description": "Создать рабочее пространство",
                 "consumes": [
@@ -2567,9 +2565,9 @@ const docTemplate = `{
                 }
             }
         },
-        "/workspace/delete/": {
-            "delete": {
-                "description": "Удалить рабочее пространство",
+        "/workspace/{workspaceID}/": {
+            "put": {
+                "description": "Обновить рабочее пространство",
                 "consumes": [
                     "application/json"
                 ],
@@ -2579,15 +2577,15 @@ const docTemplate = `{
                 "tags": [
                     "workspaces"
                 ],
-                "summary": "Удалить рабочее пространство",
+                "summary": "Обновить рабочее пространство",
                 "parameters": [
                     {
-                        "description": "id рабочего пространства",
-                        "name": "workspaceID",
+                        "description": "обновленные данные рабочего пространства",
+                        "name": "workspaceInfo",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dto.WorkspaceID"
+                            "$ref": "#/definitions/dto.UpdatedWorkspaceInfo"
                         }
                     }
                 ],
@@ -2619,9 +2617,9 @@ const docTemplate = `{
                 }
             }
         },
-        "/workspace/update/": {
-            "post": {
-                "description": "Обновить рабочее пространство",
+        "/workspace/{workspaceID}/delete/": {
+            "delete": {
+                "description": "Удалить рабочее пространство",
                 "consumes": [
                     "application/json"
                 ],
@@ -2631,15 +2629,15 @@ const docTemplate = `{
                 "tags": [
                     "workspaces"
                 ],
-                "summary": "Обновить рабочее пространство",
+                "summary": "Удалить рабочее пространство",
                 "parameters": [
                     {
-                        "description": "обновленные данные рабочего пространства",
-                        "name": "workspaceInfo",
+                        "description": "id рабочего пространства",
+                        "name": "workspaceID",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dto.UpdatedWorkspaceInfo"
+                            "$ref": "#/definitions/dto.WorkspaceID"
                         }
                     }
                 ],
@@ -3669,9 +3667,6 @@ const docTemplate = `{
             "properties": {
                 "description": {
                     "type": "string"
-                },
-                "id": {
-                    "type": "integer"
                 },
                 "name": {
                     "type": "string"

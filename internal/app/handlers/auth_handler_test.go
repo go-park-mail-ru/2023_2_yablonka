@@ -31,7 +31,7 @@ func hashFromAuthInfo(info dto.AuthInfo) string {
 
 func getLogger() logger.ILogger {
 	logger, _ := logger.NewLogrusLogger(&config.LoggingConfig{
-		Level:                  "debug",
+		Level:                  "warn",
 		DisableTimestamp:       false,
 		FullTimestamp:          true,
 		LevelBasedReport:       true,

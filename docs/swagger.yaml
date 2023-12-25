@@ -641,8 +641,6 @@ definitions:
     properties:
       description:
         type: string
-      id:
-        type: integer
       name:
         type: string
     type: object
@@ -2327,7 +2325,7 @@ paths:
       tags:
       - tasks
   /user/edit/:
-    post:
+    put:
       consumes:
       - application/json
       description: В ответ ничего не шлёт
@@ -2352,8 +2350,26 @@ paths:
       summary: Поменять данные профиля
       tags:
       - auth
-  /user/edit/change_avatar/:
-    post:
+  /user/edit/avatar/:
+    delete:
+      consumes:
+      - application/json
+      description: Удалить аватарку
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Ссылка на новую аватарку
+          schema:
+            $ref: '#/definitions/doc_structs.AvatarUploadResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+      summary: Удалить аватарку
+      tags:
+      - user
+    put:
       consumes:
       - application/json
       description: В ответ шлёт ссылку на файл
@@ -2378,8 +2394,8 @@ paths:
       summary: Поменять аватарку
       tags:
       - user
-  /user/edit/change_password/:
-    post:
+  /user/edit/password/:
+    put:
       consumes:
       - application/json
       description: Получает старый и новый пароли
@@ -2402,25 +2418,6 @@ paths:
           schema:
             $ref: '#/definitions/apperrors.ErrorResponse'
       summary: Поменять пароль
-      tags:
-      - user
-  /user/edit/delete_avatar/:
-    delete:
-      consumes:
-      - application/json
-      description: Удалить аватарку
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Ссылка на новую аватарку
-          schema:
-            $ref: '#/definitions/doc_structs.AvatarUploadResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/apperrors.ErrorResponse'
-      summary: Удалить аватарку
       tags:
       - user
   /user/workspaces:
@@ -2451,7 +2448,7 @@ paths:
       summary: Вывести все рабочие пространства и доски текущего пользователя
       tags:
       - workspaces
-  /workspace/create/:
+  /workspace/:
     post:
       consumes:
       - application/json
@@ -2485,7 +2482,41 @@ paths:
       summary: Создать рабочее пространство
       tags:
       - workspaces
-  /workspace/delete/:
+  /workspace/{workspaceID}/:
+    put:
+      consumes:
+      - application/json
+      description: Обновить рабочее пространство
+      parameters:
+      - description: обновленные данные рабочего пространства
+        in: body
+        name: workspaceInfo
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdatedWorkspaceInfo'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: no content
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+      summary: Обновить рабочее пространство
+      tags:
+      - workspaces
+  /workspace/{workspaceID}/delete/:
     delete:
       consumes:
       - application/json
@@ -2517,40 +2548,6 @@ paths:
           schema:
             $ref: '#/definitions/apperrors.ErrorResponse'
       summary: Удалить рабочее пространство
-      tags:
-      - workspaces
-  /workspace/update/:
-    post:
-      consumes:
-      - application/json
-      description: Обновить рабочее пространство
-      parameters:
-      - description: обновленные данные рабочего пространства
-        in: body
-        name: workspaceInfo
-        required: true
-        schema:
-          $ref: '#/definitions/dto.UpdatedWorkspaceInfo'
-      produces:
-      - application/json
-      responses:
-        "204":
-          description: no content
-          schema:
-            type: string
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/apperrors.ErrorResponse'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/apperrors.ErrorResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/apperrors.ErrorResponse'
-      summary: Обновить рабочее пространство
       tags:
       - workspaces
 swagger: "2.0"
