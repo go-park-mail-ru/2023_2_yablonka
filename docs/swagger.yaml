@@ -641,8 +641,6 @@ definitions:
     properties:
       description:
         type: string
-      id:
-        type: integer
       name:
         type: string
     type: object
@@ -2451,7 +2449,7 @@ paths:
       summary: Вывести все рабочие пространства и доски текущего пользователя
       tags:
       - workspaces
-  /workspace/create/:
+  /workspace/:
     post:
       consumes:
       - application/json
@@ -2485,7 +2483,41 @@ paths:
       summary: Создать рабочее пространство
       tags:
       - workspaces
-  /workspace/delete/:
+  /workspace/{workspaceID}/:
+    put:
+      consumes:
+      - application/json
+      description: Обновить рабочее пространство
+      parameters:
+      - description: обновленные данные рабочего пространства
+        in: body
+        name: workspaceInfo
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdatedWorkspaceInfo'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: no content
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/apperrors.ErrorResponse'
+      summary: Обновить рабочее пространство
+      tags:
+      - workspaces
+  /workspace/{workspaceID}/delete/:
     delete:
       consumes:
       - application/json
@@ -2517,40 +2549,6 @@ paths:
           schema:
             $ref: '#/definitions/apperrors.ErrorResponse'
       summary: Удалить рабочее пространство
-      tags:
-      - workspaces
-  /workspace/update/:
-    post:
-      consumes:
-      - application/json
-      description: Обновить рабочее пространство
-      parameters:
-      - description: обновленные данные рабочего пространства
-        in: body
-        name: workspaceInfo
-        required: true
-        schema:
-          $ref: '#/definitions/dto.UpdatedWorkspaceInfo'
-      produces:
-      - application/json
-      responses:
-        "204":
-          description: no content
-          schema:
-            type: string
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/apperrors.ErrorResponse'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/apperrors.ErrorResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/apperrors.ErrorResponse'
-      summary: Обновить рабочее пространство
       tags:
       - workspaces
 swagger: "2.0"

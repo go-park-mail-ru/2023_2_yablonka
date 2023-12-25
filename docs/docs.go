@@ -2515,7 +2515,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/workspace/create/": {
+        "/workspace/": {
             "post": {
                 "description": "Создать рабочее пространство",
                 "consumes": [
@@ -2567,9 +2567,9 @@ const docTemplate = `{
                 }
             }
         },
-        "/workspace/delete/": {
-            "delete": {
-                "description": "Удалить рабочее пространство",
+        "/workspace/{workspaceID}/": {
+            "put": {
+                "description": "Обновить рабочее пространство",
                 "consumes": [
                     "application/json"
                 ],
@@ -2579,15 +2579,15 @@ const docTemplate = `{
                 "tags": [
                     "workspaces"
                 ],
-                "summary": "Удалить рабочее пространство",
+                "summary": "Обновить рабочее пространство",
                 "parameters": [
                     {
-                        "description": "id рабочего пространства",
-                        "name": "workspaceID",
+                        "description": "обновленные данные рабочего пространства",
+                        "name": "workspaceInfo",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dto.WorkspaceID"
+                            "$ref": "#/definitions/dto.UpdatedWorkspaceInfo"
                         }
                     }
                 ],
@@ -2619,9 +2619,9 @@ const docTemplate = `{
                 }
             }
         },
-        "/workspace/update/": {
-            "post": {
-                "description": "Обновить рабочее пространство",
+        "/workspace/{workspaceID}/delete/": {
+            "delete": {
+                "description": "Удалить рабочее пространство",
                 "consumes": [
                     "application/json"
                 ],
@@ -2631,15 +2631,15 @@ const docTemplate = `{
                 "tags": [
                     "workspaces"
                 ],
-                "summary": "Обновить рабочее пространство",
+                "summary": "Удалить рабочее пространство",
                 "parameters": [
                     {
-                        "description": "обновленные данные рабочего пространства",
-                        "name": "workspaceInfo",
+                        "description": "id рабочего пространства",
+                        "name": "workspaceID",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dto.UpdatedWorkspaceInfo"
+                            "$ref": "#/definitions/dto.WorkspaceID"
                         }
                     }
                 ],
@@ -3669,9 +3669,6 @@ const docTemplate = `{
             "properties": {
                 "description": {
                     "type": "string"
-                },
-                "id": {
-                    "type": "integer"
                 },
                 "name": {
                     "type": "string"
