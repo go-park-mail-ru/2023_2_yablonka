@@ -605,9 +605,9 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "204": {
-                        "description": "No Content",
+                        "description": "no content",
                         "schema": {
-                            "$ref": "#/definitions/doc_structs.UserResponse"
+                            "type": "string"
                         }
                     },
                     "400": {
