@@ -25,7 +25,7 @@ type IBoardService interface {
 	Delete(context.Context, dto.BoardID) error
 	// AddUser
 	// добавляет пользователя на доску
-	AddUser(context.Context, dto.AddBoardUserRequest) (dto.UserPublicInfo, error)
+	AddUser(context.Context, dto.AddBoardUserRequest) error
 	// AddUser
 	// добавляет пользователя на доску
 	RemoveUser(context.Context, dto.RemoveBoardUserInfo) error
