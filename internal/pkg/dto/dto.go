@@ -723,7 +723,7 @@ type UpdatedListInfo struct {
 // UpdatedWorkspaceInfo
 // DTO для обновления данных рабочего пространства
 type UpdatedWorkspaceInfo struct {
-	ID          uint64  `json:"id"`
+	ID          uint64  `json:"-"`
 	Name        string  `json:"name"`
 	Description *string `json:"description"`
 }
@@ -844,4 +844,12 @@ const (
 	SIDLengthKey
 	LoggerKey
 	RequestIDKey
+	BoardIDKey
+	WorkspaceIDKey
+	ListIDKey
+	TaskIDKey
+	UserIDKey
+	ChecklistIDKey
+	ChecklistItemIDKey
+	TagIDKey
 )

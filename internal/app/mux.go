@@ -5,6 +5,7 @@ import (
 	_ "server/docs"
 	"server/internal/app/handlers"
 	"server/internal/app/middleware"
+	"server/internal/app/middleware/parsers"
 	config "server/internal/config"
 	logging "server/internal/logging"
 
@@ -29,7 +30,7 @@ func GetChiMux(manager handlers.Handlers, config config.Config, logger logging.I
 	mux.Use(middleware.GetCors(*config.CORS, logger))
 	mux.Use(middleware.JsonHeader)
 
-	mux.Route("/api/v2", func(r chi.Router) {
+	mux.Route("/api/v3", func(r chi.Router) {
 		r.Route("/auth", func(r chi.Router) {
 			r.Get("/verify", metricsMiddleware.WrapHandler(
 				"/auth/verify", http.HandlerFunc(manager.AuthHandler.VerifyAuthEndpoint)),
@@ -50,173 +51,209 @@ func GetChiMux(manager handlers.Handlers, config config.Config, logger logging.I
 			r.Get("/workspaces", metricsMiddleware.WrapHandler(
 				"/user/workspaces", http.HandlerFunc(manager.WorkspaceHandler.GetUserWorkspaces)),
 			)
-			r.Post("/edit/", metricsMiddleware.WrapHandler(
-				"/user/edit/", http.HandlerFunc(manager.UserHandler.ChangeProfile)),
+			r.Put("/", metricsMiddleware.WrapHandler(
+				"/user/", http.HandlerFunc(manager.UserHandler.ChangeProfile)),
 			)
-			r.Post("/edit/change_password/", metricsMiddleware.WrapHandler(
-				"/user/edit/change_password/", http.HandlerFunc(manager.UserHandler.ChangePassword)),
+			r.Put("/password/", metricsMiddleware.WrapHandler(
+				"/user/password/", http.HandlerFunc(manager.UserHandler.ChangePassword)),
 			)
-			r.Post("/edit/change_avatar/", metricsMiddleware.WrapHandler(
-				"/user/edit/change_avatar/", http.HandlerFunc(manager.UserHandler.ChangeAvatar)),
-			)
-			r.Delete("/edit/delete_avatar/", metricsMiddleware.WrapHandler(
-				"/user/edit/detele_avatar/", http.HandlerFunc(manager.UserHandler.DeleteAvatar)),
-			)
+			r.Route("/avatar", func(r chi.Router) {
+				r.Put("/", metricsMiddleware.WrapHandler(
+					"/user/avatar/", http.HandlerFunc(manager.UserHandler.ChangeAvatar)),
+				)
+				r.Delete("/", metricsMiddleware.WrapHandler(
+					"/user/avatar/delete", http.HandlerFunc(manager.UserHandler.DeleteAvatar)),
+				)
+			})
 		})
 		r.Route("/workspace", func(r chi.Router) {
 			r.Use(middleware.AuthMiddleware(manager.AuthHandler.GetAuthService(), manager.AuthHandler.GetUserService()))
 			r.Use(middleware.CSRFMiddleware(manager.AuthHandler.GetCSRFService()))
-			r.Post("/create/", metricsMiddleware.WrapHandler(
+			r.Post("/", metricsMiddleware.WrapHandler(
 				"/workspace/create/", http.HandlerFunc(manager.WorkspaceHandler.Create)),
 			)
-			r.Post("/update/", metricsMiddleware.WrapHandler(
-				"/workspace/update/", http.HandlerFunc(manager.WorkspaceHandler.UpdateData)),
-			)
-			r.Delete("/delete/", metricsMiddleware.WrapHandler(
-				"/workspace/delete/", http.HandlerFunc(manager.WorkspaceHandler.Delete)),
-			)
+
+			r.Route("/{workspaceID}", func(r chi.Router) {
+				r.Use(parsers.WorkspaceCtx)
+				r.Put("/", metricsMiddleware.WrapHandler(
+					"/workspace/update/", http.HandlerFunc(manager.WorkspaceHandler.UpdateData)),
+				)
+				r.Delete("/", metricsMiddleware.WrapHandler(
+					"/workspace/delete/", http.HandlerFunc(manager.WorkspaceHandler.Delete)),
+				)
+			})
 		})
 		r.Route("/board", func(r chi.Router) {
 			r.Use(middleware.AuthMiddleware(manager.AuthHandler.GetAuthService(), manager.AuthHandler.GetUserService()))
 			r.Use(middleware.CSRFMiddleware(manager.AuthHandler.GetCSRFService()))
 			r.Post("/", metricsMiddleware.WrapHandler(
-				"/board/", http.HandlerFunc(manager.BoardHandler.GetFullBoard)),
-			)
-			r.Post("/create/", metricsMiddleware.WrapHandler(
 				"/board/create/", http.HandlerFunc(manager.BoardHandler.Create)),
 			)
-			r.Post("/update/", metricsMiddleware.WrapHandler(
-				"/board/update/", http.HandlerFunc(manager.BoardHandler.UpdateData)),
-			)
-			r.Post("/update/change_thumbnail/", metricsMiddleware.WrapHandler(
-				"/board/update/change_thumbnail/", http.HandlerFunc(manager.BoardHandler.UpdateThumbnail)),
-			)
-			r.Route("/user", func(r chi.Router) {
-				r.Post("/add/", metricsMiddleware.WrapHandler(
-					"/board/user/add/", http.HandlerFunc(manager.BoardHandler.AddUser)),
+
+			r.Route("/{boardID}", func(r chi.Router) {
+				r.Use(parsers.BoardCtx)
+				r.Get("/", metricsMiddleware.WrapHandler(
+					"/board/", http.HandlerFunc(manager.BoardHandler.GetFullBoard)),
 				)
-				r.Post("/remove/", metricsMiddleware.WrapHandler(
-					"/board/user/remove/", http.HandlerFunc(manager.BoardHandler.RemoveUser)),
+				r.Put("/", metricsMiddleware.WrapHandler(
+					"/board/update/", http.HandlerFunc(manager.BoardHandler.UpdateData)),
+				)
+				r.Route("/thumbnail", func(r chi.Router) {
+					r.Put("/", metricsMiddleware.WrapHandler(
+						"/board/update/thumbnail/", http.HandlerFunc(manager.BoardHandler.UpdateThumbnail)),
+					)
+				})
+				r.Route("/user/{userID}", func(r chi.Router) {
+					r.Use(parsers.UserCtx)
+					r.Put("/", metricsMiddleware.WrapHandler(
+						"/board/user/add/", http.HandlerFunc(manager.BoardHandler.AddUser)),
+					)
+					r.Delete("/", metricsMiddleware.WrapHandler(
+						"/board/user/remove/", http.HandlerFunc(manager.BoardHandler.RemoveUser)),
+					)
+				})
+				r.Route("/history", func(r chi.Router) {
+					r.Get("/", metricsMiddleware.WrapHandler(
+						"/board/history/", http.HandlerFunc(manager.BoardHandler.GetHistory)),
+					)
+					r.Put("/", metricsMiddleware.WrapHandler(
+						"/board/history/submit/", http.HandlerFunc(manager.BoardHandler.SubmitEdit)),
+					)
+				})
+				r.Delete("/", metricsMiddleware.WrapHandler(
+					"/board/delete/", http.HandlerFunc(manager.BoardHandler.Delete)),
 				)
 			})
-			r.Route("/history", func(r chi.Router) {
-				r.Post("/", metricsMiddleware.WrapHandler(
-					"/board/history/", http.HandlerFunc(manager.BoardHandler.GetHistory)),
-				)
-				r.Post("/submit/", metricsMiddleware.WrapHandler(
-					"/board/history/submit/", http.HandlerFunc(manager.BoardHandler.SubmitEdit)),
-				)
-			})
-			r.Delete("/delete/", metricsMiddleware.WrapHandler(
-				"/board/delete/", http.HandlerFunc(manager.BoardHandler.Delete)),
-			)
 		})
 		r.Route("/list", func(r chi.Router) {
 			r.Use(middleware.AuthMiddleware(manager.AuthHandler.GetAuthService(), manager.AuthHandler.GetUserService()))
 			r.Use(middleware.CSRFMiddleware(manager.AuthHandler.GetCSRFService()))
-			r.Post("/create/", metricsMiddleware.WrapHandler(
+			r.Post("/", metricsMiddleware.WrapHandler(
 				"/list/create/", http.HandlerFunc(manager.ListHandler.Create)),
 			)
-			r.Post("/edit/", metricsMiddleware.WrapHandler(
-				"/list/edit/", http.HandlerFunc(manager.ListHandler.Update)),
-			)
-			r.Delete("/delete/", metricsMiddleware.WrapHandler(
-				"/list/delete/", http.HandlerFunc(manager.ListHandler.Delete)),
-			)
-			r.Post("/reorder/", metricsMiddleware.WrapHandler(
-				"/list/reorder/", http.HandlerFunc(manager.ListHandler.UpdateOrder)),
-			)
+
+			r.Route("/{listID}", func(r chi.Router) {
+				r.Use(parsers.ListCtx)
+				r.Put("/", metricsMiddleware.WrapHandler(
+					"/list/edit/", http.HandlerFunc(manager.ListHandler.Update)),
+				)
+				r.Delete("/", metricsMiddleware.WrapHandler(
+					"/list/delete/", http.HandlerFunc(manager.ListHandler.Delete)),
+				)
+				r.Put("/reorder/", metricsMiddleware.WrapHandler(
+					"/list/reorder/", http.HandlerFunc(manager.ListHandler.UpdateOrder)),
+				)
+			})
 		})
 		r.Route("/task", func(r chi.Router) {
 			r.Use(middleware.AuthMiddleware(manager.AuthHandler.GetAuthService(), manager.AuthHandler.GetUserService()))
 			r.Use(middleware.CSRFMiddleware(manager.AuthHandler.GetCSRFService()))
 			r.Post("/", metricsMiddleware.WrapHandler(
-				"/task/", http.HandlerFunc(manager.TaskHandler.Read)),
-			)
-			r.Post("/create/", metricsMiddleware.WrapHandler(
 				"/task/create/", http.HandlerFunc(manager.TaskHandler.Create)),
 			)
-			r.Post("/edit/", metricsMiddleware.WrapHandler(
-				"/task/edit/", http.HandlerFunc(manager.TaskHandler.Update)),
-			)
-			r.Post("/move/", metricsMiddleware.WrapHandler(
-				"/task/move/", http.HandlerFunc(manager.TaskHandler.Move)),
-			)
-			r.Route("/user", func(r chi.Router) {
-				r.Post("/add/", metricsMiddleware.WrapHandler(
-					"/task/user/add/", http.HandlerFunc(manager.TaskHandler.AddUser)),
+
+			r.Route("/{taskID}", func(r chi.Router) {
+				r.Use(parsers.TaskCtx)
+				r.Get("/", metricsMiddleware.WrapHandler(
+					"/task/", http.HandlerFunc(manager.TaskHandler.Read)),
 				)
-				r.Post("/remove/", metricsMiddleware.WrapHandler(
-					"/task/user/remove/", http.HandlerFunc(manager.TaskHandler.RemoveUser)),
+				r.Put("/", metricsMiddleware.WrapHandler(
+					"/task/edit/", http.HandlerFunc(manager.TaskHandler.Update)),
+				)
+				r.Post("/move/", metricsMiddleware.WrapHandler(
+					"/task/move/", http.HandlerFunc(manager.TaskHandler.Move)),
+				)
+				r.Route("/user/{userID}", func(r chi.Router) {
+					r.Use(parsers.UserCtx)
+					r.Post("/add/", metricsMiddleware.WrapHandler(
+						"/task/user/add/", http.HandlerFunc(manager.TaskHandler.AddUser)),
+					)
+					r.Post("/remove/", metricsMiddleware.WrapHandler(
+						"/task/user/remove/", http.HandlerFunc(manager.TaskHandler.RemoveUser)),
+					)
+				})
+				r.Route("/file", func(r chi.Router) {
+					r.Post("/", metricsMiddleware.WrapHandler(
+						"/task/file/attach/", http.HandlerFunc(manager.TaskHandler.AttachFile)),
+					)
+					r.Get("/", metricsMiddleware.WrapHandler(
+						"/task/file/", http.HandlerFunc(manager.TaskHandler.GetFileList)),
+					)
+					r.Delete("/", metricsMiddleware.WrapHandler(
+						"/task/file/remove/", http.HandlerFunc(manager.TaskHandler.RemoveFile)),
+					)
+				})
+				r.Delete("/", metricsMiddleware.WrapHandler(
+					"/task/delete/", http.HandlerFunc(manager.TaskHandler.Delete)),
 				)
 			})
-			r.Route("/file", func(r chi.Router) {
-				r.Post("/attach/", metricsMiddleware.WrapHandler(
-					"/task/file/attach/", http.HandlerFunc(manager.TaskHandler.AttachFile)),
-				)
-				r.Post("/", metricsMiddleware.WrapHandler(
-					"/task/file/", http.HandlerFunc(manager.TaskHandler.GetFileList)),
-				)
-				r.Delete("/remove/", metricsMiddleware.WrapHandler(
-					"/task/file/remove/", http.HandlerFunc(manager.TaskHandler.RemoveFile)),
-				)
-			})
-			r.Delete("/delete/", metricsMiddleware.WrapHandler(
-				"/task/delete/", http.HandlerFunc(manager.TaskHandler.Delete)),
-			)
 		})
 		r.Route("/checklist", func(r chi.Router) {
 			r.Use(middleware.AuthMiddleware(manager.AuthHandler.GetAuthService(), manager.AuthHandler.GetUserService()))
 			r.Use(middleware.CSRFMiddleware(manager.AuthHandler.GetCSRFService()))
-			r.Post("/create/", metricsMiddleware.WrapHandler(
+			r.Post("/", metricsMiddleware.WrapHandler(
 				"/checklist/create/", http.HandlerFunc(manager.ChecklistHandler.Create)),
 			)
-			r.Post("/edit/", metricsMiddleware.WrapHandler(
-				"/checklist/edit/", http.HandlerFunc(manager.ChecklistHandler.Update)),
-			)
-			r.Delete("/delete/", metricsMiddleware.WrapHandler(
-				"/checklist/delete/", http.HandlerFunc(manager.ChecklistHandler.Delete)),
-			)
-			r.Route("/item", func(r chi.Router) {
-				r.Post("/create/", metricsMiddleware.WrapHandler(
-					"/checklist/item/create/", http.HandlerFunc(manager.ChecklistItemHandler.Create)),
+
+			r.Route("/{checklistID}", func(r chi.Router) {
+				r.Use(parsers.ChecklistCtx)
+				r.Put("/", metricsMiddleware.WrapHandler(
+					"/checklist/edit/", http.HandlerFunc(manager.ChecklistHandler.Update)),
 				)
-				r.Post("/edit/", metricsMiddleware.WrapHandler(
-					"/checklist/item/edit/", http.HandlerFunc(manager.ChecklistItemHandler.Update)),
+				r.Delete("/", metricsMiddleware.WrapHandler(
+					"/checklist/delete/", http.HandlerFunc(manager.ChecklistHandler.Delete)),
 				)
-				r.Post("/reorder/", metricsMiddleware.WrapHandler(
-					"/checklist/item/reorder/", http.HandlerFunc(manager.ChecklistItemHandler.UpdateOrder)),
-				)
-				r.Delete("/delete/", metricsMiddleware.WrapHandler(
-					"/checklist/item/delete/", http.HandlerFunc(manager.ChecklistItemHandler.Delete)),
-				)
+				r.Route("/item", func(r chi.Router) {
+					r.Post("/", metricsMiddleware.WrapHandler(
+						"/checklist/item/create/", http.HandlerFunc(manager.ChecklistItemHandler.Create)),
+					)
+					r.Route("/{checklistItemID}", func(r chi.Router) {
+						r.Use(parsers.ChecklistItemCtx)
+						r.Put("/", metricsMiddleware.WrapHandler(
+							"/checklist/item/edit/", http.HandlerFunc(manager.ChecklistItemHandler.Update)),
+						)
+						r.Put("/reorder/", metricsMiddleware.WrapHandler(
+							"/checklist/item/reorder/", http.HandlerFunc(manager.ChecklistItemHandler.UpdateOrder)),
+						)
+						r.Delete("/", metricsMiddleware.WrapHandler(
+							"/checklist/item/delete/", http.HandlerFunc(manager.ChecklistItemHandler.Delete)),
+						)
+					})
+				})
 			})
 		})
 		r.Route("/comment", func(r chi.Router) {
 			r.Use(middleware.AuthMiddleware(manager.AuthHandler.GetAuthService(), manager.AuthHandler.GetUserService()))
 			r.Use(middleware.CSRFMiddleware(manager.AuthHandler.GetCSRFService()))
-			r.Post("/create/", metricsMiddleware.WrapHandler(
+			r.Post("/", metricsMiddleware.WrapHandler(
 				"/comment/create/", http.HandlerFunc(manager.CommentHandler.Create)),
 			)
 		})
 		r.Route("/tag", func(r chi.Router) {
 			r.Use(middleware.AuthMiddleware(manager.AuthHandler.GetAuthService(), manager.AuthHandler.GetUserService()))
 			r.Use(middleware.CSRFMiddleware(manager.AuthHandler.GetCSRFService()))
-			r.Post("/create/", metricsMiddleware.WrapHandler(
+			r.Post("/", metricsMiddleware.WrapHandler(
 				"/tag/create/", http.HandlerFunc(manager.TagHandler.Create)),
 			)
-			r.Post("/update/", metricsMiddleware.WrapHandler(
-				"/tag/update/", http.HandlerFunc(manager.TagHandler.Update)),
-			)
-			r.Post("/add_to_task/", metricsMiddleware.WrapHandler(
-				"/tag/add_to_task/", http.HandlerFunc(manager.TagHandler.AddToTask)),
-			)
-			r.Delete("/remove_from_task/", metricsMiddleware.WrapHandler(
-				"/tag/remove_from_task/", http.HandlerFunc(manager.TagHandler.RemoveFromTask)),
-			)
-			r.Delete("/delete/", metricsMiddleware.WrapHandler(
-				"/tag/delete/", http.HandlerFunc(manager.TagHandler.Delete)),
-			)
+
+			r.Route("/{tagID}", func(r chi.Router) {
+				r.Use(parsers.TagCtx)
+				r.Put("/", metricsMiddleware.WrapHandler(
+					"/tag/update/", http.HandlerFunc(manager.TagHandler.Update)),
+				)
+				r.Delete("/", metricsMiddleware.WrapHandler(
+					"/tag/delete/", http.HandlerFunc(manager.TagHandler.Delete)),
+				)
+				r.Route("/task/{taskID}", func(r chi.Router) {
+					r.Use(parsers.TagCtx)
+					r.Post("/", metricsMiddleware.WrapHandler(
+						"/tag/task/add/", http.HandlerFunc(manager.TagHandler.AddToTask)),
+					)
+					r.Delete("/", metricsMiddleware.WrapHandler(
+						"/tag/task/remove", http.HandlerFunc(manager.TagHandler.RemoveFromTask)),
+					)
+				})
+			})
 		})
 	})
 	mux.Route("/swagger/", func(r chi.Router) {

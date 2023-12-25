@@ -93,7 +93,7 @@ func (wh WorkspaceHandler) GetUserWorkspaces(w http.ResponseWriter, r *http.Requ
 // @Failure 401  {object}  apperrors.ErrorResponse
 // @Failure 500  {object}  apperrors.ErrorResponse
 //
-// @Router /workspace/create/ [post]
+// @Router /workspace/ [post]
 func (wh WorkspaceHandler) Create(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
 	funcName := "WorkspaceHandler.Create"
@@ -155,7 +155,7 @@ func (wh WorkspaceHandler) Create(w http.ResponseWriter, r *http.Request) {
 // @Failure 401  {object}  apperrors.ErrorResponse
 // @Failure 500  {object}  apperrors.ErrorResponse
 //
-// @Router /workspace/update/ [post]
+// @Router /workspace/{workspaceID}/ [put]
 func (wh WorkspaceHandler) UpdateData(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
 	funcName := "WorkspaceHandler.UpdateData"
@@ -176,6 +176,8 @@ func (wh WorkspaceHandler) UpdateData(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	logger.DebugFmt("JSON parsed", requestID.String(), funcName, nodeName)
+
+	workspaceInfo.ID = rCtx.Value(dto.WorkspaceIDKey).(uint64)
 
 	err = wh.ws.UpdateData(rCtx, workspaceInfo)
 	if err != nil {
@@ -215,7 +217,7 @@ func (wh WorkspaceHandler) UpdateData(w http.ResponseWriter, r *http.Request) {
 // @Failure 401  {object}  apperrors.ErrorResponse
 // @Failure 500  {object}  apperrors.ErrorResponse
 //
-// @Router /workspace/delete/ [delete]
+// @Router /workspace/{workspaceID}/delete/ [delete]
 func (wh WorkspaceHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	rCtx := r.Context()
 	funcName := "WorkspaceHandler.Delete"
@@ -228,16 +230,9 @@ func (wh WorkspaceHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	logger.Info("---------------------------------- Deleting workspace ----------------------------------")
 
 	var workspaceID dto.WorkspaceID
-	err := easyjson.UnmarshalFromReader(r.Body, &workspaceID)
-	if err != nil {
-		logger.Error(errorMessage + err.Error())
-		logger.Info(failBorder)
-		apperrors.ReturnError(apperrors.BadRequestResponse, w, r)
-		return
-	}
-	logger.DebugFmt("JSON parsed", requestID.String(), funcName, nodeName)
+	workspaceID.Value = rCtx.Value(dto.WorkspaceIDKey).(uint64)
 
-	err = wh.ws.Delete(rCtx, workspaceID)
+	err := wh.ws.Delete(rCtx, workspaceID)
 	if err != nil {
 		logger.Error(errorMessage + err.Error())
 		logger.Info(failBorder)

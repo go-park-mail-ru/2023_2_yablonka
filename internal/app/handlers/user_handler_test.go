@@ -27,13 +27,15 @@ func createUserMux(
 	WorkspaceHandler := *handlers.NewWorkspaceHandler(mockWorkspaceService)
 
 	mux := chi.NewRouter()
-	mux.Route("/api/v2", func(r chi.Router) {
+	mux.Route("/api/v3", func(r chi.Router) {
 		r.Route("/user", func(r chi.Router) {
 			r.Get("/workspaces", WorkspaceHandler.GetUserWorkspaces)
-			r.Post("/edit/", UserHandler.ChangeProfile)
-			r.Post("/edit/change_password/", UserHandler.ChangePassword)
-			r.Post("/edit/change_avatar/", UserHandler.ChangeAvatar)
-			r.Delete("/edit/delete_avatar/", UserHandler.DeleteAvatar)
+			r.Put("/", UserHandler.ChangeProfile)
+			r.Put("/password/", UserHandler.ChangePassword)
+			r.Route("/avatar", func(r chi.Router) {
+				r.Put("/", UserHandler.ChangeAvatar)
+				r.Delete("/", UserHandler.DeleteAvatar)
+			})
 		})
 	})
 	return mux, nil
@@ -77,7 +79,7 @@ func TestUserHandler_Unit_ChangePassword(t *testing.T) {
 						HttpOnly: true,
 						SameSite: http.SameSiteLaxMode,
 						Expires:  args.session.ExpirationDate,
-						Path:     "/api/v2/",
+						Path:     "/api/v3/",
 					}
 
 					us.
@@ -89,7 +91,7 @@ func TestUserHandler_Unit_ChangePassword(t *testing.T) {
 						args.passwords.OldPassword, args.passwords.NewPassword)))
 
 					r := httptest.
-						NewRequest("POST", "/api/v2/user/edit/change_password/", body).
+						NewRequest("PUT", "/api/v3/user/password/", body).
 						WithContext(
 							context.WithValue(
 								context.WithValue(
@@ -120,13 +122,13 @@ func TestUserHandler_Unit_ChangePassword(t *testing.T) {
 						HttpOnly: true,
 						SameSite: http.SameSiteLaxMode,
 						Expires:  args.session.ExpirationDate,
-						Path:     "/api/v2/",
+						Path:     "/api/v3/",
 					}
 
 					body := bytes.NewReader([]byte(""))
 
 					r := httptest.
-						NewRequest("POST", "/api/v2/user/edit/change_password/", body).
+						NewRequest("PUT", "/api/v3/user/password/", body).
 						WithContext(
 							context.WithValue(
 								context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
@@ -159,14 +161,14 @@ func TestUserHandler_Unit_ChangePassword(t *testing.T) {
 						HttpOnly: true,
 						SameSite: http.SameSiteLaxMode,
 						Expires:  args.session.ExpirationDate,
-						Path:     "/api/v2/",
+						Path:     "/api/v3/",
 					}
 
 					body := bytes.NewReader([]byte(fmt.Sprintf(`{"old_password":"%s", "new_password":"%s"}`,
 						args.passwords.OldPassword, args.passwords.NewPassword)))
 
 					r := httptest.
-						NewRequest("POST", "/api/v2/user/edit/change_password/", body).
+						NewRequest("PUT", "/api/v3/user/password/", body).
 						WithContext(
 							context.WithValue(
 								context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
@@ -199,14 +201,14 @@ func TestUserHandler_Unit_ChangePassword(t *testing.T) {
 						HttpOnly: true,
 						SameSite: http.SameSiteLaxMode,
 						Expires:  args.session.ExpirationDate,
-						Path:     "/api/v2/",
+						Path:     "/api/v3/",
 					}
 
 					body := bytes.NewReader([]byte(fmt.Sprintf(`{"old_password":"%s", "new_password":"%s"}`,
 						args.passwords.OldPassword, args.passwords.NewPassword)))
 
 					r := httptest.
-						NewRequest("POST", "/api/v2/user/edit/change_password/", body).
+						NewRequest("PUT", "/api/v3/user/password/", body).
 						WithContext(
 							context.WithValue(
 								context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
@@ -244,7 +246,7 @@ func TestUserHandler_Unit_ChangePassword(t *testing.T) {
 						HttpOnly: true,
 						SameSite: http.SameSiteLaxMode,
 						Expires:  args.session.ExpirationDate,
-						Path:     "/api/v2/",
+						Path:     "/api/v3/",
 					}
 
 					us.
@@ -256,7 +258,7 @@ func TestUserHandler_Unit_ChangePassword(t *testing.T) {
 						args.passwords.OldPassword, args.passwords.NewPassword)))
 
 					r := httptest.
-						NewRequest("POST", "/api/v2/user/edit/change_password/", body).
+						NewRequest("PUT", "/api/v3/user/password/", body).
 						WithContext(
 							context.WithValue(
 								context.WithValue(
@@ -297,7 +299,7 @@ func TestUserHandler_Unit_ChangePassword(t *testing.T) {
 						HttpOnly: true,
 						SameSite: http.SameSiteLaxMode,
 						Expires:  args.session.ExpirationDate,
-						Path:     "/api/v2/",
+						Path:     "/api/v3/",
 					}
 
 					us.
@@ -309,7 +311,7 @@ func TestUserHandler_Unit_ChangePassword(t *testing.T) {
 						args.passwords.OldPassword, args.passwords.NewPassword)))
 
 					r := httptest.
-						NewRequest("POST", "/api/v2/user/edit/change_password/", body).
+						NewRequest("PUT", "/api/v3/user/password/", body).
 						WithContext(
 							context.WithValue(
 								context.WithValue(
@@ -397,7 +399,7 @@ func TestUserHandler_Unit_ChangeAvatar(t *testing.T) {
 						HttpOnly: true,
 						SameSite: http.SameSiteLaxMode,
 						Expires:  args.session.ExpirationDate,
-						Path:     "/api/v2/",
+						Path:     "/api/v3/",
 					}
 
 					us.
@@ -411,7 +413,7 @@ func TestUserHandler_Unit_ChangeAvatar(t *testing.T) {
 						args.info.Avatar, args.info.Filename, args.info.Mimetype)))
 
 					r := httptest.
-						NewRequest("POST", "/api/v2/user/edit/change_avatar/", body).
+						NewRequest("PUT", "/api/v3/user/avatar/", body).
 						WithContext(
 							context.WithValue(
 								context.WithValue(
@@ -442,13 +444,13 @@ func TestUserHandler_Unit_ChangeAvatar(t *testing.T) {
 						HttpOnly: true,
 						SameSite: http.SameSiteLaxMode,
 						Expires:  args.session.ExpirationDate,
-						Path:     "/api/v2/",
+						Path:     "/api/v3/",
 					}
 
 					body := bytes.NewReader([]byte(""))
 
 					r := httptest.
-						NewRequest("POST", "/api/v2/user/edit/change_password/", body).
+						NewRequest("PUT", "/api/v3/user/password/", body).
 						WithContext(
 							context.WithValue(
 								context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
@@ -482,14 +484,14 @@ func TestUserHandler_Unit_ChangeAvatar(t *testing.T) {
 						HttpOnly: true,
 						SameSite: http.SameSiteLaxMode,
 						Expires:  args.session.ExpirationDate,
-						Path:     "/api/v2/",
+						Path:     "/api/v3/",
 					}
 
 					body := bytes.NewReader([]byte(fmt.Sprintf(`{"avatar":%v, "filename":"%s", "mimetype":"%s"}`,
 						args.info.Avatar, args.info.Filename, args.info.Mimetype)))
 
 					r := httptest.
-						NewRequest("POST", "/api/v2/user/edit/change_avatar/", body).
+						NewRequest("PUT", "/api/v3/user/avatar/", body).
 						WithContext(
 							context.WithValue(
 								context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
@@ -528,7 +530,7 @@ func TestUserHandler_Unit_ChangeAvatar(t *testing.T) {
 						HttpOnly: true,
 						SameSite: http.SameSiteLaxMode,
 						Expires:  args.session.ExpirationDate,
-						Path:     "/api/v2/",
+						Path:     "/api/v3/",
 					}
 
 					us.
@@ -540,7 +542,7 @@ func TestUserHandler_Unit_ChangeAvatar(t *testing.T) {
 						args.info.Avatar, args.info.Filename, args.info.Mimetype)))
 
 					r := httptest.
-						NewRequest("POST", "/api/v2/user/edit/change_avatar/", body).
+						NewRequest("PUT", "/api/v3/user/avatar/", body).
 						WithContext(
 							context.WithValue(
 								context.WithValue(
@@ -628,7 +630,7 @@ func TestUserHandler_Unit_ChangeProfile(t *testing.T) {
 						HttpOnly: true,
 						SameSite: http.SameSiteLaxMode,
 						Expires:  args.session.ExpirationDate,
-						Path:     "/api/v2/",
+						Path:     "/api/v3/",
 					}
 
 					us.
@@ -640,7 +642,7 @@ func TestUserHandler_Unit_ChangeProfile(t *testing.T) {
 						args.info.Name, args.info.Surname, args.info.Description)))
 
 					r := httptest.
-						NewRequest("POST", "/api/v2/user/edit/", body).
+						NewRequest("PUT", "/api/v3/user/", body).
 						WithContext(
 							context.WithValue(
 								context.WithValue(
@@ -671,13 +673,13 @@ func TestUserHandler_Unit_ChangeProfile(t *testing.T) {
 						HttpOnly: true,
 						SameSite: http.SameSiteLaxMode,
 						Expires:  args.session.ExpirationDate,
-						Path:     "/api/v2/",
+						Path:     "/api/v3/",
 					}
 
 					body := bytes.NewReader([]byte(""))
 
 					r := httptest.
-						NewRequest("POST", "/api/v2/user/edit/", body).
+						NewRequest("PUT", "/api/v3/user/", body).
 						WithContext(
 							context.WithValue(
 								context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
@@ -711,14 +713,14 @@ func TestUserHandler_Unit_ChangeProfile(t *testing.T) {
 						HttpOnly: true,
 						SameSite: http.SameSiteLaxMode,
 						Expires:  args.session.ExpirationDate,
-						Path:     "/api/v2/",
+						Path:     "/api/v3/",
 					}
 
 					body := bytes.NewReader([]byte(fmt.Sprintf(`{"name":"%s", "surname":"%s", "description":"%s"}`,
 						args.info.Name, args.info.Surname, args.info.Description)))
 
 					r := httptest.
-						NewRequest("POST", "/api/v2/user/edit/", body).
+						NewRequest("PUT", "/api/v3/user/", body).
 						WithContext(
 							context.WithValue(
 								context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
@@ -757,7 +759,7 @@ func TestUserHandler_Unit_ChangeProfile(t *testing.T) {
 						HttpOnly: true,
 						SameSite: http.SameSiteLaxMode,
 						Expires:  args.session.ExpirationDate,
-						Path:     "/api/v2/",
+						Path:     "/api/v3/",
 					}
 
 					us.
@@ -769,7 +771,7 @@ func TestUserHandler_Unit_ChangeProfile(t *testing.T) {
 						args.info.Name, args.info.Surname, args.info.Description)))
 
 					r := httptest.
-						NewRequest("POST", "/api/v2/user/edit/", body).
+						NewRequest("PUT", "/api/v3/user/", body).
 						WithContext(
 							context.WithValue(
 								context.WithValue(
@@ -859,7 +861,7 @@ func TestUserHandler_Unit_DeleteAvatar(t *testing.T) {
 						HttpOnly: true,
 						SameSite: http.SameSiteLaxMode,
 						Expires:  args.session.ExpirationDate,
-						Path:     "/api/v2/",
+						Path:     "/api/v3/",
 					}
 
 					us.
@@ -872,7 +874,7 @@ func TestUserHandler_Unit_DeleteAvatar(t *testing.T) {
 					body := bytes.NewReader([]byte(""))
 
 					r := httptest.
-						NewRequest("DELETE", "/api/v2/user/edit/delete_avatar/", body).
+						NewRequest("DELETE", "/api/v3/user/avatar/", body).
 						WithContext(
 							context.WithValue(
 								context.WithValue(
@@ -907,13 +909,13 @@ func TestUserHandler_Unit_DeleteAvatar(t *testing.T) {
 						HttpOnly: true,
 						SameSite: http.SameSiteLaxMode,
 						Expires:  args.session.ExpirationDate,
-						Path:     "/api/v2/",
+						Path:     "/api/v3/",
 					}
 
 					body := bytes.NewReader([]byte(""))
 
 					r := httptest.
-						NewRequest("DELETE", "/api/v2/user/edit/delete_avatar/", body).
+						NewRequest("DELETE", "/api/v3/user/avatar/", body).
 						WithContext(
 							context.WithValue(
 								context.WithValue(context.Background(), dto.LoggerKey, getLogger()),
@@ -954,7 +956,7 @@ func TestUserHandler_Unit_DeleteAvatar(t *testing.T) {
 						HttpOnly: true,
 						SameSite: http.SameSiteLaxMode,
 						Expires:  args.session.ExpirationDate,
-						Path:     "/api/v2/",
+						Path:     "/api/v3/",
 					}
 
 					us.
@@ -965,7 +967,7 @@ func TestUserHandler_Unit_DeleteAvatar(t *testing.T) {
 					body := bytes.NewReader([]byte(""))
 
 					r := httptest.
-						NewRequest("DELETE", "/api/v2/user/edit/delete_avatar/", body).
+						NewRequest("DELETE", "/api/v3/user/avatar/", body).
 						WithContext(
 							context.WithValue(
 								context.WithValue(
