@@ -398,6 +398,11 @@ type NewBoardRequest struct {
 	Thumbnail   *[]byte `json:"thumbnail,omitempty" valid:"optional"`
 }
 
+type BoardDeleteRequest struct {
+	BoardID     uint64 `json:"board_id" valid:"-"`
+	WorkspaceID uint64 `json:"workspace_id" valid:"-"`
+}
+
 // WorkspaceID
 // DTO для id рабочего пространства
 type WorkspaceID struct {

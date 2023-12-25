@@ -1318,7 +1318,7 @@ func TestBoardStorage_Create(t *testing.T) {
 func TestBoardStorage_Delete(t *testing.T) {
 	t.Parallel()
 	type args struct {
-		id    dto.BoardID
+		info  dto.BoardDeleteRequest
 		query func(mock sqlmock.Sqlmock, args args)
 	}
 	tests := []struct {
@@ -1330,18 +1330,19 @@ func TestBoardStorage_Delete(t *testing.T) {
 		{
 			name: "Happy path",
 			args: args{
-				id: dto.BoardID{
-					Value: 1,
+				info: dto.BoardDeleteRequest{
+					BoardID:     1,
+					WorkspaceID: 1,
 				},
 				query: func(mock sqlmock.Sqlmock, args args) {
 					sql, _, _ := sq.
 						Delete("public.board").
-						Where(sq.Eq{"id": args.id.Value}).
+						Where(sq.Eq{"id": args.info.BoardID}).
 						PlaceholderFormat(sq.Dollar).
 						ToSql()
 
 					mock.ExpectExec(regexp.QuoteMeta(sql)).
-						WithArgs(args.id.Value).
+						WithArgs(args.info.BoardID).
 						WillReturnResult(sqlmock.NewResult(1, 1))
 				},
 			},
@@ -1360,18 +1361,19 @@ func TestBoardStorage_Delete(t *testing.T) {
 		{
 			name: "Bad request (couldn't execute query)",
 			args: args{
-				id: dto.BoardID{
-					Value: 1,
+				info: dto.BoardDeleteRequest{
+					BoardID:     1,
+					WorkspaceID: 1,
 				},
 				query: func(mock sqlmock.Sqlmock, args args) {
 					sql, _, _ := sq.
 						Delete("public.board").
-						Where(sq.Eq{"id": args.id.Value}).
+						Where(sq.Eq{"id": args.info.BoardID}).
 						PlaceholderFormat(sq.Dollar).
 						ToSql()
 
 					mock.ExpectExec(regexp.QuoteMeta(sql)).
-						WithArgs(args.id.Value).
+						WithArgs(args.info.BoardID).
 						WillReturnError(errors.New("Mock delete fail"))
 				},
 			},
@@ -1399,7 +1401,7 @@ func TestBoardStorage_Delete(t *testing.T) {
 
 			s := NewBoardStorage(db)
 
-			err = s.Delete(ctx, tt.args.id)
+			err = s.Delete(ctx, tt.args.info)
 
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Delete() error = %v, wantErr %v, err = %v", err != nil, tt.wantErr, err)

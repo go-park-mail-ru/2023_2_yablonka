@@ -22,7 +22,7 @@ type IBoardService interface {
 	UpdateThumbnail(context.Context, dto.UpdatedBoardThumbnailInfo) (*dto.UrlObj, error)
 	// Delete
 	// удаляет доску
-	Delete(context.Context, dto.BoardID) error
+	Delete(context.Context, dto.BoardDeleteRequest) error
 	// AddUser
 	// добавляет пользователя на доску
 	AddUser(context.Context, dto.AddBoardUserRequest) (dto.UserPublicInfo, error)
