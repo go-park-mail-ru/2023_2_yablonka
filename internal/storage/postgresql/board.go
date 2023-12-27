@@ -524,7 +524,7 @@ func (s *PostgreSQLBoardStorage) Delete(ctx context.Context, info dto.BoardDelet
 	logger.DebugFmt("query executed", requestID.String(), funcName, nodeName)
 
 	guestsQuery, args, err := sq.
-		Select("array_remove(array_agg(public.board_user.id_user), NULL)").
+		Select("array_agg(public.board_user.id_user)").
 		From("public.board_user").
 		LeftJoin("public.board ON public.board_user.id_board = public.board.id").
 		Where(sq.Eq{
@@ -543,19 +543,20 @@ func (s *PostgreSQLBoardStorage) Delete(ctx context.Context, info dto.BoardDelet
 	}
 	logger.DebugFmt("Built query\n\t"+guestsQuery+"\nwith args\n\t"+fmt.Sprintf("%+v", args), requestID.String(), funcName, nodeName)
 
-	row, err := tx.Query(guestsQuery, args...)
-	if err != nil {
-		logger.DebugFmt(err.Error(), requestID.String(), funcName, nodeName)
-		err = tx.Rollback()
-		if err != nil {
-			logger.DebugFmt("Transaction rollback failed with error "+err.Error(), requestID.String(), funcName, nodeName)
-			return apperrors.ErrCouldNotRollback
-		}
-		return apperrors.ErrCouldNotGetUser
-	}
+	row := tx.QueryRow(guestsQuery, args...)
+	// if err != nil {
+	// 	logger.DebugFmt(err.Error(), requestID.String(), funcName, nodeName)
+	// 	err = tx.Rollback()
+	// 	if err != nil {
+	// 		logger.DebugFmt("Transaction rollback failed with error "+err.Error(), requestID.String(), funcName, nodeName)
+	// 		return apperrors.ErrCouldNotRollback
+	// 	}
+	// 	return apperrors.ErrCouldNotGetUser
+	// }
 	logger.DebugFmt("Got board guests", requestID.String(), funcName, nodeName)
 
-	var guests []uint64
+	// var guests []uint64
+	var guests string
 	err = row.Scan(&guests)
 	if err != nil {
 		logger.DebugFmt("Scanning rows failed with error "+err.Error(), requestID.String(), funcName, nodeName)
@@ -567,6 +568,7 @@ func (s *PostgreSQLBoardStorage) Delete(ctx context.Context, info dto.BoardDelet
 		return apperrors.ErrCouldNotScanRows
 	}
 	logger.DebugFmt("Checked workspace access", requestID.String(), funcName, nodeName)
+	logger.DebugFmt(guests, requestID.String(), funcName, nodeName)
 
 	// if count != 0 {
 	// 	logger.DebugFmt("User still has boards in this workspace", requestID.String(), funcName, nodeName)
@@ -617,7 +619,7 @@ func (s *PostgreSQLBoardStorage) Delete(ctx context.Context, info dto.BoardDelet
 	// }
 	// logger.DebugFmt("query executed", requestID.String(), funcName, nodeName)
 
-	err = tx.Commit()
+	err = tx.Rollback()
 	if err != nil {
 		logger.DebugFmt("Failed to commit changes", requestID.String(), funcName, nodeName)
 		return apperrors.ErrCouldNotCommit
