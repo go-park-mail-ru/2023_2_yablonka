@@ -488,7 +488,7 @@ func (s *PostgreSQLBoardStorage) UpdateThumbnailUrl(ctx context.Context, info dt
 // удаляет доску
 // или возвращает ошибки ...
 func (s *PostgreSQLBoardStorage) Delete(ctx context.Context, info dto.BoardDeleteRequest) error {
-	funcName := "PostgreSQLBoardStorage.RemoveUser"
+	funcName := "PostgreSQLBoardStorage.Delete"
 	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
 	requestID := ctx.Value(dto.RequestIDKey).(uuid.UUID)
 
@@ -619,7 +619,7 @@ func (s *PostgreSQLBoardStorage) Delete(ctx context.Context, info dto.BoardDelet
 			return apperrors.ErrCouldNotScanRows
 		}
 
-		wGuests = append(guests, wGuestID)
+		wGuests = append(wGuests, wGuestID)
 	}
 	if err != nil {
 		logger.DebugFmt("Scanning rows failed with error "+err.Error(), requestID.String(), funcName, nodeName)
