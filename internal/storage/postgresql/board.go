@@ -488,21 +488,141 @@ func (s *PostgreSQLBoardStorage) UpdateThumbnailUrl(ctx context.Context, info dt
 // удаляет доску
 // или возвращает ошибки ...
 func (s *PostgreSQLBoardStorage) Delete(ctx context.Context, info dto.BoardDeleteRequest) error {
-	sql, args, err := sq.
+	funcName := "PostgreSQLBoardStorage.RemoveUser"
+	logger := ctx.Value(dto.LoggerKey).(logger.ILogger)
+	requestID := ctx.Value(dto.RequestIDKey).(uuid.UUID)
+
+	deleteQuery, args, err := sq.
 		Delete("public.board").
 		Where(sq.Eq{"id": info.BoardID}).
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
 
 	if err != nil {
+		logger.DebugFmt("Building query failed with error "+err.Error(), requestID.String(), funcName, nodeName)
 		return apperrors.ErrCouldNotBuildQuery
 	}
+	logger.DebugFmt("Built query\n\t"+deleteQuery+"\nwith args\n\t"+fmt.Sprintf("%+v", args), requestID.String(), funcName, nodeName)
 
-	_, err = s.db.Exec(sql, args...)
-
+	tx, err := s.db.BeginTx(ctx, &sql.TxOptions{})
 	if err != nil {
+		logger.DebugFmt("Failed to start transaction with error "+err.Error(), requestID.String(), funcName, nodeName)
+		return apperrors.ErrCouldNotBeginTransaction
+	}
+	logger.DebugFmt("Transaction started", requestID.String(), funcName, nodeName)
+
+	_, err = tx.Exec(deleteQuery, args...)
+	if err != nil {
+		logger.DebugFmt("Delete failed with error "+err.Error(), requestID.String(), funcName, nodeName)
+		err = tx.Rollback()
+		if err != nil {
+			logger.DebugFmt("Transaction rollback failed with error "+err.Error(), requestID.String(), funcName, nodeName)
+			return apperrors.ErrCouldNotRollback
+		}
 		return apperrors.ErrBoardNotDeleted
 	}
+	logger.DebugFmt("query executed", requestID.String(), funcName, nodeName)
+
+	guestsQuery, args, err := sq.
+		Select("array_remove(array_agg(public.board_user.id_user), NULL)").
+		From("public.board_user").
+		LeftJoin("public.board ON public.board_user.id_board = public.board.id").
+		Where(sq.Eq{
+			"public.board.id_workspace": info.WorkspaceID,
+		}).
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
+	if err != nil {
+		logger.DebugFmt("Building query failed with error "+err.Error(), requestID.String(), funcName, nodeName)
+		err = tx.Rollback()
+		if err != nil {
+			logger.DebugFmt("Transaction rollback failed with error "+err.Error(), requestID.String(), funcName, nodeName)
+			return apperrors.ErrCouldNotRollback
+		}
+		return apperrors.ErrCouldNotBuildQuery
+	}
+	logger.DebugFmt("Built query\n\t"+guestsQuery+"\nwith args\n\t"+fmt.Sprintf("%+v", args), requestID.String(), funcName, nodeName)
+
+	row, err := tx.Query(guestsQuery, args...)
+	if err != nil {
+		logger.DebugFmt(err.Error(), requestID.String(), funcName, nodeName)
+		err = tx.Rollback()
+		if err != nil {
+			logger.DebugFmt("Transaction rollback failed with error "+err.Error(), requestID.String(), funcName, nodeName)
+			return apperrors.ErrCouldNotRollback
+		}
+		return apperrors.ErrCouldNotGetUser
+	}
+	logger.DebugFmt("Got board guests", requestID.String(), funcName, nodeName)
+
+	var guests []uint64
+	err = row.Scan(&guests)
+	if err != nil {
+		logger.DebugFmt("Scanning rows failed with error "+err.Error(), requestID.String(), funcName, nodeName)
+		err = tx.Rollback()
+		if err != nil {
+			logger.DebugFmt("Transaction rollback failed with error "+err.Error(), requestID.String(), funcName, nodeName)
+			return apperrors.ErrCouldNotRollback
+		}
+		return apperrors.ErrCouldNotScanRows
+	}
+	logger.DebugFmt("Checked workspace access", requestID.String(), funcName, nodeName)
+
+	// if count != 0 {
+	// 	logger.DebugFmt("User still has boards in this workspace", requestID.String(), funcName, nodeName)
+	// 	err = tx.Commit()
+	// 	if err != nil {
+	// 		logger.DebugFmt("Failed to commit changes", requestID.String(), funcName, nodeName)
+	// 		err = tx.Rollback()
+	// 		if err != nil {
+	// 			logger.DebugFmt("Transaction rollback failed with error "+err.Error(), requestID.String(), funcName, nodeName)
+	// 			return apperrors.ErrCouldNotRollback
+	// 		}
+	// 		return apperrors.ErrCouldNotCommit
+	// 	}
+	// 	logger.DebugFmt("Changes commited", requestID.String(), funcName, nodeName)
+
+	// 	return nil
+	// }
+	// logger.DebugFmt("User doesn't have any boards in this workspace", requestID.String(), funcName, nodeName)
+
+	// query3, args, err := sq.
+	// 	Delete("public.user_workspace").
+	// 	Where(sq.And{
+	// 		sq.Eq{"id_user": info.UserID},
+	// 		sq.Eq{"id_workspace": info.WorkspaceID},
+	// 	}).
+	// 	PlaceholderFormat(sq.Dollar).
+	// 	ToSql()
+	// if err != nil {
+	// 	logger.DebugFmt("Building query failed with error "+err.Error(), requestID.String(), funcName, nodeName)
+	// 	err = tx.Rollback()
+	// 	if err != nil {
+	// 		logger.DebugFmt("Transaction rollback failed with error "+err.Error(), requestID.String(), funcName, nodeName)
+	// 		return apperrors.ErrCouldNotRollback
+	// 	}
+	// 	return apperrors.ErrCouldNotBuildQuery
+	// }
+	// logger.DebugFmt("Built query\n\t"+query+"\nwith args\n\t"+fmt.Sprintf("%+v", args), requestID.String(), funcName, nodeName)
+
+	// _, err = tx.Exec(query3, args...)
+	// if err != nil {
+	// 	logger.DebugFmt("Deleting workspace connection failed with error "+err.Error(), requestID.String(), funcName, nodeName)
+	// 	err = tx.Rollback()
+	// 	if err != nil {
+	// 		logger.DebugFmt("Transaction rollback failed with error "+err.Error(), requestID.String(), funcName, nodeName)
+	// 		return apperrors.ErrCouldNotRollback
+	// 	}
+	// 	return apperrors.ErrCouldNotExecuteQuery
+	// }
+	// logger.DebugFmt("query executed", requestID.String(), funcName, nodeName)
+
+	err = tx.Commit()
+	if err != nil {
+		logger.DebugFmt("Failed to commit changes", requestID.String(), funcName, nodeName)
+		return apperrors.ErrCouldNotCommit
+	}
+	logger.DebugFmt("Changes commited", requestID.String(), funcName, nodeName)
 
 	return nil
 }
