@@ -523,8 +523,9 @@ func (s *PostgreSQLBoardStorage) Delete(ctx context.Context, info dto.BoardDelet
 	}
 	logger.DebugFmt("query executed", requestID.String(), funcName, nodeName)
 
-	guestsQuery, args, err := sq.
+	guestsQuery, gArgs, err := sq.
 		Select("public.board_user.id_user").
+		Distinct().
 		From("public.board_user").
 		LeftJoin("public.board ON public.board_user.id_board = public.board.id").
 		Where(sq.Eq{
@@ -541,7 +542,7 @@ func (s *PostgreSQLBoardStorage) Delete(ctx context.Context, info dto.BoardDelet
 		}
 		return apperrors.ErrCouldNotBuildQuery
 	}
-	logger.DebugFmt("Built query\n\t"+guestsQuery+"\nwith args\n\t"+fmt.Sprintf("%+v", args), requestID.String(), funcName, nodeName)
+	logger.DebugFmt("Built query\n\t"+guestsQuery+"\nwith args\n\t"+fmt.Sprintf("%+v", gArgs), requestID.String(), funcName, nodeName)
 
 	rows, err := tx.Query(guestsQuery, args...)
 	if err != nil {
@@ -578,7 +579,7 @@ func (s *PostgreSQLBoardStorage) Delete(ctx context.Context, info dto.BoardDelet
 	}
 	logger.DebugFmt("Checked workspace access", requestID.String(), funcName, nodeName)
 
-	wGuestsQuery, args, err := sq.
+	wGuestsQuery, wgArgs, err := sq.
 		Select("public.user_workspace.id_user").
 		From("public.user_workspace").
 		Where(sq.Eq{
@@ -595,7 +596,7 @@ func (s *PostgreSQLBoardStorage) Delete(ctx context.Context, info dto.BoardDelet
 		}
 		return apperrors.ErrCouldNotBuildQuery
 	}
-	logger.DebugFmt("Built query\n\t"+wGuestsQuery+"\nwith args\n\t"+fmt.Sprintf("%+v", args), requestID.String(), funcName, nodeName)
+	logger.DebugFmt("Built query\n\t"+wGuestsQuery+"\nwith args\n\t"+fmt.Sprintf("%v", wgArgs), requestID.String(), funcName, nodeName)
 
 	rows, err = tx.Query(wGuestsQuery, args...)
 	if err != nil {
@@ -635,6 +636,35 @@ func (s *PostgreSQLBoardStorage) Delete(ctx context.Context, info dto.BoardDelet
 	logger.DebugFmt(fmt.Sprintf("%v", guests), requestID.String(), funcName, nodeName)
 	logger.DebugFmt(fmt.Sprintf("%v", wGuests), requestID.String(), funcName, nodeName)
 
+	unlinkQuery, args, err := sq.
+		Delete("public.user_workspace").
+		Where("public.user_workspace.id_user IN ("+
+			wGuestsQuery+
+			") AND public.user_workspace.id_user NOT IN ("+
+			guestsQuery+
+			")",
+			info.WorkspaceID,
+		).
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
+
+	if err != nil {
+		logger.DebugFmt("Building query failed with error "+err.Error(), requestID.String(), funcName, nodeName)
+		return apperrors.ErrCouldNotBuildQuery
+	}
+	logger.DebugFmt("Built query\n\t"+unlinkQuery+"\nwith args\n\t"+fmt.Sprintf("%+v", args), requestID.String(), funcName, nodeName)
+
+	_, err = tx.Exec(unlinkQuery, args...)
+	if err != nil {
+		logger.DebugFmt("Deleting workspace connection failed with error "+err.Error(), requestID.String(), funcName, nodeName)
+		err = tx.Rollback()
+		if err != nil {
+			logger.DebugFmt("Transaction rollback failed with error "+err.Error(), requestID.String(), funcName, nodeName)
+			return apperrors.ErrCouldNotRollback
+		}
+		return apperrors.ErrCouldNotExecuteQuery
+	}
+
 	// if count != 0 {
 	// 	logger.DebugFmt("User still has boards in this workspace", requestID.String(), funcName, nodeName)
 	// 	err = tx.Commit()
@@ -672,16 +702,6 @@ func (s *PostgreSQLBoardStorage) Delete(ctx context.Context, info dto.BoardDelet
 	// }
 	// logger.DebugFmt("Built query\n\t"+query+"\nwith args\n\t"+fmt.Sprintf("%+v", args), requestID.String(), funcName, nodeName)
 
-	// _, err = tx.Exec(query3, args...)
-	// if err != nil {
-	// 	logger.DebugFmt("Deleting workspace connection failed with error "+err.Error(), requestID.String(), funcName, nodeName)
-	// 	err = tx.Rollback()
-	// 	if err != nil {
-	// 		logger.DebugFmt("Transaction rollback failed with error "+err.Error(), requestID.String(), funcName, nodeName)
-	// 		return apperrors.ErrCouldNotRollback
-	// 	}
-	// 	return apperrors.ErrCouldNotExecuteQuery
-	// }
 	// logger.DebugFmt("query executed", requestID.String(), funcName, nodeName)
 
 	err = tx.Rollback()
