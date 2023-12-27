@@ -580,6 +580,7 @@ func (s *PostgreSQLBoardStorage) Delete(ctx context.Context, info dto.BoardDelet
 
 	wGuestsQuery, args, err := sq.
 		Select("public.user_workspace.id_user").
+		From("public.user_workspace").
 		Where(sq.Eq{
 			"public.user_workspace.id_workspace": info.WorkspaceID,
 		}).
@@ -607,7 +608,6 @@ func (s *PostgreSQLBoardStorage) Delete(ctx context.Context, info dto.BoardDelet
 		return apperrors.ErrCouldNotGetUser
 	}
 	logger.DebugFmt("Got board guests", requestID.String(), funcName, nodeName)
-	logger.DebugFmt(fmt.Sprintf("%v", guests), requestID.String(), funcName, nodeName)
 
 	wGuests := []uint64{}
 	for rows.Next() {
@@ -631,6 +631,8 @@ func (s *PostgreSQLBoardStorage) Delete(ctx context.Context, info dto.BoardDelet
 		return apperrors.ErrCouldNotScanRows
 	}
 	logger.DebugFmt("Checked workspace access", requestID.String(), funcName, nodeName)
+
+	logger.DebugFmt(fmt.Sprintf("%v", guests), requestID.String(), funcName, nodeName)
 	logger.DebugFmt(fmt.Sprintf("%v", wGuests), requestID.String(), funcName, nodeName)
 
 	// if count != 0 {
