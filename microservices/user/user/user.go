@@ -15,7 +15,7 @@ import (
 	"github.com/google/uuid"
 )
 
-const nodeName = "service"
+const nodeName = "microservice"
 
 type UserService struct {
 	storage storage.IUserStorage
